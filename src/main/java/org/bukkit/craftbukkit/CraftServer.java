@@ -25,17 +25,11 @@ import javax.imageio.ImageIO;
 
 import net.minecraft.server.*;
 
-import org.bukkit.BanList;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
-import org.bukkit.UnsafeValues;
+import net.minecraft.server.WorldType;
+import org.bukkit.*;
 import org.bukkit.Warning.WarningState;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
@@ -431,6 +425,11 @@ public final class CraftServer implements Server {
     @Override
     public int broadcastMessage(String message) {
         return broadcast(message, BROADCAST_CHANNEL_USERS);
+    }
+
+    @Override
+    public int broadcastMessage(String message, ChatPosition position) {
+        return broadcast(message, BROADCAST_CHANNEL_USERS, position);
     }
 
     public Player getPlayer(final EntityPlayer entity) {
@@ -1212,14 +1211,25 @@ public final class CraftServer implements Server {
 
     @Override
     public int broadcast(String message, String permission) {
+        return this.broadcast(message, permission, ChatPosition.CHAT);
+    }
+
+    @Override
+    public int broadcast(String message, String permission, ChatPosition position) {
         int count = 0;
         Set<Permissible> permissibles = getPluginManager().getPermissionSubscriptions(permission);
 
         for (Permissible permissible : permissibles) {
-            if (permissible instanceof CommandSender && permissible.hasPermission(permission)) {
-                CommandSender user = (CommandSender) permissible;
-                user.sendMessage(message);
-                count++;
+            if (permissible.hasPermission(permission)) {
+                if (permissible instanceof CraftPlayer) {
+                    CraftPlayer craftPlayer = (CraftPlayer) permissible;
+                    craftPlayer.sendRawMessage(message, position);
+                    count++;
+                } else if (permissible instanceof CommandSender) {
+                    CommandSender commandSender = (CommandSender) permissible;
+                    commandSender.sendMessage(message);
+                    count++;
+                }
             }
         }
 

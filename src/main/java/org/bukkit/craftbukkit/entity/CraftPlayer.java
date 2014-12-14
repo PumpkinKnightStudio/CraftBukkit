@@ -143,10 +143,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendRawMessage(String message) {
+        this.sendRawMessage(message, ChatPosition.CHAT);
+    }
+
+    @Override
+    public void sendRawMessage(String message, ChatPosition position) {
         if (getHandle().playerConnection == null) return;
 
-        for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            getHandle().playerConnection.sendPacket(new PacketPlayOutChat(component));
+        if (position == ChatPosition.ACTION_BAR) {
+            //TODO: Is there a better way to do this? The problem is the action bar can only display old style formattings!
+            IChatBaseComponent cbc = ChatSerializer.a("{\"text\": \"" + message + "\"}");
+            getHandle().playerConnection.sendPacket(new PacketPlayOutChat(cbc, position.getPositionCode()));
+        } else {
+            for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
+                getHandle().playerConnection.sendPacket(new PacketPlayOutChat(component, position.getPositionCode()));
+            }
         }
     }
 
