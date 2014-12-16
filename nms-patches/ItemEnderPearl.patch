@@ -1,0 +1,27 @@
+--- ../work/decompile-8eb82bde//net/minecraft/server/ItemEnderPearl.java	2014-12-16 07:22:49.125893510 -0600
++++ src/main/java/net/minecraft/server/ItemEnderPearl.java	2014-12-16 07:22:49.129893517 -0600
+@@ -11,11 +11,21 @@
+         if (entityhuman.abilities.canInstantlyBuild) {
+             return itemstack;
+         } else {
+-            --itemstack.count;
+-            world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (ItemEnderPearl.g.nextFloat() * 0.4F + 0.8F));
++            // CraftBukkit start - don't decrement itemstack or play sound if ProjectileLaunchEvent is canceled
+             if (!world.isStatic) {
+-                world.addEntity(new EntityEnderPearl(world, entityhuman));
++                if (!world.addEntity(new EntityEnderPearl(world, entityhuman))) {
++                    return itemstack;
++                }
+             }
++            // CraftBukkit end
++
++            --itemstack.count;
++            world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (ItemEnderPearl.g.nextFloat() * 0.4F + 0.8F));
++
++            // CraftBukkit - moved up
++            //if (!world.isStatic) {
++            //    world.addEntity(new EntityEnderPearl(world, entityhuman));
++            //}
+ 
+             entityhuman.b(StatisticList.USE_ITEM_COUNT[Item.getId(this)]);
+             return itemstack;

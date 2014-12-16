@@ -1,0 +1,29 @@
+--- ../work/decompile-8eb82bde//net/minecraft/server/ItemEgg.java	2014-12-16 07:22:49.117893500 -0600
++++ src/main/java/net/minecraft/server/ItemEgg.java	2014-12-16 07:22:49.117893500 -0600
+@@ -8,14 +8,23 @@
+     }
+ 
+     public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
++        // CraftBukkit start - don't decrement itemstack or play sound if ProjectileLaunchEvent is canceled
++        if (!world.isStatic) {
++            if (!world.addEntity(new EntityEgg(world, entityhuman))) {
++                return itemstack;
++            }
++        }
++        // CraftBukkit end
++
+         if (!entityhuman.abilities.canInstantlyBuild) {
+             --itemstack.count;
+         }
+ 
+         world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (ItemEgg.g.nextFloat() * 0.4F + 0.8F));
+-        if (!world.isStatic) {
+-            world.addEntity(new EntityEgg(world, entityhuman));
+-        }
++        // CraftBukkit - moved up
++        //if (!world.isStatic) {
++        //  world.addEntity(new EntityEgg(world, entityhuman));
++        //}
+ 
+         entityhuman.b(StatisticList.USE_ITEM_COUNT[Item.getId(this)]);
+         return itemstack;
