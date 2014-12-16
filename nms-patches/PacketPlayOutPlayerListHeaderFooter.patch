@@ -1,0 +1,16 @@
+--- ../work/decompile-8eb82bde//net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java	Tue Dec 16 18:21:27 2014
++++ src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java	Tue Dec 16 18:21:27 2014
+@@ -11,6 +11,13 @@
+         this.a = ichatbasecomponent;
+     }
+ 
++    // CraftBukkit start
++    public PacketPlayOutPlayerListHeaderFooter(IChatBaseComponent header, IChatBaseComponent footer) {
++        this.a = header;
++        this.b = footer;
++    }
++    // CraftBukkit end
++
+     public void a(PacketDataSerializer packetdataserializer) {
+         this.a = packetdataserializer.d();
+         this.b = packetdataserializer.d();

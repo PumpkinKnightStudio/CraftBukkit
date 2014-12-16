@@ -152,7 +152,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         if (position == ChatPosition.ACTION_BAR) {
             //TODO: Is there a better way to do this? The problem is the action bar can only display old style formattings!
-            IChatBaseComponent cbc = ChatSerializer.a("{\"text\": \"" + message + "\"}");
+            IChatBaseComponent cbc = ChatSerializer.a("{\"text\": \"" + message + "\"}"); // PAIL: Rename
             getHandle().playerConnection.sendPacket(new PacketPlayOutChat(cbc, position.getPositionCode()));
         } else {
             for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
@@ -248,6 +248,58 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().playerConnection == null) return;
 
         getHandle().playerConnection.chat(msg, false);
+    }
+
+    @Override
+    public void showTitle(String title, String subtitle) {
+        if (this.getHandle().playerConnection == null) return;
+
+        IChatBaseComponent[] titleChatComponent = CraftChatMessage.fromString(title);
+        if (title != null) {
+            PacketPlayOutTitle packetPlayOutTitle = new PacketPlayOutTitle(EnumTitleAction.TITLE, titleChatComponent[0]);
+            this.getHandle().playerConnection.sendPacket(packetPlayOutTitle);
+        }
+
+        IChatBaseComponent[] subtitleChatComponent = CraftChatMessage.fromString(subtitle);
+        if (subtitle != null) {
+            PacketPlayOutTitle packetPlayOutSubTitle = new PacketPlayOutTitle(EnumTitleAction.SUBTITLE, subtitleChatComponent[0]);
+            this.getHandle().playerConnection.sendPacket(packetPlayOutSubTitle);
+        }
+    }
+
+    @Override
+    public void clearTitle() {
+        if (this.getHandle().playerConnection == null) return;
+
+        PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(EnumTitleAction.CLEAR, null);
+        this.getHandle().playerConnection.sendPacket(packetPlayOutTimes);
+    }
+
+    @Override
+    public void setTitleTimes(Integer fadeIn, Integer stay, Integer fadeOut) {
+        if (this.getHandle().playerConnection == null) return;
+
+        PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(EnumTitleAction.TIMES, null, fadeIn, stay, fadeOut);
+        this.getHandle().playerConnection.sendPacket(packetPlayOutTimes);
+    }
+
+    @Override
+    public void resetTitleTimes() {
+        if (this.getHandle().playerConnection == null) return;
+
+        PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(EnumTitleAction.RESET, null);
+        this.getHandle().playerConnection.sendPacket(packetPlayOutTimes);
+    }
+
+    @Override
+    public void setPlayerListHeaderFooter(String header, String footer) {
+        if (this.getHandle().playerConnection == null) return;
+
+        IChatBaseComponent[] headerChatComponent = CraftChatMessage.fromString(header);
+        IChatBaseComponent[] footerChatComponent = CraftChatMessage.fromString(footer);
+
+        PacketPlayOutPlayerListHeaderFooter playerListHeaderFooter = new PacketPlayOutPlayerListHeaderFooter(headerChatComponent[0], footerChatComponent[0]);
+        this.getHandle().playerConnection.sendPacket(playerListHeaderFooter);
     }
 
     @Override
