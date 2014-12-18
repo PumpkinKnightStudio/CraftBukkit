@@ -276,7 +276,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void setTitleTimes(Integer fadeIn, Integer stay, Integer fadeOut) {
+    public void setTitleTimes(int fadeIn, int stay, int fadeOut) {
         if (this.getHandle().playerConnection == null) return;
 
         PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(EnumTitleAction.TIMES, null, fadeIn, stay, fadeOut);
