@@ -153,10 +153,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (position == ChatPosition.ACTION_BAR) {
             //TODO: Is there a better way to do this? The problem is the action bar can only display old style formattings!
             IChatBaseComponent cbc = ChatSerializer.a("{\"text\": \"" + message + "\"}"); // PAIL: Rename
-            getHandle().playerConnection.sendPacket(new PacketPlayOutChat(cbc, position.getPositionCode()));
+            getHandle().playerConnection.sendPacket(new PacketPlayOutChat(cbc, (byte)2));
         } else {
             for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-                getHandle().playerConnection.sendPacket(new PacketPlayOutChat(component, position.getPositionCode()));
+                getHandle().playerConnection.sendPacket(new PacketPlayOutChat(component, (byte) (position == ChatPosition.CHAT ? 0 : 1)));
             }
         }
     }
