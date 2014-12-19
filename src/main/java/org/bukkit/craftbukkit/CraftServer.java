@@ -1219,7 +1219,7 @@ public final class CraftServer implements Server {
 
     @Override
     public int broadcast(String message, String permission) {
-        return this.broadcast(message, permission, ChatPosition.CHAT);
+        return this.broadcast(message, permission, ChatPosition.SYSTEM_MESSAGE);
     }
 
     @Override

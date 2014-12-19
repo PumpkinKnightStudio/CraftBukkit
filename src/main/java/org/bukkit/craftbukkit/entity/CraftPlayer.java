@@ -143,7 +143,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendRawMessage(String message) {
-        this.sendRawMessage(message, ChatPosition.CHAT);
+        this.sendRawMessage(message, ChatPosition.SYSTEM_MESSAGE);
     }
 
     @Override
