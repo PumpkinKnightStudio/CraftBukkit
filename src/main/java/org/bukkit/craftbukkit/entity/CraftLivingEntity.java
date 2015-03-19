@@ -110,6 +110,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     
     @Override
     public double getSpeed() {
+        //Rename d to speed
         return getHandle().getAttributeInstance(GenericAttributes.d).getValue();
     }
     
