@@ -107,6 +107,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public void resetMaxHealth() {
         setMaxHealth(getHandle().getMaxHealth());
     }
+    
+    @Override
+    public double getSpeed() {
+        // PAIL Rename d to speed
+        return getHandle().getAttributeInstance(GenericAttributes.d).getValue();
+    }
+    
+    @Override
+    public void setSpeed(double speed) {
+        getHandle().getAttributeInstance(GenericAttributes.d).setValue(speed);
+    }
 
     @Deprecated
     public Egg throwEgg() {
