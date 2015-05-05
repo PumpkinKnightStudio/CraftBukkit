@@ -1,5 +1,5 @@
---- /home/matt/mc-dev-private//net/minecraft/server/EntityMinecartAbstract.java	2015-02-26 22:40:22.623608139 +0000
-+++ src/main/java/net/minecraft/server/EntityMinecartAbstract.java	2015-02-26 22:40:22.623608139 +0000
+--- /home/matt/mc-dev-private//net/minecraft/server/EntityMinecartAbstract.java	2015-04-13 12:01:38.387967804 +0100
++++ src/main/java/net/minecraft/server/EntityMinecartAbstract.java	2015-04-13 12:01:38.391967804 +0100
 @@ -4,6 +4,15 @@
  import java.util.Iterator;
  import java.util.Map;
@@ -16,7 +16,7 @@
  public abstract class EntityMinecartAbstract extends Entity implements INamableTileEntity {
  
      private boolean a;
-@@ -16,10 +25,23 @@
+@@ -16,6 +25,17 @@
      private double h;
      private double i;
  
@@ -34,12 +34,15 @@
      public EntityMinecartAbstract(World world) {
          super(world);
          this.k = true;
-         this.setSize(0.98F, 0.7F);
+@@ -81,6 +101,8 @@
+         this.lastX = d0;
+         this.lastY = d1;
+         this.lastZ = d2;
 +
 +        this.world.getServer().getPluginManager().callEvent(new org.bukkit.event.vehicle.VehicleCreateEvent((Vehicle) this.getBukkitEntity())); // CraftBukkit
      }
  
-     public static EntityMinecartAbstract a(World world, double d0, double d1, double d2, EntityMinecartAbstract.EnumMinecartType entityminecartabstract_enumminecarttype) {
+     public double an() {
 @@ -92,6 +114,19 @@
              if (this.isInvulnerable(damagesource)) {
                  return false;
@@ -60,10 +63,10 @@
                  this.k(-this.r());
                  this.j(10);
                  this.ac();
-@@ -102,6 +137,15 @@
-                     if (this.passenger != null) {
-                         this.passenger.mount((Entity) null);
-                     }
+@@ -99,6 +134,15 @@
+                 boolean flag = damagesource.getEntity() instanceof EntityHuman && ((EntityHuman) damagesource.getEntity()).abilities.canInstantlyBuild;
+ 
+                 if (flag || this.getDamage() > 40.0F) {
 +                    // CraftBukkit start
 +                    VehicleDestroyEvent destroyEvent = new VehicleDestroyEvent(vehicle, passenger);
 +                    this.world.getServer().getPluginManager().callEvent(destroyEvent);
@@ -73,9 +76,9 @@
 +                        return true;
 +                    }
 +                    // CraftBukkit end
- 
-                     if (flag && !this.hasCustomName()) {
-                         this.die();
+                     if (this.passenger != null) {
+                         this.passenger.mount((Entity) null);
+                     }
 @@ -140,6 +184,14 @@
      }
  
