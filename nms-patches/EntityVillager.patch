@@ -27,14 +27,16 @@
          this.setProfession(i);
          this.setSize(0.6F, 1.8F);
          ((Navigation) this.getNavigation()).b(true);
-@@ -507,6 +509,10 @@
+@@ -507,6 +509,12 @@
      public void onLightningStrike(EntityLightning entitylightning) {
          if (!this.world.isClientSide && !this.dead) {
              EntityWitch entitywitch = new EntityWitch(this.world);
 +
-+            if (CraftEventFactory.callEntityStruckByLightningEvent(this, entitylightning, entitywitch).isCancelled()) {
++            // CraftBukkit start
++            if (CraftEventFactory.callEntityStruckByLightningEvent(this, entitylightning, entitywitch, false).isCancelled()) {
 +                return;
 +            }
++            // CraftBukkit end
  
              entitywitch.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
              entitywitch.prepare(this.world.E(new BlockPosition(entitywitch)), (GroupDataEntity) null);

@@ -616,8 +616,8 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static EntityStruckByLightningEvent callEntityStruckByLightningEvent(Entity entity, Entity lightning, Entity result){
-        EntityStruckByLightningEvent event = new EntityStruckByLightningEvent(entity.getBukkitEntity(), (LightningStrike) lightning.getBukkitEntity(), result.getBukkitEntity());
+    public static EntityStruckByLightningEvent callEntityStruckByLightningEvent(Entity entity, Entity lightning, Entity result, boolean cancelled){
+        EntityStruckByLightningEvent event = new EntityStruckByLightningEvent(entity.getBukkitEntity(), (LightningStrike) lightning.getBukkitEntity(), result.getBukkitEntity(), cancelled);
         entity.getBukkitEntity().getServer().getPluginManager().callEvent(event);
         return event;
     }

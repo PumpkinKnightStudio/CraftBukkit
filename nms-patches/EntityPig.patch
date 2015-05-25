@@ -13,7 +13,7 @@
              EntityPigZombie entitypigzombie = new EntityPigZombie(this.world);
  
 +            // CraftBukkit start
-+            if (CraftEventFactory.callPigZapEvent(this, entitylightning, entitypigzombie).isCancelled() | CraftEventFactory.callEntityStruckByLightningEvent(this, entitylightning, entitypigzombie).isCancelled()) {
++            if (CraftEventFactory.callEntityStruckByLightningEvent(this, entitylightning, entitypigzombie, CraftEventFactory.callPigZapEvent(this, entitylightning, entitypigzombie).isCancelled()).isCancelled()) {
 +                return;
 +            }
 +            // CraftBukkit end
