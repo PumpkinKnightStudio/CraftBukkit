@@ -616,6 +616,12 @@ public class CraftEventFactory {
         return event;
     }
 
+    public static EntityStruckByLightningEvent callEntityStruckByLightningEvent(Entity entity, Entity lightning, Entity result){
+        EntityStruckByLightningEvent event = new EntityStruckByLightningEvent(entity.getBukkitEntity(), (LightningStrike) lightning.getBukkitEntity(), result.getBukkitEntity());
+        entity.getBukkitEntity().getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
     public static HorseJumpEvent callHorseJumpEvent(Entity horse, float power) {
         HorseJumpEvent event = new HorseJumpEvent((Horse) horse.getBukkitEntity(), power);
         horse.getBukkitEntity().getServer().getPluginManager().callEvent(event);

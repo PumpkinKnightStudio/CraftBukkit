@@ -68,7 +68,7 @@
          super.onLightningStrike(entitylightning);
 -        this.datawatcher.watch(17, Byte.valueOf((byte) 1));
 +        // CraftBukkit start
-+        if (CraftEventFactory.callCreeperPowerEvent(this, entitylightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
++        if (CraftEventFactory.callCreeperPowerEvent(this, entitylightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled() | CraftEventFactory.callEntityStruckByLightningEvent(this, entitylightning, null).isCancelled()) {
 +            return;
 +        }
 +
