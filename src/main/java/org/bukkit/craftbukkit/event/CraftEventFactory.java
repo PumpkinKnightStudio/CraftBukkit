@@ -248,14 +248,19 @@ public class CraftEventFactory {
         return event;
     }
 
+    @Deprecated
+    public static CreatureSpawnEvent callCreatureSpawnEvent(EntityLiving entityliving, SpawnReason spawnReason){
+        return callCreatureSpawnEvent(entityliving, spawnReason, null);
+    }
+
     /**
      * CreatureSpawnEvent
      */
-    public static CreatureSpawnEvent callCreatureSpawnEvent(EntityLiving entityliving, SpawnReason spawnReason) {
+    public static CreatureSpawnEvent callCreatureSpawnEvent(EntityLiving entityliving, SpawnReason spawnReason, Player spawner) {
         LivingEntity entity = (LivingEntity) entityliving.getBukkitEntity();
         CraftServer craftServer = (CraftServer) entity.getServer();
 
-        CreatureSpawnEvent event = new CreatureSpawnEvent(entity, spawnReason);
+        CreatureSpawnEvent event = new CreatureSpawnEvent(entity, spawnReason, spawner);
         craftServer.getPluginManager().callEvent(event);
         return event;
     }

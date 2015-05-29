@@ -48,7 +48,7 @@
 +
 +                itemstack1 = CraftItemStack.asNMSCopy(event.getItem());
 +
-+                Entity entity = ItemMonsterEgg.spawnCreature(isourceblock.i(), itemstack.getData(), event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DISPENSE_EGG);
++                Entity entity = ItemMonsterEgg.spawnCreature(isourceblock.i(), itemstack.getData(), event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DISPENSE_EGG, null);
  
                  if (entity instanceof EntityLiving && itemstack.hasName()) {
                      ((EntityInsentient) entity).setCustomName(itemstack.getName());
@@ -381,3 +381,12 @@
                  return itemstack;
              }
          });
+@@ -316,7 +583,7 @@
+                             }
+ 
+                             ((TileEntitySkull) tileentity).setRotation(enumdirection.opposite().b() * 4);
+-                            Blocks.SKULL.a(world, blockposition, (TileEntitySkull) tileentity);
++                            new BlockSkull().a(world, blockposition, (TileEntitySkull) tileentity, null);
+                         }
+ 
+                         --itemstack.count;

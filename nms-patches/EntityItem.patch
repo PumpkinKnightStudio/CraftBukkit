@@ -102,10 +102,11 @@
          if (this.getItemStack() == null) {
              this.die();
          }
-@@ -240,6 +276,26 @@
+@@ -239,6 +275,26 @@
+         if (!this.world.isClientSide) {
              ItemStack itemstack = this.getItemStack();
              int i = itemstack.count;
- 
++
 +            // CraftBukkit start - fire PlayerPickupItemEvent
 +            int canHold = entityhuman.inventory.canHold(itemstack);
 +            int remaining = itemstack.count - canHold;
@@ -125,7 +126,6 @@
 +                this.pickupDelay = 0;
 +            }
 +            // CraftBukkit end
-+
+ 
              if (this.pickupDelay == 0 && (this.g == null || 6000 - this.age <= 200 || this.g.equals(entityhuman.getName())) && entityhuman.inventory.pickup(itemstack)) {
                  if (itemstack.getItem() == Item.getItemOf(Blocks.LOG)) {
-                     entityhuman.b((Statistic) AchievementList.g);

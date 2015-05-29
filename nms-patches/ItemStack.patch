@@ -154,7 +154,7 @@
 +                    if (bp != null) {
 +                        TileEntity te = world.getTileEntity(bp);
 +                        if (te instanceof TileEntitySkull) {
-+                            Blocks.SKULL.a(world, bp, (TileEntitySkull) te);
++                            new BlockSkull().a(world, bp, (TileEntitySkull) te, (Player) entityhuman.getBukkitEntity());
 +                        }
 +                    }
 +                }

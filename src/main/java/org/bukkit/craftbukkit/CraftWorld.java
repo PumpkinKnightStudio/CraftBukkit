@@ -372,6 +372,10 @@ public class CraftWorld implements World {
         return spawn(loc, entityType.getEntityClass());
     }
 
+    public Entity spawnEntity(Location loc, EntityType entityType, Player spawner) {
+        return spawn(loc, entityType.getEntityClass(), SpawnReason.CUSTOM, spawner);
+    }
+
     public LightningStrike strikeLightning(Location loc) {
         EntityLightning lightning = new EntityLightning(world, loc.getX(), loc.getY(), loc.getZ());
         world.strikeLightning(lightning);
@@ -881,8 +885,12 @@ public class CraftWorld implements World {
         return spawnFallingBlock(location, org.bukkit.Material.getMaterial(blockId), blockData);
     }
 
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException{
+        return spawn(location, clazz, reason, null);
+    }
+
     @SuppressWarnings("unchecked")
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason, Player spawner) throws IllegalArgumentException {
         if (location == null || clazz == null) {
             throw new IllegalArgumentException("Location or entity class cannot be null");
         }
@@ -1112,7 +1120,7 @@ public class CraftWorld implements World {
                 ((EntityInsentient) entity).prepare(getHandle().E(new BlockPosition(entity)), (GroupDataEntity) null);
             }
 
-            world.addEntity(entity, reason);
+            world.addEntity(entity, reason, spawner);
             return (T) entity.getBukkitEntity();
         }
 

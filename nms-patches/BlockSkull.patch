@@ -1,18 +1,19 @@
 --- a/net/minecraft/server/BlockSkull.java
 +++ b/net/minecraft/server/BlockSkull.java
-@@ -4,6 +4,11 @@
+@@ -4,6 +4,12 @@
  import java.util.Iterator;
  import java.util.Random;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.util.BlockStateListPopulator;
++import org.bukkit.entity.Player;
 +import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 +// CraftBukkit end
 +
  public class BlockSkull extends BlockContainer {
  
      public static final BlockStateDirection FACING = BlockStateDirection.of("facing");
-@@ -81,8 +86,26 @@
+@@ -81,8 +87,26 @@
  
          return tileentity instanceof TileEntitySkull ? ((TileEntitySkull) tileentity).getSkullType() : super.getDropData(world, blockposition);
      }
@@ -40,7 +41,7 @@
  
      public void a(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman) {
          if (entityhuman.abilities.canInstantlyBuild) {
-@@ -95,7 +118,10 @@
+@@ -95,7 +119,10 @@
  
      public void remove(World world, BlockPosition blockposition, IBlockData iblockdata) {
          if (!world.isClientSide) {
@@ -52,10 +53,14 @@
                  TileEntity tileentity = world.getTileEntity(blockposition);
  
                  if (tileentity instanceof TileEntitySkull) {
-@@ -127,24 +153,36 @@
+@@ -127,24 +154,40 @@
      }
  
      public void a(World world, BlockPosition blockposition, TileEntitySkull tileentityskull) {
++        a(world, blockposition, tileentityskull, null);
++    }
++
++    public void a(World world, BlockPosition blockposition, TileEntitySkull tileentityskull, Player spawner) {
 +        if (world.captureBlockStates) return; // CraftBukkit
          if (tileentityskull.getSkullType() == 1 && blockposition.getY() >= 2 && world.getDifficulty() != EnumDifficulty.PEACEFUL && !world.isClientSide) {
              ShapeDetector shapedetector = this.n();
@@ -91,12 +96,12 @@
                      }
                  }
  
-@@ -157,14 +195,16 @@
+@@ -157,14 +200,16 @@
                  entitywither.n();
                  Iterator iterator = world.a(EntityHuman.class, entitywither.getBoundingBox().grow(50.0D, 50.0D, 50.0D)).iterator();
  
 +                // CraftBukkit start
-+                if (world.addEntity(entitywither, SpawnReason.BUILD_WITHER)) {
++                if (world.addEntity(entitywither, SpawnReason.BUILD_WITHER, spawner)) {
 +                    blockList.updateList();
 +                    
                  while (iterator.hasNext()) {
@@ -110,7 +115,7 @@
                  int k;
  
                  for (k = 0; k < 120; ++k) {
-@@ -178,6 +218,7 @@
+@@ -178,6 +223,7 @@
                          world.update(shapedetectorblock2.d(), Blocks.AIR);
                      }
                  }
