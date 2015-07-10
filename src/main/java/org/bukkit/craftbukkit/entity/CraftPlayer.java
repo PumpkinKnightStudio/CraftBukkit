@@ -152,6 +152,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 
+	@Override
+	public void sendActionBarMessage(String message) {
+		if (getHandle().playerConnection == null) return;
+		
+		getHandle().playerConnection.sendPacket(new PacketPlayOutChat(CraftChatMessage.fromString(message)[0], (byte) 2));
+	}
+
     @Override
     public void sendMessage(String message) {
         if (!conversationTracker.isConversingModaly()) {
