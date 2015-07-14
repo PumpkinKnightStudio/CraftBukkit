@@ -1,15 +1,18 @@
 --- a/net/minecraft/server/EntityFireball.java
 +++ b/net/minecraft/server/EntityFireball.java
-@@ -2,6 +2,8 @@
+@@ -2,6 +2,11 @@
  
  import java.util.List;
  
-+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
++//CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.ProjectileCollideWithEntityEvent;
++//CraftBukkit end
 +
  public abstract class EntityFireball extends Entity {
  
      private int e = -1;
-@@ -15,6 +17,8 @@
+@@ -15,6 +20,8 @@
      public double dirX;
      public double dirY;
      public double dirZ;
@@ -18,7 +21,7 @@
  
      public EntityFireball(World world) {
          super(world);
-@@ -38,10 +42,17 @@
+@@ -38,10 +45,17 @@
      public EntityFireball(World world, EntityLiving entityliving, double d0, double d1, double d2) {
          super(world);
          this.shooter = entityliving;
@@ -36,7 +39,20 @@
          d0 += this.random.nextGaussian() * 0.4D;
          d1 += this.random.nextGaussian() * 0.4D;
          d2 += this.random.nextGaussian() * 0.4D;
-@@ -117,6 +128,12 @@
+@@ -96,6 +110,12 @@
+                 Entity entity1 = (Entity) list.get(i);
+ 
+                 if (entity1.ad() && (!entity1.k(this.shooter) || this.as >= 25)) {
++                	//CraftBukkit start
++                	ProjectileCollideWithEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideWithEntityEvent(this, entity1);
++                	if (event.isCancelled()) {
++                		continue;
++                	}
++                	//CraftBukkit end
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+@@ -117,6 +137,12 @@
  
              if (movingobjectposition != null) {
                  this.a(movingobjectposition);
@@ -49,7 +65,7 @@
              }
  
              this.locX += this.motX;
-@@ -181,6 +198,8 @@
+@@ -181,6 +207,8 @@
  
          nbttagcompound.setString("inTile", minecraftkey == null ? "" : minecraftkey.toString());
          nbttagcompound.setByte("inGround", (byte) (this.i ? 1 : 0));
@@ -58,7 +74,7 @@
          nbttagcompound.set("direction", this.a(new double[] { this.motX, this.motY, this.motZ}));
      }
  
-@@ -195,12 +214,20 @@
+@@ -195,12 +223,20 @@
          }
  
          this.i = nbttagcompound.getByte("inGround") == 1;
@@ -80,7 +96,7 @@
          } else {
              this.die();
          }
-@@ -221,6 +248,11 @@
+@@ -221,6 +257,11 @@
          } else {
              this.ac();
              if (damagesource.getEntity() != null) {
@@ -92,7 +108,7 @@
                  Vec3D vec3d = damagesource.getEntity().ap();
  
                  if (vec3d != null) {
-@@ -234,6 +266,7 @@
+@@ -234,6 +275,7 @@
  
                  if (damagesource.getEntity() instanceof EntityLiving) {
                      this.shooter = (EntityLiving) damagesource.getEntity();

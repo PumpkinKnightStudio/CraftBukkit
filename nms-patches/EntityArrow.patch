@@ -1,19 +1,21 @@
 --- a/net/minecraft/server/EntityArrow.java
 +++ b/net/minecraft/server/EntityArrow.java
-@@ -2,6 +2,12 @@
+@@ -2,6 +2,14 @@
  
  import java.util.List;
  
++
 +// CraftBukkit start
 +import org.bukkit.entity.LivingEntity;
 +import org.bukkit.event.entity.EntityCombustByEntityEvent;
++import org.bukkit.event.entity.ProjectileCollideWithEntityEvent;
 +import org.bukkit.event.player.PlayerPickupItemEvent;
 +// CraftBukkit end
 +
  public class EntityArrow extends Entity implements IProjectile {
  
      private int d = -1;
-@@ -35,6 +41,7 @@
+@@ -35,6 +43,7 @@
          super(world);
          this.j = 10.0D;
          this.shooter = entityliving;
@@ -21,7 +23,7 @@
          if (entityliving instanceof EntityHuman) {
              this.fromPlayer = 1;
          }
-@@ -62,6 +69,7 @@
+@@ -62,6 +71,7 @@
          super(world);
          this.j = 10.0D;
          this.shooter = entityliving;
@@ -29,7 +31,20 @@
          if (entityliving instanceof EntityHuman) {
              this.fromPlayer = 1;
          }
-@@ -201,6 +209,7 @@
+@@ -170,6 +180,12 @@
+                 Entity entity1 = (Entity) list.get(j);
+ 
+                 if (entity1.ad() && (entity1 != this.shooter || this.as >= 5)) {
++                	//CraftBukkit start
++                	ProjectileCollideWithEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideWithEntityEvent(this, entity1);
++                	if (event.isCancelled()) {
++                		continue;
++                	}
++                	//CraftBukkit end
+                     f1 = 0.3F;
+                     AxisAlignedBB axisalignedbb1 = entity1.getBoundingBox().grow((double) f1, (double) f1, (double) f1);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb1.a(vec3d, vec3d1);
+@@ -201,6 +217,7 @@
              float f3;
  
              if (movingobjectposition != null) {
@@ -37,7 +52,7 @@
                  if (movingobjectposition.entity != null) {
                      f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);
                      int k = MathHelper.f((double) f2 * this.damage);
-@@ -217,11 +226,18 @@
+@@ -217,11 +234,18 @@
                          damagesource = DamageSource.arrow(this, this.shooter);
                      }
  
@@ -59,7 +74,7 @@
                          if (movingobjectposition.entity instanceof EntityLiving) {
                              EntityLiving entityliving = (EntityLiving) movingobjectposition.entity;
  
-@@ -383,6 +399,20 @@
+@@ -383,6 +407,20 @@
  
      public void d(EntityHuman entityhuman) {
          if (!this.world.isClientSide && this.inGround && this.shake <= 0) {
@@ -80,7 +95,7 @@
              boolean flag = this.fromPlayer == 1 || this.fromPlayer == 2 && entityhuman.abilities.canInstantlyBuild;
  
              if (this.fromPlayer == 1 && !entityhuman.inventory.pickup(new ItemStack(Items.ARROW, 1))) {
-@@ -438,4 +468,10 @@
+@@ -438,4 +476,10 @@
  
          return (b0 & 1) != 0;
      }
