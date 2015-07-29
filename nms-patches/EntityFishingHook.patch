@@ -1,19 +1,34 @@
 --- a/net/minecraft/server/EntityFishingHook.java
 +++ b/net/minecraft/server/EntityFishingHook.java
-@@ -3,6 +3,12 @@
+@@ -3,6 +3,14 @@
  import java.util.Arrays;
  import java.util.List;
  
++
 +// CraftBukkit start
 +import org.bukkit.entity.Player;
 +import org.bukkit.entity.Fish;
++import org.bukkit.event.entity.ProjectileCollideWithEntityEvent;
 +import org.bukkit.event.player.PlayerFishEvent;
 +// CraftBukkit end
 +
  public class EntityFishingHook extends Entity {
  
      private static final List<PossibleFishingResult> d = Arrays.asList(new PossibleFishingResult[] { (new PossibleFishingResult(new ItemStack(Items.LEATHER_BOOTS), 10)).a(0.9F), new PossibleFishingResult(new ItemStack(Items.LEATHER), 10), new PossibleFishingResult(new ItemStack(Items.BONE), 10), new PossibleFishingResult(new ItemStack(Items.POTION), 10), new PossibleFishingResult(new ItemStack(Items.STRING), 5), (new PossibleFishingResult(new ItemStack(Items.FISHING_ROD), 2)).a(0.9F), new PossibleFishingResult(new ItemStack(Items.BOWL), 10), new PossibleFishingResult(new ItemStack(Items.STICK), 5), new PossibleFishingResult(new ItemStack(Items.DYE, 10, EnumColor.BLACK.getInvColorIndex()), 1), new PossibleFishingResult(new ItemStack(Blocks.TRIPWIRE_HOOK), 10), new PossibleFishingResult(new ItemStack(Items.ROTTEN_FLESH), 10)});
-@@ -182,6 +188,7 @@
+@@ -163,6 +171,12 @@
+                 Entity entity1 = (Entity) list.get(i);
+ 
+                 if (entity1.ad() && (entity1 != this.owner || this.au >= 5)) {
++                	//CraftBukkit start
++                	ProjectileCollideWithEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideWithEntityEvent(this, entity1);
++                	if (event.isCancelled()) {
++                		continue;
++                	}
++                	//CraftBukkit end
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+@@ -182,6 +196,7 @@
              }
  
              if (movingobjectposition != null) {
@@ -21,7 +36,7 @@
                  if (movingobjectposition.entity != null) {
                      if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.owner), 0.0F)) {
                          this.hooked = movingobjectposition.entity;
-@@ -381,6 +388,15 @@
+@@ -381,6 +396,15 @@
              byte b0 = 0;
  
              if (this.hooked != null) {
@@ -37,7 +52,7 @@
                  double d0 = this.owner.locX - this.locX;
                  double d1 = this.owner.locY - this.locY;
                  double d2 = this.owner.locZ - this.locZ;
-@@ -393,6 +409,15 @@
+@@ -393,6 +417,15 @@
                  b0 = 3;
              } else if (this.av > 0) {
                  EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY, this.locZ, this.m());
@@ -53,7 +68,7 @@
                  double d5 = this.owner.locX - this.locX;
                  double d6 = this.owner.locY - this.locY;
                  double d7 = this.owner.locZ - this.locZ;
-@@ -403,14 +428,35 @@
+@@ -403,13 +436,34 @@
                  entityitem.motY = d6 * d9 + (double) MathHelper.sqrt(d8) * 0.08D;
                  entityitem.motZ = d7 * d9;
                  this.world.addEntity(entityitem);
@@ -76,7 +91,7 @@
 +                // CraftBukkit end
                  b0 = 2;
              }
- 
++
 +            // CraftBukkit start
 +            if (b0 == 0) {
 +                PlayerFishEvent playerFishEvent = new PlayerFishEvent((Player) this.owner.getBukkitEntity(), null, (Fish) this.getBukkitEntity(), PlayerFishEvent.State.FAILED_ATTEMPT);
@@ -86,7 +101,6 @@
 +                }
 +            }
 +            // CraftBukkit end
-+
+ 
              this.die();
              this.owner.hookedFish = null;
-             return b0;
