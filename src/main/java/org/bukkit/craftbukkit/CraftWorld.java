@@ -18,6 +18,7 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.BlockChangeDelegate;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.ChunkLoadCallback;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Difficulty;
 import org.bukkit.Effect;
@@ -120,6 +121,24 @@ public class CraftWorld implements World {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void requestChunk(final int x, final int z, final ChunkLoadCallback callback) {
+        final ChunkProviderServer cps = this.world.chunkProviderServer;
+        cps.getChunkAt(x, z, new Runnable() {
+            @Override
+            public void run() {
+                callback.onLoad(cps.getChunkAt(x, z).bukkitChunk);
+            }
+        });
+    }
+
+    public void requestChunk(Block block, ChunkLoadCallback callback) {
+        requestChunk(block.getX() >> 4, block.getZ() >> 4, callback);
+    }
+
+    public void requestChunk(Location location, ChunkLoadCallback callback) {
+        requestChunk(location.getBlockX() >> 4, location.getBlockZ() >> 4, callback);
     }
 
     public Chunk getChunkAt(int x, int z) {
