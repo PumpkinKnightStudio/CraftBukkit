@@ -6,13 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
+import com.google.common.collect.ImmutableSortedMap;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
@@ -37,11 +32,18 @@ import com.google.common.collect.Sets;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.server.NBTCompressedStreamTools;
@@ -214,13 +216,13 @@ class CraftMetaItem implements ItemMeta, Repairable {
 
     private String displayName;
     private List<String> lore;
-    private Map<Enchantment, Integer> enchantments;
+    private EnchantmentMap enchantments;
     private int repairCost;
     private int hideFlag;
 
     private static final Set<String> HANDLED_TAGS = Sets.newHashSet();
 
-    private final Map<String, NBTBase> unhandledTags = new HashMap<String, NBTBase>();
+    private final Map<String, NBTBase> unhandledTags = new TreeMap<String, NBTBase>();
 
     CraftMetaItem(CraftMetaItem meta) {
         if (meta == null) {
@@ -234,7 +236,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
         }
 
         if (meta.hasEnchants()) {
-            this.enchantments = new HashMap<Enchantment, Integer>(meta.enchantments);
+            this.enchantments = new EnchantmentMap(meta.enchantments);
         }
 
         this.repairCost = meta.repairCost;
@@ -325,13 +327,13 @@ class CraftMetaItem implements ItemMeta, Repairable {
         }
     }
 
-    static Map<Enchantment, Integer> buildEnchantments(NBTTagCompound tag, ItemMetaKey key) {
+    static EnchantmentMap buildEnchantments(NBTTagCompound tag, ItemMetaKey key) {
         if (!tag.hasKey(key.NBT)) {
             return null;
         }
 
         NBTTagList ench = tag.getList(key.NBT, 10);
-        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>(ench.size());
+        EnchantmentMap enchantments = new EnchantmentMap();
 
         for (int i = 0; i < ench.size(); i++) {
             int id = 0xffff & ((NBTTagCompound) ench.get(i)).getShort(ENCHANTMENTS_ID.NBT);
@@ -392,13 +394,13 @@ class CraftMetaItem implements ItemMeta, Repairable {
     void deserializeInternal(NBTTagCompound tag) {
     }
 
-    static Map<Enchantment, Integer> buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
+    static EnchantmentMap buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
         Map<?, ?> ench = SerializableMeta.getObject(Map.class, map, key.BUKKIT, true);
         if (ench == null) {
             return null;
         }
 
-        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>(ench.size());
+        EnchantmentMap enchantments = new EnchantmentMap();
         for (Map.Entry<?, ?> entry : ench.entrySet()) {
             Enchantment enchantment = Enchantment.getByName(entry.getKey().toString());
 
@@ -520,12 +522,12 @@ class CraftMetaItem implements ItemMeta, Repairable {
     }
 
     public Map<Enchantment, Integer> getEnchants() {
-        return hasEnchants() ? ImmutableMap.copyOf(enchantments) : ImmutableMap.<Enchantment, Integer>of();
+        return hasEnchants() ? ImmutableSortedMap.copyOfSorted(enchantments) : ImmutableMap.<Enchantment, Integer>of();
     }
 
     public boolean addEnchant(Enchantment ench, int level, boolean ignoreRestrictions) {
         if (enchantments == null) {
-            enchantments = new HashMap<Enchantment, Integer>(4);
+            enchantments = new EnchantmentMap();
         }
 
         if (ignoreRestrictions || level >= ench.getStartLevel() && level <= ench.getMaxLevel()) {
@@ -674,7 +676,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
                 clone.lore = new ArrayList<String>(this.lore);
             }
             if (this.enchantments != null) {
-                clone.enchantments = new HashMap<Enchantment, Integer>(this.enchantments);
+                clone.enchantments = new EnchantmentMap(this.enchantments);
             }
             clone.hideFlag = this.hideFlag;
             return clone;
@@ -817,6 +819,26 @@ class CraftMetaItem implements ItemMeta, Repairable {
                 ));
             }
             return HANDLED_TAGS;
+        }
+    }
+
+    private static class EnchantmentMap extends TreeMap<Enchantment, Integer> {
+        private EnchantmentMap(Map<Enchantment, Integer> enchantments) {
+            this();
+            putAll(enchantments);
+        }
+
+        private EnchantmentMap() {
+            super(new Comparator<Enchantment>() {
+                @Override
+                public int compare(Enchantment o1, Enchantment o2) {
+                    return ((Integer) o1.getId()).compareTo(o2.getId());
+                }
+            });
+        }
+
+        public EnchantmentMap clone() {
+            return (EnchantmentMap) super.clone();
         }
     }
 }

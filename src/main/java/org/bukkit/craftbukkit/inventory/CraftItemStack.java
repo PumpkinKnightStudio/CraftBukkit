@@ -4,6 +4,7 @@ import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS;
 import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_ID;
 import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_LVL;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import net.minecraft.server.EnchantmentManager;
@@ -183,28 +184,9 @@ public final class CraftItemStack extends ItemStack {
     public void addUnsafeEnchantment(Enchantment ench, int level) {
         Validate.notNull(ench, "Cannot add null enchantment");
 
-        if (!makeTag(handle)) {
-            return;
-        }
-        NBTTagList list = getEnchantmentList(handle);
-        if (list == null) {
-            list = new NBTTagList();
-            handle.getTag().set(ENCHANTMENTS.NBT, list);
-        }
-        int size = list.size();
-
-        for (int i = 0; i < size; i++) {
-            NBTTagCompound tag = (NBTTagCompound) list.get(i);
-            short id = tag.getShort(ENCHANTMENTS_ID.NBT);
-            if (id == ench.getId()) {
-                tag.setShort(ENCHANTMENTS_LVL.NBT, (short) level);
-                return;
-            }
-        }
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setShort(ENCHANTMENTS_ID.NBT, (short) ench.getId());
-        tag.setShort(ENCHANTMENTS_LVL.NBT, (short) level);
-        list.add(tag);
+        final ItemMeta itemMeta = getItemMeta();
+        itemMeta.addEnchant(ench, level, true);
+        setItemMeta(itemMeta);
     }
 
     static boolean makeTag(net.minecraft.server.ItemStack item) {
@@ -221,66 +203,32 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public boolean containsEnchantment(Enchantment ench) {
-        return getEnchantmentLevel(ench) > 0;
+        return hasItemMeta() && getItemMeta().hasEnchant(ench);
     }
 
     @Override
     public int getEnchantmentLevel(Enchantment ench) {
-        Validate.notNull(ench, "Cannot find null enchantment");
-        if (handle == null) {
-            return 0;
-        }
-        return EnchantmentManager.getEnchantmentLevel(ench.getId(), handle);
+        return hasItemMeta() ? getItemMeta().getEnchantLevel(ench) : 0;
     }
 
     @Override
     public int removeEnchantment(Enchantment ench) {
         Validate.notNull(ench, "Cannot remove null enchantment");
-
-        NBTTagList list = getEnchantmentList(handle), listCopy;
-        if (list == null) {
-            return 0;
-        }
-        int index = Integer.MIN_VALUE;
-        int level = Integer.MIN_VALUE;
-        int size = list.size();
-
-        for (int i = 0; i < size; i++) {
-            NBTTagCompound enchantment = (NBTTagCompound) list.get(i);
-            int id = 0xffff & enchantment.getShort(ENCHANTMENTS_ID.NBT);
-            if (id == ench.getId()) {
-                index = i;
-                level = 0xffff & enchantment.getShort(ENCHANTMENTS_LVL.NBT);
-                break;
+        final ItemMeta itemMeta = getItemMeta();
+        final Iterator<Enchantment> iterator = itemMeta.getEnchants().keySet().iterator();
+        for (int i = 0; iterator.hasNext(); i++) {
+            if (iterator.next().equals(ench)) {
+                itemMeta.removeEnchant(ench);
+                setItemMeta(itemMeta);
+                return i;
             }
         }
-
-        if (index == Integer.MIN_VALUE) {
-            return 0;
-        }
-        if (size == 1) {
-            handle.getTag().remove(ENCHANTMENTS.NBT);
-            if (handle.getTag().isEmpty()) {
-                handle.setTag(null);
-            }
-            return level;
-        }
-
-        // This is workaround for not having an index removal
-        listCopy = new NBTTagList();
-        for (int i = 0; i < size; i++) {
-            if (i != index) {
-                listCopy.add(list.get(i));
-            }
-        }
-        handle.getTag().set(ENCHANTMENTS.NBT, listCopy);
-
-        return level;
+        return 0;
     }
 
     @Override
     public Map<Enchantment, Integer> getEnchantments() {
-        return getEnchantments(handle);
+        return hasItemMeta() ? getItemMeta().getEnchants() : ImmutableMap.<Enchantment, Integer>of();
     }
 
     static Map<Enchantment, Integer> getEnchantments(net.minecraft.server.ItemStack item) {
