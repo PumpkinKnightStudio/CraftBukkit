@@ -9,7 +9,14 @@
              this.n = ichatbasecomponent;
          }
  
-@@ -308,7 +308,7 @@
+@@ -301,14 +301,11 @@
+                 } else if (this.getPacketListener() != null) {
+                     this.getPacketListener().a(new ChatComponentText("Disconnected"));
+                 }
+-            } else {
+-                NetworkManager.g.warn("handleDisconnection() called twice");
+             }
+-
          }
      }
  
