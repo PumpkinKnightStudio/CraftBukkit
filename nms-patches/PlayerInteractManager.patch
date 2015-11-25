@@ -134,7 +134,7 @@
 +            org.bukkit.block.Block block = this.world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 +
 +            // Sword + Creative mode pre-cancel
-+            boolean isSwordNoBreak = this.gamemode.d() && this.player.bA() != null && this.player.bA().getItem() instanceof ItemSword;
++            boolean isSwordNoBreak = this.player.abilities.canInstantlyBuild && this.player.bA() != null && this.player.bA().getItem() instanceof ItemSword;
 +
 +            // Tell client the block is gone immediately then process events
 +            // Don't tell the client if its a creative sword break because its not broken!
