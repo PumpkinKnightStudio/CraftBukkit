@@ -1,0 +1,15 @@
+--- a/net/minecraft/server/AttributeMapServer.java
++++ b/net/minecraft/server/AttributeMapServer.java
+@@ -12,7 +12,11 @@
+     private final Set<AttributeInstance> e = Sets.newHashSet();
+     protected final Map<String, AttributeInstance> d = new InsensitiveStringMap();
+ 
+-    public AttributeMapServer() {}
++    // CraftBukkit start - add constructor parameter
++    public AttributeMapServer(EntityLiving entity) {
++        super(entity);
++    }
++    // CraftBukkit end
+ 
+     public AttributeModifiable e(IAttribute iattribute) {
+         return (AttributeModifiable) super.a(iattribute);

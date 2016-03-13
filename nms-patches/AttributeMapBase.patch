@@ -1,0 +1,17 @@
+--- a/net/minecraft/server/AttributeMapBase.java
++++ b/net/minecraft/server/AttributeMapBase.java
+@@ -13,8 +13,13 @@
+     protected final Map<IAttribute, AttributeInstance> a = Maps.newHashMap();
+     protected final Map<String, AttributeInstance> b = new InsensitiveStringMap();
+     protected final Multimap<IAttribute, IAttribute> c = HashMultimap.create();
++    public final EntityLiving holder; // CraftBukkit
+ 
+-    public AttributeMapBase() {}
++    // CraftBukkit start - add constructor parameter
++    public AttributeMapBase(EntityLiving entity) {
++        holder = entity;
++    }
++    // CraftBukkit end
+ 
+     public AttributeInstance a(IAttribute iattribute) {
+         return (AttributeInstance) this.a.get(iattribute);

@@ -22,7 +22,7 @@ public class CraftAttributeMap implements Attributable {
         return (nms == null) ? null : new CraftAttributeInstance(nms, attribute);
     }
 
-    static String toMinecraft(String bukkit) {
+    public static String toMinecraft(String bukkit) {
         int first = bukkit.indexOf('_');
         int second = bukkit.indexOf('_', first + 1);
 

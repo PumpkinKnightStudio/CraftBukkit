@@ -15,12 +15,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.Statistic.Type;
+import org.bukkit.attribute.Attributable;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -46,6 +48,8 @@ import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
+import org.bukkit.event.attribute.AttributeBaseChangeEvent;
+import org.bukkit.event.attribute.AttributeModifierChangeEvent;
 import org.bukkit.event.block.*;
 import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.entity.*;
@@ -987,6 +991,20 @@ public class CraftEventFactory {
 
     public static EntityToggleGlideEvent callToggleGlideEvent(EntityLiving entity, boolean gliding) {
         EntityToggleGlideEvent event = new EntityToggleGlideEvent((LivingEntity) entity.getBukkitEntity(), gliding);
+        entity.world.getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static AttributeBaseChangeEvent callAttributeBaseChangeEvent(EntityLiving entity, IAttribute attribute, double newValue) {
+        CraftAttributeInstance instance = new CraftAttributeInstance(entity.getAttributeInstance(attribute), CraftAttributeInstance.forNMSAttribute(attribute));
+        AttributeBaseChangeEvent event = new AttributeBaseChangeEvent((Attributable) entity.getBukkitEntity(), instance.getAttribute(), instance.getBaseValue(), newValue);
+        entity.world.getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static AttributeModifierChangeEvent callAttributeModifierChangeEvent(EntityLiving entity, IAttribute attribute, AttributeModifier modifier, boolean adding) {
+        CraftAttributeInstance instance = new CraftAttributeInstance(entity.getAttributeInstance(attribute), CraftAttributeInstance.forNMSAttribute(attribute));
+        AttributeModifierChangeEvent event = new AttributeModifierChangeEvent(instance.getAttribute(), (Attributable) entity.getBukkitEntity(), CraftAttributeInstance.convert(modifier), adding);
         entity.world.getServer().getPluginManager().callEvent(event);
         return event;
     }

@@ -486,11 +486,13 @@
      }
  
      public CombatTracker getCombatTracker() {
-@@ -1055,6 +1302,7 @@
+@@ -1054,7 +1301,8 @@
+ 
      public AttributeMapBase getAttributeMap() {
          if (this.bp == null) {
-             this.bp = new AttributeMapServer();
-+            this.craftAttributes = new CraftAttributeMap(bp); // CraftBukkit
+-            this.bp = new AttributeMapServer();
++            this.bp = new AttributeMapServer(this); // CraftBukkit
++            this.craftAttributes = new CraftAttributeMap(bp); // CraftBukkit; PAIL: attributeMap
          }
  
          return this.bp;
