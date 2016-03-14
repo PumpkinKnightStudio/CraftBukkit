@@ -1,0 +1,92 @@
+--- a/net/minecraft/server/WorldGenEndTrophy.java
++++ b/net/minecraft/server/WorldGenEndTrophy.java
+@@ -1,5 +1,8 @@
+ package net.minecraft.server;
+ 
++import org.bukkit.craftbukkit.util.BlockStateListPopulator;
++import org.bukkit.event.world.EndPortalGenerateEvent;
++
+ import java.util.Iterator;
+ import java.util.Random;
+ 
+@@ -7,14 +10,16 @@
+ 
+     public static final BlockPosition a = BlockPosition.ZERO;
+     public static final BlockPosition b = new BlockPosition(WorldGenEndTrophy.a.getX() - 4 & -16, 0, WorldGenEndTrophy.a.getZ() - 4 & -16);
+-    private final boolean c;
++    private final boolean c; // PAIL: Rename spawnEndPortals
+ 
+     public WorldGenEndTrophy(boolean flag) {
+         this.c = flag;
+     }
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
+-        Iterator iterator = BlockPosition.b(new BlockPosition(blockposition.getX() - 4, blockposition.getY() - 1, blockposition.getZ() - 4), new BlockPosition(blockposition.getX() + 4, blockposition.getY() + 32, blockposition.getZ() + 4)).iterator();
++        Iterator iterator = BlockPosition.b(new BlockPosition(blockposition.getX() - 4, blockposition.getY() - 1, blockposition.getZ() - 4), new BlockPosition(blockposition.getX() + 4, blockposition.getY() + 32, blockposition.getZ() + 4)).iterator(); // PAIL: Rename blockIterator
++        // CraftBukkit start - Call PortalCreateEvent
++        BlockStateListPopulator blockPopulator = new BlockStateListPopulator(world.getWorld());
+ 
+         while (iterator.hasNext()) {
+             BlockPosition.MutableBlockPosition blockposition_mutableblockposition = (BlockPosition.MutableBlockPosition) iterator.next();
+@@ -23,24 +28,24 @@
+             if (d0 <= 3.5D) {
+                 if (blockposition_mutableblockposition.getY() < blockposition.getY()) {
+                     if (d0 <= 2.5D) {
+-                        this.a(world, blockposition_mutableblockposition, Blocks.BEDROCK.getBlockData());
++                        blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.BEDROCK.getBlockData());
+                     } else if (blockposition_mutableblockposition.getY() < blockposition.getY()) {
+-                        this.a(world, blockposition_mutableblockposition, Blocks.END_STONE.getBlockData());
++                        blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.END_STONE.getBlockData());
+                     }
+                 } else if (blockposition_mutableblockposition.getY() > blockposition.getY()) {
+-                    this.a(world, blockposition_mutableblockposition, Blocks.AIR.getBlockData());
++                    blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.AIR.getBlockData());
+                 } else if (d0 > 2.5D) {
+-                    this.a(world, blockposition_mutableblockposition, Blocks.BEDROCK.getBlockData());
++                    blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.BEDROCK.getBlockData());
+                 } else if (this.c) {
+-                    this.a(world, new BlockPosition(blockposition_mutableblockposition), Blocks.END_PORTAL.getBlockData());
++                    blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.END_PORTAL.getBlockData());
+                 } else {
+-                    this.a(world, new BlockPosition(blockposition_mutableblockposition), Blocks.AIR.getBlockData());
++                    blockPopulator.setTypeUpdate(blockposition_mutableblockposition, Blocks.AIR.getBlockData());
+                 }
+             }
+         }
+ 
+         for (int i = 0; i < 4; ++i) {
+-            this.a(world, blockposition.up(i), Blocks.BEDROCK.getBlockData());
++            blockPopulator.setTypeUpdate(blockposition.up(i), Blocks.BEDROCK.getBlockData());
+         }
+ 
+         BlockPosition blockposition1 = blockposition.up(2);
+@@ -49,8 +54,28 @@
+         while (iterator1.hasNext()) {
+             EnumDirection enumdirection = (EnumDirection) iterator1.next();
+ 
+-            this.a(world, blockposition1.shift(enumdirection), Blocks.TORCH.getBlockData().set(BlockTorch.FACING, enumdirection));
++            blockPopulator.setTypeUpdate(blockposition1.shift(enumdirection), Blocks.TORCH.getBlockData().set(BlockTorch.FACING, enumdirection));
++        }
++
++        EndPortalGenerateEvent event = new EndPortalGenerateEvent(world.getWorld(), blockPopulator.getList());
++        world.getServer().getPluginManager().callEvent(event);
++        
++        if (!event.isCancelled()) {
++            for (org.bukkit.block.BlockState state : event.getBlocks()) {
++                state.update(true);
++            }
++        } else {
++            for (org.bukkit.block.BlockState state : event.getBlocks()) {
++                PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(world, new BlockPosition(state.getX(), state.getY(), state.getZ()));
++                for (Iterator it = world.players.iterator() ; it.hasNext() ; ) {
++                    EntityHuman entity = (EntityHuman) it.next();
++                    if (entity instanceof EntityPlayer) {
++                        ((EntityPlayer) entity).playerConnection.sendPacket(packet);
++                    }
++                }
++            }
+         }
++        // CraftBukkit end
+ 
+         return true;
+     }

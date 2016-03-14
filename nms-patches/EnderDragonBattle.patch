@@ -1,5 +1,40 @@
 --- a/net/minecraft/server/EnderDragonBattle.java
 +++ b/net/minecraft/server/EnderDragonBattle.java
+@@ -21,22 +21,22 @@
+ 
+     private static final Logger a = LogManager.getLogger();
+     private static final Predicate<EntityPlayer> b = Predicates.and(IEntitySelector.a, IEntitySelector.a(0.0D, 128.0D, 0.0D, 192.0D));
+-    private final BossBattleServer c;
+-    private final WorldServer d;
+-    private final List<Integer> e;
+-    private final ShapeDetector f;
++    private final BossBattleServer c; // PAIL: Rename bossBar
++    private final WorldServer d; // PAIL: Rename world
++    private final List<Integer> e; // PAIL: Rename gateways
++    private final ShapeDetector f; // PAIL: Rename endPortalShape
+     private int g;
+-    private int h;
+-    private int i;
++    private int h; // PAIL: Rename enderCrystalCount
++    private int i; // PAIL: Rename checkEndCrystalTicks
+     private int j;
+-    private boolean k;
+-    private boolean l;
+-    private UUID m;
++    private boolean k; // PAIL: Rename dragonKilled
++    private boolean l; // PAIL: Rename previouslyKilled
++    private UUID m; // PAIL: Rename dragonUUID
+     private boolean n;
+-    private BlockPosition o;
+-    private EnumDragonRespawn p;
++    private BlockPosition o; // PAIL: Rename exitPortalLocation
++    private EnumDragonRespawn p; // PAIL: Rename dragonRespawnState
+     private int q;
+-    private List<EntityEnderCrystal> r;
++    private List<EntityEnderCrystal> r; // PAIL: Rename enderCrystals
+ 
+     public EnderDragonBattle(WorldServer worldserver, NBTTagCompound nbttagcompound) {
+         this.c = (BossBattleServer) (new BossBattleServer(new ChatMessage("entity.EnderDragon.name", new Object[0]), BossBattle.BarColor.PINK, BossBattle.BarStyle.PROGRESS)).setPlayMusic(true).c(true);
 @@ -247,7 +247,7 @@
                          ShapeDetector.ShapeDetectorCollection shapedetector_shapedetectorcollection = this.f.a(this.d, tileentity.getPosition());
  
@@ -18,3 +53,72 @@
                  }
  
                  return shapedetector_shapedetectorcollection1;
+@@ -310,7 +310,7 @@
+ 
+     }
+ 
+-    private void k() {
++    private void k() { // PAIL: Rename recountEnderCrystals
+         this.i = 0;
+         this.h = 0;
+         WorldGenEnder.Spike[] aworldgenender_spike = BiomeTheEndDecorator.a(this.d);
+@@ -341,7 +341,7 @@
+ 
+     }
+ 
+-    private void l() {
++    private void l() { // PAIL: Rename createEndGateways
+         if (!this.e.isEmpty()) {
+             int i = ((Integer) this.e.remove(this.e.size() - 1)).intValue();
+             int j = (int) (96.0D * Math.cos(2.0D * (-3.141592653589793D + 0.15707963267948966D * (double) i)));
+@@ -351,12 +351,12 @@
+         }
+     }
+ 
+-    private void a(BlockPosition blockposition) {
++    private void a(BlockPosition blockposition) { // PAIL: Rename createEndGateway
+         this.d.triggerEffect(3000, blockposition, 0);
+         (new WorldGenEndGateway()).generate(this.d, new Random(), blockposition);
+     }
+ 
+-    private void a(boolean flag) {
++    private void a(boolean flag) { // PAIL: Rename generateEndPortal
+         WorldGenEndTrophy worldgenendtrophy = new WorldGenEndTrophy(flag);
+ 
+         if (this.o == null) {
+@@ -368,7 +368,7 @@
+         worldgenendtrophy.generate(this.d, new Random(), this.o);
+     }
+ 
+-    private void m() {
++    private void m() { // PAIL: Rename spawnDragon
+         this.d.getChunkAtWorldCoords(new BlockPosition(0, 128, 0));
+         EntityEnderDragon entityenderdragon = new EntityEnderDragon(this.d);
+ 
+@@ -378,7 +378,7 @@
+         this.m = entityenderdragon.getUniqueID();
+     }
+ 
+-    public void b(EntityEnderDragon entityenderdragon) {
++    public void b(EntityEnderDragon entityenderdragon) { // PAIL: Rename updateBossBar
+         if (entityenderdragon.getUniqueID().equals(this.m)) {
+             this.c.setProgress(entityenderdragon.getHealth() / entityenderdragon.getMaxHealth());
+             this.g = 0;
+@@ -386,7 +386,7 @@
+ 
+     }
+ 
+-    public int c() {
++    public int c() { // PAIL: Rename getEnderCrystalCount
+         return this.h;
+     }
+ 
+@@ -408,7 +408,7 @@
+ 
+     }
+ 
+-    public boolean d() {
++    public boolean d() { // PAIL: Rename wasPreviouslyKilled
+         return this.l;
+     }
+ 
