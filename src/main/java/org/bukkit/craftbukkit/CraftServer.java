@@ -77,6 +77,7 @@ import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.server.PluginsEnabledEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
@@ -722,6 +723,8 @@ public final class CraftServer implements Server {
         loadPlugins();
         enablePlugins(PluginLoadOrder.STARTUP);
         enablePlugins(PluginLoadOrder.POSTWORLD);
+        PluginsEnabledEvent event = new PluginsEnabledEvent(pluginManager.getPlugins());
+        pluginManager.callEvent(event);
     }
 
     private void loadIcon() {
