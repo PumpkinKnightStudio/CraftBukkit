@@ -1516,10 +1516,6 @@ public class CraftWorld implements World {
 
     @Override
     public Entity getEntity(UUID uuid) {
-        for(Entity entity : this.getEntities())
-        {
-            if(entity.getUniqueId().equals(uuid)) return entity;
-        }
-        return null;
+        return world.getEntity(uuid).getBukkitEntity();
     }
 }
