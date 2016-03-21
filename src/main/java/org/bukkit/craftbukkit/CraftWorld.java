@@ -1515,14 +1515,11 @@ public class CraftWorld implements World {
     }
 
     @Override
-    public Entity getEntity(UUID uuid)
-    {
-        Entity returnEntity = null;
+    public Entity getEntity(UUID uuid) {
         for(Entity entity : this.getEntities())
         {
-            if(!entity.getUniqueId().equals(uuid)) continue;
-            returnEntity = entity;
+            if(entity.getUniqueId().equals(uuid)) return entity;
         }
-        return returnEntity;
+        return null;
     }
 }
