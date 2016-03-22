@@ -1,11 +1,16 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.BlockPosition;
+import net.minecraft.server.DamageSource;
 import net.minecraft.server.EntityEnderCrystal;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.NumberConversions;
 
 public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
     public CraftEnderCrystal(CraftServer server, EntityEnderCrystal entity) {
@@ -51,5 +56,85 @@ public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
 
     public EntityType getType() {
         return EntityType.ENDER_CRYSTAL;
+    }
+
+    @Override
+    public void damage(double amount) {
+        damage(amount, null);
+    }
+
+    @Override
+    public void damage(double amount, Entity source) {
+        DamageSource reason = DamageSource.GENERIC;
+
+        if (source instanceof HumanEntity) {
+            reason = DamageSource.playerAttack(((CraftHumanEntity) source).getHandle());
+        } else if (source instanceof LivingEntity) {
+            reason = DamageSource.mobAttack(((CraftLivingEntity) source).getHandle());
+        }
+        getHandle().damageEntity(reason, (float) amount);
+    }
+
+    @Override
+    public double getHealth() {
+        return isDead() ? 0 : 1;
+    }
+
+    @Override
+    public void setHealth(double health) {
+        if (health == 0) {
+            getHandle().damageEntity(null, 1);
+        }
+    }
+
+    @Override
+    public double getMaxHealth() {
+        return 1;
+    }
+
+    @Override
+    public void setMaxHealth(double health) {
+        // Can't change max health of EnderCrystal.
+    }
+
+    @Override
+    public void resetMaxHealth() {
+        // Can't change max health of EnderCrystal.
+    }
+
+    @Deprecated
+    @Override
+    public void _INVALID_damage(int amount) {
+        damage(amount);
+    }
+
+    @Deprecated
+    @Override
+    public void _INVALID_damage(int amount, Entity source) {
+        damage(amount, source);
+    }
+
+    @Deprecated
+    @Override
+    public int _INVALID_getHealth() {
+        return NumberConversions.ceil(getHealth());
+    }
+    
+    @Deprecated
+    @Override
+    public void _INVALID_setHealth(int health) {
+        setHealth(health);
+    }
+
+    @Deprecated
+    @Override
+    public int _INVALID_getMaxHealth() {
+        return NumberConversions.ceil(getMaxHealth());
+    }
+    
+    @Deprecated
+    @Override
+    public void _INVALID_setMaxHealth(int health) {
+        setMaxHealth(health);
     }
 }
