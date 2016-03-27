@@ -1513,4 +1513,9 @@ public class CraftWorld implements World {
             cps.queueUnload(chunk.locX, chunk.locZ);
         }
     }
+
+    @Override
+    public Entity getEntity(UUID uuid) {
+        return world.getEntity(uuid).getBukkitEntity();
+    }
 }
