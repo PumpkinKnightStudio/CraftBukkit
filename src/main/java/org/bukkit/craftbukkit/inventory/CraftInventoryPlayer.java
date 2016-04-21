@@ -1,7 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.PacketPlayOutHeldItemSlot;
 import net.minecraft.server.PacketPlayOutSetSlot;
@@ -207,6 +212,24 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
         return (HumanEntity) inventory.getOwner();
     }
 
+    @Override
+    public boolean isCompletelyFull(boolean offhand) {
+        List<ItemStack> toCheck = new ArrayList<ItemStack>();
+
+        if(offhand)
+            toCheck.add(getItemInOffHand());
+
+        Collections.addAll(toCheck, getContents());
+
+        for(ItemStack i : toCheck){
+            if(i.getMaxStackSize() <= i.getAmount())
+                continue;
+            return false;
+        }
+
+        return true;
+    }
+    
     @Override
     public float getItemInHandDropChance() {
         return getItemInMainHandDropChance();
