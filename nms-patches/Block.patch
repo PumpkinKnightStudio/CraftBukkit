@@ -1,5 +1,16 @@
 --- a/net/minecraft/server/Block.java
 +++ b/net/minecraft/server/Block.java
+@@ -19,8 +19,8 @@
+     protected boolean n;
+     protected int o;
+     protected boolean p;
+-    protected float strength;
+-    protected float durability;
++    protected float strength; // PAIL: Rename hardness
++    protected float durability; // PAIL: Rename resistance
+     protected boolean s;
+     protected boolean t;
+     protected boolean isTileEntity;
 @@ -34,7 +34,7 @@
      private String name;
  
@@ -9,7 +20,42 @@
      }
  
      public static int getCombinedId(IBlockData iblockdata) {
-@@ -301,7 +301,8 @@
+@@ -157,7 +157,8 @@
+         return this;
+     }
+ 
+-    protected Block b(float f) {
++    // PAIL: Rename setResistance, make public
++    public Block b(float f) {
+         this.durability = f * 3.0F;
+         return this;
+     }
+@@ -190,7 +191,8 @@
+         return false;
+     }
+ 
+-    protected Block c(float f) {
++    // PAIL: Rename setHardness, make public
++    public Block c(float f) {
+         this.strength = f;
+         if (this.durability < f * 5.0F) {
+             this.durability = f * 5.0F;
+@@ -199,11 +201,13 @@
+         return this;
+     }
+ 
+-    protected Block k() {
++    // PAIL: Rename setUnbreakable, make public
++    public Block k() {
+         this.c(-1.0F);
+         return this;
+     }
+ 
++    // PAIL: Rename getHardness
+     public float b(IBlockData iblockdata, World world, BlockPosition blockposition) {
+         return this.strength;
+     }
+@@ -301,7 +305,8 @@
              int j = this.getDropCount(i, world.random);
  
              for (int k = 0; k < j; ++k) {
@@ -19,7 +65,23 @@
                      Item item = this.getDropType(iblockdata, world.random, i);
  
                      if (item != null) {
-@@ -825,7 +826,7 @@
+@@ -342,6 +347,7 @@
+         return 0;
+     }
+ 
++    // PAIL: Rename getExplosionResistance
+     public float a(Entity entity) {
+         return this.durability / 5.0F;
+     }
+@@ -491,6 +497,7 @@
+         return new ItemStack(Item.getItemOf(this), 1, this.getDropData(iblockdata));
+     }
+ 
++    // PAIL: Rename setCreativeTab
+     public Block a(CreativeModeTab creativemodetab) {
+         this.creativeTab = creativemodetab;
+         return this;
+@@ -825,7 +832,7 @@
  
              if (hashset.contains(block16)) {
                  for (int i = 0; i < 15; ++i) {
@@ -28,7 +90,7 @@
  
                      Block.REGISTRY_ID.a(block16.fromLegacyData(i), j);
                  }
-@@ -834,7 +835,7 @@
+@@ -834,7 +841,7 @@
  
                  while (iterator2.hasNext()) {
                      IBlockData iblockdata = (IBlockData) iterator2.next();
@@ -37,7 +99,7 @@
  
                      Block.REGISTRY_ID.a(iblockdata, k);
                  }
-@@ -843,6 +844,12 @@
+@@ -843,6 +850,12 @@
  
      }
  

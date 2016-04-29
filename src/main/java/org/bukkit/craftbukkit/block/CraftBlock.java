@@ -1,12 +1,18 @@
 package org.bukkit.craftbukkit.block;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import net.minecraft.server.*;
-
+import net.minecraft.server.BiomeBase;
+import net.minecraft.server.BlockCocoa;
+import net.minecraft.server.BlockPosition;
+import net.minecraft.server.BlockRedstoneWire;
+import net.minecraft.server.Blocks;
+import net.minecraft.server.EnumDirection;
+import net.minecraft.server.EnumSkyBlock;
+import net.minecraft.server.GameProfileSerializer;
+import net.minecraft.server.IBlockData;
+import net.minecraft.server.Item;
+import net.minecraft.server.MinecraftKey;
+import net.minecraft.server.NBTTagCompound;
+import net.minecraft.server.TileEntitySkull;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,6 +29,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class CraftBlock implements Block {
     private final CraftChunk chunk;
@@ -117,6 +128,12 @@ public class CraftBlock implements Block {
     public void setType(final Material type) {
         setType(type, true);
     }
+
+    public void setUnbreakable() { this.getNMSBlock().k(); }
+
+    public void setHardness(float hardness) { this.getNMSBlock().c(hardness); }
+
+    public void setResistance(float resistance) { this.getNMSBlock().b(resistance); }
 
     @Override
     public void setType(Material type, boolean applyPhysics) {
