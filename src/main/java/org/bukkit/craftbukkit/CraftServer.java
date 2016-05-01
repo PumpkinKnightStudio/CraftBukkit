@@ -77,6 +77,7 @@ import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.player.PlayerCommandTabCompleteEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
@@ -1551,6 +1552,12 @@ public final class CraftServer implements Server {
         } catch (CommandException ex) {
             player.sendMessage(ChatColor.RED + "An internal error occurred while attempting to tab-complete this command");
             getLogger().log(Level.SEVERE, "Exception when " + player.getName() + " attempted to tab complete " + message, ex);
+        }
+
+        PlayerCommandTabCompleteEvent event = new PlayerCommandTabCompleteEvent(player, message, completions);
+        pluginManager.callEvent(event);
+        if(event.isCancelled()) {
+            completions = null;
         }
 
         return completions == null ? ImmutableList.<String>of() : completions;
