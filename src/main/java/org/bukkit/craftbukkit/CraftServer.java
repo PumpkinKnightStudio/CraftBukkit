@@ -77,6 +77,7 @@ import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.server.CommandTabCompleteEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
@@ -1325,7 +1326,7 @@ public final class CraftServer implements Server {
 
         for (JsonListEntry entry : playerList.getProfileBans().getValues()) {
             result.add(getOfflinePlayer((GameProfile) entry.getKey()));
-        }        
+        }
 
         return result;
     }
@@ -1548,6 +1549,12 @@ public final class CraftServer implements Server {
         List<String> completions = null;
         try {
             completions = getCommandMap().tabComplete(player, message.substring(1));
+
+            CommandTabCompleteEvent event = new CommandTabCompleteEvent(player, message, completions);
+            pluginManager.callEvent(event);
+            if (event.isCancelled()) {
+                completions = null;
+            }
         } catch (CommandException ex) {
             player.sendMessage(ChatColor.RED + "An internal error occurred while attempting to tab-complete this command");
             getLogger().log(Level.SEVERE, "Exception when " + player.getName() + " attempted to tab complete " + message, ex);

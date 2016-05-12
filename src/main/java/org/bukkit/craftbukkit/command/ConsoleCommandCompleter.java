@@ -8,6 +8,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Waitable;
 
 import jline.console.completer.Completer;
+import org.bukkit.event.server.CommandTabCompleteEvent;
 
 public class ConsoleCommandCompleter implements Completer {
     private final CraftServer server;
@@ -29,6 +30,13 @@ public class ConsoleCommandCompleter implements Completer {
             if (offers == null) {
                 return cursor;
             }
+
+            CommandTabCompleteEvent event = new CommandTabCompleteEvent(server.getConsoleSender(), buffer, offers);
+            server.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                offers.clear();
+            }
+
             candidates.addAll(offers);
 
             final int lastSpace = buffer.lastIndexOf(' ');
