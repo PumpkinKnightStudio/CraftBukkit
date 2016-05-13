@@ -20,6 +20,7 @@ import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
@@ -123,6 +124,16 @@ public class CraftBlock implements Block {
         setTypeId(type.getId(), applyPhysics);
     }
 
+    @Override
+    public boolean setTypeAndData(MaterialData type) {
+        return setTypeAndData(type, true);
+    }
+
+    @Override
+    public boolean setTypeAndData(MaterialData type, boolean applyPhysics) {
+        return setTypeIdAndData(type.getItemTypeId(), type.getData(), applyPhysics);
+    }
+
     public boolean setTypeId(final int type) {
         return setTypeId(type, true);
     }
@@ -154,6 +165,10 @@ public class CraftBlock implements Block {
 
     public Material getType() {
         return Material.getMaterial(getTypeId());
+    }
+
+    public MaterialData getTypeAndData() {
+        return getType().getNewData(getData());
     }
 
     @Deprecated
