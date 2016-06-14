@@ -256,7 +256,15 @@
      }
  
      public void openSign(TileEntitySign tileentitysign) {}
-@@ -894,8 +991,15 @@
+@@ -855,7 +952,6 @@
+ 
+                 f *= 0.2F + f2 * f2 * 0.8F;
+                 f1 *= f2;
+-                this.de();
+                 if (f > 0.0F || f1 > 0.0F) {
+                     boolean flag = f2 > 0.9F;
+                     boolean flag1 = false;
+@@ -894,8 +990,15 @@
                      if (entity instanceof EntityLiving) {
                          f3 = ((EntityLiving) entity).getHealth();
                          if (j > 0 && !entity.isBurning()) {
@@ -342,6 +350,14 @@
                              }
  
                              if (this.world instanceof WorldServer && f5 > 2.0F) {
+@@ -1030,6 +1161,7 @@
+                     }
+                 }
+ 
++                this.de(); // CraftBukkit - Clear attack charge after attack is processed so that plugins can obtain the charge amount.
+             }
+         }
+     }
 @@ -1100,6 +1232,20 @@
              this.stopRiding();
          }
