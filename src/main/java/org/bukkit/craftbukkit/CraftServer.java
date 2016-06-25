@@ -1658,6 +1658,11 @@ public final class CraftServer implements Server {
     public BossBar createBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
         return new CraftBossBar(title, color, style, flags);
     }
+    
+    @Override
+    public double[] getTPS(){
+    	return console.recentTps;
+    }
 
     @Deprecated
     @Override
