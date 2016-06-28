@@ -11,10 +11,11 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.inventory.PlayerInventory, EntityEquipment {
-    public CraftInventoryPlayer(net.minecraft.server.PlayerInventory inventory) {
+    public CraftInventoryPlayer(PlayerInventory inventory) {
         super(inventory);
     }
 
@@ -28,6 +29,48 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
         return Arrays.copyOfRange(getContents(), 0, getInventory().items.length);
     }
 
+    @Override
+    public ItemStack getItemInSlot(EquipmentSlot slot) {
+        switch (slot) {
+            case HAND:
+                return getItemInMainHand();
+            case OFF_HAND:
+                return getItemInOffHand();
+            case FEET:
+                return getBoots();
+            case LEGS:
+                return getLeggings();
+            case CHEST:
+                return getChestplate();
+            case HEAD:
+                return getHelmet();
+        }
+        return null;
+    }
+
+    @Override
+    public void setItemInSlot(EquipmentSlot slot, ItemStack item) {
+        switch (slot) {
+            case HAND:
+                setItemInMainHand(item);
+                break;
+            case OFF_HAND:
+                setItemInOffHand(item);
+                break;
+            case FEET:
+                setBoots(item);
+                break;
+            case LEGS:
+                setLeggings(item);
+                break;
+            case CHEST:
+                setChestplate(item);
+                break;
+            case HEAD:
+                setHelmet(item);
+                break;
+        }
+    }
 
     @Override
     public ItemStack getItemInMainHand() {
@@ -208,6 +251,16 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     @Override
     public HumanEntity getHolder() {
         return (HumanEntity) inventory.getOwner();
+    }
+
+    @Override
+    public void setItemInSlotDropChance(EquipmentSlot slot, float chance) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public float getItemInSlotDropChance(EquipmentSlot slot) {
+        return 1;
     }
 
     @Override

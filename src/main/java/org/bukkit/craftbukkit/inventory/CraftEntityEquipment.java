@@ -6,6 +6,7 @@ import net.minecraft.server.EnumItemSlot;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftEntityEquipment implements EntityEquipment {
@@ -14,6 +15,49 @@ public class CraftEntityEquipment implements EntityEquipment {
 
     public CraftEntityEquipment(CraftLivingEntity entity) {
         this.entity = entity;
+    }
+
+    @Override
+    public ItemStack getItemInSlot(EquipmentSlot slot) {
+        switch (slot) {
+            case HAND:
+                return getEquipment(EnumItemSlot.MAINHAND);
+            case OFF_HAND:
+                return getEquipment(EnumItemSlot.OFFHAND);
+            case FEET:
+                return getEquipment(EnumItemSlot.FEET);
+            case LEGS:
+                return getEquipment(EnumItemSlot.LEGS);
+            case CHEST:
+                return getEquipment(EnumItemSlot.CHEST);
+            case HEAD:
+                return getEquipment(EnumItemSlot.HEAD);
+        }
+        return null;
+    }
+
+    @Override
+    public void setItemInSlot(EquipmentSlot slot, ItemStack item) {
+        switch (slot) {
+            case HAND:
+                setEquipment(EnumItemSlot.MAINHAND, item);
+                break;
+            case OFF_HAND:
+                setEquipment(EnumItemSlot.OFFHAND, item);
+                break;
+            case FEET:
+                setEquipment(EnumItemSlot.FEET, item);
+                break;
+            case LEGS:
+                setEquipment(EnumItemSlot.LEGS, item);
+                break;
+            case CHEST:
+                setEquipment(EnumItemSlot.CHEST, item);
+                break;
+            case HEAD:
+                setEquipment(EnumItemSlot.HEAD, item);
+                break;
+        }
     }
 
     @Override
@@ -111,6 +155,49 @@ public class CraftEntityEquipment implements EntityEquipment {
 
     public Entity getHolder() {
         return entity;
+    }
+
+    @Override
+    public float getItemInSlotDropChance(EquipmentSlot slot) {
+        switch (slot) {
+            case HAND:
+                return getDropChance(EnumItemSlot.MAINHAND);
+            case OFF_HAND:
+                return getDropChance(EnumItemSlot.OFFHAND);
+            case FEET:
+                return getDropChance(EnumItemSlot.FEET);
+            case LEGS:
+                return getDropChance(EnumItemSlot.LEGS);
+            case CHEST:
+                return getDropChance(EnumItemSlot.CHEST);
+            case HEAD:
+                return getDropChance(EnumItemSlot.HEAD);
+        }
+        return 0;
+    }
+
+    @Override
+    public void setItemInSlotDropChance(EquipmentSlot slot, float chance) {
+        switch (slot) {
+            case HAND:
+                setDropChance(EnumItemSlot.MAINHAND, chance);
+                break;
+            case OFF_HAND:
+                setDropChance(EnumItemSlot.OFFHAND, chance);
+                break;
+            case FEET:
+                setDropChance(EnumItemSlot.FEET, chance);
+                break;
+            case LEGS:
+                setDropChance(EnumItemSlot.LEGS, chance);
+                break;
+            case CHEST:
+                setDropChance(EnumItemSlot.CHEST, chance);
+                break;
+            case HEAD:
+                setDropChance(EnumItemSlot.HEAD, chance);
+                break;
+        }
     }
 
     @Override
