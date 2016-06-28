@@ -11,6 +11,7 @@ import com.google.common.base.Functions;
 
 import net.minecraft.server.*;
 
+import org.bukkit.AnvilDamage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -993,8 +994,8 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static PrepareAnvilEvent callPrepareAnvilEvent(InventoryView view, ItemStack item) {
-        PrepareAnvilEvent event = new PrepareAnvilEvent(view, CraftItemStack.asCraftMirror(item).clone());
+    public static PrepareAnvilEvent callPrepareAnvilEvent(InventoryView view, ItemStack item, String rename) {
+        PrepareAnvilEvent event = new PrepareAnvilEvent(view, CraftItemStack.asCraftMirror(item).clone(), rename);
         event.getView().getPlayer().getServer().getPluginManager().callEvent(event);
         event.getInventory().setItem(2, event.getResult());
         return event;
@@ -1018,6 +1019,19 @@ public class CraftEventFactory {
 
         EntityBreedEvent event = new EntityBreedEvent((LivingEntity) child.getBukkitEntity(), (LivingEntity) mother.getBukkitEntity(), (LivingEntity) father.getBukkitEntity(), breederEntity, bredWithStack, experience);
         child.world.getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static AnvilDamageEvent callAnvilDamageEvent(World world, int x, int y, int z, EntityPlayer player, int newState, AnvilDamageEvent.DamageCause cause) {
+        AnvilDamage damage;
+        switch(newState) {
+            case 0: damage = AnvilDamage.NEW; break;
+            case 1: damage = AnvilDamage.LIGHT; break;
+            case 2: damage = AnvilDamage.HEAVY; break;
+            default: damage = null; break;
+        }
+        AnvilDamageEvent event = new AnvilDamageEvent(world.getWorld().getBlockAt(x,y,z), player.getBukkitEntity(), damage, cause);
+        world.getServer().getPluginManager().callEvent(event);
         return event;
     }
 }

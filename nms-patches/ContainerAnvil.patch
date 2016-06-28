@@ -4,18 +4,24 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-+ // CraftBukkit start
++// CaftBukkit stat
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+import org.bukkit.craftbukkit.inventory.CraftItemStack;
-+import org.bukkit.event.inventory.PrepareAnvilEvent;
-+// CraftBukkit end
++import org.bukkit.event.block.AnvilDamageEvent;
++// CaftBukkit end
 +
  public class ContainerAnvil extends Container {
  
      private static final Logger f = LogManager.getLogger();
-@@ -23,8 +29,13 @@
+@@ -19,12 +25,17 @@
+     };
+     private final World i;
+     private final BlockPosition j;
+-    public int a;
++    public int a; // PAIL Rename: levelCost
      private int k;
-     private String l;
+-    private String l;
++    public String l; // CaftBukkit: private -> public // PAIL Rename: renameText
      private final EntityHuman m;
 +    // CraftBukkit start
 +    private CraftInventoryView bukkitEntity = null;
@@ -27,43 +33,105 @@
          this.j = blockposition;
          this.i = world;
          this.m = entityhuman;
-@@ -110,7 +121,7 @@
+@@ -65,13 +76,21 @@
+                     int i = ((Integer) iblockdata.get(BlockAnvil.DAMAGE)).intValue();
+ 
+                     ++i;
+-                    if (i > 2) {
+-                        world.setAir(blockposition);
+-                        world.triggerEffect(1029, blockposition, 0);
+-                    } else {
+-                        world.setTypeAndData(blockposition, iblockdata.set(BlockAnvil.DAMAGE, Integer.valueOf(i)), 2);
+-                        world.triggerEffect(1030, blockposition, 0);
++                    // CraftBukkit Start
++                    AnvilDamageEvent event = CraftEventFactory.callAnvilDamageEvent(ContainerAnvil.this.i, ContainerAnvil.this.j.getX(), ContainerAnvil.this.j.getY(), ContainerAnvil.this.j.getZ(), ((EntityPlayer) m), i, AnvilDamageEvent.DamageCause.REPAIR);
++                    i = event.getNewState() == null ? 3 : event.getNewState().getData() / 4;
++                    if(!event.isCancelled()) {
++                        // CraftBukkit End
++                        if (i > 2) {
++                            world.setAir(blockposition);
++                            world.triggerEffect(1029, blockposition, 0);
++                        } else {
++                            world.setTypeAndData(blockposition, iblockdata.set(BlockAnvil.DAMAGE, Integer.valueOf(i)), 2);
++                            world.triggerEffect(1030, blockposition, 0);
++                        }
++                        // CraftBukkit Start
+                     }
++                    // CraftBukkit End
+                 } else if (!world.isClientSide) {
+                     world.triggerEffect(1030, blockposition, 0);
+                 }
+@@ -110,7 +129,7 @@
          byte b1 = 0;
  
          if (itemstack == null) {
 -            this.g.setItem(0, (ItemStack) null);
-+            org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null); // CraftBukkit
++            org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null, this.l); // CraftBukkit
              this.a = 0;
          } else {
              ItemStack itemstack1 = itemstack.cloneItemStack();
-@@ -128,7 +139,7 @@
+@@ -128,7 +147,7 @@
                  if (itemstack1.e() && itemstack1.getItem().a(itemstack, itemstack2)) {
                      k = Math.min(itemstack1.h(), itemstack1.j() / 4);
                      if (k <= 0) {
 -                        this.g.setItem(0, (ItemStack) null);
-+                        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null); // CraftBukkit
++                        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null, this.l); // CraftBukkit
                          this.a = 0;
                          return;
                      }
-@@ -143,7 +154,7 @@
+@@ -143,7 +162,7 @@
                      this.k = l;
                  } else {
                      if (!flag && (itemstack1.getItem() != itemstack2.getItem() || !itemstack1.e())) {
 -                        this.g.setItem(0, (ItemStack) null);
-+                        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null); // CraftBukkit
++                        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), null, this.l); // CraftBukkit
                          this.a = 0;
                          return;
                      }
-@@ -270,7 +281,7 @@
+@@ -203,20 +222,20 @@
+                                 int l1 = 0;
+ 
+                                 switch (ContainerAnvil.SyntheticClass_1.a[enchantment.c().ordinal()]) {
+-                                case 1:
+-                                    l1 = 1;
+-                                    break;
+-
+-                                case 2:
+-                                    l1 = 2;
+-                                    break;
+-
+-                                case 3:
+-                                    l1 = 4;
+-                                    break;
++                                    case 1:
++                                        l1 = 1;
++                                        break;
++
++                                    case 2:
++                                        l1 = 2;
++                                        break;
++
++                                    case 3:
++                                        l1 = 4;
++                                        break;
+ 
+-                                case 4:
+-                                    l1 = 8;
++                                    case 4:
++                                        l1 = 8;
+                                 }
+ 
+                                 if (flag) {
+@@ -270,7 +289,7 @@
                  EnchantmentManager.a(map, itemstack1);
              }
  
 -            this.g.setItem(0, itemstack1);
-+            org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), itemstack1); // CraftBukkit
++            org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), itemstack1, this.l); // CraftBukkit
              this.b();
          }
      }
-@@ -295,6 +306,7 @@
+@@ -295,6 +314,7 @@
      }
  
      public boolean a(EntityHuman entityhuman) {
@@ -71,7 +139,11 @@
          return this.i.getType(this.j).getBlock() != Blocks.ANVIL ? false : entityhuman.e((double) this.j.getX() + 0.5D, (double) this.j.getY() + 0.5D, (double) this.j.getZ() + 0.5D) <= 64.0D;
      }
  
-@@ -352,6 +364,20 @@
+@@ -349,9 +369,24 @@
+             }
+         }
+ 
++        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareAnvilEvent(getBukkitView(), this.getSlot(2).getItem(), this.l);
          this.e();
      }
  
@@ -83,7 +155,7 @@
 +        }
 +
 +        org.bukkit.craftbukkit.inventory.CraftInventory inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryAnvil(
-+                new org.bukkit.Location(i.getWorld(), j.getX(), j.getY(), j.getZ()), this.h, this.g);
++            new org.bukkit.Location(i.getWorld(), j.getX(), j.getY(), j.getZ()), this.h, this.g, this);
 +        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
 +        return bukkitEntity;
 +    }

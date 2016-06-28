@@ -1,15 +1,18 @@
 --- a/net/minecraft/server/EntityFallingBlock.java
 +++ b/net/minecraft/server/EntityFallingBlock.java
-@@ -5,6 +5,8 @@
+@@ -5,6 +5,11 @@
  import java.util.Iterator;
  import javax.annotation.Nullable;
  
-+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.block.AnvilDamageEvent;
++// CraftBukkit end
 +
  public class EntityFallingBlock extends Entity {
  
      private IBlockData block;
-@@ -65,7 +67,7 @@
+@@ -65,7 +70,7 @@
  
              if (this.ticksLived++ == 0) {
                  blockposition = new BlockPosition(this);
@@ -18,7 +21,7 @@
                      this.world.setAir(blockposition);
                  } else if (!this.world.isClientSide) {
                      this.die();
-@@ -88,7 +90,7 @@
+@@ -88,7 +93,7 @@
  
                      if (BlockFalling.i(this.world.getType(new BlockPosition(this.locX, this.locY - 0.009999999776482582D, this.locZ)))) {
                          this.onGround = false;
@@ -27,7 +30,7 @@
                      }
  
                      this.motX *= 0.699999988079071D;
-@@ -97,7 +99,13 @@
+@@ -97,7 +102,13 @@
                      if (iblockdata.getBlock() != Blocks.PISTON_EXTENSION) {
                          this.die();
                          if (!this.f) {
@@ -42,7 +45,7 @@
                                  if (block instanceof BlockFalling) {
                                      ((BlockFalling) block).a_(this.world, blockposition);
                                  }
-@@ -154,7 +162,9 @@
+@@ -154,18 +165,28 @@
                  while (iterator.hasNext()) {
                      Entity entity = (Entity) iterator.next();
  
@@ -52,3 +55,26 @@
                  }
  
                  if (flag && (double) this.random.nextFloat() < 0.05000000074505806D + (double) i * 0.05D) {
+                     int j = ((Integer) this.block.get(BlockAnvil.DAMAGE)).intValue();
+ 
+                     ++j;
+-                    if (j > 2) {
+-                        this.f = true;
+-                    } else {
+-                        this.block = this.block.set(BlockAnvil.DAMAGE, Integer.valueOf(j));
++                    // CaftBukkit stat
++                    AnvilDamageEvent event = CraftEventFactory.callAnvilDamageEvent(this.world, ((int) this.locX), ((int) this.locY), ((int) this.locZ), null, j, AnvilDamageEvent.DamageCause.FALLING);
++                    j = event.getNewState() == null ? 3 : event.getNewState().getData() / 4;
++                    if(!event.isCancelled()) {
++                        // CaftBukkit end
++                        if (j > 2) {
++                            this.f = true;
++                        } else {
++                            this.block = this.block.set(BlockAnvil.DAMAGE, Integer.valueOf(j));
++                        }
++                        // CaftBukkit stat
+                     }
++                    // CaftBukkit end
+                 }
+             }
+         }
