@@ -1,11 +1,13 @@
 --- a/net/minecraft/server/CommandBlockData.java
 +++ b/net/minecraft/server/CommandBlockData.java
-@@ -22,20 +22,20 @@
+@@ -22,20 +22,27 @@
  
      public void execute(MinecraftServer minecraftserver, ICommandListener icommandlistener, String[] astring) throws CommandException {
          if (astring.length < 4) {
 -            throw new ExceptionUsage("commands.blockdata.usage", new Object[0]);
++            //CraftBukkit start - fix decompiler error
 +            throw new ExceptionUsage("commands.blockdata.usage");
++            //CraftBukkit stop
          } else {
              icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.AFFECTED_BLOCKS, 0);
              BlockPosition blockposition = a(icommandlistener, astring, 0, false);
@@ -13,60 +15,77 @@
  
              if (!world.isLoaded(blockposition)) {
 -                throw new CommandException("commands.blockdata.outOfWorld", new Object[0]);
++                //CraftBukkit start - fix decompiler error
 +                throw new CommandException("commands.blockdata.outOfWorld");
++                //CraftBukkit stop
++
              } else {
                  IBlockData iblockdata = world.getType(blockposition);
                  TileEntity tileentity = world.getTileEntity(blockposition);
  
                  if (tileentity == null) {
 -                    throw new CommandException("commands.blockdata.notValid", new Object[0]);
++                    //CraftBukkit start - fix decompiler error
 +                    throw new CommandException("commands.blockdata.notValid");
++                    //CraftBukkit stop
                  } else {
                      NBTTagCompound nbttagcompound = tileentity.save(new NBTTagCompound());
                      NBTTagCompound nbttagcompound1 = nbttagcompound.g();
-@@ -45,7 +45,7 @@
+@@ -45,7 +52,9 @@
                      try {
                          nbttagcompound2 = MojangsonParser.parse(a(icommandlistener, astring, 3).toPlainText());
                      } catch (MojangsonParseException mojangsonparseexception) {
 -                        throw new CommandException("commands.blockdata.tagError", new Object[] { mojangsonparseexception.getMessage()});
++                        //CraftBukkit start - fix decompiler error
 +                        throw new CommandException("commands.blockdata.tagError", mojangsonparseexception.getMessage());
++                        //CraftBukkit stop
                      }
  
                      nbttagcompound.a(nbttagcompound2);
-@@ -53,13 +53,20 @@
+@@ -53,13 +62,26 @@
                      nbttagcompound.setInt("y", blockposition.getY());
                      nbttagcompound.setInt("z", blockposition.getZ());
                      if (nbttagcompound.equals(nbttagcompound1)) {
 -                        throw new CommandException("commands.blockdata.failed", new Object[] { nbttagcompound.toString()});
++                        //CraftBukkit start - fix decompiler error
 +                        throw new CommandException("commands.blockdata.failed", nbttagcompound.toString());
++                        //CraftBukkit stop
                      } else {
++                        //CraftBukkit start
 +                        if(tileentity instanceof TileEntityMobSpawner && !nbttagcompound2.hasKey("SpawnPotentials") &&
 +                                nbttagcompound1.hasKey("SpawnPotentials") && nbttagcompound1.getList("SpawnPotentials", 10).size() == 1 &&
 +                                nbttagcompound1.hasKey("SpawnData") && nbttagcompound1.getCompound("SpawnData").hasKey("id")
 +                                && nbttagcompound1.getCompound("SpawnData").getString("id")
 +                                .equals(nbttagcompound1.getList("SpawnPotentials", 10).get(0).getCompound("Entity").getString("id")))
 +                            nbttagcompound.remove("SpawnPotentials");
++                        //CraftBukkit stop
 +
                          tileentity.a(nbttagcompound);
                          tileentity.update();
                          world.notify(blockposition, iblockdata, iblockdata, 3);
                          icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.AFFECTED_BLOCKS, 1);
 -                        a(icommandlistener, (ICommand) this, "commands.blockdata.success", new Object[] { nbttagcompound.toString()});
++                        //CraftBukkit start - fix decompiler error
 +                        a(icommandlistener, this, "commands.blockdata.success", nbttagcompound.toString());
++                        //CraftBukkit stop
                      }
                  }
              }
-@@ -67,6 +74,12 @@
+@@ -67,6 +89,16 @@
      }
  
      public List<String> tabComplete(MinecraftServer minecraftserver, ICommandListener icommandlistener, String[] astring, @Nullable BlockPosition blockposition) {
 -        return astring.length > 0 && astring.length <= 3 ? a(astring, 0, blockposition) : Collections.emptyList();
++        //CraftBukkit start - fix decompiler error
 +        return astring.length > 0 && astring.length <= 3 ? a(astring, 0, blockposition) : Collections.EMPTY_LIST;
-+    }
++        //CraftBukkit stop
+     }
 +
++    //CraftBukkit start - fix decompiler error
 +    @Override
 +    public int compareTo(ICommand o) {
 +        return a(o);
-     }
++    }
++    //CraftBukkit stop
 +
  }
