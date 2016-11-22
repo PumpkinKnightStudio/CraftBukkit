@@ -243,6 +243,10 @@ public final class CraftChatMessage {
         return component;
     }
 
+    public static IChatBaseComponent toActionbarMessage(String message) {
+        return new ChatComponentText(message.replaceAll("\\n", ""));
+    }
+
     private CraftChatMessage() {
     }
 }

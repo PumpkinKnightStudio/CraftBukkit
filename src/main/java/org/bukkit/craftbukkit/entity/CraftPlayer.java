@@ -1380,6 +1380,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
+    public void sendActionbarMessage(String message) {
+        if (message == null) return;
+        if (message.length() > 30720) throw new IllegalArgumentException("The length of the actionbar message may not be greater than 30720 characters");
+
+        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(CraftChatMessage.toActionbarMessage(message), (byte) 2));
+    }
+
+    @Override
     public void spawnParticle(Particle particle, Location location, int count) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count);
     }
