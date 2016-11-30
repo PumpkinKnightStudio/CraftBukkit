@@ -29,6 +29,7 @@ import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Identifier;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
@@ -1660,6 +1661,16 @@ public final class CraftServer implements Server {
     @Override
     public BossBar createBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
         return new CraftBossBar(title, color, style, flags);
+    }
+
+    @Override
+    public Identifier createIdentifier(String name) {
+        return new MinecraftKey(name);
+    }
+
+    @Override
+    public Identifier createIdentifier(String group, String name) {
+        return new MinecraftKey(group, name);
     }
 
     @Deprecated

@@ -18,6 +18,7 @@ import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.StatisticList;
 
 import org.bukkit.Achievement;
+import org.bukkit.Identifier;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
 import org.bukkit.UnsafeValues;
@@ -96,8 +97,13 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     @Override
+    public Material getMaterialFromIdentifier(Identifier identifier) {
+        return getMaterial(Item.REGISTRY.get((MinecraftKey) identifier));
+    }
+
+    @Override
     public Material getMaterialFromInternalName(String name) {
-        return getMaterial((Item) Item.REGISTRY.get(new MinecraftKey(name)));
+        return getMaterialFromIdentifier(new MinecraftKey(name));
     }
 
     @Override

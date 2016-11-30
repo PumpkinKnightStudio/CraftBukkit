@@ -1,0 +1,28 @@
+--- a/net/minecraft/server/MinecraftKey.java
++++ b/net/minecraft/server/MinecraftKey.java
+@@ -4,10 +4,22 @@
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.lang3.Validate;
+ 
+-public class MinecraftKey {
++public class MinecraftKey implements org.bukkit.Identifier { // CraftBukkit
+ 
+-    protected final String a;
+-    protected final String b;
++    protected final String a; // PAIL: rename group
++    protected final String b; // PAIL: rename name
++
++    // CraftBukkit start
++    @Override
++    public String getGroup() {
++        return a;
++    }
++
++    @Override
++    public String getName() {
++        return b;
++    }
++    // CraftBukkit end
+ 
+     protected MinecraftKey(int i, String... astring) {
+         this.a = StringUtils.isEmpty(astring[0]) ? "minecraft" : astring[0].toLowerCase(Locale.ROOT);
