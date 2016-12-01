@@ -419,7 +419,15 @@
          this.playerConnection.sendPacket(new PacketPlayOutCloseWindow(this.activeContainer.windowId));
          this.s();
      }
-@@ -743,7 +906,16 @@
+@@ -679,6 +842,7 @@
+ 
+     public void a(float f, float f1, boolean flag, boolean flag1) {
+         if (this.isPassenger()) {
++            if (f != 0 || f1 != 0) { CraftEventFactory.callPlayerControlVehicleEvent(getBukkitEntity(), f, f1, flag, flag1); } // CraftBukkit
+             if (f >= -1.0F && f <= 1.0F) {
+                 this.be = f;
+             }
+@@ -743,7 +907,16 @@
  
      public void triggerHealthUpdate() {
          this.lastHealthSent = -1.0E8F;
@@ -436,7 +444,7 @@
  
      public void a(IChatBaseComponent ichatbasecomponent, boolean flag) {
          this.playerConnection.sendPacket(new PacketPlayOutChat(ichatbasecomponent, (byte) (flag ? 2 : 0)));
-@@ -804,6 +976,8 @@
+@@ -804,6 +977,8 @@
      }
  
      public void a(EnumGamemode enumgamemode) {
@@ -445,7 +453,7 @@
          this.playerInteractManager.setGameMode(enumgamemode);
          this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(3, (float) enumgamemode.getId()));
          if (enumgamemode == EnumGamemode.SPECTATOR) {
-@@ -814,6 +988,7 @@
+@@ -814,6 +989,7 @@
  
          this.updateAbilities();
          this.cw();
@@ -453,7 +461,7 @@
      }
  
      public boolean isSpectator() {
-@@ -829,6 +1004,7 @@
+@@ -829,6 +1005,7 @@
      }
  
      public boolean a(int i, String s) {
@@ -461,7 +469,7 @@
          if ("seed".equals(s) && !this.server.aa()) {
              return true;
          } else if (!"tell".equals(s) && !"help".equals(s) && !"me".equals(s) && !"trigger".equals(s)) {
-@@ -842,6 +1018,15 @@
+@@ -842,6 +1019,15 @@
          } else {
              return true;
          }
@@ -477,7 +485,7 @@
      }
  
      public String A() {
-@@ -853,6 +1038,12 @@
+@@ -853,6 +1039,12 @@
      }
  
      public void a(PacketPlayInSettings packetplayinsettings) {
@@ -490,7 +498,7 @@
          this.locale = packetplayinsettings.a();
          this.cg = packetplayinsettings.c();
          this.ch = packetplayinsettings.d();
-@@ -941,7 +1132,7 @@
+@@ -941,7 +1133,7 @@
  
      @Nullable
      public IChatBaseComponent getPlayerListName() {
@@ -499,7 +507,7 @@
      }
  
      public void a(EnumHand enumhand) {
-@@ -958,11 +1149,150 @@
+@@ -958,11 +1150,150 @@
      }
  
      public void M() {

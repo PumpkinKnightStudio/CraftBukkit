@@ -1022,4 +1022,10 @@ public class CraftEventFactory {
         child.world.getServer().getPluginManager().callEvent(event);
         return event;
     }
+    
+    public static PlayerControlVehicleEvent callPlayerControlVehicleEvent(Player player, float sidewardMod, float forwardMod, boolean jumping, boolean sneaking) {
+        PlayerControlVehicleEvent event = new PlayerControlVehicleEvent(player, player.getVehicle(), sidewardMod, forwardMod, jumping, sneaking);
+        player.getServer().getPluginManager().callEvent(event);
+        return event;
+    }
 }
