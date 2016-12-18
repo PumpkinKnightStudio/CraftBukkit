@@ -1223,7 +1223,7 @@ public final class CraftServer implements Server {
 
     @Override
     public int getTicks() {
-        return console.aq();
+        return console.aq(); // PAIL getTickCounter
     }
 
     @Override
