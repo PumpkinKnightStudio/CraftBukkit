@@ -1222,6 +1222,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getTicks() {
+        return console.aq();
+    }
+
+    @Override
     public void shutdown() {
         console.safeShutdown();
     }
