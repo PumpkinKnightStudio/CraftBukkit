@@ -107,37 +107,32 @@
          playerconnection.sendPacket(new PacketPlayOutCustomPayload("MC|Brand", (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
          playerconnection.sendPacket(new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
          playerconnection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
-@@ -91,17 +134,23 @@
+@@ -91,8 +134,10 @@
          entityplayer.F().a(entityplayer);
          this.sendScoreboard((ScoreboardServer) worldserver.getScoreboard(), entityplayer);
          this.server.aD();
 -        ChatMessage chatmessage;
-+        // CraftBukkit start - login message is handled in the event
-+        // ChatMessage chatmessage;
++        // CraftBukkit start - Join message handled in onPlayerJoin
++        /* ChatMessage chatmessage;
  
 +        String joinMessage;
          if (entityplayer.getName().equalsIgnoreCase(s)) {
--            chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
-+            // chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
-+            joinMessage = "\u00A7e" + LocaleI18n.a("multiplayer.player.joined", entityplayer.getName());
+             chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
          } else {
--            chatmessage = new ChatMessage("multiplayer.player.joined.renamed", new Object[] { entityplayer.getScoreboardDisplayName(), s});
-+            // chatmessage = new ChatMessage("multiplayer.player.joined.renamed", new Object[] { entityplayer.getScoreboardDisplayName(), s});
-+            joinMessage = "\u00A7e" + LocaleI18n.a("multiplayer.player.joined.renamed", entityplayer.getName(), s);
+@@ -100,8 +145,10 @@
          }
  
--        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
+         chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
 -        this.sendMessage(chatmessage);
 -        this.onPlayerJoin(entityplayer);
-+        // chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
-+        // this.sendMessage(chatmessage);
-+        this.onPlayerJoin(entityplayer, joinMessage);
++        this.sendMessage(chatmessage);*/
++        this.onPlayerJoin(entityplayer, s);
 +        // CraftBukkit end
 +        worldserver = server.getWorldServer(entityplayer.dimension);  // CraftBukkit - Update in case join event changed it
          playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
          this.b(entityplayer, worldserver);
          if (!this.server.getResourcePack().isEmpty()) {
-@@ -153,6 +202,8 @@
+@@ -153,6 +200,8 @@
          }
  
          entityplayer.syncInventory();
@@ -146,7 +141,7 @@
      }
  
      public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) {
-@@ -185,26 +236,27 @@
+@@ -185,26 +234,27 @@
      }
  
      public void setPlayerFileData(WorldServer[] aworldserver) {
@@ -179,7 +174,7 @@
              }
  
              public void b(WorldBorder worldborder, double d0) {}
-@@ -237,7 +289,7 @@
+@@ -237,7 +287,7 @@
  
      @Nullable
      public NBTTagCompound a(EntityPlayer entityplayer) {
@@ -188,7 +183,7 @@
          NBTTagCompound nbttagcompound1;
  
          if (entityplayer.getName().equals(this.server.Q()) && nbttagcompound != null) {
-@@ -253,13 +305,13 @@
+@@ -253,13 +303,13 @@
  
      protected void savePlayerFile(EntityPlayer entityplayer) {
          this.playerFileData.save(entityplayer);
@@ -204,12 +199,12 @@
  
          if (advancementdataplayer != null) {
              advancementdataplayer.c();
-@@ -267,28 +319,73 @@
+@@ -267,28 +317,84 @@
  
      }
  
 -    public void onPlayerJoin(EntityPlayer entityplayer) {
-+    public void onPlayerJoin(EntityPlayer entityplayer, String joinMessage) { // CraftBukkit added param
++    public void onPlayerJoin(EntityPlayer entityplayer, String oldName) { // CraftBukkit: changed signature (added oldName)
          this.players.add(entityplayer);
          this.j.put(entityplayer.getUniqueID(), entityplayer);
 -        this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer}));
@@ -217,21 +212,33 @@
          WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
  
 +        // CraftBukkit start
-+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), joinMessage);
++        // Fire PlayerJoinEvent
++        ChatMessage origJoinMessage;
++        if (entityplayer.getName().equalsIgnoreCase(oldName)) {
++            origJoinMessage = new ChatMessage("multiplayer.player.joined", entityplayer.getScoreboardDisplayName());
++        } else {
++            origJoinMessage = new ChatMessage("multiplayer.player.joined.renamed", entityplayer.getScoreboardDisplayName(), oldName);
++        }
++        origJoinMessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
++
++        String origJoinMessageText = CraftChatMessage.fromComponent(origJoinMessage);
++        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), origJoinMessageText);
 +        cserver.getPluginManager().callEvent(playerJoinEvent);
 +
-+        joinMessage = playerJoinEvent.getJoinMessage();
++        String joinMessage = playerJoinEvent.getJoinMessage();
 +
 +        if (joinMessage != null && joinMessage.length() > 0) {
-+            for (IChatBaseComponent line : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(joinMessage)) {
-+                server.getPlayerList().sendAll(new PacketPlayOutChat(line));
++            if (!joinMessage.equals(origJoinMessageText)) {
++                sendMessage(CraftChatMessage.fromString(joinMessage));
++            } else {
++                sendMessage(origJoinMessage);
 +            }
 +        }
 +
++        // Adjust pool size for performance
 +        ChunkIOExecutor.adjustPoolSize(getPlayerCount());
-+        // CraftBukkit end
 +
-+        // CraftBukkit start - sendAll above replaced with this loop
++        // sendAll above replaced with this loop
 +        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, entityplayer);
 +
          for (int i = 0; i < this.players.size(); ++i) {
@@ -249,11 +256,10 @@
 +            entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer1}));
          }
 +        entityplayer.sentListPacket = true;
-+        // CraftBukkit end
  
 -        worldserver.addEntity(entityplayer);
 -        this.a(entityplayer, (WorldServer) null);
-+        // CraftBukkit start - Only add if the player wasn't moved in the event
++        // Only add if the player wasn't moved in the event
 +        if (entityplayer.world == worldserver && !worldserver.players.contains(entityplayer)) {
 +            worldserver.addEntity(entityplayer);
 +            this.a(entityplayer, (WorldServer) null);
@@ -266,7 +272,7 @@
      }
  
 -    public void disconnect(EntityPlayer entityplayer) {
-+    public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
++    public String disconnect(EntityPlayer entityplayer, String quitMessage) { // CraftBukkit - take and return quit message
          WorldServer worldserver = entityplayer.x();
  
          entityplayer.b(StatisticList.f);
@@ -274,7 +280,7 @@
 +        // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
 +        org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer);
 +
-+        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " left the game");
++        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), quitMessage);
 +        cserver.getPluginManager().callEvent(playerQuitEvent);
 +        entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
 +
@@ -284,7 +290,7 @@
          this.savePlayerFile(entityplayer);
          if (entityplayer.isPassenger()) {
              Entity entity = entityplayer.getVehicle();
-@@ -318,17 +415,67 @@
+@@ -318,17 +424,67 @@
  
          if (entityplayer1 == entityplayer) {
              this.j.remove(uuid);
@@ -357,7 +363,7 @@
              GameProfileBanEntry gameprofilebanentry = (GameProfileBanEntry) this.k.get(gameprofile);
  
              s = "You are banned from this server!\nReason: " + gameprofilebanentry.getReason();
-@@ -336,10 +483,12 @@
+@@ -336,10 +492,12 @@
                  s = s + "\nYour ban will be removed on " + PlayerList.g.format(gameprofilebanentry.getExpires());
              }
  
@@ -373,7 +379,7 @@
              IpBanEntry ipbanentry = this.l.get(socketaddress);
  
              s = "Your IP address is banned from this server!\nReason: " + ipbanentry.getReason();
-@@ -347,13 +496,25 @@
+@@ -347,13 +505,25 @@
                  s = s + "\nYour ban will be removed on " + PlayerList.g.format(ipbanentry.getExpires());
              }
  
@@ -402,7 +408,7 @@
          UUID uuid = EntityHuman.a(gameprofile);
          ArrayList arraylist = Lists.newArrayList();
  
-@@ -388,17 +549,27 @@
+@@ -388,17 +558,27 @@
          }
  
          return new EntityPlayer(this.server, this.server.getWorldServer(0), gameprofile, (PlayerInteractManager) object);
@@ -431,7 +437,7 @@
          entityplayer.dimension = i;
          Object object;
  
-@@ -409,6 +580,11 @@
+@@ -409,6 +589,11 @@
          }
  
          EntityPlayer entityplayer1 = new EntityPlayer(this.server, this.server.getWorldServer(entityplayer.dimension), entityplayer.getProfile(), (PlayerInteractManager) object);
@@ -443,7 +449,7 @@
  
          entityplayer1.playerConnection = entityplayer.playerConnection;
          entityplayer1.copyFrom(entityplayer, flag);
-@@ -423,43 +599,163 @@
+@@ -423,43 +608,163 @@
              entityplayer1.addScoreboardTag(s);
          }
  
@@ -624,7 +630,7 @@
      public void f(EntityPlayer entityplayer) {
          GameProfile gameprofile = entityplayer.getProfile();
          int i = this.isOp(gameprofile) ? this.operators.a(gameprofile) : 0;
-@@ -498,12 +794,111 @@
+@@ -498,12 +803,111 @@
      }
  
      public void changeWorld(Entity entity, int i, WorldServer worldserver, WorldServer worldserver1) {
@@ -736,7 +742,7 @@
          if (entity.dimension == -1) {
              d0 = MathHelper.a(d0 / 8.0D, worldserver1.getWorldBorder().b() + 16.0D, worldserver1.getWorldBorder().d() - 16.0D);
              d1 = MathHelper.a(d1 / 8.0D, worldserver1.getWorldBorder().c() + 16.0D, worldserver1.getWorldBorder().e() - 16.0D);
-@@ -522,6 +917,8 @@
+@@ -522,6 +926,8 @@
              BlockPosition blockposition;
  
              if (i == 1) {
@@ -745,7 +751,7 @@
                  blockposition = worldserver1.getSpawn();
              } else {
                  blockposition = worldserver1.getDimensionSpawn();
-@@ -535,16 +932,27 @@
+@@ -535,16 +941,27 @@
                  worldserver.entityJoinedWorld(entity, false);
              }
          }
@@ -776,7 +782,7 @@
                  worldserver1.entityJoinedWorld(entity, false);
              }
  
-@@ -552,11 +960,23 @@
+@@ -552,11 +969,23 @@
          }
  
          entity.spawnIn(worldserver1);
@@ -801,7 +807,7 @@
              this.v = 0;
          }
  
-@@ -569,6 +989,25 @@
+@@ -569,6 +998,25 @@
  
      }
  
@@ -827,7 +833,7 @@
      public void a(Packet<?> packet, int i) {
          for (int j = 0; j < this.players.size(); ++j) {
              EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
-@@ -667,11 +1106,23 @@
+@@ -667,11 +1115,23 @@
  
          this.operators.add(new OpListEntry(gameprofile, this.server.q(), this.operators.b(gameprofile)));
          this.b(this.a(gameprofile.getId()), i);
@@ -851,7 +857,7 @@
      }
  
      private void b(EntityPlayer entityplayer, int i) {
-@@ -696,7 +1147,7 @@
+@@ -696,7 +1156,7 @@
      }
  
      public boolean isOp(GameProfile gameprofile) {
@@ -860,7 +866,7 @@
      }
  
      @Nullable
-@@ -720,6 +1171,12 @@
+@@ -720,6 +1180,12 @@
          for (int j = 0; j < this.players.size(); ++j) {
              EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
  
@@ -873,7 +879,7 @@
              if (entityplayer != entityhuman && entityplayer.dimension == i) {
                  double d4 = d0 - entityplayer.locX;
                  double d5 = d1 - entityplayer.locY;
-@@ -767,7 +1224,7 @@
+@@ -767,7 +1233,7 @@
      public void reloadWhitelist() {}
  
      public void b(EntityPlayer entityplayer, WorldServer worldserver) {
@@ -882,7 +888,7 @@
  
          entityplayer.playerConnection.sendPacket(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
          entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")));
-@@ -775,16 +1232,21 @@
+@@ -775,16 +1241,21 @@
  
          entityplayer.playerConnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition));
          if (worldserver.isRaining()) {
@@ -908,7 +914,7 @@
          entityplayer.playerConnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
      }
  
-@@ -797,7 +1259,7 @@
+@@ -797,7 +1268,7 @@
      }
  
      public String[] getSeenPlayers() {
@@ -917,7 +923,7 @@
      }
  
      public boolean getHasWhitelist() {
-@@ -846,26 +1308,39 @@
+@@ -846,26 +1317,39 @@
      }
  
      public void u() {
@@ -962,7 +968,7 @@
  
          if (serverstatisticmanager == null) {
              File file = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "stats");
-@@ -881,7 +1356,7 @@
+@@ -881,7 +1365,7 @@
  
              serverstatisticmanager = new ServerStatisticManager(this.server, file1);
              serverstatisticmanager.a();
@@ -971,7 +977,7 @@
          }
  
          return serverstatisticmanager;
-@@ -889,14 +1364,14 @@
+@@ -889,14 +1373,14 @@
  
      public AdvancementDataPlayer h(EntityPlayer entityplayer) {
          UUID uuid = entityplayer.getUniqueID();
@@ -988,7 +994,7 @@
          }
  
          advancementdataplayer.a(entityplayer);
-@@ -909,8 +1384,10 @@
+@@ -909,8 +1393,10 @@
              WorldServer[] aworldserver = this.server.worldServer;
              int j = aworldserver.length;
  
@@ -1001,7 +1007,7 @@
  
                  if (worldserver != null) {
                      worldserver.getPlayerChunkMap().a(i);
-@@ -934,13 +1411,20 @@
+@@ -934,13 +1420,20 @@
      }
  
      public void reload() {
