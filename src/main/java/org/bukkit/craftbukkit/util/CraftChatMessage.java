@@ -18,6 +18,9 @@ import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.server.ChatMessage;
 import org.bukkit.ChatColor;
 
+/**
+ * Creates, modifies, and formats chat components
+ */
 public final class CraftChatMessage {
 
     private static final Pattern LINK_PATTERN = Pattern.compile("((?:(?:https?):\\/\\/)?(?:[-\\w_\\.]{2,}\\.[a-z]{2,4}.*?(?=[\\.\\?!,;:]?(?:[" + String.valueOf(org.bukkit.ChatColor.COLOR_CHAR) + " \\n]|$))))");
@@ -49,7 +52,7 @@ public final class CraftChatMessage {
         private int currentIndex;
         private final String message;
 
-        private StringMessage(String message,  boolean keepNewlines) {
+        private StringMessage(String message, boolean keepNewlines) {
             this.message = message;
             if (message == null) {
                 output = new IChatBaseComponent[] { currentChatComponent };
@@ -138,18 +141,53 @@ public final class CraftChatMessage {
         }
     }
 
+    /**
+     * Converts the given formatted string into a chat component. Newlines will
+     * be handled in the same way as if {@link #fromString(String, boolean)}
+     * were called with false as the second parameter.
+     *
+     * @param message
+     *            The formatted string
+     * @return An array containing a component for each line in the message.
+     */
     public static IChatBaseComponent[] fromString(String message) {
         return fromString(message, false);
     }
-    
+
+    /**
+     * Converts the given formatted string into one or more chat components.
+     *
+     * @param message
+     *            The formatted string
+     * @param keepNewlines
+     *            If false, splits the message into one array entry on each new
+     *            line. If true, newlines will instead be put directly into the
+     *            result component, and the returned array will contain only one
+     *            item.
+     * @return An array containing multiple components, one for each line.
+     */
     public static IChatBaseComponent[] fromString(String message, boolean keepNewlines) {
         return new StringMessage(message, keepNewlines).getOutput();
     }
-    
+
+    /**
+     * Converts the given component into a formatted string, defaulting to black coloration.
+     *
+     * @param component The component to convert
+     * @return A formatted string.
+     */
     public static String fromComponent(IChatBaseComponent component) {
         return fromComponent(component, EnumChatFormat.BLACK);
     }
 
+    /**
+     * Converts the given component into a formatted string, defaulting
+     * to the given color.
+     *
+     * @param component The component to convert
+     * @param defaultColor The default color for each component.
+     * @return A formatted string.
+     */
     public static String fromComponent(IChatBaseComponent component, EnumChatFormat defaultColor) {
         if (component == null) return "";
         StringBuilder out = new StringBuilder();
@@ -177,6 +215,12 @@ public final class CraftChatMessage {
         return out.toString().replaceFirst("^(" + defaultColor + ")*", "");
     }
 
+    /**
+     * Fixes the given component, creating links.
+     *
+     * @param component The component to adjust.
+     * @return Component, with links.
+     */
     public static IChatBaseComponent fixComponent(IChatBaseComponent component) {
         Matcher matcher = LINK_PATTERN.matcher("");
         return fixComponent(component, matcher);
@@ -227,7 +271,7 @@ public final class CraftChatMessage {
             }
         }
 
-        List extras = component.a();
+        List<IChatBaseComponent> extras = component.a();
         for (int i = 0; i < extras.size(); i++) {
             IChatBaseComponent comp = (IChatBaseComponent) extras.get(i);
             if (comp.getChatModifier() != null && comp.getChatModifier().h() == null) {
