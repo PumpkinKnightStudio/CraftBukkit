@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.util.FormatValidator;
+
 import net.minecraft.server.ChatClickable;
 import net.minecraft.server.ChatClickable.EnumClickAction;
 import net.minecraft.server.ChatComponentText;
@@ -329,6 +331,114 @@ public final class CraftChatMessage {
         component.getChatModifier().simplify();
 
         return component;
+    }
+
+    /**
+     * Creates a formatted component based off of the given format string and
+     * arguments
+     *
+     * @param format
+     *            The format string to use. Should previously have been
+     *            validated via
+     *            {@link FormatValidator#isValidFormat(String, int)}.
+     * @param args
+     *            The arguments to format with. Components will be inserted
+     *            directly, and other types will be modified as needed.
+     * @return The formatted components (an array of lines)
+     * @see ChatMessage
+     */
+    public static IChatBaseComponent[] formatComponent(String format, Object... args) {
+        IChatBaseComponent[] components = fromString(format);
+        Matcher matcher = FormatValidator.FORMAT_TOKEN_PATTERN.matcher("");
+        for (int i = 0; i < components.length; i++) {
+            if (!matcher.reset(components[i].toPlainText()).find()) {
+                continue;
+            }
+            // There are format tokens that need to be replaced.
+            List<IChatBaseComponent> newComponentList = Lists.newArrayList();
+
+            // It's safe to directly iterate over the component list here
+            // because fromString will never contain translation components
+            for (IChatBaseComponent subComponent : (Iterable<IChatBaseComponent>)components[i]) {
+                String text = subComponent.getText();
+                if (text.isEmpty()) {
+                    continue;
+                }
+
+                IChatBaseComponent newSubComponent;
+
+                // Note: NO validation happens here because the format has
+                // already been validated.
+                if (matcher.reset(text).find()) {
+                    List<IChatBaseComponent> newSubComponents = Lists.newArrayList();
+
+                    int indexNum = 1;
+                    int pos = 0;
+                    do {
+                        int start = matcher.start();
+
+                        if (start > pos) {
+                            newSubComponents.add(new ChatComponentText(text.substring(pos, start)));
+                        }
+
+                        String index = matcher.group(FormatValidator.INDEX_GROUP);
+                        String conversion = matcher.group(FormatValidator.CONVERSION_GROUP);
+
+                        if (conversion.equals("s")) {
+                            if (index != null) {
+                                indexNum = Integer.parseInt(index);
+                            }
+                            Object arg = args[indexNum - 1];
+                            if (arg instanceof IChatBaseComponent) {
+                                // Note: addSibling handles merging styles automatically
+                                newSubComponents.add((IChatBaseComponent)arg);
+                            } else {
+                                String argStr = (arg != null ? arg.toString() : "null");
+                                newSubComponents.add(fromString(argStr, true)[0]);
+                            }
+                            indexNum++;
+                        } else if (conversion.equals("%")) {
+                            newSubComponents.add(new ChatComponentText("%"));
+                        }
+
+                        pos = matcher.end();
+                    } while (matcher.find());
+
+                    if (pos < text.length()) {
+                        newSubComponents.add(new ChatComponentText(text.substring(pos)));
+                    }
+
+                    if (newSubComponents.size() == 1) {
+                        newSubComponent = newSubComponents.get(0);
+                    } else {
+                        newSubComponent = new ChatComponentText("");
+                        for (IChatBaseComponent component : newSubComponents) {
+                            newSubComponent.addSibling(component);
+                        }
+                    }
+                } else {
+                    newSubComponent = new ChatComponentText(text);
+                }
+
+                newSubComponent.getChatModifier().merge(subComponent.getChatModifier());
+                newComponentList.add(newSubComponent);
+            }
+
+            ChatModifier modifier = components[i].getChatModifier();
+            if (newComponentList.size() == 1) {
+                components[i] = newComponentList.get(0);
+                components[i].getChatModifier().merge(modifier);
+            } else {
+                IChatBaseComponent newComponent = new ChatComponentText("");
+                newComponent.setChatModifier(modifier);
+                for (IChatBaseComponent component : newComponentList) {
+                    newComponent.addSibling(component);
+                }
+                components[i] = newComponent;
+            }
+        }
+
+        return components;
     }
 
     private CraftChatMessage() {

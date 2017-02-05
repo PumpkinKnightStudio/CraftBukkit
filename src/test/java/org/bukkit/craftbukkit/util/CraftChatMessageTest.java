@@ -226,6 +226,87 @@ public class CraftChatMessageTest {
                 "{bold:true,text:foo}");
     }
 
+    @Test
+    public void testFormatSimple() {
+        assertComponentsEqual(CraftChatMessage.formatComponent("<%s> %s", "name", "value"),
+                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("<%1$s> %2$s", "name", "value"),
+                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("<%s> %s",
+                component("\"name\""), component("\"value\"")),
+                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("<%1$s> %2$s",
+                component("\"name\""), component("\"value\"")),
+                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+        // Avoid empty components
+        assertComponentsEqual(CraftChatMessage.formatComponent("%s", "name"),
+                "{text:name}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("%s", component("\"name\"")),
+                "{text:name}");
+    }
+
+    @Test
+    public void testFormatPercent() {
+        assertComponentsEqual(CraftChatMessage.formatComponent("%s%%%s", "s1", "s2"),
+                "{text:\"\",extra:[{text:\"s1\"},{text:\"%\"},{text:\"s2\"}]}");
+    }
+
+    @Test
+    public void testFormatWithFormats() {
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "%s", "Text"),
+                "{color:red,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("%s", ChatColor.BLUE + "Text"),
+                "{color:blue,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "%s",
+                ChatColor.BLUE + "Text"),
+                "{color:blue,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
+                ChatColor.BLUE + "Text"),
+                "{text:\"\",color:red,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
+        // Formatting is kept both ways
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
+                ChatColor.BOLD + "Text"),
+                "{text:\"\",color:red,extra:[{text:\"Hey \"},{bold:true,text:Text}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.BOLD + "Hey %s",
+                ChatColor.BLUE + "Text"),
+                "{text:\"\",bold:true,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
+    }
+
+    @Test
+    public void testFormatWithComponents() {
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED
+                + "%s", component("{text:Text}")),
+                "{color:red,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("%s",
+                component("{color:blue,text:Text}")),
+                "{color:blue,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "%s",
+                component("{color:blue,text:Text}")),
+                "{color:blue,text:Text}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
+                component("{color:blue,text:Text}")),
+                "{text:\"\",color:red,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
+        // Formatting is kept both ways
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
+                component("{bold:true,text:Text}")),
+                "{text:\"\",color:red,extra:[{text:\"Hey \"},{bold:true,text:Text}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.BOLD + "Hey %s",
+                component("{color:blue,text:Text}")),
+                "{text:\"\",bold:true,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
+    }
+
+    @Test
+    public void testFormatWithTranslate() {
+        // If a translation component is passed as a format parameter, it
+        // shouldn't be damaged.  (Example: entity names in death messages)
+        assertComponentsEqual(CraftChatMessage.formatComponent(
+                        "A %s message", component("{translate:translation.test.args,"
+                                + "with:[{translate:translation.test.none},{text:v2}]}")),
+                "{text:\"\",extra:[{text:\"A \"},{translate:\"translation.test.args\","
+                        + "with:[{translate:translation.test.none},\"v2\"]},{text:\" message\"}]}");
+        // NOTE: {text:v2} became "v2".  I'm not sure why, but that seems to be vanilla behavior.
+    }
+
     /**
      * Converts the given JSON into a component, using
      * {@linkplain JsonReader#setLenient(boolean) lenient parsing}.  Note that
