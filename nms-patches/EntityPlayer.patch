@@ -629,7 +629,7 @@
      }
  
      public AdvancementDataPlayer getAdvancementData() {
-@@ -1113,4 +1348,144 @@
+@@ -1113,4 +1348,149 @@
      public Vec3D Q() {
          return this.cv;
      }
@@ -771,6 +771,11 @@
 +    @Override
 +    public CraftPlayer getBukkitEntity() {
 +        return (CraftPlayer) super.getBukkitEntity();
++    }
++
++    @Override
++    public String getDisplayName() {
++        return (this.displayName != null ? this.displayName : super.getDisplayName());
 +    }
 +    // CraftBukkit end
  }

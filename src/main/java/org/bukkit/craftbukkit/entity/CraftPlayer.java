@@ -166,12 +166,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getDisplayName() {
-        return getHandle().displayName;
+        return getHandle().getDisplayName();
     }
 
     @Override
     public void setDisplayName(final String name) {
-        getHandle().displayName = name == null ? getName() : name;
+        getHandle().displayName = name;
     }
 
     @Override
@@ -182,9 +182,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void setPlayerListName(String name) {
         if (name == null) {
-            name = getName();
+            name = getDisplayName();
         }
-        getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromString(name)[0];
+        getHandle().listName = name.equals(getDisplayName()) ? null : CraftChatMessage.fromString(name)[0];
         for (EntityPlayer player : (List<EntityPlayer>)server.getHandle().players) {
             if (player.getBukkitEntity().canSee(this)) {
                 player.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, getHandle()));

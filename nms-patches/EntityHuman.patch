@@ -1,12 +1,13 @@
 --- a/net/minecraft/server/EntityHuman.java
 +++ b/net/minecraft/server/EntityHuman.java
-@@ -9,6 +9,19 @@
+@@ -9,6 +9,20 @@
  import java.util.UUID;
  import javax.annotation.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.craftbukkit.entity.CraftItem;
++import org.bukkit.craftbukkit.util.CraftChatMessage;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.entity.CreatureSpawnEvent;
 +import org.bukkit.event.entity.EntityCombustByEntityEvent;
@@ -20,7 +21,7 @@
  public abstract class EntityHuman extends EntityLiving {
  
      private static final DataWatcherObject<Float> a = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.c);
-@@ -18,10 +31,10 @@
+@@ -18,10 +32,10 @@
      protected static final DataWatcherObject<NBTTagCompound> bt = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.n);
      protected static final DataWatcherObject<NBTTagCompound> bu = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.n);
      public PlayerInventory inventory = new PlayerInventory(this);
@@ -33,7 +34,7 @@
      protected int bA;
      public float bB;
      public float bC;
-@@ -52,6 +65,17 @@
+@@ -52,6 +66,17 @@
      @Nullable
      public EntityFishingHook hookedFish;
  
@@ -51,7 +52,7 @@
      protected ItemCooldown l() {
          return new ItemCooldown();
      }
-@@ -310,7 +334,8 @@
+@@ -310,7 +335,8 @@
  
          if (this.world.getDifficulty() == EnumDifficulty.PEACEFUL && this.world.getGameRules().getBoolean("naturalRegeneration")) {
              if (this.getHealth() < this.getMaxHealth() && this.ticksLived % 20 == 0) {
@@ -61,7 +62,7 @@
              }
  
              if (this.foodData.c() && this.ticksLived % 10 == 0) {
-@@ -334,7 +359,7 @@
+@@ -334,7 +360,7 @@
  
          this.k((float) attributeinstance.getValue());
          float f = MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ);
@@ -70,7 +71,7 @@
  
          if (f > 0.1F) {
              f = 0.1F;
-@@ -456,6 +481,7 @@
+@@ -456,6 +482,7 @@
  
      @Nullable
      public EntityItem a(boolean flag) {
@@ -78,7 +79,7 @@
          return this.a(this.inventory.splitStack(this.inventory.itemInHandIndex, flag && !this.inventory.getItemInHand().isEmpty() ? this.inventory.getItemInHand().getCount() : 1), false, true);
      }
  
-@@ -498,6 +524,30 @@
+@@ -498,6 +525,30 @@
                  entityitem.motZ += Math.sin((double) f1) * (double) f;
              }
  
@@ -109,7 +110,7 @@
              ItemStack itemstack1 = this.a(entityitem);
  
              if (flag1) {
-@@ -613,6 +663,13 @@
+@@ -613,6 +664,13 @@
              this.a(true, true, false);
          }
  
@@ -123,7 +124,7 @@
          if (nbttagcompound.hasKeyOfType("SpawnX", 99) && nbttagcompound.hasKeyOfType("SpawnY", 99) && nbttagcompound.hasKeyOfType("SpawnZ", 99)) {
              this.d = new BlockPosition(nbttagcompound.getInt("SpawnX"), nbttagcompound.getInt("SpawnY"), nbttagcompound.getInt("SpawnZ"));
              this.e = nbttagcompound.getBoolean("SpawnForced");
-@@ -665,6 +722,7 @@
+@@ -665,6 +723,7 @@
          if (!this.getShoulderEntityRight().isEmpty()) {
              nbttagcompound.set("ShoulderEntityRight", this.getShoulderEntityRight());
          }
@@ -131,7 +132,7 @@
  
      }
  
-@@ -682,10 +740,10 @@
+@@ -682,10 +741,10 @@
                      this.a(true, true, false);
                  }
  
@@ -144,7 +145,7 @@
                      }
  
                      if (this.world.getDifficulty() == EnumDifficulty.EASY) {
-@@ -697,7 +755,13 @@
+@@ -697,7 +756,13 @@
                      }
                  }
  
@@ -159,7 +160,7 @@
              }
          }
      }
-@@ -711,10 +775,29 @@
+@@ -711,10 +776,29 @@
      }
  
      public boolean a(EntityHuman entityhuman) {
@@ -192,7 +193,7 @@
      }
  
      protected void damageArmor(float f) {
-@@ -757,7 +840,12 @@
+@@ -757,7 +841,12 @@
          return (float) i / (float) this.inventory.armor.size();
      }
  
@@ -206,7 +207,7 @@
          if (!this.isInvulnerable(damagesource)) {
              f = this.applyArmorModifier(damagesource, f);
              f = this.applyMagicModifier(damagesource, f);
-@@ -777,6 +865,7 @@
+@@ -777,6 +866,7 @@
  
              }
          }
@@ -214,7 +215,7 @@
      }
  
      public void openSign(TileEntitySign tileentitysign) {}
-@@ -898,8 +987,15 @@
+@@ -898,8 +988,15 @@
                      if (entity instanceof EntityLiving) {
                          f3 = ((EntityLiving) entity).getHealth();
                          if (j > 0 && !entity.isBurning()) {
@@ -232,7 +233,7 @@
                          }
                      }
  
-@@ -930,8 +1026,11 @@
+@@ -930,8 +1027,11 @@
                                  EntityLiving entityliving = (EntityLiving) iterator.next();
  
                                  if (entityliving != this && entityliving != entity && !this.r(entityliving) && this.h(entityliving) < 9.0D) {
@@ -245,7 +246,7 @@
                                  }
                              }
  
-@@ -940,11 +1039,28 @@
+@@ -940,11 +1040,28 @@
                          }
  
                          if (entity instanceof EntityPlayer && entity.velocityChanged) {
@@ -274,7 +275,7 @@
                          }
  
                          if (flag2) {
-@@ -993,7 +1109,14 @@
+@@ -993,7 +1110,14 @@
  
                              this.a(StatisticList.y, Math.round(f5 * 10.0F));
                              if (j > 0) {
@@ -290,7 +291,7 @@
                              }
  
                              if (this.world instanceof WorldServer && f5 > 2.0F) {
-@@ -1009,6 +1132,11 @@
+@@ -1009,6 +1133,11 @@
                          if (flag4) {
                              entity.extinguish();
                          }
@@ -302,7 +303,7 @@
                      }
                  }
  
-@@ -1099,6 +1227,20 @@
+@@ -1099,6 +1228,20 @@
              this.stopRiding();
          }
  
@@ -323,7 +324,7 @@
          this.releaseShoulderEntities();
          this.setSize(0.2F, 0.2F);
          if (this.world.isLoaded(blockposition)) {
-@@ -1159,6 +1301,23 @@
+@@ -1159,6 +1302,23 @@
              this.world.everyoneSleeping();
          }
  
@@ -347,7 +348,7 @@
          this.sleepTicks = flag ? 0 : 100;
          if (flag2) {
              this.setRespawnPosition(this.bedPosition, false);
-@@ -1210,9 +1369,11 @@
+@@ -1210,9 +1370,11 @@
          if (blockposition != null) {
              this.d = blockposition;
              this.e = flag;
@@ -359,7 +360,7 @@
          }
  
      }
-@@ -1540,13 +1701,17 @@
+@@ -1540,13 +1702,17 @@
      }
  
      protected void releaseShoulderEntities() {
@@ -382,7 +383,7 @@
          if (!this.world.isClientSide && !nbttagcompound.isEmpty()) {
              Entity entity = EntityTypes.a(nbttagcompound, this.world);
  
-@@ -1555,9 +1720,10 @@
+@@ -1555,9 +1721,10 @@
              }
  
              entity.setPosition(this.locX, this.locY + 0.699999988079071D, this.locZ);
@@ -394,7 +395,23 @@
      }
  
      public abstract boolean isSpectator();
-@@ -1759,7 +1925,7 @@
+@@ -1576,8 +1743,14 @@
+         return this.getScoreboard().getPlayerTeam(this.getName());
+     }
+ 
++    // CraftBukkit start - add method
++    public String getDisplayName() {
++        return ScoreboardTeam.getPlayerDisplayName(this.aY(), this.getName());
++    }
++    // CraftBukkit end
++
+     public IChatBaseComponent getScoreboardDisplayName() {
+-        ChatComponentText chatcomponenttext = new ChatComponentText(ScoreboardTeam.getPlayerDisplayName(this.aY(), this.getName()));
++        IChatBaseComponent chatcomponenttext = CraftChatMessage.fromString(getDisplayName())[0];  // CraftBukkit - change type; use display name
+ 
+         chatcomponenttext.getChatModifier().setChatClickable(new ChatClickable(ChatClickable.EnumClickAction.SUGGEST_COMMAND, "/msg " + this.getName() + " "));
+         chatcomponenttext.getChatModifier().setChatHoverable(this.bv());
+@@ -1759,7 +1932,7 @@
              return entitymonster.c(this.a);
          }
  
