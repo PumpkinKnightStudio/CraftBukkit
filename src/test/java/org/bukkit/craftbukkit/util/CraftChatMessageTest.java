@@ -39,7 +39,7 @@ public class CraftChatMessageTest {
     public void testFromStringColors() {
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.RED + "Text"),
-                "{text:\"\",extra:[{text:Text,color:red}]}");
+                "{text:Text,color:red}");
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.BLUE + "T"
                         + ChatColor.GREEN + "e" + ChatColor.AQUA + "x"
@@ -51,7 +51,7 @@ public class CraftChatMessageTest {
                 CraftChatMessage.fromString("" + ChatColor.BLUE
                         + ChatColor.GREEN + ChatColor.AQUA + ChatColor.RED
                         + "Text"),
-                "{text:\"\",extra:[{text:Text,color:red}]}");
+                "{text:Text,color:red}");
         // Both cases work
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.COLOR_CHAR + "aTe" +
@@ -63,10 +63,10 @@ public class CraftChatMessageTest {
     public void testFromStringFormat() {
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.BOLD + "Text"),
-                "{text:\"\",extra:[{text:Text,bold:true}]}");
+                "{text:Text,bold:true}");
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.RED + "" + ChatColor.BOLD + "Text"),
-                "{text:\"\",extra:[{text:Text,bold:true,color:red}]}");
+                "{text:Text,bold:true,color:red}");
         // Formats can be applied after colors, without reseting the color
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.RED + "Te" + ChatColor.BOLD + "xt"),
@@ -74,7 +74,7 @@ public class CraftChatMessageTest {
         // Colors after formats reset the format (also, no empty component!)
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.BOLD + "" + ChatColor.RED + "Text"),
-                "{text:\"\",extra:[{text:Text,color:red}]}");
+                "{text:Text,color:red}");
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.BOLD + "Te" + ChatColor.RED + "xt"),
                 "{text:\"\",extra:[{text:Te,bold:true},{text:xt,color:red}]}");
@@ -89,28 +89,28 @@ public class CraftChatMessageTest {
         // Invalid format codes are removed
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.COLOR_CHAR + "qText"),
-                "{text:\"\",extra:[{text:\"Text\"}]}");
+                "{text:\"Text\"}");
     }
 
     @Test
     public void testFromStringLink() {
         assertComponentsEqual(
                 CraftChatMessage.fromString("http://example.com"),
-                "{text:\"\",extra:[{text:\"http://example.com\",clickEvent:"
-                + "{action:open_url,value:\"http://example.com\"}}]}");
+                "{text:\"http://example.com\",clickEvent:"
+                + "{action:open_url,value:\"http://example.com\"}}");
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.BLUE + "http://example.com"),
-                "{text:\"\",extra:[{text:\"http://example.com\",color:blue,clickEvent:"
-                + "{action:open_url,value:\"http://example.com\"}}]}");
+                "{text:\"http://example.com\",color:blue,clickEvent:"
+                + "{action:open_url,value:\"http://example.com\"}}");
         assertComponentsEqual(
                 CraftChatMessage.fromString("https://example.com"),
-                "{text:\"\",extra:[{text:\"https://example.com\",clickEvent:"
-                + "{action:open_url,value:\"https://example.com\"}}]}");
+                "{text:\"https://example.com\",clickEvent:"
+                + "{action:open_url,value:\"https://example.com\"}}");
         // If it looks like a link, it is automatically made into an HTTP link
         assertComponentsEqual(
                 CraftChatMessage.fromString("example.com"),
-                "{text:\"\",extra:[{text:\"example.com\",clickEvent:"
-                + "{action:open_url,value:\"http://example.com\"}}]}");
+                "{text:\"example.com\",clickEvent:"
+                + "{action:open_url,value:\"http://example.com\"}}");
         // MC only allows http and https as protocols; thus, irc isn't linked.
         // However, the rest _is_ still a valid link... so make it into a web link.
         assertComponentsEqual(
@@ -140,14 +140,14 @@ public class CraftChatMessageTest {
                 "{text:\"\"}");
         // Color is conserved between lines
         assertComponentsEqual(CraftChatMessage.fromString(ChatColor.RED + "Test\ntest", false),
-                "{text:\"\",extra:[{text:Test,color:red}]}",
-                "{text:\"\",extra:[{text:test,color:red}]}");
+                "{text:Test,color:red}",
+                "{text:test,color:red}");
         // No empty component for the blue before the newline
         assertComponentsEqual(CraftChatMessage.fromString(
                         ChatColor.RED + "Test"
                         + ChatColor.BLUE + "\ntest", false),
-                "{text:\"\",extra:[{text:Test,color:red}]}",
-                "{text:\"\",extra:[{text:test,color:blue}]}");
+                "{text:Test,color:red}",
+                "{text:test,color:blue}");
 
         // True - embed the \n inside of the component
 
@@ -156,7 +156,7 @@ public class CraftChatMessageTest {
                 "{text:\"\\n\\nTest\\n\\ntest\\n\\n\"}");
         // Color is still conserved, and everything is in one component
         assertComponentsEqual(CraftChatMessage.fromString(ChatColor.RED + "Test\ntest", true),
-                "{text:\"\",extra:[{text:\"Test\\ntest\",color:red}]}");
+                "{text:\"Test\\ntest\",color:red}");
         assertComponentsEqual(CraftChatMessage.fromString(
                         ChatColor.RED + "Test"
                         + ChatColor.BLUE + "\ntest", true),
@@ -202,8 +202,7 @@ public class CraftChatMessageTest {
         // No empty padding components
         assertComponentEquals(CraftChatMessage.fixComponent(
                 component("{text:\"example.com\"}")),
-                "{text:\"\",extra:[{text:\"example.com\","
-                + "clickEvent:{action:open_url,value:\"http://example.com\"}}]}");
+                "{text:\"example.com\",clickEvent:{action:open_url,value:\"http://example.com\"}}");
         // Existing click events are replaced only for the link component
         assertComponentEquals(CraftChatMessage.fixComponent(
                 component("{text:\"Click if you like example.com!\",clickEvent:"
@@ -213,6 +212,18 @@ public class CraftChatMessageTest {
                 + "{text:\"example.com\",clickEvent:{action:open_url,value:\"http://example.com\"}},"
                 + "{text:\"!\",clickEvent:"
                 + "{action:run_command,value:\"/me likes example.com\"}}]}");
+        // Duplicate format codes and empty components are removed
+        assertComponentEquals(CraftChatMessage.fixComponent(
+                component("{bold:false,text:foo}")), "{text:foo}");
+        assertComponentEquals(CraftChatMessage.fixComponent(
+                component("{bold:true,text:\"\",extra:[{text:\"foo\"}]}")),
+                "{bold:true,text:foo}");
+        assertComponentEquals(CraftChatMessage.fixComponent(
+                component("{bold:true,text:\"\",extra:[{bold:true,text:\"foo\"}]}")),
+                "{bold:true,text:foo}");
+        assertComponentEquals(CraftChatMessage.fixComponent(
+                component("{bold:true,text:\"\",extra:[{text:\"" + ChatColor.BOLD + "foo\"}]}")),
+                "{bold:true,text:foo}");
     }
 
     /**

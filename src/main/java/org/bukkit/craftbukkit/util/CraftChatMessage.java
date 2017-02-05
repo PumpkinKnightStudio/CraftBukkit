@@ -258,22 +258,24 @@ public final class CraftChatMessage {
         }
 
         if (component instanceof ChatComponentText) {
-            ChatComponentText text = ((ChatComponentText) component);
-            String msg = text.g();
+            String msg = ((ChatComponentText) component).g();
 
             Matcher matcher = WORK_PATTERN.matcher(msg);
             if (matcher.find()) {
-                ChatModifier modifier = text.getChatModifier();
-                component = text = new ChatComponentText("");
+                ChatModifier modifier = component.getChatModifier();
 
                 List<IChatBaseComponent> newExtras = Lists.newArrayList();
 
                 int pos = 0;
                 do {
-                    ChatComponentText prev = new ChatComponentText(
-                            msg.substring(pos, matcher.start()));
-                    prev.setChatModifier(modifier.clone());
-                    newExtras.add(prev);
+                    int start = matcher.start();
+
+                    if (start > pos) {
+                        ChatComponentText prev = new ChatComponentText(
+                                msg.substring(pos, matcher.start()));
+                        prev.setChatModifier(modifier.clone().simplify());
+                        newExtras.add(prev);
+                    }
 
                     String match;
                     if ((match = matcher.group(FORMAT_CODE_GROUP)) != null) {
@@ -287,7 +289,7 @@ public final class CraftChatMessage {
                         }
 
                         ChatComponentText link = new ChatComponentText(matcher.group());
-                        ChatModifier linkModi = modifier.clone();
+                        ChatModifier linkModi = modifier.clone().simplify();
                         linkModi.setChatClickable(new ChatClickable(EnumClickAction.OPEN_URL, match));
                         link.setChatModifier(linkModi);
 
@@ -297,24 +299,34 @@ public final class CraftChatMessage {
                     pos = matcher.end();
                 } while (matcher.find());
 
-                ChatComponentText remainder = new ChatComponentText(
-                        msg.substring(pos));
-                remainder.setChatModifier(modifier);
+                if (pos < msg.length()) {
+                    ChatComponentText remainder = new ChatComponentText(
+                            msg.substring(pos));
+                    remainder.setChatModifier(modifier.simplify());
+                    newExtras.add(remainder);
+                }
 
-                newExtras.add(remainder);
-
-                for (IChatBaseComponent c : newExtras) {
-                    if (!c.getText().isEmpty()) {
-                        text.addSibling(c);
+                if (newExtras.size() == 1 && extras.size() == 0) {
+                    component = newExtras.get(0);
+                } else {
+                    component = new ChatComponentText("");
+                    for (IChatBaseComponent c : newExtras) {
+                        component.addSibling(c);
+                    }
+                    for (IChatBaseComponent c : extras) {
+                        component.addSibling(c);
                     }
                 }
-                for (IChatBaseComponent c : extras) {
-                    if (!c.getText().isEmpty()) {
-                        text.addSibling(c);
-                    }
+            } else {
+                if (msg.length() == 0 && extras.size() == 1) {
+                    ChatModifier origModifier = component.getChatModifier();
+
+                    component = extras.get(0);
+                    component.getChatModifier().merge(origModifier);
                 }
             }
         }
+        component.getChatModifier().simplify();
 
         return component;
     }

@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/ChatModifier.java
 +++ b/net/minecraft/server/ChatModifier.java
+@@ -209,7 +209,7 @@
+         return this;
+     }
+ 
+-    private ChatModifier o() {
++    public ChatModifier o() {  // CraftBukkit: make public; PAIL: getChatModifier (or getParent)
+         return this.a == null ? ChatModifier.k : this.a;
+     }
+ 
 @@ -263,16 +263,18 @@
      }
  
@@ -28,7 +37,71 @@
          return i;
      }
  
-@@ -441,12 +443,12 @@
+@@ -307,6 +309,63 @@
+         return chatmodifier;
+     }
+ 
++    // CraftBukkit start - new methods
++    public ChatModifier merge(ChatModifier other) {
++        if (this.b == null) {
++            this.b = other.b;
++        }
++        if (this.c == null) {
++            this.c = other.c;
++        }
++        if (this.d == null) {
++            this.d = other.d;
++        }
++        if (this.e == null) {
++            this.e = other.e;
++        }
++        if (this.f == null) {
++            this.f = other.f;
++        }
++        if (this.g == null) {
++            this.g = other.g;
++        }
++        if (this.h == null) {
++            this.h = other.h;
++        }
++        if (this.i == null) {
++            this.i = other.i;
++        }
++        if (this.j == null) {
++            this.i = other.i;
++        }
++        this.setChatModifier(null);
++        return this;
++    }
++
++    public ChatModifier simplify() {
++        if (this.b == this.o().getColor()) {
++            this.b = null;
++        }
++        if (this.c != null && this.c.booleanValue() == this.o().isBold()) {
++            this.c = null;
++        }
++        if (this.d != null && this.d.booleanValue() == this.o().isItalic()) {
++            this.d = null;
++        }
++        if (this.e != null && this.e.booleanValue() == this.o().isUnderlined()) {
++            this.e = null;
++        }
++        if (this.f != null && this.f.booleanValue() == this.o().isStrikethrough()) {
++            this.f = null;
++        }
++        if (this.g != null && this.g.booleanValue() == this.o().isRandom()) {
++            this.g = null;
++        }
++
++        return this;
++    }
++    // CraftBukkit end
++
+     public static class ChatModifierSerializer implements JsonDeserializer<ChatModifier>, JsonSerializer<ChatModifier> {
+ 
+         public ChatModifierSerializer() {}
+@@ -441,12 +500,12 @@
          }
  
          @Nullable
