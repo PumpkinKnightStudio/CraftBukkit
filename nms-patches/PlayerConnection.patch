@@ -793,7 +793,7 @@
              ChatMessage chatmessage = new ChatMessage("chat.cannotSend", new Object[0]);
  
              chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
-@@ -669,39 +1170,249 @@
+@@ -669,39 +1170,253 @@
  
              for (int i = 0; i < s.length(); ++i) {
                  if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
@@ -827,6 +827,8 @@
  
 -            if (s.startsWith("/")) {
 -                this.handleCommand(s);
+-            } else {
+-                ChatMessage chatmessage1 = new ChatMessage("chat.type.text", new Object[] { this.player.getScoreboardDisplayName(), s});
 +            // CraftBukkit start
 +            if (isSync) {
 +                try {
@@ -846,16 +848,11 @@
 +                this.sendPacket(new PacketPlayOutChat(chatmessage));
 +            } else if (true) {
 +                this.chat(s, true);
-+                // CraftBukkit end - the below is for reference. :)
-             } else {
-                 ChatMessage chatmessage1 = new ChatMessage("chat.type.text", new Object[] { this.player.getScoreboardDisplayName(), s});
- 
-                 this.minecraftServer.getPlayerList().sendMessage(chatmessage1, false);
-             }
- 
--            this.chatThrottle += 20;
--            if (this.chatThrottle > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
--                this.disconnect(new ChatMessage("disconnect.spam", new Object[0]));
++                //ChatMessage chatmessage1 = new ChatMessage("chat.type.text", new Object[] { this.player.getScoreboardDisplayName(), s});
++                //this.minecraftServer.getPlayerList().sendMessage(chatmessage1, false);
++                // CraftBukkit end
++            }
++
 +            // CraftBukkit start - replaced with thread safe throttle
 +            // this.chatThrottle += 20;
 +            if (chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
@@ -867,9 +864,14 @@
 +                            return null;
 +                        }
 +                    };
-+
+ 
+-                this.minecraftServer.getPlayerList().sendMessage(chatmessage1, false);
+-            }
 +                    this.minecraftServer.processQueue.add(waitable);
-+
+ 
+-            this.chatThrottle += 20;
+-            if (this.chatThrottle > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+-                this.disconnect(new ChatMessage("disconnect.spam", new Object[0]));
 +                    try {
 +                        waitable.get();
 +                    } catch (InterruptedException e) {
@@ -914,15 +916,18 @@
 +                            return null;
 +                        }
 +
-+                        String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
-+                        PlayerConnection.this.minecraftServer.console.sendMessage(message);
++                        EntityPlayer eventPlayer = ((CraftPlayer) queueEvent.getPlayer()).getHandle();
++                        IChatBaseComponent[] message = CraftChatMessage.formatComponent(queueEvent.getFormat(), eventPlayer.getScoreboardDisplayName(), queueEvent.getMessage());
++                        for (IChatBaseComponent line : message) {
++                            minecraftServer.console.sendMessage(CraftChatMessage.fromComponent(line));
++                        }
 +                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-+                            for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
-+                                ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
++                            for (EntityPlayer recipient : minecraftServer.getPlayerList().players) {
++                                recipient.sendMessage(message);
 +                            }
 +                        } else {
-+                            for (Player player : queueEvent.getRecipients()) {
-+                                player.sendMessage(message);
++                            for (Player recipient : queueEvent.getRecipients()) {
++                                ((CraftPlayer) recipient).getHandle().sendMessage(message);
 +                            }
 +                        }
 +                        return null;
@@ -944,15 +949,18 @@
 +                    return;
 +                }
 +
-+                s = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
-+                minecraftServer.console.sendMessage(s);
++                EntityPlayer eventPlayer = ((CraftPlayer) event.getPlayer()).getHandle();
++                IChatBaseComponent[] message = CraftChatMessage.formatComponent(event.getFormat(), eventPlayer.getScoreboardDisplayName(), event.getMessage());
++                for (IChatBaseComponent line : message) {
++                    minecraftServer.console.sendMessage(CraftChatMessage.fromComponent(line));
++                }
 +                if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
-+                    for (Object recipient : minecraftServer.getPlayerList().players) {
-+                        ((EntityPlayer) recipient).sendMessage(CraftChatMessage.fromString(s));
++                    for (EntityPlayer recipient : minecraftServer.getPlayerList().players) {
++                        recipient.sendMessage(message);
 +                    }
 +                } else {
 +                    for (Player recipient : event.getRecipients()) {
-+                        recipient.sendMessage(s);
++                        ((CraftPlayer) recipient).getHandle().sendMessage(s);
 +                    }
 +                }
 +            }
@@ -962,7 +970,7 @@
 +
      private void handleCommand(String s) {
 -        this.minecraftServer.getCommandHandler().a(this.player, s);
-+       // CraftBukkit start - whole method
++        // CraftBukkit start - whole method
 +        this.LOGGER.info(this.player.getName() + " issued server command: " + s);
 +
 +        CraftPlayer player = this.getPlayer();
@@ -1050,7 +1058,7 @@
          this.player.resetIdleTimer();
          IJumpable ijumpable;
  
-@@ -773,6 +1484,7 @@
+@@ -773,6 +1488,7 @@
  
      public void a(PacketPlayInUseEntity packetplayinuseentity) {
          PlayerConnectionUtils.ensureMainThread(packetplayinuseentity, this, this.player.x());
@@ -1058,7 +1066,7 @@
          WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
          Entity entity = packetplayinuseentity.a((World) worldserver);
  
-@@ -788,20 +1500,68 @@
+@@ -788,20 +1504,68 @@
              if (this.player.h(entity) < d0) {
                  EnumHand enumhand;
  
@@ -1128,7 +1136,7 @@
                  }
              }
          }
-@@ -817,7 +1577,8 @@
+@@ -817,7 +1581,8 @@
          case PERFORM_RESPAWN:
              if (this.player.viewingCredits) {
                  this.player.viewingCredits = false;
@@ -1138,7 +1146,7 @@
                  CriterionTriggers.u.a(this.player, DimensionManager.THE_END, DimensionManager.OVERWORLD);
              } else {
                  if (this.player.getHealth() > 0.0F) {
-@@ -840,14 +1601,20 @@
+@@ -840,14 +1605,20 @@
  
      public void a(PacketPlayInCloseWindow packetplayinclosewindow) {
          PlayerConnectionUtils.ensureMainThread(packetplayinclosewindow, this, this.player.x());
@@ -1161,7 +1169,7 @@
                  NonNullList nonnulllist = NonNullList.a();
  
                  for (int i = 0; i < this.player.activeContainer.c.size(); ++i) {
-@@ -856,8 +1623,274 @@
+@@ -856,8 +1627,274 @@
  
                  this.player.a(this.player.activeContainer, nonnulllist);
              } else {
@@ -1437,7 +1445,7 @@
                  if (ItemStack.matches(packetplayinwindowclick.e(), itemstack)) {
                      this.player.playerConnection.sendPacket(new PacketPlayOutTransaction(packetplayinwindowclick.a(), packetplayinwindowclick.d(), true));
                      this.player.f = true;
-@@ -894,6 +1927,7 @@
+@@ -894,6 +1931,7 @@
  
      public void a(PacketPlayInEnchantItem packetplayinenchantitem) {
          PlayerConnectionUtils.ensureMainThread(packetplayinenchantitem, this, this.player.x());
@@ -1445,7 +1453,7 @@
          this.player.resetIdleTimer();
          if (this.player.activeContainer.windowId == packetplayinenchantitem.a() && this.player.activeContainer.c(this.player) && !this.player.isSpectator()) {
              this.player.activeContainer.a(this.player, packetplayinenchantitem.b());
-@@ -927,7 +1961,45 @@
+@@ -927,7 +1965,45 @@
              }
  
              boolean flag1 = packetplayinsetcreativeslot.a() >= 1 && packetplayinsetcreativeslot.a() <= 45;
@@ -1492,7 +1500,7 @@
  
              if (flag1 && flag2) {
                  if (itemstack.isEmpty()) {
-@@ -951,6 +2023,7 @@
+@@ -951,6 +2027,7 @@
  
      public void a(PacketPlayInTransaction packetplayintransaction) {
          PlayerConnectionUtils.ensureMainThread(packetplayintransaction, this, this.player.x());
@@ -1500,7 +1508,7 @@
          Short oshort = (Short) this.k.get(this.player.activeContainer.windowId);
  
          if (oshort != null && packetplayintransaction.b() == oshort.shortValue() && this.player.activeContainer.windowId == packetplayintransaction.a() && !this.player.activeContainer.c(this.player) && !this.player.isSpectator()) {
-@@ -961,6 +2034,7 @@
+@@ -961,6 +2038,7 @@
  
      public void a(PacketPlayInUpdateSign packetplayinupdatesign) {
          PlayerConnectionUtils.ensureMainThread(packetplayinupdatesign, this, this.player.x());
@@ -1508,7 +1516,7 @@
          this.player.resetIdleTimer();
          WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
          BlockPosition blockposition = packetplayinupdatesign.a();
-@@ -977,14 +2051,30 @@
+@@ -977,14 +2055,30 @@
  
              if (!tileentitysign.a() || tileentitysign.e() != this.player) {
                  this.minecraftServer.warning("Player " + this.player.getName() + " just tried to change non-editable sign");
@@ -1540,7 +1548,7 @@
  
              tileentitysign.update();
              worldserver.notify(blockposition, iblockdata, iblockdata, 3);
-@@ -1007,11 +2097,27 @@
+@@ -1007,11 +2101,27 @@
  
      public void a(PacketPlayInAbilities packetplayinabilities) {
          PlayerConnectionUtils.ensureMainThread(packetplayinabilities, this, this.player.x());
@@ -1569,7 +1577,7 @@
          ArrayList arraylist = Lists.newArrayList();
          Iterator iterator = this.minecraftServer.tabCompleteCommand(this.player, packetplayintabcomplete.a(), packetplayintabcomplete.b(), packetplayintabcomplete.c()).iterator();
  
-@@ -1037,6 +2143,13 @@
+@@ -1037,6 +2147,13 @@
          ItemStack itemstack1;
  
          if ("MC|BEdit".equals(s)) {
@@ -1583,7 +1591,7 @@
              packetdataserializer = packetplayincustompayload.b();
  
              try {
-@@ -1055,15 +2168,25 @@
+@@ -1055,15 +2172,25 @@
                  }
  
                  if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack.getItem() == itemstack1.getItem()) {
@@ -1609,7 +1617,7 @@
                  packetdataserializer = packetplayincustompayload.b();
  
                  try {
-@@ -1097,10 +2220,11 @@
+@@ -1097,10 +2224,11 @@
                          }
  
                          itemstack2.a("pages", (NBTBase) nbttaglist);
@@ -1622,7 +1630,7 @@
                  }
              } else if ("MC|TrSel".equals(s)) {
                  try {
-@@ -1112,6 +2236,7 @@
+@@ -1112,6 +2240,7 @@
                      }
                  } catch (Exception exception2) {
                      PlayerConnection.LOGGER.error("Couldn\'t select trade", exception2);
@@ -1630,7 +1638,7 @@
                  }
              } else {
                  TileEntity tileentity;
-@@ -1161,6 +2286,7 @@
+@@ -1161,6 +2290,7 @@
                          }
                      } catch (Exception exception3) {
                          PlayerConnection.LOGGER.error("Couldn\'t set command block", exception3);
@@ -1638,7 +1646,7 @@
                      }
                  } else if ("MC|AutoCmd".equals(s)) {
                      if (!this.minecraftServer.getEnableCommandBlock()) {
-@@ -1228,6 +2354,7 @@
+@@ -1228,6 +2358,7 @@
                          }
                      } catch (Exception exception4) {
                          PlayerConnection.LOGGER.error("Couldn\'t set command block", exception4);
@@ -1646,7 +1654,7 @@
                      }
                  } else {
                      int k;
-@@ -1251,6 +2378,7 @@
+@@ -1251,6 +2382,7 @@
                                  }
                              } catch (Exception exception5) {
                                  PlayerConnection.LOGGER.error("Couldn\'t set beacon", exception5);
@@ -1654,7 +1662,7 @@
                              }
                          }
                      } else if ("MC|ItemName".equals(s)) {
-@@ -1337,6 +2465,7 @@
+@@ -1337,6 +2469,7 @@
                              }
                          } catch (Exception exception6) {
                              PlayerConnection.LOGGER.error("Couldn\'t set structure block", exception6);
@@ -1662,7 +1670,7 @@
                          }
                      } else if ("MC|PickItem".equals(s)) {
                          packetdataserializer = packetplayincustompayload.b();
-@@ -1349,11 +2478,49 @@
+@@ -1349,11 +2482,49 @@
                              this.player.playerConnection.sendPacket(new PacketPlayOutHeldItemSlot(this.player.inventory.itemInHandIndex));
                          } catch (Exception exception7) {
                              PlayerConnection.LOGGER.error("Couldn\'t pick item", exception7);
