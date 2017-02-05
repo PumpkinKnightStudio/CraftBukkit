@@ -32,7 +32,7 @@ public class CraftChatMessageTest {
     @Test
     public void testFromStringSimple() {
         assertComponentsEqual(CraftChatMessage.fromString("Text"),
-                "{text:\"\",extra:[{text:Text}]}");
+                "{text:Text}");
     }
 
     @Test
@@ -86,10 +86,10 @@ public class CraftChatMessageTest {
                 CraftChatMessage.fromString(ChatColor.RED + "Te" + ChatColor.RESET + "xt"),
                 "{text:\"\",extra:[{text:Te,color:red},{text:xt}]}");
 
-        // Invalid format codes are just left as-is
+        // Invalid format codes are removed
         assertComponentsEqual(
                 CraftChatMessage.fromString(ChatColor.COLOR_CHAR + "qText"),
-                "{text:\"\",extra:[{text:\"\\u00a7qText\"}]}");
+                "{text:\"\",extra:[{text:\"Text\"}]}");
     }
 
     @Test
@@ -129,30 +129,43 @@ public class CraftChatMessageTest {
     public void testFromStringMultiline() {
         // False - split the component
 
-        // Middle and trailing newlines are removed, but a single leading newline is kept
+        // No newlines are removed, even if they're in the middle or at the end
         assertComponentsEqual(CraftChatMessage.fromString("\n\nTest\n\ntest\n\n", false),
                 "{text:\"\"}",
-                "{text:\"\",extra:[{text:Test}]}",
-                "{text:\"\",extra:[{text:test}]}");
+                "{text:\"\"}",
+                "{text:Test}",
+                "{text:\"\"}",
+                "{text:test}",
+                "{text:\"\"}",
+                "{text:\"\"}");
         // Color is conserved between lines
         assertComponentsEqual(CraftChatMessage.fromString(ChatColor.RED + "Test\ntest", false),
                 "{text:\"\",extra:[{text:Test,color:red}]}",
                 "{text:\"\",extra:[{text:test,color:red}]}");
+        // No empty component for the blue before the newline
+        assertComponentsEqual(CraftChatMessage.fromString(
+                        ChatColor.RED + "Test"
+                        + ChatColor.BLUE + "\ntest", false),
+                "{text:\"\",extra:[{text:Test,color:red}]}",
+                "{text:\"\",extra:[{text:test,color:blue}]}");
 
         // True - embed the \n inside of the component
 
-        // All newlines are conserved, in their own components
+        // All newlines are conserved, in the same component
         assertComponentsEqual(CraftChatMessage.fromString("\n\nTest\n\ntest\n\n", true),
-                "{text:\"\",extra:[{text:\"\\n\"},{text:\"\\n\"},{text:Test},"
-                + "{text:\"\\n\"},{text:\"\\n\"},{text:test},{text:\"\\n\"},{text:\"\\n\"}]}");
-        // Color is still conserved, though not on the \n component
+                "{text:\"\\n\\nTest\\n\\ntest\\n\\n\"}");
+        // Color is still conserved, and everything is in one component
         assertComponentsEqual(CraftChatMessage.fromString(ChatColor.RED + "Test\ntest", true),
-                "{text:\"\",extra:[{text:Test,color:red},{text:\"\\n\"},{text:test,color:red}]}");
+                "{text:\"\",extra:[{text:\"Test\\ntest\",color:red}]}");
+        assertComponentsEqual(CraftChatMessage.fromString(
+                        ChatColor.RED + "Test"
+                        + ChatColor.BLUE + "\ntest", true),
+                "{text:\"\",extra:[{text:\"Test\",color:red},{text:\"\ntest\",color:blue}]}");
     }
 
     @Test
     public void testFromComponent() {
-        // Red should be included since it's the default color
+        // Red should be included since it's not the default color
         assertThat(CraftChatMessage.fromComponent(
                 component("{text:Test,color:red}")),
                 is(ChatColor.RED + "Test"));
@@ -162,22 +175,21 @@ public class CraftChatMessageTest {
         assertThat(CraftChatMessage.fromComponent(
                 component("{text:Test,color:red,extra:[{text:\"Also red\"}]}")),
                 is(ChatColor.RED + "Test" + ChatColor.RED + "Also red"));
-        // Black is stripped by default
+        // Black is also not stripped
         assertThat(CraftChatMessage.fromComponent(
                 component("{text:Test,color:black}")),
-                is("Test"));
-        // Only the leading instance is stripped
+                is(ChatColor.BLACK + "Test"));
         assertThat(CraftChatMessage.fromComponent(
                 component("{text:\"\",extra:[{text:Test1,color:black},{text:Test2,color:black}]}")),
-                is("Test1" + ChatColor.BLACK + "Test2"));
-        // Since the default color is black, unstyled components have that color inserted
+                is(ChatColor.BLACK + "Test1" + ChatColor.BLACK + "Test2"));
+        // Unstyled components have RESET inserted
         assertThat(CraftChatMessage.fromComponent(
-                component("{text:\"\",extra:[{text:Test1,color:red},{text:Test2,color:black}]}")),
-                is(ChatColor.RED + "Test1" + ChatColor.BLACK + "Test2"));
+                component("{text:\"\",extra:[{text:Test1,color:red},{text:Test2}]}")),
+                is(ChatColor.RED + "Test1" + ChatColor.RESET + "Test2"));
         // ... even when there is no other color.
         assertThat(CraftChatMessage.fromComponent(
                 component("{text:Test1,extra:[{text:Test2}]}")),
-                is("Test1" + ChatColor.BLACK + "Test2"));
+                is("Test1" + ChatColor.RESET + "Test2"));
     }
 
     @Test
@@ -187,12 +199,11 @@ public class CraftChatMessageTest {
                 "{text:\"\",extra:[{text:\"test \"},{text:\"example.com\","
                 + "clickEvent:{action:open_url,value:\"http://example.com\"}},"
                 + "{text:\" test\"}]}");
-        // Extra padding empty components...
+        // No empty padding components
         assertComponentEquals(CraftChatMessage.fixComponent(
                 component("{text:\"example.com\"}")),
-                "{text:\"\",extra:[{text:\"\"},{text:\"example.com\","
-                + "clickEvent:{action:open_url,value:\"http://example.com\"}},"
-                + "{text:\"\"}]}");
+                "{text:\"\",extra:[{text:\"example.com\","
+                + "clickEvent:{action:open_url,value:\"http://example.com\"}}]}");
         // Existing click events are replaced only for the link component
         assertComponentEquals(CraftChatMessage.fixComponent(
                 component("{text:\"Click if you like example.com!\",clickEvent:"
