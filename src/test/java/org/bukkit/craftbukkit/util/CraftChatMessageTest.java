@@ -229,15 +229,16 @@ public class CraftChatMessageTest {
     @Test
     public void testFormatSimple() {
         assertComponentsEqual(CraftChatMessage.formatComponent("<%s> %s", "name", "value"),
-                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+                "{text:\"<name> value\"}");
         assertComponentsEqual(CraftChatMessage.formatComponent("<%1$s> %2$s", "name", "value"),
-                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+                "{text:\"<name> value\"}");
+        // Components are inlined when possible
         assertComponentsEqual(CraftChatMessage.formatComponent("<%s> %s",
                 component("\"name\""), component("\"value\"")),
-                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+                "{text:\"<name> value\"}");
         assertComponentsEqual(CraftChatMessage.formatComponent("<%1$s> %2$s",
                 component("\"name\""), component("\"value\"")),
-                "{text:\"\",extra:[{text:\"<\"},{text:\"name\"},{text:\"> \"},{text:\"value\"}]}");
+                "{text:\"<name> value\"}");
         // Avoid empty components
         assertComponentsEqual(CraftChatMessage.formatComponent("%s", "name"),
                 "{text:name}");
@@ -248,7 +249,7 @@ public class CraftChatMessageTest {
     @Test
     public void testFormatPercent() {
         assertComponentsEqual(CraftChatMessage.formatComponent("%s%%%s", "s1", "s2"),
-                "{text:\"\",extra:[{text:\"s1\"},{text:\"%\"},{text:\"s2\"}]}");
+                "{text:\"s1%s2\"}");
     }
 
     @Test
@@ -262,14 +263,18 @@ public class CraftChatMessageTest {
                 "{color:blue,text:Text}");
         assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
                 ChatColor.BLUE + "Text"),
-                "{text:\"\",color:red,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
-        // Formatting is kept both ways
+                "{text:\"\",extra:[{color:red,text:\"Hey \"},{color:blue,text:Text}]}");
+        // Formatting is kept both ways (unlike FromString), as a hierarchy is made
         assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "Hey %s",
                 ChatColor.BOLD + "Text"),
-                "{text:\"\",color:red,extra:[{text:\"Hey \"},{bold:true,text:Text}]}");
+                "{text:\"\",extra:[{color:red,text:\"Hey \"},{color:red,bold:true,text:Text}]}");
         assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.BOLD + "Hey %s",
                 ChatColor.BLUE + "Text"),
-                "{text:\"\",bold:true,extra:[{text:\"Hey \"},{color:blue,text:Text}]}");
+                "{text:\"\",extra:[{bold:true,text:\"Hey \"},{color:blue,text:Text}]}");
+        // Formatting is kept before and after, but the middle is changed.
+        assertComponentsEqual(CraftChatMessage.formatComponent(
+                ChatColor.RED + "RED%sRED", ChatColor.BLUE + "BLUE"),
+                "{text:\"\",extra:[{color:red,text:RED},{color:blue,text:BLUE},{color:red,text:RED}]}");
     }
 
     @Test
