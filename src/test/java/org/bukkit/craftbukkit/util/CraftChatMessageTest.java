@@ -2,14 +2,11 @@ package org.bukkit.craftbukkit.util;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-
 import net.minecraft.server.ChatModifier;
 import net.minecraft.server.ChatTypeAdapterFactory;
 import net.minecraft.server.IChatBaseComponent;
-
 import org.bukkit.ChatColor;
 import org.junit.Test;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -275,6 +272,9 @@ public class CraftChatMessageTest {
         assertComponentsEqual(CraftChatMessage.formatComponent(
                 ChatColor.RED + "RED%sRED", ChatColor.BLUE + "BLUE"),
                 "{text:\"\",extra:[{color:red,text:RED},{color:blue,text:BLUE},{color:red,text:RED}]}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(
+                ChatColor.RED + "RED%sRED", component("{color:blue,text:BLUE}")),
+                "{text:\"\",extra:[{color:red,text:RED},{color:blue,text:BLUE},{color:red,text:RED}]}");
     }
 
     @Test
@@ -308,8 +308,26 @@ public class CraftChatMessageTest {
                         "A %s message", component("{translate:translation.test.args,"
                                 + "with:[{translate:translation.test.none},{text:v2}]}")),
                 "{text:\"\",extra:[{text:\"A \"},{translate:\"translation.test.args\","
-                        + "with:[{translate:translation.test.none},\"v2\"]},{text:\" message\"}]}");
-        // NOTE: {text:v2} became "v2".  I'm not sure why, but that seems to be vanilla behavior.
+                        + "with:[{translate:translation.test.none},{text:v2}]},{text:\" message\"}]}");
+    }
+
+    @Test
+    public void testFormatAlternate() {
+        // Plain-text formatting.
+        assertComponentsEqual(CraftChatMessage.formatComponent("A %#s message",
+                "text"), "{text:\"A text message\"}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("A %#s message",
+                component("{text:text}")), "{text:\"A text message\"}");
+        // Alternate strips formatting, even when present
+        assertComponentsEqual(CraftChatMessage.formatComponent("A %#s message",
+                ChatColor.BLUE + "text"), "{text:\"A text message\"}");
+        assertComponentsEqual(CraftChatMessage.formatComponent("A %#s message",
+                component("{color:blue,text:text}")), "{text:\"A text message\"}");
+        // Alternate doesn't reset formatting around it
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "A %#s message",
+                ChatColor.BLUE + "text"), "{color:red,text:\"A text message\"}");
+        assertComponentsEqual(CraftChatMessage.formatComponent(ChatColor.RED + "A %#s message",
+                component("{color:blue,text:text}")), "{color:red,text:\"A text message\"}");
     }
 
     /**

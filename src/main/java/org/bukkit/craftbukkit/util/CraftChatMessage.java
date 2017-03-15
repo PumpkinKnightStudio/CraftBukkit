@@ -2,12 +2,14 @@ package org.bukkit.craftbukkit.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Formattable;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.bukkit.ChatColor;
 import org.bukkit.util.FormatValidator;
 import net.minecraft.server.ChatClickable;
@@ -123,24 +125,7 @@ public final class CraftChatMessage {
                     // Update the line with the current format code.
 
                     StringBuilder newSection = new StringBuilder();
-                    if (modifier.getColor() != null) {
-                        newSection.append(modifier.getColor());
-                    }
-                    if (modifier.isBold()) {
-                        newSection.append(EnumChatFormat.BOLD);
-                    }
-                    if (modifier.isItalic()) {
-                        newSection.append(EnumChatFormat.ITALIC);
-                    }
-                    if (modifier.isUnderlined()) {
-                        newSection.append(EnumChatFormat.UNDERLINE);
-                    }
-                    if (modifier.isStrikethrough()) {
-                        newSection.append(EnumChatFormat.STRIKETHROUGH);
-                    }
-                    if (modifier.isRandom()) {
-                        newSection.append(EnumChatFormat.OBFUSCATED);
-                    }
+                    writeModifier(modifier, newSection);
                     newSection.append(split[i]);
                     split[i] = newSection.toString();
                 }
@@ -197,6 +182,31 @@ public final class CraftChatMessage {
         return modifier;
     }
 
+    private static void writeModifier(@Nullable ChatModifier modi, StringBuilder out) {
+        if (modi == null) {
+            // Don't write anything with a null modifier.
+            return;
+        }
+
+        // Using RESET avoids "bleeding" of colors between different sections
+        out.append(modi.getColor() == null ? EnumChatFormat.RESET : modi.getColor());
+        if (modi.isBold()) {
+            out.append(EnumChatFormat.BOLD);
+        }
+        if (modi.isItalic()) {
+            out.append(EnumChatFormat.ITALIC);
+        }
+        if (modi.isUnderlined()) {
+            out.append(EnumChatFormat.UNDERLINE);
+        }
+        if (modi.isStrikethrough()) {
+            out.append(EnumChatFormat.STRIKETHROUGH);
+        }
+        if (modi.isRandom()) {
+            out.append(EnumChatFormat.OBFUSCATED);
+        }
+    }
+
     /**
      * Converts the given component into a formatted string.
      *
@@ -209,22 +219,7 @@ public final class CraftChatMessage {
         
         for (IChatBaseComponent c : (Iterable<IChatBaseComponent>) component) {
             ChatModifier modi = c.getChatModifier();
-            out.append(modi.getColor() == null ? EnumChatFormat.RESET : modi.getColor());
-            if (modi.isBold()) {
-                out.append(EnumChatFormat.BOLD);
-            }
-            if (modi.isItalic()) {
-                out.append(EnumChatFormat.ITALIC);
-            }
-            if (modi.isUnderlined()) {
-                out.append(EnumChatFormat.UNDERLINE);
-            }
-            if (modi.isStrikethrough()) {
-                out.append(EnumChatFormat.STRIKETHROUGH);
-            }
-            if (modi.isRandom()) {
-                out.append(EnumChatFormat.OBFUSCATED);
-            }
+            writeModifier(modi, out);
             out.append(c.getText());
         }
         return out.toString().replaceFirst("^(" + EnumChatFormat.RESET + ")*", "");
@@ -344,14 +339,26 @@ public final class CraftChatMessage {
      *            {@link FormatValidator#isValidFormat(String, int)}.
      * @param args
      *            The arguments to format with. Components will be inserted
-     *            directly, and other types will be modified as needed.
+     *            directly, and other types converted via toString.
      * @return The formatted components (an array of lines)
      * @see ChatMessage
      */
     public static IChatBaseComponent[] formatComponent(String format, Object... args) {
+        // Convert to an array of components, so that ComponentBuilder works
+        IChatBaseComponent[] formatArgs = new IChatBaseComponent[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof IChatBaseComponent) {
+                formatArgs[i] = (IChatBaseComponent) args[i];
+            } else if (args[i] != null) {
+                formatArgs[i] = fromString(args[i].toString(), true)[0];
+            } else {
+                formatArgs[i] = new ChatComponentText("null");
+            }
+        }
+
         ComponentBuilder componentBuilder = new ComponentBuilder();
         Formatter formatter = new Formatter(componentBuilder);
-        formatter.format(format, args);
+        formatter.format(format, (Object[]) formatArgs);
         formatter.close(); // Note: there is nothing that actually needs closing
 
         return componentBuilder.getComponents();
@@ -362,14 +369,44 @@ public final class CraftChatMessage {
 
     /**
      * An implementation of {@link Appendable} that works with chat components.
+     * <p>
+     * This is a somewhat hacky implementation that gets {@link Formatter} to
+     * format components for us: normal text is appended directly using the
+     * methods normally given to Appendable, but components use
+     * {@link #appendComponent} instead. This is possible by making components
+     * also implement {@link Formattable}, and explicitly call the appropriate
+     * method (instead of letting Formatter do the default formatting on an
+     * object's toString). This does slightly break the contract for
+     * Formattable, but in a stable manner (plus, the example given in the docs
+     * for Formattable <a href="http://stackoverflow.com/q/42754935/3991344">is
+     * broken</a>).
+     * <p>
+     * Doing this allows us to inherit styles on components without doing any
+     * real work (trying to identify what is/isn't a component), which is highly
+     * convenient. There is one caveat, though: the format arg array passed to
+     * the formatter must be entirely made of components, as otherwise we wouldn't
+     * be able to identify something as a component (and thus enable inheritance);
+     * it'd be indistinguishable from the regular text.  This is not that difficult,
+     * but it does make the process slightly more complex.
+     * <p>
+     * For convenience reasons, components also support an ALTERNATE format flag,
+     * which causes them to only output their plain text (instead of a formatted
+     * color code). <samp>%s</samp> produces rich text; <samp>%#s</samp> produces
+     * plain text.
      */
     public static class ComponentBuilder implements Appendable {
-        private StringBuilder currentComponentText = new StringBuilder();
         private List<IChatBaseComponent> currentLine = new ArrayList<IChatBaseComponent>();
         private List<IChatBaseComponent> lines = new ArrayList<IChatBaseComponent>();
+        // Current plain text.  May contain format codes.
+        private StringBuilder currentComponentText = new StringBuilder();
+        // Updated after writeExistingTextIfNeeded is called.
+        private ChatModifier style = null;
 
         @Override
         public Appendable append(CharSequence csq) throws IOException {
+            if (csq != null) {
+                writeModifier(this.style, currentComponentText);
+            }
             currentComponentText.append(csq);
             return this;
         }
@@ -377,7 +414,11 @@ public final class CraftChatMessage {
         @Override
         public Appendable append(CharSequence csq, int start, int end)
                 throws IOException {
-            return append(csq.subSequence(start, end));
+            if (csq != null) {
+                writeModifier(this.style, currentComponentText);
+            }
+            currentComponentText.append(csq, start, end);
+            return this;
         }
 
         @Override
@@ -403,17 +444,10 @@ public final class CraftChatMessage {
                 return this;
             }
 
-            writeExistingTextIfNeeded();
-            if (!currentLine.isEmpty()) {
-                // Add as a child, to enable inheritance.
-                // This child relationship WILL be removed when components are fixed,
-                // but simplifies the process.
-                currentLine.get(currentLine.size() - 1).addSibling(component);
-            } else {
-                // Nothing to add a child to, but that means there's no style to
-                // merge anyways
-                currentLine.add(component);
-            }
+            flushText();
+            // Note: setChatModifier updates the parent
+            component.getChatModifier().setChatModifier(this.style);
+            currentLine.add(component);
             return this;
         }
 
@@ -436,7 +470,7 @@ public final class CraftChatMessage {
         }
 
         public IChatBaseComponent[] getComponents() {
-            writeExistingTextIfNeeded();
+            flushText();
 
             // Write out the current line.
             if (!currentLine.isEmpty()) {
@@ -460,10 +494,15 @@ public final class CraftChatMessage {
             return components;
         }
 
-        private void writeExistingTextIfNeeded() {
+        /**
+         * Flushes the current in-progress component text to the current line.
+         */
+        private void flushText() {
+            System.out.println(currentComponentText);
             if (currentComponentText.length() != 0) {
                 IChatBaseComponent[] components = fromString(currentComponentText.toString());
                 currentLine.add(components[0]);
+                System.out.println(components[0].getChatModifier());
                 for (int i = 1; i < components.length; i++) {
                     // Add any remaining lines, for each component
                     if (currentLine.size() == 1) {
@@ -474,7 +513,6 @@ public final class CraftChatMessage {
                             text.addSibling(c);
                         }
                         lines.add(text);
-
                     }
                     currentLine.clear();
                     // Now add the current text to the line
@@ -482,7 +520,10 @@ public final class CraftChatMessage {
                 }
                 // Clear the text
                 currentComponentText.delete(0, currentComponentText.length());
+                // Update the current style
+                this.style = components[components.length - 1].getChatModifier().clone();
             }
+            System.out.println(this.currentLine);
         }
     }
 }

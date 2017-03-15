@@ -1,6 +1,17 @@
 --- a/net/minecraft/server/ChatBaseComponent.java
 +++ b/net/minecraft/server/ChatBaseComponent.java
-@@ -112,7 +112,7 @@
+@@ -6,8 +6,9 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import javax.annotation.Nullable;
++import org.bukkit.craftbukkit.util.CraftChatMessage; // CraftBukkit
+ 
+-public abstract class ChatBaseComponent implements IChatBaseComponent {
++public abstract class ChatBaseComponent implements IChatBaseComponent, java.util.Formattable { // CraftBukkit: implement Formattable
+ 
+     protected List<IChatBaseComponent> a = Lists.newArrayList();
+     private ChatModifier b;
+@@ -112,10 +113,44 @@
      }
  
      public int hashCode() {
@@ -9,3 +20,40 @@
      }
  
      public String toString() {
+         return "BaseComponent{style=" + this.b + ", siblings=" + this.a + '}';
+     }
++
++    // CraftBukkit start - new method
++    /**
++     * {@inheritDoc}
++     * @see CraftChatMessage.ComponentBuilder ComponentBuilder for more info on why
++     */
++    @Override
++    public void formatTo(java.util.Formatter formatter, int flags, int width, int percision) {
++        if ((flags & ~java.util.FormattableFlags.ALTERNATE) != 0) {
++            throw new UnsupportedOperationException("Components can't have format flags other than ALTERNATE (#): " + flags);
++        }
++        if (width != -1) {
++            throw new UnsupportedOperationException("Components can't have width when formatting: " + width);
++        }
++        if (percision != -1) {
++            throw new UnsupportedOperationException("Components can't have percision when formatting: " + percision);
++        }
++        boolean keepFormat = (flags & java.util.FormattableFlags.ALTERNATE) == 0;
++        try {
++            Appendable out = formatter.out();
++            if (keepFormat) {
++                if (out instanceof CraftChatMessage.ComponentBuilder) {
++                    ((CraftChatMessage.ComponentBuilder) out).appendComponent(this);
++                } else {
++                    out.append(CraftChatMessage.fromComponent(this));
++                }
++            } else {
++                out.append(this.toPlainText());
++            }
++        } catch (java.io.IOException ex) {
++            throw new RuntimeException("Unexpected IOException", ex);
++        }
++    }
++    // CraftBukkit end
+ }
