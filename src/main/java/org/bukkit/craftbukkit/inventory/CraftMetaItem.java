@@ -891,7 +891,6 @@ class CraftMetaItem implements ItemMeta, Repairable {
                         CraftMetaFirework.FIREWORKS.NBT,
                         CraftMetaEnchantedBook.STORED_ENCHANTMENTS.NBT,
                         CraftMetaCharge.EXPLOSION.NBT,
-                        CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT,
                         CraftMetaKnowledgeBook.BOOK_RECIPES.NBT
                 ));
             }
