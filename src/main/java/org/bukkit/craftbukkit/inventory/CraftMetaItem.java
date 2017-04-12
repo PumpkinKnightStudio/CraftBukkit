@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import net.minecraft.server.GameProfileSerializer;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
@@ -670,6 +671,16 @@ class CraftMetaItem implements ItemMeta, Repairable {
     @Override
     public void setUnbreakable(boolean unbreakable) {
         this.unbreakable = unbreakable;
+    }
+
+    @Override
+    public boolean contains(ItemMeta itemMeta, boolean checkLists) {
+        if (itemMeta == null) return true;
+        NBTTagCompound thisItemTag = new NBTTagCompound();
+        NBTTagCompound givenItemTag = new NBTTagCompound();
+        this.applyToItem(thisItemTag);
+        ((CraftMetaItem) itemMeta).applyToItem(givenItemTag);
+        return GameProfileSerializer.a(givenItemTag, thisItemTag, checkLists); // PAIL: areNBTEquals
     }
 
     @Override
