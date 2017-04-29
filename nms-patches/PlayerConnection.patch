@@ -923,11 +923,11 @@
 +                        }
 +                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
 +                            for (EntityPlayer recipient : minecraftServer.getPlayerList().players) {
-+                                recipient.sendMessage(message);
++                                recipient.sendMessage(message, false);
 +                            }
 +                        } else {
 +                            for (Player recipient : queueEvent.getRecipients()) {
-+                                ((CraftPlayer) recipient).getHandle().sendMessage(message);
++                                ((CraftPlayer) recipient).getHandle().sendMessage(message, false);
 +                            }
 +                        }
 +                        return null;
@@ -956,11 +956,11 @@
 +                }
 +                if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
 +                    for (EntityPlayer recipient : minecraftServer.getPlayerList().players) {
-+                        recipient.sendMessage(message);
++                        recipient.sendMessage(message, false);
 +                    }
 +                } else {
 +                    for (Player recipient : event.getRecipients()) {
-+                        ((CraftPlayer) recipient).getHandle().sendMessage(s);
++                        ((CraftPlayer) recipient).getHandle().sendMessage(message, false);
 +                    }
 +                }
 +            }

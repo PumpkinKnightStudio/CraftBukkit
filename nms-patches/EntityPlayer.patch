@@ -514,9 +514,9 @@
      }
  
 +    // CraftBukkit start - Support multi-line messages
-+    public void sendMessage(IChatBaseComponent[] ichatbasecomponent) {
++    public void sendMessage(IChatBaseComponent[] ichatbasecomponent, boolean systemMessage) {
 +        for (IChatBaseComponent component : ichatbasecomponent) {
-+            this.sendMessage(component);
++            this.playerConnection.sendPacket(new PacketPlayOutChat(component, systemMessage ? ChatMessageType.GAME_INFO : ChatMessageType.CHAT));
 +        }
 +    }
 +    // CraftBukkit end
