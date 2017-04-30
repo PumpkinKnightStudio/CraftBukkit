@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.bukkit.ChatColor;
-import org.bukkit.util.FormatValidator;
 import net.minecraft.server.ChatClickable;
 import net.minecraft.server.ChatClickable.EnumClickAction;
 import net.minecraft.server.ChatComponentText;
@@ -334,9 +333,7 @@ public final class CraftChatMessage {
      * arguments.
      *
      * @param format
-     *            The format string to use. Should previously have been
-     *            validated via
-     *            {@link FormatValidator#isValidFormat(String, int)}.
+     *            The format string to use.
      * @param args
      *            The arguments to format with. Components will be inserted
      *            directly, and other types converted via toString.
