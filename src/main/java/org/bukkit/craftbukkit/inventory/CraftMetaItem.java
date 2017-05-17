@@ -674,13 +674,13 @@ class CraftMetaItem implements ItemMeta, Repairable {
     }
 
     @Override
-    public boolean contains(ItemMeta itemMeta, boolean checkLists) {
+    public boolean matches(ItemMeta itemMeta, boolean matchPartialLists) {
         if (itemMeta == null) return true;
         NBTTagCompound thisItemTag = new NBTTagCompound();
         NBTTagCompound givenItemTag = new NBTTagCompound();
         this.applyToItem(thisItemTag);
         ((CraftMetaItem) itemMeta).applyToItem(givenItemTag);
-        return GameProfileSerializer.a(givenItemTag, thisItemTag, checkLists); // PAIL: areNBTEquals
+        return GameProfileSerializer.a(givenItemTag, thisItemTag, matchPartialLists); // PAIL: areNBTEquals
     }
 
     @Override
