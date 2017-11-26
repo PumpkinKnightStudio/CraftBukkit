@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.inventory;
 
 import java.util.Map;
 
+import com.google.common.collect.Multimap;
 import net.minecraft.server.CraftingManager;
 import net.minecraft.server.NonNullList;
 import net.minecraft.server.RecipeItemStack;
@@ -32,29 +33,27 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         CraftShapedRecipe ret = new CraftShapedRecipe(recipe.getKey(), recipe.getResult());
         String[] shape = recipe.getShape();
         ret.shape(shape);
-        Map<Character, ItemStack> ingredientMap = recipe.getIngredientMap();
-        for (char c : ingredientMap.keySet()) {
-            ItemStack stack = ingredientMap.get(c);
-            if (stack != null) {
-                ret.setIngredient(c, stack.getType(), stack.getDurability());
-            }
-        }
+        ret.group(recipe.getGroup());
+        Multimap<Character, ItemStack> ingredientMap = recipe.getIngredientMap();
+        ret.setIngredientMap(recipe.getIngredientMap());
         return ret;
     }
 
     public void addToCraftingManager() {
         String[] shape = this.getShape();
-        Map<Character, ItemStack> ingred = this.getIngredientMap();
+        Multimap<Character, ItemStack> ingred = this.getIngredientMap();
         int width = shape[0].length();
         NonNullList<RecipeItemStack> data = NonNullList.a(shape.length * width, RecipeItemStack.a);
 
         for (int i = 0; i < shape.length; i++) {
             String row = shape[i];
             for (int j = 0; j < row.length(); j++) {
-                data.set(i * width + j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(ingred.get(row.charAt(j)))}));
+                for(ItemStack item : ingred.get(row.charAt(j))) {
+                    data.set(i * width +j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(item)}));
+                }
+                //data.set(i * width + j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(ingred.get(row.charAt(j)))}));
             }
         }
-
-        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes("", width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult())));
+        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult())));
     }
 }
