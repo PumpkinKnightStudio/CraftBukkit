@@ -1,92 +1,88 @@
 --- a/net/minecraft/server/ShapedRecipes.java
 +++ b/net/minecraft/server/ShapedRecipes.java
-@@ -14,6 +14,10 @@
+@@ -8,12 +8,19 @@
+ import com.google.gson.JsonObject;
+ import com.google.gson.JsonParseException;
+ import com.google.gson.JsonSyntaxException;
++
++import java.util.Arrays;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Iterator;
  import java.util.Map;
  import java.util.Map.Entry;
  import javax.annotation.Nullable;
 +// CraftBukkit start
++import joptsimple.internal.Strings;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 +// CraftBukkit end
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -22,6 +26,14 @@
+@@ -22,6 +29,21 @@
      private final NonNullList<RecipeItemStack> items;
      private final ItemStack result;
      private final String e;
 +    // CraftBukkit start
++    public CraftShapedRecipe bukkitRecipe;
++    private String[] shape;
 +    public MinecraftKey key;
 +
 +    @Override
 +    public void setKey(MinecraftKey key) {
 +        this.key = key;
 +    }
++
++    @Override
++    public String getGroup() {
++        return this.e;
++    }
 +    // CraftBukkit end
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +43,63 @@
+@@ -31,6 +53,29 @@
          this.result = itemstack;
      }
  
 +    // CraftBukkit start
 +    public org.bukkit.inventory.ShapedRecipe toBukkitRecipe() {
 +        CraftItemStack result = CraftItemStack.asCraftMirror(this.result);
-+        CraftShapedRecipe recipe = new CraftShapedRecipe(result, this);
-+        switch (this.height) {
-+        case 1:
-+            switch (this.width) {
-+            case 1:
-+                recipe.shape("a");
-+                break;
-+            case 2:
-+                recipe.shape("ab");
-+                break;
-+            case 3:
-+                recipe.shape("abc");
-+                break;
++        bukkitRecipe = new CraftShapedRecipe(result, this);
++        bukkitRecipe.shape(shape);
++        bukkitRecipe.group(this.e);
++        // set ingredients
++        String str = Strings.join(shape, "");
++        int slot = 0;
++        for(RecipeItemStack list : this.items) {
++            // each 'list' is a seperate inventory slot, with all the valid itemstacks for that slot
++            for(int i = 0; i < list.choices.length; i++) {
++                // each 'choice' is a valid itemstack for this inventory slot
++                ItemStack choice = list.choices[i];
++                bukkitRecipe.setIngredient(str.charAt(slot), CraftItemStack.asBukkitCopy(choice));
 +            }
-+            break;
-+        case 2:
-+            switch (this.width) {
-+            case 1:
-+                recipe.shape("a","b");
-+                break;
-+            case 2:
-+                recipe.shape("ab","cd");
-+                break;
-+            case 3:
-+                recipe.shape("abc","def");
-+                break;
-+            }
-+            break;
-+        case 3:
-+            switch (this.width) {
-+            case 1:
-+                recipe.shape("a","b","c");
-+                break;
-+            case 2:
-+                recipe.shape("ab","cd","ef");
-+                break;
-+            case 3:
-+                recipe.shape("abc","def","ghi");
-+                break;
-+            }
-+            break;
++            slot++;
 +        }
-+        char c = 'a';
-+        for (RecipeItemStack list : this.items) {
-+            if (list != null && list.choices.length > 0) {
-+                net.minecraft.server.ItemStack stack = list.choices[0];
-+                recipe.setIngredient(c, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), (list.choices.length) > 1 ? 32767 : stack.getData());
-+            }
-+            c++;
-+        }
-+        return recipe;
++        bukkitRecipe.setHidden(this.c()); // PAIL rename isHidden
++        return bukkitRecipe;
 +    }
 +    // CraftBukkit end
 +
      public ItemStack b() {
          return this.result;
      }
+@@ -113,8 +158,11 @@
+         int j = astring.length;
+         NonNullList nonnulllist = a(astring, map, i, j);
+         ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);
+-
+-        return new ShapedRecipes(s, i, j, nonnulllist, itemstack);
++        // CraftBukkit start
++        ShapedRecipes shapedRecipe = new ShapedRecipes(s, i, j, nonnulllist, itemstack);
++        shapedRecipe.shape = Arrays.copyOf(astring, astring.length);
++        return shapedRecipe;
++        // CraftBukkit end
+     }
+ 
+     private static NonNullList<RecipeItemStack> a(String[] astring, Map<String, RecipeItemStack> map, int i, int j) {
