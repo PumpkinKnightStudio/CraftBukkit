@@ -1,7 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import java.util.Map;
-
 import com.google.common.collect.Multimap;
 import net.minecraft.server.CraftingManager;
 import net.minecraft.server.NonNullList;
@@ -15,7 +13,7 @@ import org.bukkit.inventory.ShapedRecipe;
 
 public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
     // TODO: Could eventually use this to add a matches() method or some such
-    private ShapedRecipes recipe;
+    private ShapedRecipes handle;
 
     public CraftShapedRecipe(NamespacedKey key, ItemStack result) {
         super(key, result);
@@ -23,7 +21,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
 
     public CraftShapedRecipe(ItemStack result, ShapedRecipes recipe) {
         this(CraftNamespacedKey.fromMinecraft(recipe.key), result);
-        this.recipe = recipe;
+        this.handle = recipe;
     }
 
     public static CraftShapedRecipe fromBukkitRecipe(ShapedRecipe recipe) {
@@ -34,7 +32,6 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         String[] shape = recipe.getShape();
         ret.shape(shape);
         ret.group(recipe.getGroup());
-        Multimap<Character, ItemStack> ingredientMap = recipe.getIngredientMap();
         ret.setIngredientMap(recipe.getIngredientMap());
         return ret;
     }
