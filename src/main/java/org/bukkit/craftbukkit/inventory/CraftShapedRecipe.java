@@ -51,6 +51,6 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 //data.set(i * width + j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(ingred.get(row.charAt(j)))}));
             }
         }
-        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult())));
+        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape));
     }
 }
