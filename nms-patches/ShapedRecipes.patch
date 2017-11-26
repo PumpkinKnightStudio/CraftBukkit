@@ -51,7 +51,7 @@
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +55,45 @@
+@@ -31,6 +55,33 @@
          this.result = itemstack;
      }
  
@@ -66,20 +66,8 @@
 +        CraftShapedRecipe bukkitRecipe = new CraftShapedRecipe(craftStack, this);
 +        bukkitRecipe.group(e);
 +        bukkitRecipe.setHidden(this.c()); // PAIL rename isHidden
-+        if(this.shape != null) {
-+            switch(this.height) {
-+                case 0:
-+                    return bukkitRecipe; // no shape set
-+                case 1:
-+                    bukkitRecipe.shape(this.shape[0]);
-+                    break;
-+                case 2:
-+                    bukkitRecipe.shape(this.shape[0], this.shape[1]);
-+                    break;
-+                case 3:
-+                    bukkitRecipe.shape(this.shape[0], this.shape[1], this.shape[2]);
-+                    break;
-+            }
++        if(this.shape != null && (shape.length > 0 && shape.length < 4) ) {
++            bukkitRecipe.shape(this.shape);
 +            int slot = 0;
 +            String str = Strings.join(this.shape, "");
 +            for(RecipeItemStack list : this.items) {
@@ -97,7 +85,7 @@
      public ItemStack b() {
          return this.result;
      }
-@@ -113,8 +176,7 @@
+@@ -113,8 +164,7 @@
          int j = astring.length;
          NonNullList nonnulllist = a(astring, map, i, j);
          ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);

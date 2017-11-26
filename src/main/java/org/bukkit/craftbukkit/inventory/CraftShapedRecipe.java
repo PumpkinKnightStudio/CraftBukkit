@@ -1,15 +1,21 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ArrayListMultimap;
+import joptsimple.internal.Strings;
 import net.minecraft.server.CraftingManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NonNullList;
 import net.minecraft.server.RecipeItemStack;
 import net.minecraft.server.ShapedRecipes;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
     // TODO: Could eventually use this to add a matches() method or some such
@@ -38,19 +44,41 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
 
     public void addToCraftingManager() {
         String[] shape = this.getShape();
-        Multimap<Character, ItemStack> ingred = this.getIngredientMap();
+        ArrayListMultimap<Character, ItemStack> ingred = this.getIngredientMap();
         int width = shape[0].length();
         NonNullList<RecipeItemStack> data = NonNullList.a(shape.length * width, RecipeItemStack.a);
 
+        int idx = 0;
+        for(int i = 0; i < shape.length; i++) {
+            String row = shape[i];
+            for(int j = 0; j < row.length(); j++) {
+
+                List<ItemStack> bukkitStacks = ingred.get(row.charAt(j));
+                List<net.minecraft.server.ItemStack> choices = new ArrayList<>();
+                idx = 0;
+                for(ItemStack item : bukkitStacks) {
+                    net.minecraft.server.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+                    if(nmsStack.isEmpty()) {
+                        Bukkit.getLogger().info("Attempting to register an empty ItemStack!");
+                        continue;
+                    }
+                    choices.add(nmsStack);
+                }
+                data.set(i * width + j, RecipeItemStack.a(choices.toArray(new net.minecraft.server.ItemStack[choices.size()])));
+            }
+        }
+        /*
         for (int i = 0; i < shape.length; i++) {
             String row = shape[i];
             for (int j = 0; j < row.length(); j++) {
                 for(ItemStack item : ingred.get(row.charAt(j))) {
-                    data.set(i * width +j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(item)}));
+                    net.minecraft.server.ItemStack nms = CraftItemStack.asNMSCopy(item);
+                    //data.set(i * width +j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{nms}));
                 }
                 //data.set(i * width + j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(ingred.get(row.charAt(j)))}));
             }
         }
+        */
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape));
     }
 }
