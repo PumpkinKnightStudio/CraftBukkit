@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ShapelessRecipes.java
 +++ b/net/minecraft/server/ShapelessRecipes.java
-@@ -6,12 +6,24 @@
+@@ -6,12 +6,29 @@
  import com.google.gson.JsonParseException;
  import java.util.ArrayList;
  import java.util.Iterator;
@@ -21,11 +21,16 @@
 +    public void setKey(MinecraftKey key) {
 +        this.key = key;
 +    }
++
++    @Override
++    public String getGroup() {
++        return this.c;
++    }
 +    // CraftBukkit end
  
      public ShapelessRecipes(String s, ItemStack itemstack, NonNullList<RecipeItemStack> nonnulllist) {
          this.c = s;
-@@ -19,6 +31,21 @@
+@@ -19,6 +36,21 @@
          this.ingredients = nonnulllist;
      }
  
