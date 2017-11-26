@@ -20,12 +20,11 @@
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -22,6 +29,21 @@
+@@ -22,6 +29,20 @@
      private final NonNullList<RecipeItemStack> items;
      private final ItemStack result;
      private final String e;
 +    // CraftBukkit start
-+    public CraftShapedRecipe bukkitRecipe;
 +    private String[] shape;
 +    public MinecraftKey key;
 +
@@ -42,14 +41,14 @@
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +53,29 @@
+@@ -31,6 +52,29 @@
          this.result = itemstack;
      }
  
 +    // CraftBukkit start
 +    public org.bukkit.inventory.ShapedRecipe toBukkitRecipe() {
 +        CraftItemStack result = CraftItemStack.asCraftMirror(this.result);
-+        bukkitRecipe = new CraftShapedRecipe(result, this);
++        CraftShapedRecipe bukkitRecipe = new CraftShapedRecipe(result, this);
 +        bukkitRecipe.shape(shape);
 +        bukkitRecipe.group(this.e);
 +        // set ingredients
@@ -72,7 +71,7 @@
      public ItemStack b() {
          return this.result;
      }
-@@ -113,8 +158,11 @@
+@@ -113,8 +157,11 @@
          int j = astring.length;
          NonNullList nonnulllist = a(astring, map, i, j);
          ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);
