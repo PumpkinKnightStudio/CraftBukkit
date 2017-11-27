@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ShapelessRecipes.java
 +++ b/net/minecraft/server/ShapelessRecipes.java
-@@ -6,12 +6,29 @@
+@@ -6,12 +6,39 @@
  import com.google.gson.JsonParseException;
  import java.util.ArrayList;
  import java.util.Iterator;
@@ -16,6 +16,7 @@
      private final String c;
 +    // CraftBukkit start
 +    public MinecraftKey key;
++    public boolean hidden = false;
 +
 +    @Override
 +    public void setKey(MinecraftKey key) {
@@ -26,11 +27,20 @@
 +    public String getGroup() {
 +        return this.c;
 +    }
++
++    @Override
++    public boolean c() {
++        return hidden;
++    }
++
++    public void setHidden(boolean hidden) {
++        this.hidden = hidden;
++    }
 +    // CraftBukkit end
  
      public ShapelessRecipes(String s, ItemStack itemstack, NonNullList<RecipeItemStack> nonnulllist) {
          this.c = s;
-@@ -19,6 +36,21 @@
+@@ -19,6 +46,23 @@
          this.ingredients = nonnulllist;
      }
  
@@ -39,6 +49,8 @@
 +    public org.bukkit.inventory.ShapelessRecipe toBukkitRecipe() {
 +        CraftItemStack result = CraftItemStack.asCraftMirror(this.result);
 +        CraftShapelessRecipe recipe = new CraftShapelessRecipe(result, this);
++        recipe.group(getGroup());
++        recipe.setHidden(c()); // PAIL rename isHidden
 +        for (RecipeItemStack list : this.ingredients) {
 +            if (list != null) {
 +                net.minecraft.server.ItemStack stack = list.choices[0];

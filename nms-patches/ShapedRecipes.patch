@@ -30,12 +30,13 @@
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -22,6 +32,20 @@
+@@ -22,6 +32,30 @@
      private final NonNullList<RecipeItemStack> items;
      private final ItemStack result;
      private final String e;
 +    // CraftBukkit start
 +    public String[] shape = new String[0];
++    public boolean hidden = false;
 +    public MinecraftKey key;
 +
 +    @Override
@@ -47,11 +48,20 @@
 +    public String getGroup() {
 +        return this.e;
 +    }
++
++    @Override
++    public boolean c() {
++        return this.hidden;
++    }
++
++    public void setHidden(boolean hidden) {
++        this.hidden = hidden;
++    }
 +    // CraftBukkit end
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +55,33 @@
+@@ -31,6 +65,33 @@
          this.result = itemstack;
      }
  
@@ -85,7 +95,7 @@
      public ItemStack b() {
          return this.result;
      }
-@@ -113,8 +164,7 @@
+@@ -113,8 +174,7 @@
          int j = astring.length;
          NonNullList nonnulllist = a(astring, map, i, j);
          ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);
