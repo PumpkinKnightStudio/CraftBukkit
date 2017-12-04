@@ -49,14 +49,12 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         int width = shape[0].length();
         NonNullList<RecipeItemStack> data = NonNullList.a(shape.length * width, RecipeItemStack.a);
 
-        int idx = 0;
         for(int i = 0; i < shape.length; i++) {
             String row = shape[i];
             for(int j = 0; j < row.length(); j++) {
 
                 List<ItemStack> bukkitStacks = ingred.get(row.charAt(j));
                 List<net.minecraft.server.ItemStack> choices = new ArrayList<>();
-                idx = 0;
                 for(ItemStack item : bukkitStacks) {
                     net.minecraft.server.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
                     choices.add(nmsStack);
@@ -64,18 +62,6 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 data.set(i * width + j, RecipeItemStack.a(choices.toArray(new net.minecraft.server.ItemStack[choices.size()])));
             }
         }
-        /*
-        for (int i = 0; i < shape.length; i++) {
-            String row = shape[i];
-            for (int j = 0; j < row.length(); j++) {
-                for(ItemStack item : ingred.get(row.charAt(j))) {
-                    net.minecraft.server.ItemStack nms = CraftItemStack.asNMSCopy(item);
-                    //data.set(i * width +j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{nms}));
-                }
-                //data.set(i * width + j, RecipeItemStack.a(new net.minecraft.server.ItemStack[]{CraftItemStack.asNMSCopy(ingred.get(row.charAt(j)))}));
-            }
-        }
-        */
         ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape);
         recipe.setHidden(this.isHidden());
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
