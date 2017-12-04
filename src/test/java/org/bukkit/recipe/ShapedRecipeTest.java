@@ -57,6 +57,15 @@ public class ShapedRecipeTest extends AbstractTestingBase {
             recipe.shape(shape);
             assertArrayEquals(recipe.getShape(), shape);
         }
+
+        assertNotNull(recipe.getShape());
+        assertTrue(recipe.getShape().length > 0 && recipe.getShape().length < 4);
+        int lastLen = -1;
+        for(String row : recipe.getShape()) {
+            assertTrue(row.length() > 0 && row.length() < 4);
+            assertTrue(lastLen == -1 || lastLen == row.length());
+            lastLen = row.length();
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -64,7 +73,7 @@ public class ShapedRecipeTest extends AbstractTestingBase {
         ShapedRecipe recipe = new ShapedRecipe(NamespacedKey.minecraft("test_key"), new ItemStack(Material.STONE));
         List<String[]> list = Lists.newArrayList(
                 (String[])null,
-                new String[]{},
+                new String[0],
                 new String[]{"#", "#", "#", "#"},
                 new String[]{"####", "###", "###"},
                 new String[]{"##", "##", null},
@@ -96,6 +105,8 @@ public class ShapedRecipeTest extends AbstractTestingBase {
         recipe.setIngredient('X', xList.toArray(new ItemStack[]{}));
         recipe.setIngredient('!', exclamation.toArray(new ItemStack[]{}));
 
+        assertNotNull(recipe.getIngredientMap());
+        assertTrue(!recipe.getIngredientMap().isEmpty());
         assertEquals(recipe.getIngredientMap().get('*'), asterick);
         assertEquals(recipe.getIngredientMap().get('#').get(0), new ItemStack(Material.NETHER_STAR));
         assertEquals(recipe.getIngredientMap().get('X'), xList);
@@ -114,5 +125,8 @@ public class ShapedRecipeTest extends AbstractTestingBase {
         recipe.setIngredient(' ', new ItemStack(Material.GOLD_BLOCK));
         recipe.setIngredient('!', new ItemStack(Material.AIR));
         recipe.setIngredient('#', (ItemStack)null);
+
+        assertNotNull(recipe.getIngredientMap());
+        assertTrue(recipe.getIngredientMap().isEmpty());
     }
 }
