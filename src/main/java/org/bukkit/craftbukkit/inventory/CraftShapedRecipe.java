@@ -1,14 +1,11 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.collect.ArrayListMultimap;
-import joptsimple.internal.Strings;
+import com.google.common.collect.ListMultimap;
 import net.minecraft.server.CraftingManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NonNullList;
 import net.minecraft.server.RecipeItemStack;
 import net.minecraft.server.ShapedRecipes;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -45,7 +42,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
 
     public void addToCraftingManager() {
         String[] shape = this.getShape();
-        ArrayListMultimap<Character, ItemStack> ingred = this.getIngredientMap();
+        ListMultimap<Character, ItemStack> ingred = this.getIngredientMap();
         int width = shape[0].length();
         NonNullList<RecipeItemStack> data = NonNullList.a(shape.length * width, RecipeItemStack.a);
 
