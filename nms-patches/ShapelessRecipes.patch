@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ShapelessRecipes.java
 +++ b/net/minecraft/server/ShapelessRecipes.java
-@@ -6,12 +6,39 @@
+@@ -6,18 +6,72 @@
  import com.google.gson.JsonParseException;
  import java.util.ArrayList;
  import java.util.Iterator;
@@ -17,6 +17,7 @@
 +    // CraftBukkit start
 +    public MinecraftKey key;
 +    public boolean hidden = false;
++    private boolean exactMatch = false;
 +
 +    @Override
 +    public void setKey(MinecraftKey key) {
@@ -36,14 +37,23 @@
 +    public void setHidden(boolean hidden) {
 +        this.hidden = hidden;
 +    }
++
++    public boolean isExactMatch() {
++        return this.exactMatch;
++    }
++
++    public void setExactMatch(boolean exactMatch) {
++        this.exactMatch = exactMatch;
++    }
 +    // CraftBukkit end
  
      public ShapelessRecipes(String s, ItemStack itemstack, NonNullList<RecipeItemStack> nonnulllist) {
          this.c = s;
-@@ -19,6 +46,23 @@
+         this.result = itemstack;
          this.ingredients = nonnulllist;
-     }
- 
++        this.exactMatch = false;
++    }
++
 +    // CraftBukkit start
 +    @SuppressWarnings("unchecked")
 +    public org.bukkit.inventory.ShapelessRecipe toBukkitRecipe() {
@@ -58,9 +68,8 @@
 +            }
 +        }
 +        return recipe;
-+    }
+     }
 +    // CraftBukkit end
-+
+ 
      public ItemStack b() {
          return this.result;
-     }

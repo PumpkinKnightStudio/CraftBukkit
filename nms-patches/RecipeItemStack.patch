@@ -1,0 +1,62 @@
+--- a/net/minecraft/server/RecipeItemStack.java
++++ b/net/minecraft/server/RecipeItemStack.java
+@@ -8,22 +8,31 @@
+ 
+ public class RecipeItemStack implements Predicate<ItemStack> {
+ 
+-    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0], null) {
++    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0]) {
+         public boolean a(@Nullable ItemStack itemstack) {
+             return itemstack.isEmpty();
+         }
+ 
+-        public boolean apply(@Nullable Object object) {
++        public boolean apply(@Nullable ItemStack object) { // CraftBukkit change signature: Object -> ItemStack
+             return this.a((ItemStack) object);
+         }
+     };
+     public final ItemStack[] choices;
++    public boolean exactMatch = false;
+     private IntList c;
+ 
+-    private RecipeItemStack(ItemStack... aitemstack) {
++    public RecipeItemStack(ItemStack... aitemstack) { // CraftBukkit private -> public
+         this.choices = aitemstack;
++        this.exactMatch = false;
+     }
+ 
++    // CraftBukkit start - add constructor
++    public RecipeItemStack(boolean exactMatch, ItemStack... itemstacks) {
++        this(itemstacks);
++        this.exactMatch = exactMatch;
++    }
++    // CraftBukkit end
++
+     public boolean a(@Nullable ItemStack itemstack) {
+         if (itemstack == null) {
+             return false;
+@@ -38,7 +47,7 @@
+                     int k = itemstack1.getData();
+ 
+                     if (k == 32767 || k == itemstack.getData()) {
+-                        return true;
++                        return !exactMatch || ItemStack.equals(itemstack, itemstack1); // CraftBukkit - enable exact nbt matching in recipes
+                     }
+                 }
+             }
+@@ -96,11 +105,12 @@
+         return RecipeItemStack.a;
+     }
+ 
+-    public boolean apply(@Nullable Object object) {
+-        return this.a((ItemStack) object);
++
++    public boolean apply(@Nullable ItemStack object) { // CraftBukkit change signature: Object -> ItemStack
++        return this.a(object);
+     }
+ 
+-    RecipeItemStack(ItemStack[] aitemstack, Object object) {
++    private RecipeItemStack(ItemStack[] aitemstack, Object object) { // CraftBukkit make constructor private
+         this(aitemstack);
+     }
+ }

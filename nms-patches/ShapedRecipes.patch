@@ -30,13 +30,14 @@
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -22,6 +32,30 @@
+@@ -22,6 +32,31 @@
      private final NonNullList<RecipeItemStack> items;
      private final ItemStack result;
      private final String e;
 +    // CraftBukkit start
 +    public String[] shape = new String[0];
 +    public boolean hidden = false;
++    private boolean exactMatch = false;
 +    public MinecraftKey key;
 +
 +    @Override
@@ -61,14 +62,20 @@
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +65,33 @@
+@@ -31,6 +66,40 @@
          this.result = itemstack;
      }
  
 +    // CraftBukkit start
-+    public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack, String[] shape) {
++    public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack, String[] shape, boolean exactMatch) {
 +        this(s,i,j,nonnulllist,itemstack);
 +        this.shape = shape == null ? new String[0] : shape;
++        this.exactMatch = exactMatch;
++
++        // set recipeitemstack to follow this recipe's 'exactMatch'
++        for(RecipeItemStack stack : this.items) {
++            stack.exactMatch = this.exactMatch;
++        }
 +    }
 +
 +    public org.bukkit.inventory.ShapedRecipe toBukkitRecipe() {
@@ -76,6 +83,7 @@
 +        CraftShapedRecipe bukkitRecipe = new CraftShapedRecipe(craftStack, this);
 +        bukkitRecipe.group(e);
 +        bukkitRecipe.setHidden(this.c()); // PAIL rename isHidden
++        bukkitRecipe.setExactMatch(this.exactMatch);
 +        if(this.shape != null && (shape.length > 0 && shape.length < 4) ) {
 +            bukkitRecipe.shape(this.shape);
 +            int slot = 0;
@@ -95,13 +103,13 @@
      public ItemStack b() {
          return this.result;
      }
-@@ -113,8 +174,7 @@
+@@ -113,8 +182,7 @@
          int j = astring.length;
          NonNullList nonnulllist = a(astring, map, i, j);
          ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);
 -
 -        return new ShapedRecipes(s, i, j, nonnulllist, itemstack);
-+        return new ShapedRecipes(s,i,j,nonnulllist,itemstack,astring); // CraftBukkit - use added constructor
++        return new ShapedRecipes(s,i,j,nonnulllist,itemstack,astring, false); // CraftBukkit - use added constructor
      }
  
      private static NonNullList<RecipeItemStack> a(String[] astring, Map<String, RecipeItemStack> map, int i, int j) {
