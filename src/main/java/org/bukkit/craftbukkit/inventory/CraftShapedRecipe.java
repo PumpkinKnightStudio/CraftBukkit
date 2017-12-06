@@ -37,6 +37,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         ret.group(recipe.getGroup());
         ret.setHidden(recipe.isHidden());
         ret.setIngredientMap(recipe.getIngredientMap());
+        ret.setExactMatch(recipe.getExactMatch());
         return ret;
     }
 
@@ -59,7 +60,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 data.set(i * width + j, RecipeItemStack.a(choices.toArray(new net.minecraft.server.ItemStack[choices.size()])));
             }
         }
-        ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape);
+        ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape, this.getExactMatch());
         recipe.setHidden(this.isHidden());
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
     }
