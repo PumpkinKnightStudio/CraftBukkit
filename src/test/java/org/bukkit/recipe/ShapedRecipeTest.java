@@ -91,9 +91,9 @@ public class ShapedRecipeTest extends AbstractTestingBase {
         NamespacedKey key = NamespacedKey.minecraft("test_key");
         ShapedRecipe recipe = new ShapedRecipe(key, result);
 
-        List<ItemStack> asterick = Lists.newArrayList(new ItemStack(Material.WOOD, 1, (short) 0), new ItemStack(Material.WOOD, 1, (short) 1),
-                                                         new ItemStack(Material.WOOD, 2, (short) 0),new ItemStack(Material.WOOD, 1, (short) -100),
-                                                         new ItemStack(Material.WOOD, 4, (short) -1),new ItemStack(Material.WOOD, 1, (short) Short.MAX_VALUE));
+        List<ItemStack> asterick = Lists.newArrayList(new ItemStack(Material.WOOD, 1, (short) 0), new ItemStack(Material.WOOD, 1, (short) 3),
+                                                         new ItemStack(Material.WOOD, 2, (short) 2),new ItemStack(Material.WOOD, 1, (short) 1),
+                                                         new ItemStack(Material.WOOD, 4, (short) 4),new ItemStack(Material.WOOD, 1, (short) Short.MAX_VALUE));
         List<ItemStack> xList = Lists.newArrayList(new ItemStack(Material.SOUL_SAND));
         List<ItemStack> exclamation = Lists.newArrayList(asterick);
 
