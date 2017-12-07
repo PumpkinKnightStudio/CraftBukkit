@@ -34,6 +34,8 @@ public class CraftShapelessRecipe extends ShapelessRecipe implements CraftRecipe
             ret.addIngredient(1, ingred);
         }
         ret.setExactMatch(recipe.getExactMatch());
+        ret.hidden(recipe.isHidden());
+        recipe.group(recipe.getGroup());
         return ret;
     }
 
@@ -45,7 +47,7 @@ public class CraftShapelessRecipe extends ShapelessRecipe implements CraftRecipe
         }
         ShapelessRecipes recipe = new ShapelessRecipes(this.getGroup(), CraftItemStack.asNMSCopy(this.getResult()), data);
         recipe.setExactMatch(this.getExactMatch());
-        recipe.setHidden(this.isHidden());
+        recipe.hidden = this.isHidden();
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
     }
 }

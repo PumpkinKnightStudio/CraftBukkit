@@ -36,7 +36,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         String[] shape = recipe.getShape();
         ret.shape(shape);
         ret.group(recipe.getGroup());
-        ret.setHidden(recipe.isHidden());
+        ret.hidden(recipe.isHidden());
         ret.setIngredientMap(recipe.getIngredientMap());
         ret.setExactMatch(recipe.getExactMatch());
         return ret;
@@ -56,14 +56,13 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 List<net.minecraft.server.ItemStack> choices = new ArrayList<>();
                 for(ItemStack item : bukkitStacks) {
                     net.minecraft.server.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
-                    Bukkit.getLogger().info(this.getKey() + "-> [" + (i * width + j) + "] -> " + nmsStack.toString() + (this.getExactMatch() ? nmsStack.getTag() : ""));
                     choices.add(nmsStack);
                 }
                 data.set(i * width + j, RecipeItemStack.a(choices.toArray(new net.minecraft.server.ItemStack[choices.size()])));
             }
         }
         ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape);
-        recipe.setHidden(this.isHidden());
+        recipe.hidden = this.isHidden();
         recipe.setExactMatch(this.getExactMatch());
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
     }
