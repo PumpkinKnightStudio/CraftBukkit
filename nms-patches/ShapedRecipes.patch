@@ -81,7 +81,7 @@
 +        CraftItemStack craftStack = CraftItemStack.asCraftMirror(this.result);
 +        CraftShapedRecipe bukkitRecipe = new CraftShapedRecipe(craftStack, this);
 +        bukkitRecipe.group(e);
-+        bukkitRecipe.setHidden(this.c()); // PAIL isHidden
++        bukkitRecipe.hidden(this.c()); // PAIL isHidden
 +        bukkitRecipe.setExactMatch(this.exactMatch);
 +        if(this.shape != null && (shape.length > 0 && shape.length < 4) ) {
 +            bukkitRecipe.shape(this.shape);
