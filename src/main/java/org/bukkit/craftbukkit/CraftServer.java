@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -64,6 +63,7 @@ import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
+import org.bukkit.craftbukkit.inventory.recipe.CraftRecipeManager;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
 import org.bukkit.craftbukkit.metadata.PlayerMetadataStore;
@@ -94,6 +94,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.recipe.RecipeManager;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
@@ -172,6 +173,7 @@ public final class CraftServer implements Server {
     private boolean unrestrictedAdvancements;
     private final List<CraftPlayer> playerView;
     public int reloadCount;
+    private CraftRecipeManager craftRecipeManager;
 
     private final class BooleanWrapper {
         private boolean value = true;
@@ -204,6 +206,8 @@ public final class CraftServer implements Server {
         MobEffects.BLINDNESS.getClass();
         PotionEffectType.stopAcceptingRegistrations();
         // Ugly hack :(
+
+        this.craftRecipeManager = new CraftRecipeManager();
 
         if (!Main.useConsole) {
             getLogger().info("Console input is disabled due to --noconsole command argument");
@@ -1031,64 +1035,38 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public RecipeManager getRecipeManager() {
+        return craftRecipeManager;
+    }
+
+    @Override
+    @Deprecated
     public boolean addRecipe(Recipe recipe) {
-        CraftRecipe toAdd;
-        if (recipe instanceof CraftRecipe) {
-            toAdd = (CraftRecipe) recipe;
-        } else {
-            if (recipe instanceof ShapedRecipe) {
-                toAdd = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) recipe);
-            } else if (recipe instanceof ShapelessRecipe) {
-                toAdd = CraftShapelessRecipe.fromBukkitRecipe((ShapelessRecipe) recipe);
-            } else if (recipe instanceof FurnaceRecipe) {
-                toAdd = CraftFurnaceRecipe.fromBukkitRecipe((FurnaceRecipe) recipe);
-            } else {
-                return false;
-            }
-        }
-        toAdd.addToCraftingManager();
-        return true;
+        return getRecipeManager().addRecipe(recipe);
     }
 
     @Override
+    @Deprecated
     public List<Recipe> getRecipesFor(ItemStack result) {
-        Validate.notNull(result, "Result cannot be null");
-
-        List<Recipe> results = new ArrayList<Recipe>();
-        Iterator<Recipe> iter = recipeIterator();
-        while (iter.hasNext()) {
-            Recipe recipe = iter.next();
-            ItemStack stack = recipe.getResult();
-            if (stack.getType() != result.getType()) {
-                continue;
-            }
-            if (result.getDurability() == -1 || result.getDurability() == stack.getDurability()) {
-                results.add(recipe);
-            }
-        }
-        return results;
+        return getRecipeManager().getRecipesFor(result);
     }
 
     @Override
+    @Deprecated
     public Iterator<Recipe> recipeIterator() {
         return new RecipeIterator();
     }
 
     @Override
+    @Deprecated
     public void clearRecipes() {
-        CraftingManager.recipes = new RegistryMaterials();
-        RecipesFurnace.getInstance().recipes.clear();
-        RecipesFurnace.getInstance().customRecipes.clear();
-        RecipesFurnace.getInstance().customExperience.clear();
+        getRecipeManager().clearRecipes();
     }
 
     @Override
+    @Deprecated
     public void resetRecipes() {
-        CraftingManager.recipes = new RegistryMaterials();
-        CraftingManager.init();
-        RecipesFurnace.getInstance().recipes = new RecipesFurnace().recipes;
-        RecipesFurnace.getInstance().customRecipes.clear();
-        RecipesFurnace.getInstance().customExperience.clear();
+        getRecipeManager().resetRecipes();
     }
 
     @Override
