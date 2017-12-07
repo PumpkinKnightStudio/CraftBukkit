@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ShapelessRecipes.java
 +++ b/net/minecraft/server/ShapelessRecipes.java
-@@ -6,12 +6,51 @@
+@@ -6,12 +6,43 @@
  import com.google.gson.JsonParseException;
  import java.util.ArrayList;
  import java.util.Iterator;
@@ -30,16 +30,8 @@
 +    }
 +
 +    @Override
-+    public boolean c() {
++    public boolean c() { // PAIL isHidden
 +        return hidden;
-+    }
-+
-+    public void setHidden(boolean hidden) {
-+        this.hidden = hidden;
-+    }
-+
-+    public boolean isExactMatch() {
-+        return this.exactMatch;
 +    }
 +
 +    public void setExactMatch(boolean exactMatch) {
@@ -52,7 +44,7 @@
  
      public ShapelessRecipes(String s, ItemStack itemstack, NonNullList<RecipeItemStack> nonnulllist) {
          this.c = s;
-@@ -19,6 +58,24 @@
+@@ -19,6 +50,24 @@
          this.ingredients = nonnulllist;
      }
  
@@ -63,7 +55,7 @@
 +        CraftShapelessRecipe recipe = new CraftShapelessRecipe(result, this);
 +        recipe.group(getGroup());
 +        recipe.setHidden(c()); // PAIL rename isHidden
-+        recipe.setExactMatch(isExactMatch());
++        recipe.setExactMatch(this.exactMatch);
 +        for (RecipeItemStack list : this.ingredients) {
 +            if (list != null) {
 +                net.minecraft.server.ItemStack stack = list.choices[0];

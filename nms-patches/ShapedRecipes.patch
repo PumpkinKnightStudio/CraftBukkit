@@ -30,10 +30,12 @@
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -22,6 +32,42 @@
+@@ -21,7 +31,35 @@
+     private final int height;
      private final NonNullList<RecipeItemStack> items;
      private final ItemStack result;
-     private final String e;
+-    private final String e;
++    private final String e; // PAIL group
 +    // CraftBukkit start
 +    public String[] shape = new String[0];
 +    public boolean hidden = false;
@@ -55,14 +57,6 @@
 +        return this.hidden;
 +    }
 +
-+    public void setHidden(boolean hidden) {
-+        this.hidden = hidden;
-+    }
-+
-+    public boolean isExactMatch() {
-+        return exactMatch;
-+    }
-+
 +    public void setExactMatch(boolean exactMatch) {
 +        this.exactMatch = exactMatch;
 +        for(RecipeItemStack stack : this.items) {
@@ -73,7 +67,7 @@
  
      public ShapedRecipes(String s, int i, int j, NonNullList<RecipeItemStack> nonnulllist, ItemStack itemstack) {
          this.e = s;
-@@ -31,6 +77,34 @@
+@@ -31,6 +69,34 @@
          this.result = itemstack;
      }
  
@@ -87,7 +81,7 @@
 +        CraftItemStack craftStack = CraftItemStack.asCraftMirror(this.result);
 +        CraftShapedRecipe bukkitRecipe = new CraftShapedRecipe(craftStack, this);
 +        bukkitRecipe.group(e);
-+        bukkitRecipe.setHidden(this.c()); // PAIL rename isHidden
++        bukkitRecipe.setHidden(this.c()); // PAIL isHidden
 +        bukkitRecipe.setExactMatch(this.exactMatch);
 +        if(this.shape != null && (shape.length > 0 && shape.length < 4) ) {
 +            bukkitRecipe.shape(this.shape);
@@ -108,7 +102,7 @@
      public ItemStack b() {
          return this.result;
      }
-@@ -113,8 +187,7 @@
+@@ -113,8 +179,7 @@
          int j = astring.length;
          NonNullList nonnulllist = a(astring, map, i, j);
          ItemStack itemstack = a(ChatDeserializer.t(jsonobject, "result"), true);
