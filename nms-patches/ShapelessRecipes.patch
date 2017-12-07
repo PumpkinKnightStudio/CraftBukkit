@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ShapelessRecipes.java
 +++ b/net/minecraft/server/ShapelessRecipes.java
-@@ -6,18 +6,72 @@
+@@ -6,12 +6,51 @@
  import com.google.gson.JsonParseException;
  import java.util.ArrayList;
  import java.util.Iterator;
@@ -44,16 +44,18 @@
 +
 +    public void setExactMatch(boolean exactMatch) {
 +        this.exactMatch = exactMatch;
++        for(RecipeItemStack stack : ingredients) {
++            stack.exactMatch = this.exactMatch;
++        }
 +    }
 +    // CraftBukkit end
  
      public ShapelessRecipes(String s, ItemStack itemstack, NonNullList<RecipeItemStack> nonnulllist) {
          this.c = s;
-         this.result = itemstack;
+@@ -19,6 +58,24 @@
          this.ingredients = nonnulllist;
-+        this.exactMatch = false;
-+    }
-+
+     }
+ 
 +    // CraftBukkit start
 +    @SuppressWarnings("unchecked")
 +    public org.bukkit.inventory.ShapelessRecipe toBukkitRecipe() {
@@ -61,15 +63,17 @@
 +        CraftShapelessRecipe recipe = new CraftShapelessRecipe(result, this);
 +        recipe.group(getGroup());
 +        recipe.setHidden(c()); // PAIL rename isHidden
++        recipe.setExactMatch(isExactMatch());
 +        for (RecipeItemStack list : this.ingredients) {
 +            if (list != null) {
 +                net.minecraft.server.ItemStack stack = list.choices[0];
-+                recipe.addIngredient(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), (list.choices.length) > 1 ? 32767 : stack.getData());
++                recipe.addIngredient(1, CraftItemStack.asBukkitCopy(stack));
 +            }
 +        }
 +        return recipe;
-     }
++    }
 +    // CraftBukkit end
- 
++
      public ItemStack b() {
          return this.result;
+     }

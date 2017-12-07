@@ -46,6 +46,6 @@ public class CraftShapelessRecipe extends ShapelessRecipe implements CraftRecipe
         ShapelessRecipes recipe = new ShapelessRecipes(this.getGroup(), CraftItemStack.asNMSCopy(this.getResult()), data);
         recipe.setExactMatch(this.getExactMatch());
         recipe.setHidden(this.isHidden());
-        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapelessRecipes(this.getGroup(), CraftItemStack.asNMSCopy(this.getResult()), data));
+        CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
     }
 }

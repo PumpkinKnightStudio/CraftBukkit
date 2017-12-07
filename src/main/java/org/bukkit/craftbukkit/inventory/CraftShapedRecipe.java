@@ -6,6 +6,7 @@ import net.minecraft.server.NonNullList;
 import net.minecraft.server.RecipeItemStack;
 import net.minecraft.server.ShapedRecipes;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -55,13 +56,15 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 List<net.minecraft.server.ItemStack> choices = new ArrayList<>();
                 for(ItemStack item : bukkitStacks) {
                     net.minecraft.server.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+                    Bukkit.getLogger().info(this.getKey() + "-> [" + (i * width + j) + "] -> " + nmsStack.toString() + (this.getExactMatch() ? nmsStack.getTag() : ""));
                     choices.add(nmsStack);
                 }
                 data.set(i * width + j, RecipeItemStack.a(choices.toArray(new net.minecraft.server.ItemStack[choices.size()])));
             }
         }
-        ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape, this.getExactMatch());
+        ShapedRecipes recipe = new ShapedRecipes(getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()), shape);
         recipe.setHidden(this.isHidden());
+        recipe.setExactMatch(this.getExactMatch());
         CraftingManager.a(CraftNamespacedKey.toMinecraft(this.getKey()), recipe);
     }
 }

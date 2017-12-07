@@ -1,11 +1,15 @@
 --- a/net/minecraft/server/RecipeItemStack.java
 +++ b/net/minecraft/server/RecipeItemStack.java
-@@ -8,22 +8,31 @@
+@@ -5,27 +5,37 @@
+ import it.unimi.dsi.fastutil.ints.IntComparators;
+ import it.unimi.dsi.fastutil.ints.IntList;
+ import javax.annotation.Nullable;
++import java.util.logging.Logger;
  
  public class RecipeItemStack implements Predicate<ItemStack> {
  
 -    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0], null) {
-+    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0]) {
++    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0]) { // CraftBukkit change signature; remove null Object
          public boolean a(@Nullable ItemStack itemstack) {
              return itemstack.isEmpty();
          }
@@ -33,9 +37,12 @@
 +    // CraftBukkit end
 +
      public boolean a(@Nullable ItemStack itemstack) {
-         if (itemstack == null) {
+-        if (itemstack == null) {
++        if (itemstack == null || itemstack.isEmpty()) { // CraftBukkit add isEmpty check
              return false;
-@@ -38,7 +47,7 @@
+         } else {
+             ItemStack[] aitemstack = this.choices;
+@@ -38,7 +48,7 @@
                      int k = itemstack1.getData();
  
                      if (k == 32767 || k == itemstack.getData()) {
@@ -44,7 +51,7 @@
                      }
                  }
              }
-@@ -96,11 +105,12 @@
+@@ -96,11 +106,12 @@
          return RecipeItemStack.a;
      }
  
