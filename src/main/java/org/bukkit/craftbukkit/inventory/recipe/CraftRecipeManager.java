@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.inventory.recipe;
 import com.google.common.collect.Lists;
 import net.minecraft.server.CraftingManager;
 import net.minecraft.server.IRecipe;
-import net.minecraft.server.MinecraftKey;
 import net.minecraft.server.RecipesFurnace;
 import net.minecraft.server.RegistryMaterials;
 import org.apache.commons.lang3.Validate;
@@ -19,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.recipe.CraftingRecipe;
 import org.bukkit.inventory.recipe.RecipeManager;
 
 import javax.annotation.Nullable;
@@ -27,11 +27,11 @@ import java.util.List;
 
 public class CraftRecipeManager implements RecipeManager {
 
-    public CraftRecipeManager() {}
+    public CraftRecipeManager() { }
 
     @Nullable
-    public Recipe getRecipe(NamespacedKey recipeName) {
-        return getRecipe(recipeName, Recipe.class);
+    public CraftingRecipe getRecipe(NamespacedKey recipeName) {
+        return getRecipe(recipeName, CraftingRecipe.class);
     }
 
     @Nullable
@@ -47,10 +47,12 @@ public class CraftRecipeManager implements RecipeManager {
     @Nullable
     public <T extends Recipe> T getRecipe(NamespacedKey key, Class<T> clazz) {
         IRecipe result = CraftingManager.a(CraftNamespacedKey.toMinecraft(key));
-        return result == null ? null : clazz.cast(result.toBukkitRecipe());
+        Recipe recipe = result == null ? null : result.toBukkitRecipe();
+        return recipe == null ? null : clazz.cast(recipe);
     }
 
     public boolean addRecipe(Recipe recipe) {
+        Validate.notNull(recipe, "Recipe cannot be null");
         CraftRecipe toAdd;
         if (recipe instanceof CraftRecipe) {
             toAdd = (CraftRecipe) recipe;
