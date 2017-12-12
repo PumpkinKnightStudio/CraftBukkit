@@ -30,7 +30,7 @@ public class CraftRecipeManager implements RecipeManager {
     public CraftRecipeManager() { }
 
     @Nullable
-    public CraftingRecipe getRecipe(NamespacedKey recipeName) {
+    public CraftingRecipe getCraftingRecipe(NamespacedKey recipeName) {
         return getRecipe(recipeName, CraftingRecipe.class);
     }
 
