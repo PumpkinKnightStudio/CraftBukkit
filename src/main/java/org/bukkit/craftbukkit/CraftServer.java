@@ -63,6 +63,7 @@ import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
+import org.bukkit.craftbukkit.inventory.recipe.CraftBrewingManager;
 import org.bukkit.craftbukkit.inventory.recipe.CraftRecipeManager;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
@@ -94,6 +95,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.recipe.BrewingManager;
 import org.bukkit.inventory.recipe.RecipeManager;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
@@ -174,6 +176,7 @@ public final class CraftServer implements Server {
     private final List<CraftPlayer> playerView;
     public int reloadCount;
     private CraftRecipeManager craftRecipeManager;
+    private CraftBrewingManager craftBrewingManager;
 
     private final class BooleanWrapper {
         private boolean value = true;
@@ -208,6 +211,7 @@ public final class CraftServer implements Server {
         // Ugly hack :(
 
         this.craftRecipeManager = new CraftRecipeManager();
+        this.craftBrewingManager = new CraftBrewingManager();
 
         if (!Main.useConsole) {
             getLogger().info("Console input is disabled due to --noconsole command argument");
@@ -1039,6 +1043,10 @@ public final class CraftServer implements Server {
         return craftRecipeManager;
     }
 
+    public BrewingManager getBrewingManager() {
+        return craftBrewingManager;
+    }
+
     @Override
     @Deprecated
     public boolean addRecipe(Recipe recipe) {
@@ -1290,7 +1298,7 @@ public final class CraftServer implements Server {
 
         for (JsonListEntry entry : playerList.getProfileBans().getValues()) {
             result.add(getOfflinePlayer((GameProfile) entry.getKey()));
-        }        
+        }
 
         return result;
     }

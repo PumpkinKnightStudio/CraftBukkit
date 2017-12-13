@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.recipe.BrewingRecipe;
 import org.bukkit.inventory.recipe.CraftingRecipe;
 import org.bukkit.inventory.recipe.RecipeManager;
 
@@ -53,6 +54,9 @@ public class CraftRecipeManager implements RecipeManager {
 
     public boolean addRecipe(Recipe recipe) {
         Validate.notNull(recipe, "Recipe cannot be null");
+        if(recipe instanceof BrewingRecipe) {
+            return false;
+        }
         CraftRecipe toAdd;
         if (recipe instanceof CraftRecipe) {
             toAdd = (CraftRecipe) recipe;
@@ -67,8 +71,11 @@ public class CraftRecipeManager implements RecipeManager {
                 return false;
             }
         }
-        toAdd.addToCraftingManager();
-        return true;
+        if(toAdd !=  null) {
+            toAdd.addToCraftingManager();
+            return true;
+        }
+        return false;
     }
 
     public List<Recipe> getRecipesFor(ItemStack result) {

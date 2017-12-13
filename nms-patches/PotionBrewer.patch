@@ -1,0 +1,147 @@
+--- a/net/minecraft/server/PotionBrewer.java
++++ b/net/minecraft/server/PotionBrewer.java
+@@ -2,15 +2,17 @@
+ 
+ import com.google.common.base.Predicate;
+ import com.google.common.collect.Lists;
++import org.bukkit.craftbukkit.inventory.recipe.CraftBrewingManager; // CraftBukkit
++
+ import java.util.Iterator;
+ import java.util.List;
+ 
+ public class PotionBrewer {
+ 
+-    private static final List<PotionBrewer.PredicatedCombination<PotionRegistry>> a = Lists.newArrayList();
+-    private static final List<PotionBrewer.PredicatedCombination<Item>> b = Lists.newArrayList();
+-    private static final List<RecipeItemStack> c = Lists.newArrayList();
+-    private static final Predicate<ItemStack> d = new Predicate() {
++    public static final List<PredicatedCombination<PotionRegistry>> a = Lists.newArrayList(); // PAIL private -> public
++    public static final List<PredicatedCombination<Item>> b = Lists.newArrayList(); // PAIL private -> public
++    public static final List<RecipeItemStack> c = Lists.newArrayList(); // PAIL private -> public
++    public static final Predicate<ItemStack> d = new Predicate() { // PAIL private -> public
+         public boolean a(ItemStack itemstack) {
+             Iterator iterator = PotionBrewer.c.iterator();
+ 
+@@ -33,14 +35,15 @@
+     };
+ 
+     public static boolean a(ItemStack itemstack) {
+-        return b(itemstack) || c(itemstack);
++        return CraftBrewingManager.CraftBrewingDelegate.isReagent(itemstack);
++        // return b(itemstack) || c(itemstack); // CraftBukkit delegate to CraftBrewingDelegate
+     }
+ 
+     protected static boolean b(ItemStack itemstack) {
+         int i = 0;
+ 
+         for (int j = PotionBrewer.b.size(); i < j; ++i) {
+-            if (((PotionBrewer.PredicatedCombination) PotionBrewer.b.get(i)).b.a(itemstack)) {
++            if (((PredicatedCombination) PotionBrewer.b.get(i)).b.a(itemstack)) {
+                 return true;
+             }
+         }
+@@ -52,7 +55,7 @@
+         int i = 0;
+ 
+         for (int j = PotionBrewer.a.size(); i < j; ++i) {
+-            if (((PotionBrewer.PredicatedCombination) PotionBrewer.a.get(i)).b.a(itemstack)) {
++            if (((PredicatedCombination) PotionBrewer.a.get(i)).b.a(itemstack)) {
+                 return true;
+             }
+         }
+@@ -61,7 +64,8 @@
+     }
+ 
+     public static boolean a(ItemStack itemstack, ItemStack itemstack1) {
+-        return !PotionBrewer.d.apply(itemstack) ? false : b(itemstack, itemstack1) || c(itemstack, itemstack1);
++        return CraftBrewingManager.CraftBrewingDelegate.canBrew(itemstack, itemstack1);
++        //return !PotionBrewer.d.apply(itemstack) ? false : b(itemstack, itemstack1) || c(itemstack, itemstack1); // CraftBukkit delegate to CraftBrewingDelegate
+     }
+ 
+     protected static boolean b(ItemStack itemstack, ItemStack itemstack1) {
+@@ -69,7 +73,7 @@
+         int i = 0;
+ 
+         for (int j = PotionBrewer.b.size(); i < j; ++i) {
+-            PotionBrewer.PredicatedCombination potionbrewer_predicatedcombination = (PotionBrewer.PredicatedCombination) PotionBrewer.b.get(i);
++            PredicatedCombination potionbrewer_predicatedcombination = (PredicatedCombination) PotionBrewer.b.get(i);
+ 
+             if (potionbrewer_predicatedcombination.a == item && potionbrewer_predicatedcombination.b.a(itemstack1)) {
+                 return true;
+@@ -84,7 +88,7 @@
+         int i = 0;
+ 
+         for (int j = PotionBrewer.a.size(); i < j; ++i) {
+-            PotionBrewer.PredicatedCombination potionbrewer_predicatedcombination = (PotionBrewer.PredicatedCombination) PotionBrewer.a.get(i);
++            PredicatedCombination potionbrewer_predicatedcombination = (PredicatedCombination) PotionBrewer.a.get(i);
+ 
+             if (potionbrewer_predicatedcombination.a == potionregistry && potionbrewer_predicatedcombination.b.a(itemstack1)) {
+                 return true;
+@@ -95,16 +99,18 @@
+     }
+ 
+     public static ItemStack d(ItemStack itemstack, ItemStack itemstack1) {
++        // CraftBukkit - delegate reactions to CraftBrewingDelegate
++        return CraftBrewingManager.CraftBrewingDelegate.doReaction(itemstack, itemstack1);
++        /*
+         if (!itemstack1.isEmpty()) {
+             PotionRegistry potionregistry = PotionUtil.d(itemstack1);
+             Item item = itemstack1.getItem();
+             int i = 0;
+ 
+             int j;
+-            PotionBrewer.PredicatedCombination potionbrewer_predicatedcombination;
+-
++            PredicatedCombination potionbrewer_predicatedcombination;
+             for (j = PotionBrewer.b.size(); i < j; ++i) {
+-                potionbrewer_predicatedcombination = (PotionBrewer.PredicatedCombination) PotionBrewer.b.get(i);
++                potionbrewer_predicatedcombination = (PredicatedCombination) PotionBrewer.b.get(i);
+                 if (potionbrewer_predicatedcombination.a == item && potionbrewer_predicatedcombination.b.a(itemstack)) {
+                     return PotionUtil.a(new ItemStack((Item) potionbrewer_predicatedcombination.c), potionregistry);
+                 }
+@@ -113,7 +119,7 @@
+             i = 0;
+ 
+             for (j = PotionBrewer.a.size(); i < j; ++i) {
+-                potionbrewer_predicatedcombination = (PotionBrewer.PredicatedCombination) PotionBrewer.a.get(i);
++                potionbrewer_predicatedcombination = (PredicatedCombination) PotionBrewer.a.get(i);
+                 if (potionbrewer_predicatedcombination.a == potionregistry && potionbrewer_predicatedcombination.b.a(itemstack)) {
+                     return PotionUtil.a(new ItemStack(item), (PotionRegistry) potionbrewer_predicatedcombination.c);
+                 }
+@@ -121,6 +127,7 @@
+         }
+ 
+         return itemstack1;
++        */
+     }
+ 
+     public static void a() {
+@@ -181,7 +188,7 @@
+     }
+ 
+     private static void a(ItemPotion itempotion, Item item, ItemPotion itempotion1) {
+-        PotionBrewer.b.add(new PotionBrewer.PredicatedCombination(itempotion, RecipeItemStack.a(new Item[] { item}), itempotion1));
++        PotionBrewer.b.add(new PredicatedCombination(itempotion, RecipeItemStack.a(new Item[] { item}), itempotion1));
+     }
+ 
+     private static void a(ItemPotion itempotion) {
+@@ -193,14 +200,14 @@
+     }
+ 
+     private static void a(PotionRegistry potionregistry, RecipeItemStack recipeitemstack, PotionRegistry potionregistry1) {
+-        PotionBrewer.a.add(new PotionBrewer.PredicatedCombination(potionregistry, recipeitemstack, potionregistry1));
++        PotionBrewer.a.add(new PredicatedCombination(potionregistry, recipeitemstack, potionregistry1));
+     }
+ 
+-    static class PredicatedCombination<T> {
++    public static class PredicatedCombination<T> { // PAIL private -> public
+ 
+-        final T a;
+-        final RecipeItemStack b;
+-        final T c;
++        public final T a; // PAIL private -> public
++        public final RecipeItemStack b; // PAIL private -> public
++        public final T c; // PAIL private -> public
+ 
+         public PredicatedCombination(T t0, RecipeItemStack recipeitemstack, T t1) {
+             this.a = t0;
