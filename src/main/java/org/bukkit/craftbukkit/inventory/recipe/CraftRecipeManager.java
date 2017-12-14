@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class CraftRecipeManager implements RecipeManager {
+    private final CraftFurnaceManager furnaceManager = CraftFurnaceManager.getInstance();
 
     public CraftRecipeManager() { }
 
@@ -46,7 +47,7 @@ public class CraftRecipeManager implements RecipeManager {
     }
 
     @Nullable
-    public <T extends Recipe> T getRecipe(NamespacedKey key, Class<T> clazz) {
+    private <T extends Recipe> T getRecipe(NamespacedKey key, Class<T> clazz) {
         IRecipe result = CraftingManager.a(CraftNamespacedKey.toMinecraft(key));
         Recipe recipe = result == null ? null : result.toBukkitRecipe();
         return recipe == null ? null : clazz.cast(recipe);
@@ -66,7 +67,7 @@ public class CraftRecipeManager implements RecipeManager {
             } else if (recipe instanceof ShapelessRecipe) {
                 toAdd = CraftShapelessRecipe.fromBukkitRecipe((ShapelessRecipe) recipe);
             } else if (recipe instanceof FurnaceRecipe) {
-                toAdd = CraftFurnaceRecipe.fromBukkitRecipe((FurnaceRecipe) recipe);
+                return furnaceManager.addRecipe((FurnaceRecipe)recipe);
             } else {
                 return false;
             }
@@ -89,7 +90,14 @@ public class CraftRecipeManager implements RecipeManager {
             if (stack.getType() != result.getType()) {
                 continue;
             }
-            if (result.getDurability() == -1 || result.getDurability() == Short.MAX_VALUE || result.getDurability() == stack.getDurability()) {
+            if(recipe instanceof FurnaceRecipe) {
+                FurnaceRecipe fr = (FurnaceRecipe)recipe;
+                if(CraftFurnaceManager.stacksMatch(stack, fr.getResult(), fr.isExactMatch())){
+                    results.add(recipe);
+                    continue;
+                }
+            }
+            if(stack.getDurability() == result.getDurability() || result.getDurability() == Short.MAX_VALUE || result.getDurability()  < 0)  {
                 results.add(recipe);
             }
         }
@@ -98,17 +106,13 @@ public class CraftRecipeManager implements RecipeManager {
 
     public void clearRecipes() {
         CraftingManager.recipes = new RegistryMaterials<>();
-        RecipesFurnace.getInstance().recipes.clear();
-        RecipesFurnace.getInstance().customRecipes.clear();
-        RecipesFurnace.getInstance().customExperience.clear();
+        CraftFurnaceManager.getInstance().clearRecipes();
     }
 
     public void resetRecipes() {
         CraftingManager.recipes = new RegistryMaterials<>();
         CraftingManager.init();
-        RecipesFurnace.getInstance().recipes = new RecipesFurnace().recipes;
-        RecipesFurnace.getInstance().customRecipes.clear();
-        RecipesFurnace.getInstance().customExperience.clear();
+        CraftFurnaceManager.getInstance().resetRecipes();
     }
 
     public Iterator<Recipe> recipeIterator() {

@@ -1,36 +1,36 @@
 --- a/net/minecraft/server/RecipesFurnace.java
 +++ b/net/minecraft/server/RecipesFurnace.java
-@@ -8,8 +8,10 @@
+@@ -1,6 +1,8 @@
+ package net.minecraft.server;
+ 
+ import com.google.common.collect.Maps;
++import org.bukkit.craftbukkit.inventory.recipe.CraftFurnaceManager;
++
+ import java.util.Iterator;
+ import java.util.Map;
+ import java.util.Map.Entry;
+@@ -8,8 +10,8 @@
  public class RecipesFurnace {
  
      private static final RecipesFurnace a = new RecipesFurnace();
 -    public final Map<ItemStack, ItemStack> recipes = Maps.newHashMap();
+-    private final Map<ItemStack, Float> experience = Maps.newHashMap();
 +    public Map<ItemStack, ItemStack> recipes = Maps.newHashMap();
-     private final Map<ItemStack, Float> experience = Maps.newHashMap();
-+    public Map<ItemStack,ItemStack> customRecipes = Maps.newHashMap(); // CraftBukkit - add field
-+    public Map<ItemStack,Float> customExperience = Maps.newHashMap(); // CraftBukkit - add field
++    public Map<ItemStack, Float> experience = Maps.newHashMap(); // CraftBukkit private -> public // CraftBukkit remove final modifier
  
      public static RecipesFurnace getInstance() {
          return RecipesFurnace.a;
-@@ -94,6 +96,13 @@
-         this.a(new ItemStack(Blocks.STAINED_HARDENED_CLAY, 1, EnumColor.BLACK.getColorIndex()), new ItemStack(Blocks.dQ), 0.1F);
-     }
- 
-+    // CraftBukkit start - add method
-+    public void registerRecipe(ItemStack itemstack, ItemStack itemstack1, float f) {
-+        this.customRecipes.put(itemstack, itemstack1);
-+        this.customExperience.put(itemstack, f);
-+    }
-+    // CraftBukkit end
-+
-     public void registerRecipe(Block block, ItemStack itemstack, float f) {
-         this.a(Item.getItemOf(block), itemstack, f);
-     }
-@@ -108,13 +117,23 @@
+@@ -105,22 +107,36 @@
+     public void a(ItemStack itemstack, ItemStack itemstack1, float f) {
+         this.recipes.put(itemstack, itemstack1);
+         this.experience.put(itemstack1, Float.valueOf(f));
++        CraftFurnaceManager.CraftFurnaceDelegate.addDefaultRecipe(itemstack1, itemstack, f); // CraftBukkit - add to our furnace recipe manager
      }
  
      public ItemStack getResult(ItemStack itemstack) {
 -        Iterator iterator = this.recipes.entrySet().iterator();
++        return CraftFurnaceManager.CraftFurnaceDelegate.getResult(itemstack);
++        /*;
 +        // CraftBukkit start - initialize to customRecipes
 +        boolean vanilla = false;
 +        Iterator<Entry<ItemStack, ItemStack>> iterator = this.customRecipes.entrySet().iterator();
@@ -52,11 +52,20 @@
              }
  
              entry = (Entry) iterator.next();
-@@ -132,13 +151,23 @@
+         } while (!this.a(itemstack, (ItemStack) entry.getKey()));
+ 
+         return (ItemStack) entry.getValue();
++        // CraftBukkit - delegate to CraftFurnaceManager.CraftFurnaceDelegate */
+     }
+ 
+     private boolean a(ItemStack itemstack, ItemStack itemstack1) {
+@@ -132,18 +148,31 @@
      }
  
      public float b(ItemStack itemstack) {
 -        Iterator iterator = this.experience.entrySet().iterator();
++        return CraftFurnaceManager.CraftFurnaceDelegate.getExperience(itemstack);
++        /*
 +        // CraftBukkit start - initialize to customRecipes
 +        boolean vanilla = false;
 +        Iterator<Entry<ItemStack, Float>> iterator = this.customExperience.entrySet().iterator();
@@ -78,3 +87,9 @@
              }
  
              entry = (Entry) iterator.next();
+         } while (!this.a(itemstack, (ItemStack) entry.getKey()));
+ 
+         return ((Float) entry.getValue()).floatValue();
++        // CraftBukkit - delegate to CraftFurnaceManager.CraftFurnaceDelegate */
+     }
+ }
