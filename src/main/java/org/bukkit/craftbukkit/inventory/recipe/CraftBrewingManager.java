@@ -1,9 +1,8 @@
 package org.bukkit.craftbukkit.inventory.recipe;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.minecraft.server.Item;
 import net.minecraft.server.Items;
 import net.minecraft.server.PotionBrewer;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CraftBrewingManager implements BrewingManager {
-    private static final BiMap<NamespacedKey, BrewingRecipe> recipes = HashBiMap.create(); // default size of all loaded vanilla recipes
+    public static final Map<NamespacedKey, BrewingRecipe> recipes = Maps.newHashMap(); // default size of all loaded vanilla recipes
 
     static {
         loadRecipes();
@@ -48,10 +47,7 @@ public class CraftBrewingManager implements BrewingManager {
 
     @Override
     public void resetRecipes() {
-        recipes.clear();
-        PotionBrewer.a.clear(); // PAIL typeConversions
-        PotionBrewer.b.clear(); // PAIL itemConversions
-        PotionBrewer.c.clear(); // PAIL potionItems
+        clearRecipes();
         loadRecipes();
     }
 
@@ -91,7 +87,7 @@ public class CraftBrewingManager implements BrewingManager {
             for(Item item : itemTypes) {
                 net.minecraft.server.ItemStack nmsInput = PotionUtil.a(new net.minecraft.server.ItemStack(item), predicate.a);
                 net.minecraft.server.ItemStack nmsReagent = predicate.b.choices[0]; // PAIL reagent
-                net.minecraft.server.ItemStack nmsResult = PotionUtil.a(new net.minecraft.server.ItemStack(item),predicate.c);
+                net.minecraft.server.ItemStack nmsResult = PotionUtil.a(new net.minecraft.server.ItemStack(item), predicate.c);
 
                 BrewingRecipe recipe = new BrewingRecipe(convert(nmsInput), convert(nmsReagent), convert(nmsResult));
                 // because we're adding multiple of the same PredicatedCombination, we have to differentiate the recipes by telling which item the recipe is for

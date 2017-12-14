@@ -3,11 +3,9 @@ package org.bukkit.craftbukkit.inventory.recipe;
 import com.google.common.collect.Lists;
 import net.minecraft.server.CraftingManager;
 import net.minecraft.server.IRecipe;
-import net.minecraft.server.RecipesFurnace;
 import net.minecraft.server.RegistryMaterials;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftFurnaceRecipe;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
@@ -56,7 +54,7 @@ public class CraftRecipeManager implements RecipeManager {
     public boolean addRecipe(Recipe recipe) {
         Validate.notNull(recipe, "Recipe cannot be null");
         if(recipe instanceof BrewingRecipe) {
-            return false;
+            throw new IllegalArgumentException("Brewing Recipes must be handled via the BrewingManager!");
         }
         CraftRecipe toAdd;
         if (recipe instanceof CraftRecipe) {

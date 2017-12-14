@@ -28,7 +28,6 @@ public class ShapelessRecipeTest extends AbstractTestingBase {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorInvalid() {
         new ShapelessRecipe(null);
-        new ShapelessRecipe(new ItemStack(Material.AIR));
 
         new ShapelessRecipe(null, new ItemStack(Material.STONE));
         new ShapelessRecipe(NamespacedKey.minecraft(null), new ItemStack(Material.STONE));
