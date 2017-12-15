@@ -9,13 +9,13 @@
  public class RecipeItemStack implements Predicate<ItemStack> {
  
 -    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0], null) {
-+    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0]) { // CraftBukkit change signature; remove null Object
++    public static final RecipeItemStack a = new RecipeItemStack(new ItemStack[0]) { // CraftBukkit fix decompile error
          public boolean a(@Nullable ItemStack itemstack) {
              return itemstack.isEmpty();
          }
  
 -        public boolean apply(@Nullable Object object) {
-+        public boolean apply(@Nullable ItemStack object) { // CraftBukkit change signature: Object -> ItemStack
++        public boolean apply(@Nullable ItemStack object) { // CraftBukkit fix decompile error
              return this.a((ItemStack) object);
          }
      };
@@ -58,7 +58,7 @@
 -    public boolean apply(@Nullable Object object) {
 -        return this.a((ItemStack) object);
 +
-+    public boolean apply(@Nullable ItemStack object) { // CraftBukkit change signature: Object -> ItemStack
++    public boolean apply(@Nullable ItemStack object) { // CraftBukkit fix decompile error
 +        return this.a(object);
      }
  
