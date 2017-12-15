@@ -34,7 +34,7 @@ public class BrewingRecipeTest extends AbstractTestingBase {
 
         new BrewingRecipe((ItemStack)null, reagent, result);
         new BrewingRecipe(input,(ItemStack)null, result);
-        new BrewingRecipe(input, reagent, (ItemStack)result);
+        new BrewingRecipe(input, reagent, (ItemStack)null);
         new BrewingRecipe(new ItemStack(Material.COBBLESTONE), reagent, result);
         new BrewingRecipe(input, new ItemStack(Material.AIR), result);
 
