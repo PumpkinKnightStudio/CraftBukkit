@@ -184,7 +184,7 @@
 +            if (listener instanceof DedicatedServer) {
 +                sender = ((DedicatedServer) listener).console;
 +            } else if (listener instanceof RemoteControlCommandListener) {
-+                sender = ((RemoteControlCommandListener) listener).C_().remoteConsole;
++                sender = ((RemoteControlCommandListener) listener).sender;
 +            } else if (listener instanceof CommandBlockListenerAbstract) {
 +                sender = ((CommandBlockListenerAbstract) listener).sender;
 +            } else if (listener instanceof CustomFunctionData.CustomFunctionListener) {

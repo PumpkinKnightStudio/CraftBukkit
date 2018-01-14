@@ -1,6 +1,14 @@
 --- a/net/minecraft/server/RemoteControlCommandListener.java
 +++ b/net/minecraft/server/RemoteControlCommandListener.java
-@@ -21,6 +21,12 @@
+@@ -4,6 +4,7 @@
+ 
+     private final StringBuffer a = new StringBuffer();
+     private final MinecraftServer b;
++    protected org.bukkit.craftbukkit.command.CraftRemoteConsoleCommandSender sender = null; // CraftBukkit - add sender
+ 
+     public RemoteControlCommandListener(MinecraftServer minecraftserver) {
+         this.b = minecraftserver;
+@@ -21,6 +22,12 @@
          return "Rcon";
      }
  
