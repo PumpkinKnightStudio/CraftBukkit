@@ -48,6 +48,8 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.adapter.configuration.OfflinePlayerTypeAdapter;
+import org.bukkit.configuration.adapter.factory.BukkitTypeAdapterFactory;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.conversations.Conversable;
@@ -178,6 +180,7 @@ public final class CraftServer implements Server {
 
     static {
         ConfigurationSerialization.registerClass(CraftOfflinePlayer.class);
+        BukkitTypeAdapterFactory.getInstance().registerAdapter(CraftOfflinePlayer.class, new OfflinePlayerTypeAdapter());
         CraftItemFactory.instance();
     }
 
@@ -1311,7 +1314,7 @@ public final class CraftServer implements Server {
 
         for (JsonListEntry entry : playerList.getProfileBans().getValues()) {
             result.add(getOfflinePlayer((GameProfile) entry.getKey()));
-        }        
+        }
 
         return result;
     }
