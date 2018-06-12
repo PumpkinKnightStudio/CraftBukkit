@@ -1,7 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import net.minecraft.server.NBTTagCompound;
@@ -17,7 +15,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.server.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.NBTTagString;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaBookSigned extends CraftMetaBook implements BookMeta {
@@ -37,7 +34,7 @@ class CraftMetaBookSigned extends CraftMetaBook implements BookMeta {
         if (tag.hasKey(BOOK_PAGES.NBT)) {
             NBTTagList pages = tag.getList(BOOK_PAGES.NBT, CraftMagicNumbers.NBT.TAG_STRING);
 
-            for (int i = 0; i < pages.size(); i++) {
+            for (int i = 0; i < Math.min(pages.size(), MAX_PAGES); i++) {
                 String page = pages.getString(i);
                 if (resolved) {
                     try {
