@@ -1129,60 +1129,42 @@ public class CraftWorld implements World {
                 entity.setHeadRotation(yaw); // SPIGOT-3587
             }
         } else if (Hanging.class.isAssignableFrom(clazz)) {
-            BlockFace face = BlockFace.SELF;
-
-            int width = 16; // 1 full block, also painting smallest size.
-            int height = 16; // 1 full block, also painting smallest size.
             BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
 
             if (ItemFrame.class.isAssignableFrom(clazz)) {
-                width = 12;
-                height = 12;
                 faces = new BlockFace[] {BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
-            } else if (LeashHitch.class.isAssignableFrom(clazz)) {
-                width = 9;
-                height = 9;
             }
-
             final BlockPosition pos = new BlockPosition((int) x, (int) y, (int) z);
-            for (BlockFace dir : faces) {
-                IBlockData nmsBlock = world.getType(pos.shift(CraftBlock.blockFaceToNotch(dir)));
-                if (nmsBlock.getMaterial().isBuildable() || BlockDiodeAbstract.isDiode(nmsBlock)) {
-                    boolean taken = false;
-                    AxisAlignedBB bb = EntityHanging.calculateBoundingBox(null, pos, CraftBlock.blockFaceToNotch(dir).opposite(), width, height);
-                    List<net.minecraft.server.Entity> list = (List<net.minecraft.server.Entity>) world.getEntities(null, bb);
-                    for (Iterator<net.minecraft.server.Entity> it = list.iterator(); !taken && it.hasNext();) {
-                        net.minecraft.server.Entity e = it.next();
-                        if (e instanceof EntityHanging) {
-                            taken = true; // Hanging entities do not like hanging entities which intersect them.
-                        }
-                    }
-
-                    if (!taken) {
-                        face = dir;
-                        break;
-                    }
-                }
-            }
-
+            
             if (LeashHitch.class.isAssignableFrom(clazz)) {
-                entity = new EntityLeash(world, new BlockPosition((int) x, (int) y, (int) z));
-                entity.attachedToPlayer = true;
-            } else {
-                // No valid face found
-                Preconditions.checkArgument(face != BlockFace.SELF, "Cannot spawn hanging entity for %s at %s (no free face)", clazz.getName(), location);
+                // Leashes only want a fence to be attached to
+                if (getHandle().getType(pos).getBlock() instanceof BlockFence) {
+                    entity = new EntityLeash(world, new BlockPosition((int) x, (int) y, (int) z));
+                    entity.attachedToPlayer = true;
+                    return entity;
+                }
+                throw new IllegalArgumentException("Cannot spawn hanging entity for " + clazz.getName() + " at " + location + ". No fence found.");
+            }
 
-                EnumDirection dir = CraftBlock.blockFaceToNotch(face).opposite();
-                if (Painting.class.isAssignableFrom(clazz)) {
-                    entity = new EntityPainting(world, new BlockPosition((int) x, (int) y, (int) z), dir);
-                } else if (ItemFrame.class.isAssignableFrom(clazz)) {
-                    entity = new EntityItemFrame(world, new BlockPosition((int) x, (int) y, (int) z), dir);
+            EntityHanging hanging = null;
+
+            if (ItemFrame.class.isAssignableFrom(clazz)) {
+                hanging = new EntityItemFrame(getHandle());
+            } else if (Painting.class.isAssignableFrom(clazz)) {
+                hanging = new EntityPainting(getHandle());
+            }
+            hanging.blockPosition = pos;
+
+            // Let the entity determine if the location is valid at the given facing
+            for (BlockFace dir : faces) {
+                EnumDirection direction = CraftBlock.blockFaceToNotch(dir);
+                hanging.setDirection(direction);
+                if (hanging.survives()) {
+                    return hanging;
                 }
             }
-
-            if (entity != null && !((EntityHanging) entity).survives()) {
-                throw new IllegalArgumentException("Cannot spawn hanging entity for " + clazz.getName() + " at " + location);
-            }
+            // No valid face found
+            Preconditions.checkArgument(false, "Cannot spawn hanging entity for %s at %s (no free face)", clazz.getName(), location);
         } else if (TNTPrimed.class.isAssignableFrom(clazz)) {
             entity = new EntityTNTPrimed(world, x, y, z, null);
         } else if (ExperienceOrb.class.isAssignableFrom(clazz)) {
@@ -1206,6 +1188,53 @@ public class CraftWorld implements World {
         }
 
         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
+    }
+
+    @Override
+    public <T extends Hanging> BlockFace getValidSpawnFacing(Class<T> clazz, Location location) {
+        return getValidSpawnFacing(clazz, location, null);
+    }
+
+    @Override
+    public <T extends Hanging> BlockFace getValidSpawnFacing(Class<T> clazz, Location location, Consumer<T> function) {
+        EntityHanging hanging = null;
+        double x = location.getX();
+        double y = location.getY();
+        double z = location.getZ();
+        BlockPosition pos = new BlockPosition(x, y, z);
+        if (ItemFrame.class.isAssignableFrom(clazz)) {
+            hanging = new EntityItemFrame(getHandle());
+        } else if (Painting.class.isAssignableFrom(clazz)) {
+            hanging = new EntityPainting(getHandle(), pos, EnumDirection.EAST);
+        } else if (LeashHitch.class.isAssignableFrom(clazz)) {
+            hanging = new EntityLeash(getHandle(), pos);
+        }
+        hanging.blockPosition = pos;
+        hanging.setDirection(EnumDirection.EAST); // so it doesn't yell about NPE
+
+        if (hanging instanceof EntityLeash) {
+            boolean valid = getHandle().getType(pos).getBlock() instanceof BlockFence;
+            return valid ? BlockFace.SELF : null;
+        }
+        BlockFace[] faces = new BlockFace[] {BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
+
+        if (ItemFrame.class.isAssignableFrom(clazz)) {
+            faces = new BlockFace[] {BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
+        }
+
+        // Let the entity determine if the location is valid at the given facing
+        for (BlockFace dir : faces) {
+            EnumDirection direction = CraftBlock.blockFaceToNotch(dir);
+            hanging.setDirection(direction);
+            if (function != null) {
+                // paintings require non-null Direction to set Art.
+                function.accept((T)hanging.getBukkitEntity());
+            }
+            if (hanging.survives()) {
+                return dir;
+            }
+        }
+        return null;
     }
 
     @Override
