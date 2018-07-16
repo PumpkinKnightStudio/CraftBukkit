@@ -1246,6 +1246,7 @@ public class CraftWorld implements World {
     @SuppressWarnings("unchecked")
     public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason, Consumer<T> function) throws IllegalArgumentException {
         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
+        Preconditions.checkArgument(!entity.valid, "Cannot spawn a valid entity!");
 
         if (entity instanceof EntityInsentient) {
             ((EntityInsentient) entity).prepare(getHandle().getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, null);
