@@ -34,6 +34,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     protected final CraftServer server;
     protected Entity entity;
     private EntityDamageEvent lastDamageEvent;
+    private boolean isVirtual = false;
 
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
@@ -708,6 +709,19 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public PistonMoveReaction getPistonMoveReaction() {
         return PistonMoveReaction.getById(getHandle().getPushReaction().ordinal());
+    }
+
+    @Override
+    public boolean isVirtual() {
+        return isVirtual;
+    }
+
+    /**
+     * Internal use only
+     */
+    @Deprecated
+    public void setVirtual(boolean virtual) {
+        this.isVirtual = virtual;
     }
 
     protected NBTTagCompound save() {

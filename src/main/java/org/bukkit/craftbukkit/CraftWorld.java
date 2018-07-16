@@ -887,9 +887,7 @@ public class CraftWorld implements World {
 
     @SuppressWarnings("unchecked")
     public net.minecraft.server.Entity createEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
-        if (location == null || clazz == null) {
-            throw new IllegalArgumentException("Location or entity class cannot be null");
-        }
+        Preconditions.checkArgument( location != null && clazz != null, "Location or entity class cannot be null." );
 
         net.minecraft.server.Entity entity = null;
 
@@ -1135,16 +1133,17 @@ public class CraftWorld implements World {
 
             int width = 16; // 1 full block, also painting smallest size.
             int height = 16; // 1 full block, also painting smallest size.
+            BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
 
             if (ItemFrame.class.isAssignableFrom(clazz)) {
                 width = 12;
                 height = 12;
+                faces = new BlockFace[] {BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
             } else if (LeashHitch.class.isAssignableFrom(clazz)) {
                 width = 9;
                 height = 9;
             }
 
-            BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
             final BlockPosition pos = new BlockPosition((int) x, (int) y, (int) z);
             for (BlockFace dir : faces) {
                 IBlockData nmsBlock = world.getType(pos.shift(CraftBlock.blockFaceToNotch(dir)));
@@ -1209,6 +1208,36 @@ public class CraftWorld implements World {
         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
     }
 
+    @Override
+    public <T extends Entity> T createEntity(EntityType type, Location location) {
+        Preconditions.checkArgument(type.isSpawnable(), "Cannot create a non-spawnable entity");
+        return createEntity(type.getEntityClass(), location);
+    }
+
+    @Override
+    public <T extends Entity> T createEntity(Class<T> clazz, Location location) {
+        Preconditions.checkNotNull(clazz, "Cannot create entity from a null class");
+        Preconditions.checkNotNull(location, "Cannot create entity at a null location");
+        net.minecraft.server.Entity nms = createEntity(location, clazz);
+        nms.getBukkitEntity().setVirtual(true);
+        return (T) nms.getBukkitEntity();
+    }
+
+    @Override
+    public <T extends Entity> T spawnEntity(T entity) {
+        return spawnEntity(entity, null);
+    }
+
+    @Override
+    public <T extends Entity> T spawnEntity(T entity, Consumer<T> function) {
+        return spawnEntity(null, entity, function, SpawnReason.CUSTOM);
+    }
+
+    public <T extends Entity> T spawnEntity(Location location, T entity, Consumer<T> function, SpawnReason reason) {
+        net.minecraft.server.Entity handle = ((CraftEntity)entity).getHandle();
+        return addEntity(handle, reason, function);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) throws IllegalArgumentException {
         return addEntity(entity, reason, null);
@@ -1221,6 +1250,7 @@ public class CraftWorld implements World {
         if (entity instanceof EntityInsentient) {
             ((EntityInsentient) entity).prepare(getHandle().getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, null);
         }
+        entity.getBukkitEntity().setVirtual( false );
 
         if (function != null) {
             function.accept((T) entity.getBukkitEntity());
@@ -1231,9 +1261,8 @@ public class CraftWorld implements World {
     }
 
     public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
-        net.minecraft.server.Entity entity = createEntity(location, clazz);
-
-        return addEntity(entity, reason, function);
+        T entity = createEntity(clazz, location);
+        return spawnEntity(location, entity, function, reason);
     }
 
     public ChunkSnapshot getEmptyChunkSnapshot(int x, int z, boolean includeBiome, boolean includeBiomeTempRain) {
