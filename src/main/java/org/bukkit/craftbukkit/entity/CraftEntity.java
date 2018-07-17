@@ -34,7 +34,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     protected final CraftServer server;
     protected Entity entity;
     private EntityDamageEvent lastDamageEvent;
-    private boolean isVirtual = false;
+    private boolean isInWorld = false;
 
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
@@ -712,16 +712,12 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
-    public boolean isVirtual() {
-        return isVirtual;
+    public boolean isInWorld() {
+        return isInWorld;
     }
 
-    /**
-     * Internal use only
-     */
-    @Deprecated
-    public void setVirtual(boolean virtual) {
-        this.isVirtual = virtual;
+    public void setIsInWorld(boolean virtual) {
+        this.isInWorld = virtual;
     }
 
     protected NBTTagCompound save() {

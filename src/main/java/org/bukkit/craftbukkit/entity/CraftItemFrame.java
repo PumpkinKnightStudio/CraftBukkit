@@ -43,7 +43,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
         EntityItemFrame frame = new EntityItemFrame(world,position,direction);
         frame.setItem(item);
-        if (!isVirtual()) {
+        if (isInWorld()) {
             world.addEntity(frame);
         }
         this.entity = frame;

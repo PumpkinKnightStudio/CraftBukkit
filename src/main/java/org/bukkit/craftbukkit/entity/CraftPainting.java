@@ -59,7 +59,7 @@ public class CraftPainting extends CraftHanging implements Painting {
         painting.setDirection(getHandle().direction);
         getHandle().die();
         getHandle().velocityChanged = true; // because this occurs when the painting is broken, so it might be important
-        if(!isVirtual()) {
+        if(isInWorld()) {
             world.addEntity(painting);
         }
         this.entity = painting;
