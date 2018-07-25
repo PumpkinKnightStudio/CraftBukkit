@@ -15,6 +15,7 @@ import java.util.UUID;
 import net.minecraft.server.*;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Art;
 import org.bukkit.BlockChangeDelegate;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -883,12 +884,8 @@ public class CraftWorld implements World {
         return (FallingBlock) entity.getBukkitEntity();
     }
 
-    public net.minecraft.server.Entity createEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
-        return createEntity(location, clazz, null);
-    }
-
     @SuppressWarnings("unchecked")
-    public net.minecraft.server.Entity createEntity(Location location, Class<? extends Entity> clazz, Consumer function) throws IllegalArgumentException {
+    public net.minecraft.server.Entity createEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
         Preconditions.checkArgument( location != null && clazz != null, "Location or entity class cannot be null." );
 
         net.minecraft.server.Entity entity = null;
@@ -1143,9 +1140,6 @@ public class CraftWorld implements World {
                 if (getHandle().getType(pos).getBlock() instanceof BlockFence) {
                     entity = new EntityLeash(world, new BlockPosition((int) x, (int) y, (int) z));
                     entity.attachedToPlayer = true;
-                    if(function != null) {
-                        function.accept(entity.getBukkitEntity());
-                    }
                     return entity;
                 }
                 throw new IllegalArgumentException("Cannot spawn hanging entity for " + clazz.getName() + " at " + location + ". No fence found.");
@@ -1160,13 +1154,10 @@ public class CraftWorld implements World {
             }
             hanging.blockPosition = pos;
             Class<? extends Hanging> hClass = ((Hanging)hanging.getBukkitEntity()).getClass();
-            BlockFace face = getValidSpawnFacing(hClass, location, function);
+            BlockFace face = getValidSpawnFacing(hClass, location);
             if (face != null) {
                 EnumDirection direction = CraftBlock.blockFaceToNotch(face);
                 hanging.setDirection(direction);
-                if (function != null) {
-                    function.accept(hanging.getBukkitEntity());
-                }
                 return hanging;
             }
 
@@ -1191,9 +1182,6 @@ public class CraftWorld implements World {
         }
 
         if (entity != null) {
-            if(function != null) {
-                function.accept(entity.getBukkitEntity());
-            }
             return entity;
         }
 
@@ -1215,9 +1203,9 @@ public class CraftWorld implements World {
         if (ItemFrame.class.isAssignableFrom(clazz)) {
             hanging = new EntityItemFrame(getHandle());
         } else if (Painting.class.isAssignableFrom(clazz)) {
-            hanging = new EntityPainting(getHandle(), pos, EnumDirection.EAST);
+            hanging = new EntityPainting(getHandle());
         } else if (LeashHitch.class.isAssignableFrom(clazz)) {
-            hanging = new EntityLeash(getHandle(), pos);
+            hanging = new EntityLeash(getHandle());
         }
         hanging.blockPosition = pos;
         hanging.getBukkitEntity().setIsInWorld(false);
@@ -1236,7 +1224,7 @@ public class CraftWorld implements World {
         // Let the entity determine if the location is valid at the given facing
         for (BlockFace dir : faces) {
             EnumDirection direction = CraftBlock.blockFaceToNotch(dir);
-            hanging.setDirection(direction);
+            hanging.direction = direction;
             if (function != null) {
                 function.accept((T)hanging.getBukkitEntity());
             }
@@ -1250,47 +1238,56 @@ public class CraftWorld implements World {
     }
 
     @Override
+    public Painting spawnPainting(Location location, Art art) {
+        Validate.notNull(location, "Cannot spawn painting at a null location");
+        Validate.notNull(art, "Cannot spawn a painting with a null Art");
+        BlockFace check = getValidSpawnFacing(Painting.class, location, (painting) -> painting.setArt(art));
+        if (check == null) {
+            return null;
+        }
+        CraftWorld world = (CraftWorld)location.getWorld();
+        BlockPosition pos = new BlockPosition(location.getX(), location.getY(), location.getZ());
+        EnumDirection direction = CraftBlock.blockFaceToNotch(check);
+        EntityPainting painting = new EntityPainting(world.getHandle());
+        // Set manually so we don't get random art, and so we don't trigger updates before needed
+        painting.blockPosition = pos;
+        painting.art = CraftArt.BukkitToNotch(art);
+        painting.setDirection(direction);
+        if (painting.survives()) {
+            world.addEntity(painting, SpawnReason.CUSTOM);
+            return (Painting) painting.getBukkitEntity();
+        }
+        painting = null;
+        return null;
+    }
+
+    @Override
     public <T extends Entity> T createEntity(EntityType type, Location location) {
         Preconditions.checkArgument(type.isSpawnable(), "Cannot create a non-spawnable entity");
-        return createEntity(type.getEntityClass(), location, null);
+        return createEntity(type.getEntityClass(), location);
     }
 
     @Override
     public <T extends Entity> T createEntity(Class<T> clazz, Location location) {
-        return createEntity(clazz, location, null);
-    }
-
-    @Override
-    public <T extends Entity> T createEntity(Class<T> clazz, Location location, Consumer<T> function) {
         Preconditions.checkNotNull(clazz, "Cannot create entity from a null class");
         Preconditions.checkNotNull(location, "Cannot create entity at a null location");
-        net.minecraft.server.Entity nms = createEntity(location, clazz, function);
+        net.minecraft.server.Entity nms = createEntity(location, clazz);
         nms.getBukkitEntity().setIsInWorld(false);
         return (T) nms.getBukkitEntity();
     }
 
     @Override
     public <T extends Entity> T addEntity(T entity) {
-        return addEntity(entity, null);
+        net.minecraft.server.Entity nms = ((CraftEntity)entity).getHandle();
+        return addEntity(nms, null, SpawnReason.CUSTOM);
     }
 
-    @Override
-    public <T extends Entity> T addEntity(T entity, Consumer<T> function) {
-        return addEntity(null, entity, function, SpawnReason.CUSTOM);
+    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) {
+        return addEntity(entity, null, reason);
     }
-
-    public <T extends Entity> T addEntity(Location location, T entity, Consumer<T> function, SpawnReason reason) {
-        net.minecraft.server.Entity handle = ((CraftEntity)entity).getHandle();
-        return addEntity(handle, reason, function);
-    }
-
+    
     @SuppressWarnings("unchecked")
-    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) throws IllegalArgumentException {
-        return addEntity(entity, reason, null);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason, Consumer<T> function) throws IllegalArgumentException {
+    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
         Preconditions.checkArgument(!entity.getBukkitEntity().isInWorld(), "Cannot spawn a valid entity!");
 
@@ -1298,9 +1295,8 @@ public class CraftWorld implements World {
             ((EntityInsentient) entity).prepare(getHandle().getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, null);
         }
         entity.getBukkitEntity().setIsInWorld(true);
-
         if (function != null) {
-            function.accept((T) entity.getBukkitEntity());
+            function.accept((T)entity.getBukkitEntity());
         }
 
         world.addEntity(entity, reason);
@@ -1309,7 +1305,7 @@ public class CraftWorld implements World {
 
     public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
         T entity = createEntity(clazz, location);
-        return addEntity(location, entity, function, reason);
+        return addEntity(((CraftEntity)entity).getHandle(), function, reason);
     }
 
     public ChunkSnapshot getEmptyChunkSnapshot(int x, int z, boolean includeBiome, boolean includeBiomeTempRain) {
