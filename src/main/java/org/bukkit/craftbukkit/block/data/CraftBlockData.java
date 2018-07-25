@@ -89,7 +89,7 @@ public class CraftBlockData implements BlockData {
         this.state = this.state.set(nms, toNMS(bukkit, nms.b()));
     }
 
-    private static final BiMap<Enum<?>, Enum<?>> nmsToBukkit = HashBiMap.create();
+    private static final Map<Class, BiMap<Enum<?>, Enum<?>>> classMappings = new HashMap<>();
 
     /**
      * Convert an NMS Enum (usually a BlockStateEnum) to its appropriate Bukkit
@@ -99,9 +99,14 @@ public class CraftBlockData implements BlockData {
      */
     @SuppressWarnings("unchecked")
     private static <B extends Enum<B>> B toBukkit(Enum<?> nms, Class<B> bukkit) {
-        Enum<?> converted = nmsToBukkit.get(nms);
-        if (converted != null) {
-            return (B) converted;
+        Enum<?> converted;
+        BiMap<Enum<?>, Enum<?>> nmsToBukkit = classMappings.get(nms.getClass());
+
+        if (nmsToBukkit != null) {
+            converted = nmsToBukkit.get(nms);
+            if (converted != null) {
+                return (B) converted;
+            }
         }
 
         if (nms instanceof EnumDirection) {
@@ -111,6 +116,12 @@ public class CraftBlockData implements BlockData {
         }
 
         Preconditions.checkState(converted != null, "Could not convert enum %s->%s", nms, bukkit);
+
+        if (nmsToBukkit == null) {
+            nmsToBukkit = HashBiMap.create();
+            classMappings.put(nms.getClass(), nmsToBukkit);
+        }
+
         nmsToBukkit.put(nms, converted);
 
         return (B) converted;
@@ -126,9 +137,14 @@ public class CraftBlockData implements BlockData {
      */
     @SuppressWarnings("unchecked")
     private static <N extends Enum<N> & INamable> N toNMS(Enum<?> bukkit, Class<N> nms) {
-        Enum<?> converted = nmsToBukkit.inverse().get(bukkit);
-        if (converted != null) {
-            return (N) converted;
+        Enum<?> converted;
+        BiMap<Enum<?>, Enum<?>> nmsToBukkit = classMappings.get(nms);
+
+        if (nmsToBukkit != null) {
+            converted = nmsToBukkit.inverse().get(bukkit);
+            if (converted != null) {
+                return (N) converted;
+            }
         }
 
         if (bukkit instanceof BlockFace) {
@@ -138,6 +154,12 @@ public class CraftBlockData implements BlockData {
         }
 
         Preconditions.checkState(converted != null, "Could not convert enum %s->%s", nms, bukkit);
+
+        if (nmsToBukkit == null) {
+            nmsToBukkit = HashBiMap.create();
+            classMappings.put(nms, nmsToBukkit);
+        }
+
         nmsToBukkit.put(converted, bukkit);
 
         return (N) converted;
@@ -303,6 +325,9 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.server.BlockCocoa.class, org.bukkit.craftbukkit.block.impl.CraftCocoa.class);
         register(net.minecraft.server.BlockCommand.class, org.bukkit.craftbukkit.block.impl.CraftCommand.class);
         register(net.minecraft.server.BlockCoralFan.class, org.bukkit.craftbukkit.block.impl.CraftCoralFan.class);
+        register(net.minecraft.server.BlockCoralFanAbstract.class, org.bukkit.craftbukkit.block.impl.CraftCoralFanAbstract.class);
+        register(net.minecraft.server.BlockCoralFanWall.class, org.bukkit.craftbukkit.block.impl.CraftCoralFanWall.class);
+        register(net.minecraft.server.BlockCoralFanWallAbstract.class, org.bukkit.craftbukkit.block.impl.CraftCoralFanWallAbstract.class);
         register(net.minecraft.server.BlockCrops.class, org.bukkit.craftbukkit.block.impl.CraftCrops.class);
         register(net.minecraft.server.BlockDaylightDetector.class, org.bukkit.craftbukkit.block.impl.CraftDaylightDetector.class);
         register(net.minecraft.server.BlockDirtSnow.class, org.bukkit.craftbukkit.block.impl.CraftDirtSnow.class);
@@ -403,7 +428,10 @@ public class CraftBlockData implements BlockData {
                     data = Block.REGISTRY.b(block) + data;
                 }
 
-                ArgumentBlock arg = new ArgumentBlock(new StringReader(data), false).a(false);
+                StringReader reader = new StringReader(data);
+                ArgumentBlock arg = new ArgumentBlock(reader, false).a(false);
+                Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data");
+
                 blockData = arg.b();
             } catch (CommandSyntaxException ex) {
                 throw new IllegalArgumentException("Could not parse data: " + data, ex);

@@ -1,0 +1,22 @@
+--- a/net/minecraft/server/EntityTurtle.java
++++ b/net/minecraft/server/EntityTurtle.java
+@@ -231,7 +231,9 @@
+ 
+     protected void l() {
+         super.l();
++        this.forceDrops = true; // CraftBukkit
+         this.a((IMaterial) Items.SCUTE, 1);
++        this.forceDrops = false; // CraftBukkit
+     }
+ 
+     public void a(float f, float f1, float f2) {
+@@ -260,7 +262,9 @@
+     }
+ 
+     public void onLightningStrike(EntityLightning entitylightning) {
++        org.bukkit.craftbukkit.event.CraftEventFactory.entityDamage = entitylightning; // CraftBukkit
+         this.damageEntity(DamageSource.LIGHTNING, Float.MAX_VALUE);
++        org.bukkit.craftbukkit.event.CraftEventFactory.entityDamage = null; // CraftBukkit
+     }
+ 
+     public void die(DamageSource damagesource) {

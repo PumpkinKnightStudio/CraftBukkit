@@ -39,6 +39,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonParseException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,6 +49,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.minecraft.server.ChatComponentText;
 import net.minecraft.server.NBTCompressedStreamTools;
 import org.apache.commons.codec.binary.Base64;
 
@@ -262,7 +264,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
 
         this.internalTag = meta.internalTag;
         if (this.internalTag != null) {
-            deserializeInternal(internalTag);
+            deserializeInternal(internalTag, meta);
         }
     }
 
@@ -271,11 +273,19 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
             NBTTagCompound display = tag.getCompound(DISPLAY.NBT);
 
             if (display.hasKey(NAME.NBT)) {
-                displayName = IChatBaseComponent.ChatSerializer.a(display.getString(NAME.NBT));
+                try {
+                    displayName = IChatBaseComponent.ChatSerializer.a(display.getString(NAME.NBT));
+                } catch (JsonParseException ex) {
+                    // Ignore (stripped like Vanilla)
+                }
             }
 
             if (display.hasKey(LOCNAME.NBT)) {
-                locName = IChatBaseComponent.ChatSerializer.a(display.getString(LOCNAME.NBT));
+                try {
+                    locName = IChatBaseComponent.ChatSerializer.a(display.getString(LOCNAME.NBT));
+                } catch (JsonParseException ex) {
+                    // Ignore (stripped like Vanilla)
+                }
             }
 
             if (display.hasKey(LORE.NBT)) {
@@ -424,7 +434,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.decodeBase64(internal));
             try {
                 internalTag = NBTCompressedStreamTools.a(buf);
-                deserializeInternal(internalTag);
+                deserializeInternal(internalTag, map);
                 Set<String> keys = internalTag.getKeys();
                 for (String key : keys) {
                     if (!getHandledTags().contains(key)) {
@@ -437,7 +447,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
         }
     }
 
-    void deserializeInternal(NBTTagCompound tag) {
+    void deserializeInternal(NBTTagCompound tag, Object context) {
     }
 
     static Map<Enchantment, Integer> buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
@@ -556,7 +566,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
     }
 
     public final void setDisplayName(String name) {
-        this.displayName = CraftChatMessage.fromStringOrNull(name);
+        this.displayName = (name == null) ? null : new ChatComponentText(name);
     }
 
     public boolean hasDisplayName() {
@@ -570,7 +580,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
 
     @Override
     public void setLocalizedName(String name) {
-        this.locName = CraftChatMessage.fromStringOrNull(name);
+        this.locName = (name == null) ? null : new ChatComponentText(name);
     }
 
     @Override

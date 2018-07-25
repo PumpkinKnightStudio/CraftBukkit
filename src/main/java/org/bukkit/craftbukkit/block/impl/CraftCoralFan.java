@@ -3,7 +3,7 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftCoralFan extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Directional {
+public final class CraftCoralFan extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Waterlogged {
 
     public CraftCoralFan() {
         super();
@@ -13,22 +13,17 @@ public final class CraftCoralFan extends org.bukkit.craftbukkit.block.data.Craft
         super(state);
     }
 
-    // org.bukkit.craftbukkit.block.data.CraftDirectional
+    // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.server.BlockStateEnum<?> FACING = getEnum(net.minecraft.server.BlockCoralFan.class, "facing");
+    private static final net.minecraft.server.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.server.BlockCoralFan.class, "waterlogged");
 
     @Override
-    public org.bukkit.block.BlockFace getFacing() {
-        return get(FACING, org.bukkit.block.BlockFace.class);
+    public boolean isWaterlogged() {
+        return get(WATERLOGGED);
     }
 
     @Override
-    public void setFacing(org.bukkit.block.BlockFace facing) {
-        set(FACING, facing);
-    }
-
-    @Override
-    public java.util.Set<org.bukkit.block.BlockFace> getFaces() {
-        return getValues(FACING, org.bukkit.block.BlockFace.class);
+    public void setWaterlogged(boolean waterlogged) {
+        set(WATERLOGGED, waterlogged);
     }
 }

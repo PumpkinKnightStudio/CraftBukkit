@@ -39,6 +39,8 @@ public class Commodore
             "org/bukkit/block/Block (I)Z setTypeId",
             "org/bukkit/block/Block (IZ)Z setTypeId",
             "org/bukkit/block/Block (IBZ)Z setTypeIdAndData",
+            "org/bukkit/block/Block (B)V setData",
+            "org/bukkit/block/Block (BZ)V setData",
             "org/bukkit/inventory/ItemStack ()I getTypeId",
             "org/bukkit/inventory/ItemStack (I)V setTypeId"
     ) );
@@ -169,6 +171,16 @@ public class Commodore
                             }
                         }
 
+                        if ( owner.equals( "org/bukkit/DyeColor" ) )
+                        {
+                            switch ( name )
+                            {
+                                case "SILVER":
+                                    super.visitFieldInsn( opcode, owner, "LIGHT_GRAY", desc );
+                                    return;
+                            }
+                        }
+
                         if ( owner.equals( "org/bukkit/Particle" ) )
                         {
                             switch ( name )
@@ -225,6 +237,15 @@ public class Commodore
 
                             super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/util/CraftEvil", name, Type.getMethodDescriptor( retType, newArgs ), false );
                             return;
+                        }
+
+                        if ( owner.equals( "org/bukkit/DyeColor" ) )
+                        {
+                            if ( name.equals( "valueOf" ) && desc.equals( "(Ljava/lang/String;)Lorg/bukkit/DyeColor;" ) )
+                            {
+                                super.visitMethodInsn( opcode, owner, "legacyValueOf", desc, itf );
+                                return;
+                            }
                         }
 
                         if ( owner.equals( "org/bukkit/Material" ) )

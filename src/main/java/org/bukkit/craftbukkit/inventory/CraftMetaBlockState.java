@@ -110,7 +110,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
     }
 
     @Override
-    void deserializeInternal(NBTTagCompound tag) {
+    void deserializeInternal(NBTTagCompound tag, Object context) {
         if (tag.hasKeyOfType(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
             blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT);
         }
@@ -186,6 +186,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case COMPARATOR:
             case SHIELD:
             case STRUCTURE_BLOCK:
+            case SHULKER_BOX:
             case WHITE_SHULKER_BOX:
             case ORANGE_SHULKER_BOX:
             case MAGENTA_SHULKER_BOX:
@@ -229,6 +230,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                 case SHIELD:
                     blockEntityTag.setString("id", "banner");
                     break;
+                case SHULKER_BOX:
                 case WHITE_SHULKER_BOX:
                 case ORANGE_SHULKER_BOX:
                 case MAGENTA_SHULKER_BOX:
@@ -308,7 +310,6 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case CREEPER_WALL_HEAD:
         case DRAGON_HEAD:
         case DRAGON_WALL_HEAD:
-        case PISTON_HEAD:
         case PLAYER_HEAD:
         case PLAYER_WALL_HEAD:
         case SKELETON_SKULL:
@@ -375,6 +376,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                 te = new TileEntityStructure();
             }
             return new CraftStructureBlock(material, (TileEntityStructure) te);
+        case SHULKER_BOX:
         case WHITE_SHULKER_BOX:
         case ORANGE_SHULKER_BOX:
         case MAGENTA_SHULKER_BOX:
@@ -462,7 +464,6 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case CREEPER_WALL_HEAD:
         case DRAGON_HEAD:
         case DRAGON_WALL_HEAD:
-        case PISTON_HEAD:
         case PLAYER_HEAD:
         case PLAYER_WALL_HEAD:
         case SKELETON_SKULL:
@@ -519,6 +520,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case STRUCTURE_BLOCK:
             valid = blockState instanceof CraftStructureBlock;
             break;
+        case SHULKER_BOX:
         case WHITE_SHULKER_BOX:
         case ORANGE_SHULKER_BOX:
         case MAGENTA_SHULKER_BOX:

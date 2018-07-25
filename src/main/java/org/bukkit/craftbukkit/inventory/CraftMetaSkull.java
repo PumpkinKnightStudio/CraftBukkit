@@ -56,7 +56,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     }
 
     @Override
-    void deserializeInternal(NBTTagCompound tag) {
+    void deserializeInternal(NBTTagCompound tag, Object context) {
         if (tag.hasKeyOfType(SKULL_PROFILE.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
             profile = GameProfileSerializer.deserialize(tag.getCompound(SKULL_PROFILE.NBT));
         }
@@ -101,7 +101,6 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             case CREEPER_WALL_HEAD:
             case DRAGON_HEAD:
             case DRAGON_WALL_HEAD:
-            case PISTON_HEAD:
             case PLAYER_HEAD:
             case PLAYER_WALL_HEAD:
             case SKELETON_SKULL:

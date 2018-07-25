@@ -77,7 +77,6 @@ public final class CraftItemFactory implements ItemFactory {
         case CREEPER_WALL_HEAD:
         case DRAGON_HEAD:
         case DRAGON_WALL_HEAD:
-        case PISTON_HEAD:
         case PLAYER_HEAD:
         case PLAYER_WALL_HEAD:
         case SKELETON_SKULL:
@@ -204,6 +203,7 @@ public final class CraftItemFactory implements ItemFactory {
         case COMPARATOR:
         case SHIELD:
         case STRUCTURE_BLOCK:
+        case SHULKER_BOX:
         case WHITE_SHULKER_BOX:
         case ORANGE_SHULKER_BOX:
         case MAGENTA_SHULKER_BOX:

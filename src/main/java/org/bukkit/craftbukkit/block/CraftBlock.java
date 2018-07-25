@@ -130,7 +130,7 @@ public class CraftBlock implements Block {
 
     @Override
     public void setType(Material type, boolean applyPhysics) {
-        setTypeAndData(type, (byte) 0, applyPhysics);
+        setBlockData(type.createBlockData(), applyPhysics);
     }
 
     @Override
@@ -141,10 +141,6 @@ public class CraftBlock implements Block {
     @Override
     public void setBlockData(BlockData data, boolean applyPhysics) {
         setTypeAndData(((CraftBlockData) data).getState(), applyPhysics);
-    }
-
-    public boolean setTypeAndData(final Material type, final byte data, final boolean applyPhysics) {
-        return setTypeAndData(CraftMagicNumbers.getBlock(type, data), applyPhysics);
     }
 
     public boolean setTypeAndData(final IBlockData blockData, final boolean applyPhysics) {
@@ -224,7 +220,7 @@ public class CraftBlock implements Block {
 
     @Override
     public String toString() {
-        return "CraftBlock{pos=" + position + ",type=" + getType() + ",data=" + getData() + '}';
+        return "CraftBlock{pos=" + position + ",type=" + getType() + ",data=" + getNMS() + '}';
     }
 
     public static BlockFace notchToBlockFace(EnumDirection notch) {
@@ -296,7 +292,6 @@ public class CraftBlock implements Block {
         case CREEPER_WALL_HEAD:
         case DRAGON_HEAD:
         case DRAGON_WALL_HEAD:
-        case PISTON_HEAD:
         case PLAYER_HEAD:
         case PLAYER_WALL_HEAD:
         case SKELETON_SKULL:
@@ -347,6 +342,7 @@ public class CraftBlock implements Block {
             return new CraftBanner(this);
         case STRUCTURE_BLOCK:
             return new CraftStructureBlock(this);
+        case SHULKER_BOX:
         case WHITE_SHULKER_BOX:
         case ORANGE_SHULKER_BOX:
         case MAGENTA_SHULKER_BOX:
@@ -528,7 +524,7 @@ public class CraftBlock implements Block {
         if (itemCausesDrops(item)) {
             return breakNaturally();
         } else {
-            return setTypeAndData(Material.AIR, (byte) 0, true);
+            return setTypeAndData(Blocks.AIR.getBlockData(), true);
         }
     }
 

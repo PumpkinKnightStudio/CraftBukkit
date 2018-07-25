@@ -40,7 +40,7 @@ import org.bukkit.material.MaterialData;
 @Deprecated
 public class CraftLegacy {
 
-    private static final Map<EntityType, Material> SPAWN_EGGS = new HashMap<>();
+    private static final Map<Byte, Material> SPAWN_EGGS = new HashMap<>();
     private static final Set<String> whitelistedStates = new HashSet<>(Arrays.asList("explode", "check_decay", "decayable"));
     private static final Map<MaterialData, Item> materialToItem = new HashMap<>();
     private static final Map<Item, MaterialData> itemToMaterial = new HashMap<>();
@@ -147,6 +147,10 @@ public class CraftLegacy {
     }
 
     public static Material fromLegacy(Material material) {
+        if (material == null || !material.isLegacy()) {
+            return material;
+        }
+
         return fromLegacy(new MaterialData(material));
     }
 
@@ -231,34 +235,58 @@ public class CraftLegacy {
     }
 
     static {
-        SPAWN_EGGS.put(EntityType.BAT, Material.BAT_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.BLAZE, Material.BLAZE_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.CAVE_SPIDER, Material.CAVE_SPIDER_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.CHICKEN, Material.CHICKEN_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.COW, Material.COW_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.CREEPER, Material.CREEPER_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.ENDERMAN, Material.ENDERMAN_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.ENDERMITE, Material.ENDERMITE_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.GHAST, Material.GHAST_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.GUARDIAN, Material.GUARDIAN_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.HORSE, Material.HORSE_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.MAGMA_CUBE, Material.MAGMA_CUBE_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.MUSHROOM_COW, Material.MOOSHROOM_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.OCELOT, Material.OCELOT_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.PIG, Material.PIG_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.RABBIT, Material.RABBIT_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SHEEP, Material.SHEEP_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SHULKER, Material.SHULKER_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SILVERFISH, Material.SILVERFISH_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SKELETON, Material.SKELETON_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SLIME, Material.SLIME_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SPIDER, Material.SPIDER_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.SQUID, Material.SQUID_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.VILLAGER, Material.VILLAGER_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.WITCH, Material.WITCH_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.WOLF, Material.WOLF_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.PIG_ZOMBIE, Material.ZOMBIE_PIGMAN_SPAWN_EGG);
-        SPAWN_EGGS.put(EntityType.ZOMBIE, Material.ZOMBIE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) 0, Material.PIG_SPAWN_EGG); // Will be fixed by updateMaterial if possible
+
+        SPAWN_EGGS.put((byte) EntityType.BAT.getTypeId(), Material.BAT_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.BLAZE.getTypeId(), Material.BLAZE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.CAVE_SPIDER.getTypeId(), Material.CAVE_SPIDER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.CHICKEN.getTypeId(), Material.CHICKEN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.COD.getTypeId(), Material.COD_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.COW.getTypeId(), Material.COW_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.CREEPER.getTypeId(), Material.CREEPER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.DOLPHIN.getTypeId(), Material.DOLPHIN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.DONKEY.getTypeId(), Material.DONKEY_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ELDER_GUARDIAN.getTypeId(), Material.ELDER_GUARDIAN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ENDERMAN.getTypeId(), Material.ENDERMAN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ENDERMITE.getTypeId(), Material.ENDERMITE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.EVOKER.getTypeId(), Material.EVOKER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.GHAST.getTypeId(), Material.GHAST_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.GUARDIAN.getTypeId(), Material.GUARDIAN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.HORSE.getTypeId(), Material.HORSE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.HUSK.getTypeId(), Material.HUSK_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.LLAMA.getTypeId(), Material.LLAMA_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.MAGMA_CUBE.getTypeId(), Material.MAGMA_CUBE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.MUSHROOM_COW.getTypeId(), Material.MOOSHROOM_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.MULE.getTypeId(), Material.MULE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.OCELOT.getTypeId(), Material.OCELOT_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.PARROT.getTypeId(), Material.PARROT_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.PIG.getTypeId(), Material.PIG_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.PHANTOM.getTypeId(), Material.PHANTOM_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.POLAR_BEAR.getTypeId(), Material.POLAR_BEAR_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.PUFFERFISH.getTypeId(), Material.PUFFERFISH_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.RABBIT.getTypeId(), Material.RABBIT_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SALMON.getTypeId(), Material.SALMON_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SHEEP.getTypeId(), Material.SHEEP_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SHULKER.getTypeId(), Material.SHULKER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SILVERFISH.getTypeId(), Material.SILVERFISH_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SKELETON.getTypeId(), Material.SKELETON_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SKELETON_HORSE.getTypeId(), Material.SKELETON_HORSE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SLIME.getTypeId(), Material.SLIME_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SPIDER.getTypeId(), Material.SPIDER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.SQUID.getTypeId(), Material.SQUID_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.STRAY.getTypeId(), Material.STRAY_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.TROPICAL_FISH.getTypeId(), Material.TROPICAL_FISH_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.TURTLE.getTypeId(), Material.TURTLE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.VEX.getTypeId(), Material.VEX_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.VILLAGER.getTypeId(), Material.VILLAGER_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.VINDICATOR.getTypeId(), Material.VINDICATOR_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.WITCH.getTypeId(), Material.WITCH_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.WITHER_SKELETON.getTypeId(), Material.WITHER_SKELETON_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.WOLF.getTypeId(), Material.WOLF_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ZOMBIE.getTypeId(), Material.ZOMBIE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ZOMBIE_HORSE.getTypeId(), Material.ZOMBIE_HORSE_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.PIG_ZOMBIE.getTypeId(), Material.ZOMBIE_PIGMAN_SPAWN_EGG);
+        SPAWN_EGGS.put((byte) EntityType.ZOMBIE_VILLAGER.getTypeId(), Material.ZOMBIE_VILLAGER_SPAWN_EGG);
 
         DispenserRegistry.c();
 
@@ -363,8 +391,8 @@ public class CraftLegacy {
                 }
             }
 
-            for (Map.Entry<EntityType, Material> entry : SPAWN_EGGS.entrySet()) {
-                MaterialData matData = new MaterialData(Material.LEGACY_MONSTER_EGG, (byte) entry.getKey().getTypeId());
+            for (Map.Entry<Byte, Material> entry : SPAWN_EGGS.entrySet()) {
+                MaterialData matData = new MaterialData(Material.LEGACY_MONSTER_EGG, entry.getKey());
                 Item newMaterial = CraftMagicNumbers.getItem(entry.getValue());
 
                 materialToItem.put(matData, newMaterial);

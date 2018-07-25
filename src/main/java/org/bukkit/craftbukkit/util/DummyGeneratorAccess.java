@@ -39,7 +39,7 @@ public class DummyGeneratorAccess implements GeneratorAccess {
 
     public static final GeneratorAccess INSTANCE = new DummyGeneratorAccess();
 
-    private DummyGeneratorAccess() {
+    protected DummyGeneratorAccess() {
     }
 
     @Override
@@ -84,11 +84,6 @@ public class DummyGeneratorAccess implements GeneratorAccess {
 
     @Override
     public PersistentCollection s_() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void a(String string, PersistentBase pb) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
