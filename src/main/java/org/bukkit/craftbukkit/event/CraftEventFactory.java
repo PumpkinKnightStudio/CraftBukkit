@@ -289,6 +289,18 @@ public class CraftEventFactory {
     }
 
     /**
+     * EntityTransformEvent
+     */
+    public static EntityTransformEvent callEntityTransformEvent(EntityLiving entityliving, EntityTransformEvent.TransformReason transformReason) {
+        LivingEntity entity = (LivingEntity) entityliving.getBukkitEntity();
+        CraftServer craftServer = (CraftServer) entity.getServer();
+
+        EntityTransformEvent event = new EntityTransformEvent(entity, transformReason);
+        craftServer.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    /**
      * EntityTameEvent
      */
     public static EntityTameEvent callEntityTameEvent(EntityInsentient entity, EntityHuman tamer) {

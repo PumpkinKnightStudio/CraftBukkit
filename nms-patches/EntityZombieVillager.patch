@@ -1,6 +1,18 @@
 --- a/net/minecraft/server/EntityZombieVillager.java
 +++ b/net/minecraft/server/EntityZombieVillager.java
-@@ -9,6 +9,7 @@
+@@ -3,12 +3,19 @@
+ import java.util.UUID;
+ import javax.annotation.Nullable;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EntityTransformEvent;
++import org.bukkit.event.entity.EntityTransformEvent.TransformReason;
++// CraftBukkit end
++
+ public class EntityZombieVillager extends EntityZombie {
+ 
+     private static final DataWatcherObject<Boolean> a = DataWatcher.a(EntityZombieVillager.class, DataWatcherRegistry.i);
      private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityZombieVillager.class, DataWatcherRegistry.b);
      private int conversionTime;
      private UUID bD;
@@ -8,7 +20,7 @@
  
      public EntityZombieVillager(World world) {
          super(EntityTypes.ZOMBIE_VILLAGER, world);
-@@ -56,6 +57,11 @@
+@@ -56,6 +63,11 @@
      public void tick() {
          if (!this.world.isClientSide && this.isConverting()) {
              int i = this.dL();
@@ -20,7 +32,7 @@
  
              this.conversionTime -= i;
              if (this.conversionTime <= 0) {
-@@ -100,8 +106,10 @@
+@@ -100,12 +112,22 @@
          this.bD = uuid;
          this.conversionTime = i;
          this.getDataWatcher().set(EntityZombieVillager.a, Boolean.valueOf(true));
@@ -33,7 +45,19 @@
          this.world.broadcastEntityEffect(this, (byte) 16);
      }
  
-@@ -123,7 +131,7 @@
+     protected void dK() {
++        // CraftBukkit start
++        EntityTransformEvent transform = CraftEventFactory.callEntityTransformEvent(this, TransformReason.CURED);
++        if (transform.isCancelled()) {
++            this.conversionTime = 0;
++            this.getDataWatcher().set(EntityZombieVillager.a, false);
++            return;
++        }
++        // CraftBukkit end
+         EntityVillager entityvillager = new EntityVillager(this.world);
+ 
+         entityvillager.u(this);
+@@ -123,7 +145,7 @@
              entityvillager.setCustomNameVisible(this.getCustomNameVisible());
          }
  
@@ -42,7 +66,7 @@
          if (this.bD != null) {
              EntityHuman entityhuman = this.world.b(this.bD);
  
-@@ -132,7 +140,7 @@
+@@ -132,7 +154,7 @@
              }
          }
  

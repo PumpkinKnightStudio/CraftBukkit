@@ -1,15 +1,19 @@
 --- a/net/minecraft/server/EntityPig.java
 +++ b/net/minecraft/server/EntityPig.java
-@@ -2,6 +2,8 @@
+@@ -2,6 +2,12 @@
  
  import javax.annotation.Nullable;
  
-+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EntityTransformEvent;
++import org.bukkit.event.entity.EntityTransformEvent.TransformReason;
++// CraftBukkit end
 +
  public class EntityPig extends EntityAnimal {
  
      private static final DataWatcherObject<Boolean> bC = DataWatcher.a(EntityPig.class, DataWatcherRegistry.i);
-@@ -118,13 +120,14 @@
+@@ -118,13 +124,14 @@
      }
  
      public void die(DamageSource damagesource) {
@@ -25,8 +29,14 @@
      }
  
      @Nullable
-@@ -149,6 +152,12 @@
+@@ -147,8 +154,18 @@
+ 
+     public void onLightningStrike(EntityLightning entitylightning) {
          if (!this.world.isClientSide && !this.dead) {
++            // CraftBukkit start
++            EntityTransformEvent transform = CraftEventFactory.callEntityTransformEvent(this, TransformReason.LIGHTNING);
++            if (transform.isCancelled()) return;
++            // CraftBukkit end
              EntityPigZombie entitypigzombie = new EntityPigZombie(this.world);
  
 +            // CraftBukkit start
@@ -38,7 +48,7 @@
              entitypigzombie.setSlot(EnumItemSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
              entitypigzombie.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
              entitypigzombie.setNoAI(this.isNoAI());
-@@ -157,7 +166,8 @@
+@@ -157,7 +174,8 @@
                  entitypigzombie.setCustomNameVisible(this.getCustomNameVisible());
              }
  

@@ -1,17 +1,25 @@
 --- a/net/minecraft/server/EntityMushroomCow.java
 +++ b/net/minecraft/server/EntityMushroomCow.java
-@@ -1,6 +1,7 @@
- package net.minecraft.server;
+@@ -2,6 +2,14 @@
  
  import javax.annotation.Nullable;
-+import org.bukkit.event.player.PlayerShearEntityEvent; // CraftBukkit
  
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
++import org.bukkit.event.entity.EntityTransformEvent;
++import org.bukkit.event.entity.EntityTransformEvent.TransformReason;
++import org.bukkit.event.player.PlayerShearEntityEvent;
++// CraftBukkit end
++
  public class EntityMushroomCow extends EntityCow {
  
-@@ -23,6 +24,14 @@
+     public EntityMushroomCow(World world) {
+@@ -23,9 +31,36 @@
  
              return true;
          } else if (itemstack.getItem() == Items.SHEARS && this.getAge() >= 0) {
+-            this.die();
 +            // CraftBukkit start
 +            PlayerShearEntityEvent event = new PlayerShearEntityEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), this.getBukkitEntity());
 +            this.world.getServer().getPluginManager().callEvent(event);
@@ -20,6 +28,47 @@
 +                return false;
 +            }
 +            // CraftBukkit end
-             this.die();
++            // this.die(); CraftBukkit - moved to below
              this.world.addParticle(Particles.u, this.locX, this.locY + (double) (this.length / 2.0F), this.locZ, 0.0D, 0.0D, 0.0D);
              if (!this.world.isClientSide) {
++                // CraftBukkit start - moved from below
++                for (int i = 0; i < 5; ++i) {
++                    this.world.addEntity(new EntityItem(this.world, this.locX, this.locY + (double) this.length, this.locZ, new ItemStack(Blocks.RED_MUSHROOM)));
++                }
++
++                itemstack.damage(1, entityhuman);
++                this.a(SoundEffects.ENTITY_MOOSHROOM_SHEAR, 1.0F, 1.0F);
++                // CraftBukkit end
++
++                // CraftBukkit start - add entity transform event
++                EntityTransformEvent transform = CraftEventFactory.callEntityTransformEvent(this, TransformReason.SHEARING);
++                if (transform.isCancelled()) {
++                    WorldServer worldServer = (WorldServer) this.getWorld();
++                    EntityTracker tracker = new EntityTracker(worldServer);
++                    tracker.track(this);
++                    return false;
++                }
++                // CraftBukkit end
++
+                 EntityCow entitycow = new EntityCow(this.world);
+ 
+                 entitycow.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
+@@ -35,14 +70,17 @@
+                     entitycow.setCustomName(this.getCustomName());
+                 }
+ 
+-                this.world.addEntity(entitycow);
++                this.die(); // CraftBukkit - moved from above
++                this.world.addEntity(entitycow, SpawnReason.SHEARING); // CraftBukkit - add spawn reason
+ 
++                /* CraftBukkit - moved to above
+                 for (int i = 0; i < 5; ++i) {
+                     this.world.addEntity(new EntityItem(this.world, this.locX, this.locY + (double) this.length, this.locZ, new ItemStack(Blocks.RED_MUSHROOM)));
+                 }
+ 
+                 itemstack.damage(1, entityhuman);
+                 this.a(SoundEffects.ENTITY_MOOSHROOM_SHEAR, 1.0F, 1.0F);
++                */
+             }
+ 
+             return true;
