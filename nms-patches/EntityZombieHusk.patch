@@ -1,6 +1,17 @@
 --- a/net/minecraft/server/EntityZombieHusk.java
 +++ b/net/minecraft/server/EntityZombieHusk.java
-@@ -43,7 +43,7 @@
+@@ -1,5 +1,10 @@
+ package net.minecraft.server;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EntityTransformEvent;
++// CraftBukkit end
++
+ import javax.annotation.Nullable;
+ 
+ public class EntityZombieHusk extends EntityZombie {
+@@ -43,7 +48,7 @@
          if (flag && this.getItemInMainHand().isEmpty() && entity instanceof EntityLiving) {
              float f = this.world.getDamageScaler(new BlockPosition(this)).b();
  
@@ -9,3 +20,17 @@
          }
  
          return flag;
+@@ -54,6 +59,13 @@
+     }
+ 
+     protected void dF() {
++        // CraftBukkit start
++        EntityTransformEvent transform = CraftEventFactory.callEntityTransformEvent(this, EntityTransformEvent.TransformReason.DROWNED);
++        if (transform.isCancelled()) {
++            resetDrowning(this);
++            return;
++        }
++        // CraftBukkit end
+         this.a(new EntityZombie(this.world));
+         this.world.a((EntityHuman) null, 1041, new BlockPosition((int) this.locX, (int) this.locY, (int) this.locZ), 0);
+     }
