@@ -15,7 +15,7 @@
  public class EntityMushroomCow extends EntityCow {
  
      public EntityMushroomCow(World world) {
-@@ -23,9 +31,34 @@
+@@ -23,9 +31,36 @@
  
              return true;
          } else if (itemstack.getItem() == Items.SHEARS && this.getAge() >= 0) {
@@ -43,7 +43,9 @@
 +                // CraftBukkit start - add entity transform event
 +                EntityTransformEvent transform = CraftEventFactory.callEntityTransformEvent(this, TransformReason.SHEARING);
 +                if (transform.isCancelled()) {
-+                    ((WorldServer) this.getWorld()).tracker.track(this);
++                    WorldServer worldServer = (WorldServer) this.getWorld();
++                    worldServer.tracker.untrackEntity(this);
++                    worldServer.tracker.track(this);
 +                    return false;
 +                }
 +                // CraftBukkit end
@@ -51,7 +53,7 @@
                  EntityCow entitycow = new EntityCow(this.world);
  
                  entitycow.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
-@@ -35,14 +68,17 @@
+@@ -35,14 +70,17 @@
                      entitycow.setCustomName(this.getCustomName());
                  }
  
