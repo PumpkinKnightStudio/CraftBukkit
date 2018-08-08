@@ -511,13 +511,15 @@
          this.playerConnection.sendPacket(new PacketPlayOutCloseWindow(this.activeContainer.windowId));
          this.m();
      }
-@@ -743,6 +975,15 @@
+@@ -743,6 +975,17 @@
  
      public void a(float f, float f1, boolean flag, boolean flag1) {
          if (this.isPassenger()) {
 +
 +            // CraftBukkit start
-+            PlayerSteerVehicleEvent event = new PlayerSteerVehicleEvent(getBukkitEntity(), f1, f, flag, flag1);
++            // PacketPlayInSteerVehicle uses negative numbers for rightward movement, so we invert to mean
++            // -1 = left and +1 = right
++            PlayerSteerVehicleEvent event = new PlayerSteerVehicleEvent(getBukkitEntity(), f1, -f, flag, flag1);
 +            world.getServer().getPluginManager().callEvent(event);
 +            if (event.isCancelled()) {
 +                return;
@@ -527,7 +529,7 @@
              if (f >= -1.0F && f <= 1.0F) {
                  this.bh = f;
              }
-@@ -759,14 +1000,14 @@
+@@ -759,14 +1002,14 @@
  
      public void a(Statistic<?> statistic, int i) {
          this.ch.b(this, statistic, i);
@@ -544,7 +546,7 @@
      }
  
      public int a(Collection<IRecipe> collection) {
-@@ -814,8 +1055,17 @@
+@@ -814,8 +1057,17 @@
  
      public void triggerHealthUpdate() {
          this.lastHealthSent = -1.0E8F;
@@ -562,7 +564,7 @@
      public void a(IChatBaseComponent ichatbasecomponent, boolean flag) {
          this.playerConnection.sendPacket(new PacketPlayOutChat(ichatbasecomponent, flag ? ChatMessageType.GAME_INFO : ChatMessageType.CHAT));
      }
-@@ -866,7 +1116,7 @@
+@@ -866,7 +1118,7 @@
          this.lastSentExp = -1;
          this.lastHealthSent = -1.0F;
          this.cp = -1;
@@ -571,7 +573,7 @@
          this.removeQueue.addAll(entityplayer.removeQueue);
          this.cy = entityplayer.cy;
          this.cD = entityplayer.cD;
-@@ -925,6 +1175,18 @@
+@@ -925,6 +1177,18 @@
      }
  
      public void a(EnumGamemode enumgamemode) {
@@ -590,7 +592,7 @@
          this.playerInteractManager.setGameMode(enumgamemode);
          this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(3, (float) enumgamemode.getId()));
          if (enumgamemode == EnumGamemode.SPECTATOR) {
-@@ -968,6 +1230,16 @@
+@@ -968,6 +1232,16 @@
      }
  
      public void a(PacketPlayInSettings packetplayinsettings) {
@@ -607,7 +609,7 @@
          this.locale = packetplayinsettings.b();
          this.ct = packetplayinsettings.d();
          this.cu = packetplayinsettings.e();
-@@ -1033,7 +1305,7 @@
+@@ -1033,7 +1307,7 @@
          this.cw = (Entity) (entity == null ? this : entity);
          if (entity1 != this.cw) {
              this.playerConnection.sendPacket(new PacketPlayOutCamera(this.cw));
@@ -616,7 +618,7 @@
          }
  
      }
-@@ -1060,7 +1332,7 @@
+@@ -1060,7 +1334,7 @@
  
      @Nullable
      public IChatBaseComponent getPlayerListName() {
@@ -625,7 +627,7 @@
      }
  
      public void a(EnumHand enumhand) {
-@@ -1077,12 +1349,17 @@
+@@ -1077,12 +1351,17 @@
      }
  
      public void J() {
@@ -643,7 +645,7 @@
      }
  
      public AdvancementDataPlayer getAdvancementData() {
-@@ -1094,9 +1371,16 @@
+@@ -1094,9 +1373,16 @@
          return this.cD;
      }
  
@@ -660,7 +662,7 @@
          if (worldserver == this.world) {
              this.playerConnection.a(d0, d1, d2, f, f1);
          } else {
-@@ -1121,6 +1405,149 @@
+@@ -1121,6 +1407,149 @@
              this.server.getPlayerList().b(this, worldserver);
              this.server.getPlayerList().updateClient(this);
          }
