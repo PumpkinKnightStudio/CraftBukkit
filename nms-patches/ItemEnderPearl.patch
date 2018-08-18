@@ -1,35 +1,47 @@
 --- a/net/minecraft/server/ItemEnderPearl.java
 +++ b/net/minecraft/server/ItemEnderPearl.java
-@@ -9,18 +9,26 @@
+@@ -9,20 +9,35 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
+-        if (!entityhuman.abilities.canInstantlyBuild) {
+-            itemstack.subtract(1);
+-        }
+-
+-        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
+-        entityhuman.getCooldownTracker().a(this, 20);
 +        // CraftBukkit start - change order
-+        if (!world.isClientSide) {
-+            EntityEnderPearl entityenderpearl = new EntityEnderPearl(world, entityhuman);
-+
-+            entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
-+            if (!world.addEntity(entityenderpearl)) {
++        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack); // CraftBukkit - default result
+         if (!world.isClientSide) {
+             EntityEnderPearl entityenderpearl = new EntityEnderPearl(world, entityhuman);
+ 
+             entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
+-            world.addEntity(entityenderpearl);
++            // CraftBukkit start - fire ProjectileLaunchEvent
++            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entityenderpearl, itemstack, world, entityhuman, enumhand);
++            if (result.a() == EnumInteractionResult.SUCCESS) {
++                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
++                entityhuman.getCooldownTracker().a(this, 20);
++            }
++            /*if (!world.addEntity(entityenderpearl)) { // CraftBukkit moved to CraftProjectile#handleItemRightClick
 +                if (entityhuman instanceof EntityPlayer) {
 +                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                }
 +                return new InteractionResultWrapper(EnumInteractionResult.FAIL, itemstack);
 +            }
-+        }
-+
-         if (!entityhuman.abilities.canInstantlyBuild) {
-             itemstack.subtract(1);
++            */ // CraftBukkit end
          }
  
-         world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
-         entityhuman.getCooldownTracker().a(this, 20);
--        if (!world.isClientSide) {
--            EntityEnderPearl entityenderpearl = new EntityEnderPearl(world, entityhuman);
--
--            entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
--            world.addEntity(entityenderpearl);
--        }
-+        // CraftBukkit end
- 
-         entityhuman.b(StatisticList.ITEM_USED.b(this));
-         return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
+-        entityhuman.b(StatisticList.ITEM_USED.b(this));
+-        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
++        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit start - moved to CraftProjectile#handleItemRightClick
++            itemstack.subtract(1);
++        }
++        // CraftBukkit - move play sound & cooldown call above
++        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
++        entityhuman.getCooldownTracker().a(this, 20);
++
++        entityhuman.b(StatisticList.ITEM_USED.b(this)); */ // CraftBukkit moved above
++        return result; // CraftBukkit use our result // CraftBukkit end
+     }
+ }

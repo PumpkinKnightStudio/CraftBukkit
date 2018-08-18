@@ -1,0 +1,41 @@
+--- a/net/minecraft/server/ItemExpBottle.java
++++ b/net/minecraft/server/ItemExpBottle.java
+@@ -2,26 +2,33 @@
+ 
+ public class ItemExpBottle extends Item {
+ 
+-    public ItemExpBottle(Item.Info item_info) {
++    public ItemExpBottle(Info item_info) {
+         super(item_info);
+     }
+ 
+     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
+         ItemStack itemstack = entityhuman.b(enumhand);
+ 
+-        if (!entityhuman.abilities.canInstantlyBuild) {
++        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit - move below
+             itemstack.subtract(1);
+         }
+ 
+         world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EXPERIENCE_BOTTLE_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemExpBottle.k.nextFloat() * 0.4F + 0.8F));
++        */ // CraftBukkit - move calls to CraftProjectile
++        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack); // CraftBukkit - default result
+         if (!world.isClientSide) {
+             EntityThrownExpBottle entitythrownexpbottle = new EntityThrownExpBottle(world, entityhuman);
+ 
+             entitythrownexpbottle.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.7F, 1.0F);
+-            world.addEntity(entitythrownexpbottle);
++            // CraftBukkit start - fire event
++            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entitythrownexpbottle, itemstack, world, entityhuman, enumhand);
++            if (result.a() == EnumInteractionResult.SUCCESS) {
++                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EXPERIENCE_BOTTLE_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemExpBottle.k.nextFloat() * 0.4F + 0.8F));
++            }
++            //world.addEntity(entitythrownexpbottle); // CraftBukkit moved to CraftProjectile // CraftBukkit end
+         }
+ 
+-        entityhuman.b(StatisticList.ITEM_USED.b(this));
+-        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
++        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit moved to CraftProjectile
++        return result; // CraftBukkit - use our result
+     }
+ }

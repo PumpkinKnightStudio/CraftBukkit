@@ -1,6 +1,12 @@
 --- a/net/minecraft/server/ItemTrident.java
 +++ b/net/minecraft/server/ItemTrident.java
-@@ -6,9 +6,13 @@
+@@ -1,14 +1,19 @@
+ package net.minecraft.server;
+ 
+ import com.google.common.collect.Multimap;
++import org.bukkit.event.entity.CreatureSpawnEvent;
+ 
+ public class ItemTrident extends Item {
  
      public ItemTrident(Item.Info item_info) {
          super(item_info);
@@ -14,7 +20,48 @@
      }
  
      public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
-@@ -53,6 +57,10 @@
+@@ -33,26 +38,47 @@
+ 
+                 if (k <= 0 || entityhuman.ao()) {
+                     if (!world.isClientSide) {
+-                        itemstack.damage(1, entityhuman);
++                        //itemstack.damage(1, entityhuman); // CraftBukkit - move down to ProjectileLaunchEvent
+                         if (k == 0) {
+                             EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
+ 
+                             entitythrowntrident.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 2.5F + (float) k * 0.5F, 1.0F);
++                            // CraftBukkit start - fire ProjectileLaunchEvent
++                            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitythrowntrident, itemstack, entityhuman.cU());
++                            if (event.isCancelled()) {
++                                return;
++                            }
+                             if (entityhuman.abilities.canInstantlyBuild) {
+                                 entitythrowntrident.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
+                             }
++                            if (!entityhuman.abilities.canInstantlyBuild) {
++                                if (world.addEntity(entitythrowntrident, CreatureSpawnEvent.SpawnReason.THROWN)) {
++                                    if (event.shouldConsumeItem()) {
++                                        itemstack.damage(1, entityhuman);
++                                    }
++                                    entityhuman.b(StatisticList.ITEM_USED.b(this));
++                                    entityhuman.inventory.f(itemstack);
++                                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ITEM_TRIDENT_THROW, SoundCategory.PLAYERS, 1.0F, 1.0F);
++                                }
++                            }
++                            return;
+ 
+-                            world.addEntity(entitythrowntrident);
++                            /*world.addEntity(entitythrowntrident); // CraftBukkit move block up
+                             if (!entityhuman.abilities.canInstantlyBuild) {
+                                 entityhuman.inventory.f(itemstack);
+-                            }
++                            } */
++                            // CraftBukkit end
+                         }
+                     }
+ 
+-                    entityhuman.b(StatisticList.ITEM_USED.b(this));
++                    //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit move up
                      SoundEffect soundeffect = SoundEffects.ITEM_TRIDENT_THROW;
  
                      if (k > 0) {

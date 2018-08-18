@@ -64,6 +64,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Vehicle;
@@ -779,9 +780,19 @@ public class CraftEventFactory {
         return CraftItemStack.asNMSCopy(bitem);
     }
 
-    public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity) {
+    public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity, ItemStack nmsItem, EnumHand hand) {
         Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
-        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity);
+        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(nmsItem);
+        EquipmentSlot slot = hand == null ? null : (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity, bukkitStack, slot);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static ProjectileLaunchEvent callPluginLaunchedProjectileEvent(Entity entity, ItemStack itemStack) {
+        Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(itemStack);
+        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity, bukkitStack, null, true);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
