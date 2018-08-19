@@ -9,7 +9,7 @@
 +                            if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitysmallfireball, ItemStack.a, null).isCancelled()) {
 +                                return;
 +                            }
-+                            this.a.world.addEntity(entitysmallfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.FIREBALL); // CraftBukkit end - add SpawnReason
++                            this.a.world.addEntity(entitysmallfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end - add SpawnReason
                          }
                      }
                  }

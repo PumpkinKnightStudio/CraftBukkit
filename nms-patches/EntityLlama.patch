@@ -1,14 +1,5 @@
 --- a/net/minecraft/server/EntityLlama.java
 +++ b/net/minecraft/server/EntityLlama.java
-@@ -176,7 +176,7 @@
-             i = ((EntityLlama.b) object).a;
-         } else {
-             i = this.random.nextInt(4);
--            object = new EntityLlama.b(i, null);
-+            object = new b(i, null);
-         }
- 
-         this.setVariant(i);
 @@ -309,7 +309,11 @@
  
          entityllamaspit.shoot(d0, d1 + (double) f, d2, 1.5F, 10.0F);

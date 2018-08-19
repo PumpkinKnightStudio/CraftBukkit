@@ -10,7 +10,7 @@
 +                            this.c = 0; // CraftBukkit - reset fireball charge
 +                            return;
 +                        }
-+                        this.a.world.addEntity(entitydragonfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.FIREBALL); // CraftBukkit end
++                        this.a.world.addEntity(entitydragonfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end
                          this.c = 0;
                          if (this.d != null) {
                              while (!this.d.b()) {

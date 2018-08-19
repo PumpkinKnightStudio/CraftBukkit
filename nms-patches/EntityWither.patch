@@ -85,7 +85,7 @@
 +        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitywitherskull, ItemStack.a, null).isCancelled()) {
 +            return;
 +        }
-+        this.world.addEntity(entitywitherskull, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.WITHER_SKULL); // CraftBukkit end - add SpawnReason
++        this.world.addEntity(entitywitherskull, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end - add SpawnReason
      }
  
      public void a(EntityLiving entityliving, float f) {
