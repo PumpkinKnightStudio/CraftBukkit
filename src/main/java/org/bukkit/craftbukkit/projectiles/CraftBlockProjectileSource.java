@@ -5,6 +5,7 @@ import java.util.Random;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.Arrow;
@@ -20,6 +21,7 @@ import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
@@ -153,6 +155,10 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
 
         if (velocity != null) {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
+        }
+
+        if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+            return null;
         }
 
         world.addEntity(launch);

@@ -43,6 +43,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
@@ -103,7 +104,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         getHandle().setHealth((float) health);
 
-        if (health == 0) {
+        if (health <= 0) {
             getHandle().die(DamageSource.GENERIC);
         }
     }
@@ -373,6 +374,10 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         if (velocity != null) {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
+        }
+
+        if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+            return null;
         }
 
         world.addEntity(launch);
