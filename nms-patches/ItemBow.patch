@@ -22,7 +22,7 @@
      }
  
      private ItemStack a(EntityHuman entityhuman) {
-@@ -73,7 +79,20 @@
+@@ -73,7 +79,24 @@
                          }
  
                          if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
@@ -37,6 +37,10 @@
 +                        // CraftBukkit end
 +                        }
 +                        // CraftBukkit start
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityarrow, itemstack, entityliving.cU()).isCancelled()) {
++                            entityarrow.die();
++                            return;
++                        }
 +                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, entityarrow, f);
 +                        if (event.isCancelled()) {
 +                            event.getProjectile().remove();
@@ -44,13 +48,13 @@
                          }
  
                          itemstack.damage(1, entityhuman);
-@@ -81,7 +100,15 @@
+@@ -81,7 +104,15 @@
                              entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                          }
  
 -                        world.addEntity(entityarrow);
 +                        if (event.getProjectile() == entityarrow.getBukkitEntity()) {
-+                            if (!world.addEntity(entityarrow)) {
++                            if (!world.addEntity(entityarrow, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE)) {
 +                                if (entityhuman instanceof EntityPlayer) {
 +                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                                }

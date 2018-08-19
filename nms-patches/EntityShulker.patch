@@ -31,3 +31,16 @@
                              break;
                          }
                      }
+@@ -538,8 +551,11 @@
+                     if (this.b <= 0) {
+                         this.b = 20 + EntityShulker.this.random.nextInt(10) * 20 / 2;
+                         EntityShulkerBullet entityshulkerbullet = new EntityShulkerBullet(EntityShulker.this.world, EntityShulker.this, entityliving, EntityShulker.this.dz().k());
++                        // CraftBukkit start - fire ProjectileLaunchEvent
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityshulkerbullet, ItemStack.a, null).isCancelled())
++                            return;
+ 
+-                        EntityShulker.this.world.addEntity(entityshulkerbullet);
++                        EntityShulker.this.world.addEntity(entityshulkerbullet, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit - add SpawnReason
+                         EntityShulker.this.a(SoundEffects.ENTITY_SHULKER_SHOOT, 2.0F, (EntityShulker.this.random.nextFloat() - EntityShulker.this.random.nextFloat()) * 0.2F + 1.0F);
+                     }
+                 } else {

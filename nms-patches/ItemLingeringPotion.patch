@@ -1,13 +1,6 @@
 --- a/net/minecraft/server/ItemLingeringPotion.java
 +++ b/net/minecraft/server/ItemLingeringPotion.java
-@@ -2,23 +2,31 @@
- 
- public class ItemLingeringPotion extends ItemPotion {
- 
--    public ItemLingeringPotion(Item.Info item_info) {
-+    public ItemLingeringPotion(Info item_info) {
-         super(item_info);
-     }
+@@ -8,17 +8,25 @@
  
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);

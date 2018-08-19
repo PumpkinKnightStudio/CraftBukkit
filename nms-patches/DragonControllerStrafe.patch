@@ -1,14 +1,6 @@
 --- a/net/minecraft/server/DragonControllerStrafe.java
 +++ b/net/minecraft/server/DragonControllerStrafe.java
-@@ -3,6 +3,7 @@
- import javax.annotation.Nullable;
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
-+import org.bukkit.event.entity.CreatureSpawnEvent;
- 
- public class DragonControllerStrafe extends AbstractDragonController {
- 
-@@ -67,7 +68,12 @@
+@@ -67,7 +67,12 @@
                          EntityDragonFireball entitydragonfireball = new EntityDragonFireball(this.a.world, this.a, d9, d10, d11);
  
                          entitydragonfireball.setPositionRotation(d6, d7, d8, 0.0F, 0.0F);
@@ -18,7 +10,7 @@
 +                            this.c = 0; // CraftBukkit - reset fireball charge
 +                            return;
 +                        }
-+                        this.a.world.addEntity(entitydragonfireball, CreatureSpawnEvent.SpawnReason.FIREBALL); // CraftBukkit end
++                        this.a.world.addEntity(entitydragonfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.FIREBALL); // CraftBukkit end
                          this.c = 0;
                          if (this.d != null) {
                              while (!this.d.b()) {

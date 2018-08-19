@@ -1,14 +1,6 @@
 --- a/net/minecraft/server/ItemExpBottle.java
 +++ b/net/minecraft/server/ItemExpBottle.java
-@@ -2,26 +2,33 @@
- 
- public class ItemExpBottle extends Item {
- 
--    public ItemExpBottle(Item.Info item_info) {
-+    public ItemExpBottle(Info item_info) {
-         super(item_info);
-     }
- 
+@@ -9,19 +9,26 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  

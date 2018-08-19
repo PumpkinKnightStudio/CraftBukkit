@@ -1,14 +1,5 @@
 --- a/net/minecraft/server/ItemSplashPotion.java
 +++ b/net/minecraft/server/ItemSplashPotion.java
-@@ -2,7 +2,7 @@
- 
- public class ItemSplashPotion extends ItemPotion {
- 
--    public ItemSplashPotion(Item.Info item_info) {
-+    public ItemSplashPotion(Info item_info) {
-         super(item_info);
-     }
- 
 @@ -10,15 +10,21 @@
          ItemStack itemstack = entityhuman.b(enumhand);
          ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1);

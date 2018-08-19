@@ -1,9 +1,8 @@
 --- a/net/minecraft/server/ItemFishingRod.java
 +++ b/net/minecraft/server/ItemFishingRod.java
-@@ -1,9 +1,14 @@
+@@ -1,9 +1,13 @@
  package net.minecraft.server;
  
-+import org.bukkit.event.entity.ProjectileLaunchEvent;
 +import org.bukkit.event.player.PlayerFishEvent; // CraftBukkit
 +
  public class ItemFishingRod extends Item {
@@ -15,7 +14,7 @@
          this.a(new MinecraftKey("cast"), (itemstack, world, entityliving) -> {
              if (entityliving == null) {
                  return 0.0F;
-@@ -18,6 +23,8 @@
+@@ -18,6 +22,8 @@
                  return (flag || flag1) && entityliving instanceof EntityHuman && ((EntityHuman) entityliving).hookedFish != null ? 1.0F : 0.0F;
              }
          });
@@ -24,7 +23,7 @@
      }
  
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
-@@ -30,7 +37,7 @@
+@@ -30,7 +36,7 @@
              entityhuman.a(enumhand);
              world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.NEUTRAL, 1.0F, 0.4F / (ItemFishingRod.k.nextFloat() * 0.4F + 0.8F));
          } else {
@@ -33,12 +32,12 @@
              if (!world.isClientSide) {
                  EntityFishingHook entityfishinghook = new EntityFishingHook(world, entityhuman);
                  int j = EnchantmentManager.c(itemstack);
-@@ -44,6 +51,25 @@
+@@ -44,6 +50,25 @@
                  if (k > 0) {
                      entityfishinghook.b(k);
                  }
 +                // CraftBukkit start
-+                ProjectileLaunchEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityfishinghook, itemstack, enumhand);
++                org.bukkit.event.entity.ProjectileLaunchEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityfishinghook, itemstack, enumhand);
 +                if (launchEvent.isCancelled()) {
 +                    entityfishinghook.die();
 +                    entityhuman.hookedFish = null;

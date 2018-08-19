@@ -1,12 +1,6 @@
 --- a/net/minecraft/server/ItemTrident.java
 +++ b/net/minecraft/server/ItemTrident.java
-@@ -1,14 +1,19 @@
- package net.minecraft.server;
- 
- import com.google.common.collect.Multimap;
-+import org.bukkit.event.entity.CreatureSpawnEvent;
- 
- public class ItemTrident extends Item {
+@@ -6,9 +6,13 @@
  
      public ItemTrident(Item.Info item_info) {
          super(item_info);
@@ -20,7 +14,7 @@
      }
  
      public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
-@@ -33,26 +38,47 @@
+@@ -33,26 +37,47 @@
  
                  if (k <= 0 || entityhuman.ao()) {
                      if (!world.isClientSide) {
@@ -39,7 +33,7 @@
                                  entitythrowntrident.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                              }
 +                            if (!entityhuman.abilities.canInstantlyBuild) {
-+                                if (world.addEntity(entitythrowntrident, CreatureSpawnEvent.SpawnReason.THROWN)) {
++                                if (world.addEntity(entitythrowntrident, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                                    if (event.shouldConsumeItem()) {
 +                                        itemstack.damage(1, entityhuman);
 +                                    }
