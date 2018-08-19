@@ -1,12 +1,13 @@
 --- a/net/minecraft/server/EntityLlama.java
 +++ b/net/minecraft/server/EntityLlama.java
-@@ -309,7 +309,11 @@
+@@ -309,7 +309,12 @@
  
          entityllamaspit.shoot(d0, d1 + (double) f, d2, 1.5F, 10.0F);
          this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_LLAMA_SPIT, this.bV(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
 -        this.world.addEntity(entityllamaspit);
 +        // CraftBukkit start - fire ProjectileLaunchEvent
 +        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityllamaspit, ItemStack.a, null).isCancelled()) {
++            entityllamaspit.die();
 +            return;
 +        }
 +        this.world.addEntity(entityllamaspit, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end

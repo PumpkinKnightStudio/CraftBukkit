@@ -70,6 +70,7 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.Trident;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -377,10 +378,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         }
 
         if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+            launch.die();
             return null;
         }
 
-        world.addEntity(launch);
+        world.addEntity(launch, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (T) launch.getBukkitEntity();
     }
 

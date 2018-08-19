@@ -14,7 +14,7 @@
      }
  
      public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
-@@ -33,26 +37,47 @@
+@@ -33,26 +37,45 @@
  
                  if (k <= 0 || entityhuman.ao()) {
                      if (!world.isClientSide) {
@@ -34,15 +34,13 @@
                              }
 +                            if (!entityhuman.abilities.canInstantlyBuild) {
 +                                if (world.addEntity(entitythrowntrident, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                                    if (event.shouldConsumeItem()) {
++                                    if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
 +                                        itemstack.damage(1, entityhuman);
 +                                    }
 +                                    entityhuman.b(StatisticList.ITEM_USED.b(this));
 +                                    entityhuman.inventory.f(itemstack);
-+                                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ITEM_TRIDENT_THROW, SoundCategory.PLAYERS, 1.0F, 1.0F);
 +                                }
 +                            }
-+                            return;
  
 -                            world.addEntity(entitythrowntrident);
 +                            /*world.addEntity(entitythrowntrident); // CraftBukkit move block up

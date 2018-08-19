@@ -1,11 +1,11 @@
 --- a/net/minecraft/server/EntitySkeletonAbstract.java
 +++ b/net/minecraft/server/EntitySkeletonAbstract.java
-@@ -4,11 +4,13 @@
+@@ -3,12 +3,13 @@
+ import java.time.LocalDate;
  import java.time.temporal.ChronoField;
  import javax.annotation.Nullable;
- 
 +import org.bukkit.event.entity.EntityCombustEvent; // CraftBukkit
-+
+ 
  public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
  
      private static final DataWatcherObject<Boolean> a = DataWatcher.a(EntitySkeletonAbstract.class, DataWatcherRegistry.i);
@@ -15,7 +15,7 @@
          public void d() {
              super.d();
              EntitySkeletonAbstract.this.s(false);
-@@ -78,7 +80,14 @@
+@@ -78,7 +79,14 @@
              }
  
              if (flag) {
@@ -31,7 +31,7 @@
              }
          }
  
-@@ -151,8 +160,23 @@
+@@ -151,8 +159,23 @@
          double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));

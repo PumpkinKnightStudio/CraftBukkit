@@ -1,32 +1,42 @@
 --- a/net/minecraft/server/ItemSnowball.java
 +++ b/net/minecraft/server/ItemSnowball.java
-@@ -9,19 +9,26 @@
-     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
-         ItemStack itemstack = entityhuman.b(enumhand);
+@@ -1,5 +1,7 @@
+ package net.minecraft.server;
  
-+        // CraftBukkit start - moved down
-+        /*
-         if (!entityhuman.abilities.canInstantlyBuild) {
++import org.bukkit.event.entity.CreatureSpawnEvent;
++
+ public class ItemSnowball extends Item {
+ 
+     public ItemSnowball(Item.Info item_info) {
+@@ -13,15 +15,27 @@
              itemstack.subtract(1);
          }
  
-         world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
-+        */
-+        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
+-        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
++        //CraftBukkit - moved down -> //world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
          if (!world.isClientSide) {
              EntitySnowball entitysnowball = new EntitySnowball(world, entityhuman);
  
              entitysnowball.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
 -            world.addEntity(entitysnowball);
-+            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entitysnowball, itemstack, world, entityhuman, enumhand);
-+            if (result.a() == EnumInteractionResult.SUCCESS) {
++            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitysnowball, itemstack, enumhand);
++            if (event.isCancelled()) {
++                itemstack.add(1);
++                entitysnowball.die();
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
++            }
++            if (world.addEntity(entitysnowball, CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
++                entityhuman.b(StatisticList.ITEM_USED.b(this));
++                if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
++                    itemstack.add(1);
++                }
 +            }
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
 +        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit moved to CraftProjectile
-+        return result; // CraftBukkit end - use our result
++        return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }

@@ -1,33 +1,42 @@
 --- a/net/minecraft/server/ItemExpBottle.java
 +++ b/net/minecraft/server/ItemExpBottle.java
-@@ -9,19 +9,26 @@
+@@ -9,19 +9,35 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
 -        if (!entityhuman.abilities.canInstantlyBuild) {
-+        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit - move below
++        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit - moved below
              itemstack.subtract(1);
          }
  
          world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EXPERIENCE_BOTTLE_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemExpBottle.k.nextFloat() * 0.4F + 0.8F));
-+        */ // CraftBukkit - move calls to CraftProjectile
-+        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack); // CraftBukkit - default result
++        */
          if (!world.isClientSide) {
              EntityThrownExpBottle entitythrownexpbottle = new EntityThrownExpBottle(world, entityhuman);
  
              entitythrownexpbottle.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.7F, 1.0F);
 -            world.addEntity(entitythrownexpbottle);
 +            // CraftBukkit start - fire event
-+            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entitythrownexpbottle, itemstack, world, entityhuman, enumhand);
-+            if (result.a() == EnumInteractionResult.SUCCESS) {
-+                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EXPERIENCE_BOTTLE_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemExpBottle.k.nextFloat() * 0.4F + 0.8F));
++            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitythrownexpbottle, itemstack, enumhand);
++            if (event.isCancelled()) {
++                entitythrownexpbottle.die();
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            //world.addEntity(entitythrownexpbottle); // CraftBukkit moved to CraftProjectile // CraftBukkit end
++            if (world.addEntity(entitythrownexpbottle, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
++                entityhuman.b(StatisticList.ITEM_USED.b(this));
++                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EXPERIENCE_BOTTLE_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemExpBottle.k.nextFloat() * 0.4F + 0.8F));
++                if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
++                    itemstack.subtract(1);
++                }
++            } else {
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
++            }// CraftBukkit end
++            //world.addEntity(entitythrownexpbottle); // CraftBukkit - moved up
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
-+        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit moved to CraftProjectile
-+        return result; // CraftBukkit - use our result
++        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit - moved up
++        return  new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }

@@ -21,7 +21,7 @@ import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
@@ -158,10 +158,11 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         }
 
         if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+            launch.die();
             return null;
         }
 
-        world.addEntity(launch);
+        world.addEntity(launch, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (T) launch.getBukkitEntity();
     }
 }

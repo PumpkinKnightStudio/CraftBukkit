@@ -41,7 +41,7 @@
 +                if (launchEvent.isCancelled()) {
 +                    entityfishinghook.die();
 +                    entityhuman.hookedFish = null;
-+                    return new InteractionResultWrapper<>(EnumInteractionResult.PASS, itemstack);
++                    return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +                }
 +                // CraftBukkit end
 +

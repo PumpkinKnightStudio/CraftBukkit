@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemEnderPearl.java
 +++ b/net/minecraft/server/ItemEnderPearl.java
-@@ -9,20 +9,35 @@
+@@ -9,20 +9,46 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
@@ -11,37 +11,48 @@
 -        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
 -        entityhuman.getCooldownTracker().a(this, 20);
 +        // CraftBukkit start - change order
-+        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack); // CraftBukkit - default result
          if (!world.isClientSide) {
              EntityEnderPearl entityenderpearl = new EntityEnderPearl(world, entityhuman);
  
              entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
 -            world.addEntity(entityenderpearl);
 +            // CraftBukkit start - fire ProjectileLaunchEvent
-+            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entityenderpearl, itemstack, world, entityhuman, enumhand);
-+            if (result.a() == EnumInteractionResult.SUCCESS) {
++            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityenderpearl, itemstack, enumhand);
++            if (event.isCancelled()) {
++                entityenderpearl.die();
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
++            }
++            if (world.addEntity(entityenderpearl, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
 +                entityhuman.getCooldownTracker().a(this, 20);
++                if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
++                    itemstack.subtract(1);
++                }
++            } else {
++                if (entityhuman instanceof EntityPlayer) { // update inventory in case of de-sync
++                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                }
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            /*if (!world.addEntity(entityenderpearl)) { // CraftBukkit moved to CraftProjectile#handleItemRightClick
++            /*if (!world.addEntity(entityenderpearl)) { // CraftBukkit moved up
 +                if (entityhuman instanceof EntityPlayer) {
 +                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                }
 +                return new InteractionResultWrapper(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            */ // CraftBukkit end
++            */
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
-+        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit start - moved to CraftProjectile#handleItemRightClick
++        /*if (!entityhuman.abilities.canInstantlyBuild) { // CraftBukkit start - move up
 +            itemstack.subtract(1);
 +        }
-+        // CraftBukkit - move play sound & cooldown call above
++        // CraftBukkit - move play sound, cooldown, and statistic call up to event
 +        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderPearl.k.nextFloat() * 0.4F + 0.8F));
 +        entityhuman.getCooldownTracker().a(this, 20);
 +
 +        entityhuman.b(StatisticList.ITEM_USED.b(this)); */ // CraftBukkit moved above
-+        return result; // CraftBukkit use our result // CraftBukkit end
++        return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }

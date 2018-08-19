@@ -1,33 +1,41 @@
 --- a/net/minecraft/server/ItemLingeringPotion.java
 +++ b/net/minecraft/server/ItemLingeringPotion.java
-@@ -8,17 +8,25 @@
+@@ -8,17 +8,33 @@
  
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
 -        ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1);
 +        // CraftBukkit start
-+        //ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1); // CraftBukkit - use our logic
-+        ItemStack itemstack1 = itemstack.cloneItemStack();
-+        itemstack.setCount(Math.min(1, itemstack1.getCount())); // CraftBukkit - mimic cloneAndSubtract behavior
++        ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1); // CraftBukkit - use our logic
  
 -        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
-+        // CraftBukkit - delegate to CraftProjectile //world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
-+        InteractionResultWrapper<ItemStack> result = new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack); // CraftBukkit - default result
++        // CraftBukkit - moved down -> //world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
          if (!world.isClientSide) {
              EntityPotion entitypotion = new EntityPotion(world, entityhuman, itemstack1);
  
              entitypotion.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.5F, 1.0F);
 -            world.addEntity(entitypotion);
-+            result = org.bukkit.craftbukkit.entity.CraftProjectile.handleItemRightClick(entitypotion, itemstack, world, entityhuman, enumhand);
-+            if (result.a() == EnumInteractionResult.SUCCESS) {
-+                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
++            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitypotion, itemstack, enumhand);
++            if (event.isCancelled()) {
++                itemstack.add(1);
++                entitypotion.die();
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            //world.addEntity(entitypotion); // CraftBukkit - delegate to CraftProjectile
++            if (world.addEntity(entitypotion, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
++                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
++                entityhuman.b(StatisticList.ITEM_USED.b(this));
++                if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
++                    itemstack.add(1); // add 1 back to original itemstack because cloneAndSubtract removes 1
++                }
++            } else {
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
++            }
++            //world.addEntity(entitypotion); // CraftBukkit - moved up
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
-+        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit - delegate to CraftProjectile
-+        return result; // CraftBukkit end - use our result
++        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit - moved up
++        return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }
