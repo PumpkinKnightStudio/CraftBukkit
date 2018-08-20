@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemSnowball.java
 +++ b/net/minecraft/server/ItemSnowball.java
-@@ -13,15 +13,25 @@
+@@ -13,15 +13,28 @@
              itemstack.subtract(1);
          }
  
@@ -15,6 +15,9 @@
 +            if (event.isCancelled() || !world.addEntity(entitysnowball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                itemstack.add(1);
 +                entitysnowball.die();
++                if (entityhuman instanceof EntityPlayer) {
++                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                }
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
 +            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));

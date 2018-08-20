@@ -14,7 +14,7 @@
      }
  
      public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
-@@ -33,26 +37,52 @@
+@@ -33,26 +37,55 @@
  
                  if (k <= 0 || entityhuman.ao()) {
                      if (!world.isClientSide) {
@@ -29,6 +29,9 @@
 +                            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitythrowntrident, itemstack, hand, false);
 +                            if (event.isCancelled() || !world.addEntity(entitythrowntrident, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                                entitythrowntrident.die();
++                                if (entityhuman instanceof EntityPlayer) {
++                                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                                }
 +                                return;
 +                            }
                              if (entityhuman.abilities.canInstantlyBuild) {

@@ -32,7 +32,7 @@
              if (!world.isClientSide) {
                  EntityFishingHook entityfishinghook = new EntityFishingHook(world, entityhuman);
                  int j = EnchantmentManager.c(itemstack);
-@@ -44,6 +50,25 @@
+@@ -44,6 +50,28 @@
                  if (k > 0) {
                      entityfishinghook.b(k);
                  }
@@ -41,6 +41,9 @@
 +                if (launchEvent.isCancelled()) {
 +                    entityfishinghook.die();
 +                    entityhuman.hookedFish = null;
++                    if (entityhuman instanceof EntityPlayer) {
++                        ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                    }
 +                    return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +                }
 +                // CraftBukkit end

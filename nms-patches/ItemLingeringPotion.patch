@@ -1,12 +1,13 @@
 --- a/net/minecraft/server/ItemLingeringPotion.java
 +++ b/net/minecraft/server/ItemLingeringPotion.java
-@@ -8,17 +8,29 @@
+@@ -8,17 +8,32 @@
  
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
 -        ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1);
 +        // CraftBukkit start
-+        ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1); // CraftBukkit - use our logic
++        ItemStack itemstack1 = itemstack.cloneItemStack();
++        itemstack1.setCount(Math.min(1, itemstack.getCount()));
  
 -        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
 +        // CraftBukkit - moved down -> //world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
@@ -17,14 +18,16 @@
 -            world.addEntity(entitypotion);
 +            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitypotion, itemstack, enumhand, false);
 +            if (event.isCancelled() || !world.addEntity(entitypotion, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                itemstack.add(1);
 +                entitypotion.die();
++                if (entityhuman instanceof EntityPlayer) {
++                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                }
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
 +            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.k.nextFloat() * 0.4F + 0.8F));
 +            entityhuman.b(StatisticList.ITEM_USED.b(this));
-+            if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
-+                itemstack.add(1); // add 1 back to original itemstack because cloneAndSubtract removes 1
++            if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
++                itemstack.subtract(1);
 +            }
 +            //world.addEntity(entitypotion); // CraftBukkit - moved up
          }

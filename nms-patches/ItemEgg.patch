@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemEgg.java
 +++ b/net/minecraft/server/ItemEgg.java
-@@ -9,19 +9,29 @@
+@@ -9,19 +9,32 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
@@ -20,6 +20,9 @@
 +            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityegg, itemstack, enumhand, false);
 +            if (event.isCancelled() || !world.addEntity(entityegg, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                entityegg.die();
++                if (entityhuman instanceof EntityPlayer) {
++                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                }
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
 +            entityhuman.b(StatisticList.ITEM_USED.b(this));
