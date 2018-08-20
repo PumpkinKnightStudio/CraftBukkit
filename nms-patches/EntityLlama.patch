@@ -6,7 +6,7 @@
          this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_LLAMA_SPIT, this.bV(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
 -        this.world.addEntity(entityllamaspit);
 +        // CraftBukkit start - fire ProjectileLaunchEvent
-+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityllamaspit, ItemStack.a, null).isCancelled()) {
++        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityllamaspit, ItemStack.a, null, false).isCancelled()) {
 +            entityllamaspit.die();
 +            return;
 +        }

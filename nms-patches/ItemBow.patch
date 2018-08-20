@@ -37,8 +37,8 @@
 +                        // CraftBukkit end
 +                        }
 +                        // CraftBukkit start
-+                        EnumHand hand = !entityliving.b(EnumHand.MAIN_HAND).isEmpty() && entityliving.b(EnumHand.MAIN_HAND).getItem() == this ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
-+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityarrow, itemstack, hand).isCancelled()) {
++                        EnumHand hand = entityliving.getItemInMainHand().getItem() == this ? EnumHand.MAIN_HAND : (entityliving.getItemInOffHand().getItem() == this ? EnumHand.OFF_HAND : null);
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityarrow, itemstack, hand, false).isCancelled()) {
 +                            entityarrow.die();
 +                            return;
 +                        }

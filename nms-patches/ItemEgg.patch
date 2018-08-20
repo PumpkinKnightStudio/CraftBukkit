@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemEgg.java
 +++ b/net/minecraft/server/ItemEgg.java
-@@ -9,19 +9,33 @@
+@@ -9,19 +9,29 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
@@ -17,25 +17,21 @@
              entityegg.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
 -            world.addEntity(entityegg);
 +            // CraftBukkit start - fire ProjectileLaunchEvent
-+            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityegg, itemstack, enumhand);
-+            if (event.isCancelled()) {
++            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityegg, itemstack, enumhand, false);
++            if (event.isCancelled() || !world.addEntity(entityegg, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                entityegg.die();
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            if (world.addEntity(entityegg, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                entityhuman.b(StatisticList.ITEM_USED.b(this));
-+                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EGG_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (ItemEgg.k.nextFloat() * 0.4F + 0.8F));
-+                if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
-+                    itemstack.subtract(1);
-+                }
-+            } else {
-+                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
-+            }
++            entityhuman.b(StatisticList.ITEM_USED.b(this));
++            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_EGG_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (ItemEgg.k.nextFloat() * 0.4F + 0.8F));
++            if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
++                itemstack.subtract(1);
++            } // CraftBukkit end
          }
 -
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
-+        // entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit - move up
++        // entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit- move up
 +        return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }

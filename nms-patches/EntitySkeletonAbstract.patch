@@ -36,7 +36,7 @@
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
 +        // CraftBukkit start
-+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityarrow, ItemStack.a, null).isCancelled()) {
++        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityarrow, this.getItemInMainHand(), EnumHand.MAIN_HAND, false).isCancelled()) {
 +            entityarrow.die();
 +            return;
 +        }

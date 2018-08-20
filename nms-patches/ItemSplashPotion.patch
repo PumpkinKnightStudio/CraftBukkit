@@ -1,14 +1,6 @@
 --- a/net/minecraft/server/ItemSplashPotion.java
 +++ b/net/minecraft/server/ItemSplashPotion.java
-@@ -1,5 +1,7 @@
- package net.minecraft.server;
- 
-+import org.bukkit.event.entity.CreatureSpawnEvent;
-+
- public class ItemSplashPotion extends ItemPotion {
- 
-     public ItemSplashPotion(Item.Info item_info) {
-@@ -10,15 +12,29 @@
+@@ -10,15 +10,27 @@
          ItemStack itemstack = entityhuman.b(enumhand);
          ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1);
  
@@ -20,25 +12,23 @@
              entitypotion.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.5F, 1.0F);
 -            world.addEntity(entitypotion);
 +            // CraftBukkit start - fire event
-+            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitypotion, itemstack, enumhand);
-+            if (event.isCancelled()) {
++            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitypotion, itemstack, enumhand, false);
++            if (event.isCancelled() || !world.addEntity(entitypotion, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                itemstack.add(1);
 +                entitypotion.die();
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            if (world.addEntity(entitypotion, CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SPLASH_POTION_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (ItemSplashPotion.k.nextFloat() * 0.4F + 0.8F));
-+                entityhuman.b(StatisticList.ITEM_USED.b(this));
-+                if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
-+                    itemstack.add(1);
-+                }
++            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SPLASH_POTION_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (ItemSplashPotion.k.nextFloat() * 0.4F + 0.8F));
++            entityhuman.b(StatisticList.ITEM_USED.b(this));
++            if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
++                itemstack.add(1);
 +            }
 +            //world.addEntity(entitypotion); // CraftBukkit - moved up
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));
 -        return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
-+        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit - moved up
++        //entityhuman.b(StatisticList.ITEM_USED.b(this)); // CraftBukkit end - moved up
 +        return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
      }
  }

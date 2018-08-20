@@ -1,14 +1,6 @@
 --- a/net/minecraft/server/ItemSnowball.java
 +++ b/net/minecraft/server/ItemSnowball.java
-@@ -1,5 +1,7 @@
- package net.minecraft.server;
- 
-+import org.bukkit.event.entity.CreatureSpawnEvent;
-+
- public class ItemSnowball extends Item {
- 
-     public ItemSnowball(Item.Info item_info) {
-@@ -13,15 +15,27 @@
+@@ -13,15 +13,25 @@
              itemstack.subtract(1);
          }
  
@@ -19,19 +11,17 @@
  
              entitysnowball.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
 -            world.addEntity(entitysnowball);
-+            org.bukkit.event.entity.ProjectileLaunchEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entitysnowball, itemstack, enumhand);
-+            if (event.isCancelled()) {
++            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitysnowball, itemstack, enumhand, false);
++            if (event.isCancelled() || !world.addEntity(entitysnowball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
 +                itemstack.add(1);
 +                entitysnowball.die();
 +                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
-+            if (world.addEntity(entitysnowball, CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
-+                entityhuman.b(StatisticList.ITEM_USED.b(this));
-+                if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
-+                    itemstack.add(1);
-+                }
-+            }
++            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.k.nextFloat() * 0.4F + 0.8F));
++            entityhuman.b(StatisticList.ITEM_USED.b(this));
++            if (!entityhuman.abilities.canInstantlyBuild && !event.shouldConsumeItem()) {
++                itemstack.add(1);
++            } // CraftBukkit end
          }
  
 -        entityhuman.b(StatisticList.ITEM_USED.b(this));

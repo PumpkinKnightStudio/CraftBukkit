@@ -36,7 +36,7 @@
                          this.b = 20 + EntityShulker.this.random.nextInt(10) * 20 / 2;
                          EntityShulkerBullet entityshulkerbullet = new EntityShulkerBullet(EntityShulker.this.world, EntityShulker.this, entityliving, EntityShulker.this.dz().k());
 +                        // CraftBukkit start - fire ProjectileLaunchEvent
-+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityshulkerbullet, ItemStack.a, null).isCancelled())
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityshulkerbullet, ItemStack.a, null, false).isCancelled())
 +                            return;
  
 -                        EntityShulker.this.world.addEntity(entityshulkerbullet);

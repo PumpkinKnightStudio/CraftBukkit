@@ -37,7 +37,7 @@
                      entityfishinghook.b(k);
                  }
 +                // CraftBukkit start
-+                org.bukkit.event.entity.ProjectileLaunchEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileLaunchEvent(entityfishinghook, itemstack, enumhand);
++                org.bukkit.event.entity.LaunchProjectileEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityfishinghook, itemstack, enumhand, false);
 +                if (launchEvent.isCancelled()) {
 +                    entityfishinghook.die();
 +                    entityhuman.hookedFish = null;
