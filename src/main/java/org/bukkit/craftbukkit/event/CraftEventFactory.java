@@ -780,19 +780,18 @@ public class CraftEventFactory {
         return CraftItemStack.asNMSCopy(bitem);
     }
 
-    public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity, ItemStack nmsItem, EnumHand hand) {
+    public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity) {
         Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
-        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(nmsItem);
-        EquipmentSlot slot = hand == null ? null : (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
-        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity, bukkitStack, slot);
+        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
 
-    public static ProjectileLaunchEvent callPluginLaunchedProjectileEvent(Entity entity, ItemStack itemStack) {
-        Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
-        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(itemStack);
-        ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity, bukkitStack, null, true);
+    public static LaunchProjectileEvent callLaunchProjectileEvent(Entity projectile, ItemStack used, EnumHand hand, boolean fromPlugin) {
+        Projectile bukkitEntity = (Projectile) projectile.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(used);
+        EquipmentSlot slot = hand == null ? null : (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+        LaunchProjectileEvent event = new LaunchProjectileEvent(projectile.projectileSource, bukkitEntity, bukkitStack, slot, fromPlugin);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }

@@ -136,6 +136,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         }
 
         Validate.notNull(launch, "Projectile not supported");
+        launch.projectileSource = this; // Catch any entities we might have missed
 
         if (launch instanceof IProjectile) {
             if (launch instanceof EntityProjectile) {
@@ -157,7 +158,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+        if (CraftEventFactory.callLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true).isCancelled()) {
             launch.die();
             return null;
         }

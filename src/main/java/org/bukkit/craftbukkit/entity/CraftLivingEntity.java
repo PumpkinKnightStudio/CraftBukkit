@@ -372,12 +372,13 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         }
 
         Validate.notNull(launch, "Projectile not supported");
+        launch.projectileSource = this;
 
         if (velocity != null) {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        if (CraftEventFactory.callPluginLaunchedProjectileEvent(launch, net.minecraft.server.ItemStack.a).isCancelled()) {
+        if (CraftEventFactory.callLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true).isCancelled()) {
             launch.die();
             return null;
         }
