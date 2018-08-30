@@ -1,0 +1,16 @@
+--- a/net/minecraft/server/TileEntityDropper.java
++++ b/net/minecraft/server/TileEntityDropper.java
+@@ -2,6 +2,13 @@
+ 
+ public class TileEntityDropper extends TileEntityDispenser {
+ 
++    //CraftBukkit start - add InventoryHolder constructor
++    public TileEntityDropper(org.bukkit.inventory.InventoryHolder owner) {
++        this();
++        setOwner(owner);
++    }
++    //CraftBukkit end
++
+     public TileEntityDropper() {
+         super(TileEntityTypes.DROPPER);
+     }

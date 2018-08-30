@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/TileEntityDispenser.java
 +++ b/net/minecraft/server/TileEntityDispenser.java
-@@ -2,12 +2,43 @@
+@@ -2,12 +2,49 @@
  
  import java.util.Iterator;
  import java.util.Random;
@@ -9,6 +9,7 @@
 +
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryHolder;
 +// CraftBukkit end
  
  public class TileEntityDispenser extends TileEntityLootable {
@@ -39,12 +40,17 @@
 +    public void setMaxStackSize(int size) {
 +        maxStack = size;
 +    }
++
++    public TileEntityDispenser(InventoryHolder owner) {
++        this();
++        setOwner(owner);
++    }
 +    // CraftBukkit end
 +
      protected TileEntityDispenser(TileEntityTypes<?> tileentitytypes) {
          super(tileentitytypes);
          this.items = NonNullList.a(9, ItemStack.a);
-@@ -97,7 +128,7 @@
+@@ -97,7 +134,7 @@
      }
  
      public int getMaxStackSize() {

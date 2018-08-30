@@ -17,7 +17,7 @@
  public class TileEntityBrewingStand extends TileEntityContainer implements IWorldInventory, ITickable {
  
      private static final int[] a = new int[] { 3};
-@@ -15,6 +25,31 @@
+@@ -15,6 +25,36 @@
      private Item j;
      private IChatBaseComponent k;
      private int fuelLevel;
@@ -45,11 +45,16 @@
 +    public void setMaxStackSize(int size) {
 +        maxStack = size;
 +    }
++
++    public TileEntityBrewingStand(InventoryHolder owner) {
++        this();
++        setOwner(owner);
++    }
 +    // CraftBukkit end
  
      public TileEntityBrewingStand() {
          super(TileEntityTypes.BREWING_STAND);
-@@ -62,8 +97,19 @@
+@@ -62,8 +102,19 @@
          ItemStack itemstack = (ItemStack) this.items.get(4);
  
          if (this.fuelLevel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
@@ -71,7 +76,7 @@
              this.update();
          }
  
-@@ -71,9 +117,14 @@
+@@ -71,9 +122,14 @@
          boolean flag1 = this.brewTime > 0;
          ItemStack itemstack1 = (ItemStack) this.items.get(3);
  
@@ -88,7 +93,7 @@
  
              if (flag2 && flag) {
                  this.r();
-@@ -147,6 +198,16 @@
+@@ -147,6 +203,16 @@
  
      private void r() {
          ItemStack itemstack = (ItemStack) this.items.get(3);
@@ -105,7 +110,7 @@
  
          for (int i = 0; i < 3; ++i) {
              this.items.set(i, PotionBrewer.d(itemstack, (ItemStack) this.items.get(i)));
-@@ -213,7 +274,7 @@
+@@ -213,7 +279,7 @@
      }
  
      public int getMaxStackSize() {

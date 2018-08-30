@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/TileEntityBeacon.java
 +++ b/net/minecraft/server/TileEntityBeacon.java
-@@ -9,6 +9,13 @@
+@@ -9,6 +9,14 @@
  import java.util.stream.Collectors;
  import javax.annotation.Nullable;
  
@@ -8,13 +8,14 @@
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 +import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryHolder;
 +import org.bukkit.potion.PotionEffect;
 +// CraftBukkit end
 +
  public class TileEntityBeacon extends TileEntityContainer implements IWorldInventory, ITickable {
  
      public static final MobEffectList[][] a = new MobEffectList[][] { { MobEffects.FASTER_MOVEMENT, MobEffects.FASTER_DIG}, { MobEffects.RESISTANCE, MobEffects.JUMP}, { MobEffects.INCREASE_DAMAGE}, { MobEffects.REGENERATION}};
-@@ -23,6 +30,38 @@
+@@ -23,6 +31,43 @@
      public MobEffectList secondaryEffect;
      private ItemStack inventorySlot;
      private IChatBaseComponent o;
@@ -49,11 +50,16 @@
 +    public PotionEffect getSecondaryEffect() {
 +        return (hasSecondaryEffect()) ? CraftPotionUtil.toBukkit(new MobEffect(this.secondaryEffect, getLevel(), getAmplification(), true, true)) : null;
 +    }
++
++    public TileEntityBeacon(InventoryHolder owner) {
++        this();
++        setOwner(owner);
++    }
 +    // CraftBukkit end
  
      public TileEntityBeacon() {
          super(TileEntityTypes.BEACON);
-@@ -56,41 +95,79 @@
+@@ -56,41 +101,79 @@
          this.world.a((EntityHuman) null, this.position, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
      }
  
@@ -142,7 +148,7 @@
  
      private void E() {
          int i = this.position.getX();
-@@ -210,8 +287,10 @@
+@@ -210,8 +293,10 @@
  
      public void load(NBTTagCompound nbttagcompound) {
          super.load(nbttagcompound);

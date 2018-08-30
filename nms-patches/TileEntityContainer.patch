@@ -1,11 +1,23 @@
 --- a/net/minecraft/server/TileEntityContainer.java
 +++ b/net/minecraft/server/TileEntityContainer.java
-@@ -34,4 +34,12 @@
+@@ -34,4 +34,24 @@
      public void setLock(ChestLock chestlock) {
          this.a = chestlock;
      }
 +
 +    // CraftBukkit start
++    private boolean overrideInventoryHolder;
++    private org.bukkit.inventory.InventoryHolder owner;
++    protected void setOwner(org.bukkit.inventory.InventoryHolder owner) {
++        this.owner = owner;
++        this.overrideInventoryHolder = true;
++    }
++
++    @Override
++    public org.bukkit.inventory.InventoryHolder getOwner() {
++        return overrideInventoryHolder ? owner : super.getOwner();
++    }
++
 +    @Override
 +    public org.bukkit.Location getLocation() {
 +        if (world == null) return null;

@@ -11,9 +11,6 @@ import net.minecraft.server.TileEntityFurnace;
 import net.minecraft.server.TileEntityHopper;
 import net.minecraft.server.TileEntityLootable;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.bukkit.craftbukkit.inventory.CraftInventoryBeacon;
-import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
-import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -21,16 +18,16 @@ import org.bukkit.inventory.InventoryHolder;
 
 public abstract class CraftTileInventoryConverter implements CraftInventoryCreator.InventoryConverter {
 
-    public abstract ITileInventory getTileEntity();
+    public abstract ITileInventory getTileEntity(InventoryHolder holder);
 
     @Override
     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
-        return getInventory(getTileEntity());
+        return getInventory(getTileEntity(holder));
     }
 
     @Override
     public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
-        ITileInventory te = getTileEntity();
+        ITileInventory te = getTileEntity(holder);
         if (te instanceof TileEntityLootable) {
             ((TileEntityLootable) te).setCustomName(CraftChatMessage.fromStringOrNull(title));
         }
@@ -45,82 +42,67 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
     public static class Furnace extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            TileEntityFurnace furnace = new TileEntityFurnace();
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            TileEntityFurnace furnace = new TileEntityFurnace(owner);
             furnace.setWorld(MinecraftServer.getServer().getWorldServer(DimensionManager.OVERWORLD)); // TODO: customize this if required
             return furnace;
         }
 
         @Override
         public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-            ITileInventory tileEntity = getTileEntity();
+            ITileInventory tileEntity = getTileEntity(owner);
             ((TileEntityFurnace) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
             return getInventory(tileEntity);
-        }
-
-        @Override
-        public Inventory getInventory(ITileInventory tileEntity) {
-            return new CraftInventoryFurnace((TileEntityFurnace) tileEntity);
         }
     }
 
     public static class BrewingStand extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            return new TileEntityBrewingStand();
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            return new TileEntityBrewingStand(owner);
         }
 
         @Override
         public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
             // BrewingStand does not extend TileEntityLootable
-            ITileInventory tileEntity = getTileEntity();
+            ITileInventory tileEntity = getTileEntity(holder);
             if (tileEntity instanceof TileEntityBrewingStand) {
                 ((TileEntityBrewingStand) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
             }
             return getInventory(tileEntity);
-        }
-
-        @Override
-        public Inventory getInventory(ITileInventory tileEntity) {
-            return new CraftInventoryBrewer(tileEntity);
         }
     }
 
     public static class Beacon extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            return new TileEntityBeacon();
-        }
-
-        @Override
-        public Inventory getInventory(ITileInventory tileInventory) {
-            return new CraftInventoryBeacon((TileEntityBeacon) tileInventory);
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            return new TileEntityBeacon(owner);
         }
     }
 
     public static class Dispenser extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            return new TileEntityDispenser();
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            return new TileEntityDispenser(owner);
         }
     }
 
     public static class Dropper extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            return new TileEntityDropper();
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            return new TileEntityDropper(owner);
         }
     }
 
     public static class Hopper extends CraftTileInventoryConverter {
 
         @Override
-        public ITileInventory getTileEntity() {
-            return new TileEntityHopper();
+        public ITileInventory getTileEntity(InventoryHolder owner) {
+            return new TileEntityHopper(owner);
         }
     }
 }

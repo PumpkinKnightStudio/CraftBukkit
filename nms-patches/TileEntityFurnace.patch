@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/TileEntityFurnace.java
 +++ b/net/minecraft/server/TileEntityFurnace.java
-@@ -9,6 +9,15 @@
+@@ -9,6 +9,16 @@
  import java.util.Map;
  import java.util.Map.Entry;
  import javax.annotation.Nullable;
@@ -12,11 +12,12 @@
 +import org.bukkit.entity.HumanEntity;
 +import org.bukkit.event.inventory.FurnaceBurnEvent;
 +import org.bukkit.event.inventory.FurnaceSmeltEvent;
++import org.bukkit.inventory.InventoryHolder;
 +// CraftBukkit end
  
  public class TileEntityFurnace extends TileEntityContainer implements IWorldInventory, RecipeHolder, AutoRecipeOutput, ITickable {
  
-@@ -93,6 +102,31 @@
+@@ -93,6 +103,36 @@
          return linkedhashmap;
      }
  
@@ -43,12 +44,17 @@
 +    public void setMaxStackSize(int size) {
 +        maxStack = size;
 +    }
++
++    public TileEntityFurnace(InventoryHolder owner) {
++        this();
++        setOwner(owner);
++    }
 +    // CraftBukkit end
 +
      public TileEntityFurnace() {
          super(TileEntityTypes.FURNACE);
          this.items = NonNullList.a(3, ItemStack.a);
-@@ -220,7 +254,7 @@
+@@ -220,7 +260,7 @@
      }
  
      public void Y_() {
@@ -57,7 +63,7 @@
          boolean flag1 = false;
  
          if (this.isBurning()) {
-@@ -238,9 +272,20 @@
+@@ -238,9 +278,20 @@
                  IRecipe irecipe = this.world.E().b(this, this.world);
  
                  if (!this.isBurning() && this.canBurn(irecipe)) {
@@ -80,7 +86,7 @@
                          flag1 = true;
                          if (!itemstack.isEmpty()) {
                              Item item = itemstack.getItem();
-@@ -271,6 +316,7 @@
+@@ -271,6 +322,7 @@
              if (flag != this.isBurning()) {
                  flag1 = true;
                  this.world.setTypeAndData(this.position, (IBlockData) this.world.getType(this.position).set(BlockFurnace.LIT, Boolean.valueOf(this.isBurning())), 3);
@@ -88,7 +94,7 @@
              }
          }
  
-@@ -281,7 +327,7 @@
+@@ -281,7 +333,7 @@
      }
  
      private int s() {
@@ -97,7 +103,7 @@
  
          return furnacerecipe != null ? furnacerecipe.h() : 200;
      }
-@@ -308,11 +354,38 @@
+@@ -308,11 +360,38 @@
              ItemStack itemstack1 = irecipe.d();
              ItemStack itemstack2 = (ItemStack) this.items.get(2);
  
