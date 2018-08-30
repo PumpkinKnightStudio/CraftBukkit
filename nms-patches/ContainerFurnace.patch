@@ -1,17 +1,18 @@
 --- a/net/minecraft/server/ContainerFurnace.java
 +++ b/net/minecraft/server/ContainerFurnace.java
-@@ -1,6 +1,10 @@
+@@ -1,6 +1,11 @@
  package net.minecraft.server;
  
  import java.util.Iterator;
 +// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.CraftInventory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +// CraftBukkit end
  
  public class ContainerFurnace extends ContainerRecipeBook {
  
-@@ -11,12 +15,29 @@
+@@ -11,12 +16,36 @@
      private int i;
      private int j;
  
@@ -25,7 +26,14 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventoryFurnace inventory = new CraftInventoryFurnace((TileEntityFurnace) this.furnace);
++        CraftInventory inventory;
++        TileEntityFurnace tileEntityFurnace = (TileEntityFurnace) this.furnace;
++        if (tileEntityFurnace.hasOverriddenInventoryHolder()) {
++            // Don't use CraftInventoryFurnace as it's #getHolder() method performs a cast to Furnace
++            inventory = new CraftInventory(tileEntityFurnace);
++        } else {
++            inventory = new CraftInventoryFurnace(tileEntityFurnace);
++        }
 +        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
 +        return bukkitEntity;
 +    }
@@ -41,7 +49,7 @@
  
          int i;
  
-@@ -95,6 +116,7 @@
+@@ -95,6 +124,7 @@
      }
  
      public boolean canUse(EntityHuman entityhuman) {

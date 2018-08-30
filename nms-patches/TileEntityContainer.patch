@@ -1,6 +1,17 @@
 --- a/net/minecraft/server/TileEntityContainer.java
 +++ b/net/minecraft/server/TileEntityContainer.java
-@@ -34,4 +34,24 @@
+@@ -1,5 +1,10 @@
+ package net.minecraft.server;
+ 
++//CraftBukkit start
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.inventory.InventoryHolder;
++//CraftBukkit end
++
+ public abstract class TileEntityContainer extends TileEntity implements ITileInventory {
+ 
+     private ChestLock a;
+@@ -34,4 +39,28 @@
      public void setLock(ChestLock chestlock) {
          this.a = chestlock;
      }
@@ -13,9 +24,13 @@
 +        this.overrideInventoryHolder = true;
 +    }
 +
++    public boolean hasOverriddenInventoryHolder() {
++        return overrideInventoryHolder;
++    }
++
 +    @Override
-+    public org.bukkit.inventory.InventoryHolder getOwner() {
-+        return overrideInventoryHolder ? owner : super.getOwner();
++    public InventoryHolder getOwner() {
++        return hasOverriddenInventoryHolder() ? owner : super.getOwner();
 +    }
 +
 +    @Override
