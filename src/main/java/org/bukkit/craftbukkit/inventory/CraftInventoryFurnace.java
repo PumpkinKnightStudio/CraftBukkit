@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import org.bukkit.block.Furnace;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -33,10 +32,5 @@ public class CraftInventoryFurnace extends CraftInventory implements FurnaceInve
 
     public void setSmelting(ItemStack stack) {
         setItem(0,stack);
-    }
-
-    @Override
-    public Furnace getHolder() {
-        return (Furnace) inventory.getOwner();
     }
 }

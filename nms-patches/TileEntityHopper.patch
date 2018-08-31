@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/TileEntityHopper.java
 +++ b/net/minecraft/server/TileEntityHopper.java
-@@ -7,12 +7,52 @@
+@@ -7,12 +7,47 @@
  import java.util.stream.Collectors;
  import javax.annotation.Nullable;
  
@@ -43,17 +43,12 @@
 +    public void setMaxStackSize(int size) {
 +        maxStack = size;
 +    }
-+
-+    public TileEntityHopper(InventoryHolder owner) {
-+        this();
-+        setOwner(owner);
-+    }
 +    // CraftBukkit end
 +
      public TileEntityHopper() {
          super(TileEntityTypes.HOPPER);
          this.items = NonNullList.a(5, ItemStack.a);
-@@ -72,7 +112,7 @@
+@@ -72,7 +107,7 @@
      }
  
      public int getMaxStackSize() {
@@ -62,7 +57,7 @@
      }
  
      public void Y_() {
-@@ -165,10 +205,35 @@
+@@ -165,10 +200,35 @@
                  for (int i = 0; i < this.getSize(); ++i) {
                      if (!this.getItem(i).isEmpty()) {
                          ItemStack itemstack = this.getItem(i).cloneItemStack();
@@ -100,7 +95,7 @@
                              return true;
                          }
  
-@@ -290,10 +355,41 @@
+@@ -290,10 +350,41 @@
  
          if (!itemstack.isEmpty() && b(iinventory, itemstack, i, enumdirection)) {
              ItemStack itemstack1 = itemstack.cloneItemStack();
@@ -144,7 +139,7 @@
                  return true;
              }
  
-@@ -305,6 +401,13 @@
+@@ -305,6 +396,13 @@
  
      public static boolean a(IInventory iinventory, EntityItem entityitem) {
          boolean flag = false;

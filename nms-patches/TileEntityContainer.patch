@@ -1,25 +1,29 @@
 --- a/net/minecraft/server/TileEntityContainer.java
 +++ b/net/minecraft/server/TileEntityContainer.java
-@@ -1,5 +1,10 @@
+@@ -1,5 +1,12 @@
  package net.minecraft.server;
  
 +//CraftBukkit start
-+import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.craftbukkit.Overridden;
++import org.bukkit.craftbukkit.inventory.CraftInventory;
++import org.bukkit.inventory.Inventory;
 +import org.bukkit.inventory.InventoryHolder;
 +//CraftBukkit end
 +
  public abstract class TileEntityContainer extends TileEntity implements ITileInventory {
  
      private ChestLock a;
-@@ -34,4 +39,28 @@
+@@ -34,4 +41,44 @@
      public void setLock(ChestLock chestlock) {
          this.a = chestlock;
      }
 +
 +    // CraftBukkit start
 +    private boolean overrideInventoryHolder;
-+    private org.bukkit.inventory.InventoryHolder owner;
-+    protected void setOwner(org.bukkit.inventory.InventoryHolder owner) {
++    private InventoryHolder owner;
++    protected Inventory bukkitInventory;
++
++    public void setOwner(org.bukkit.inventory.InventoryHolder owner) {
 +        this.owner = owner;
 +        this.overrideInventoryHolder = true;
 +    }
@@ -31,6 +35,20 @@
 +    @Override
 +    public InventoryHolder getOwner() {
 +        return hasOverriddenInventoryHolder() ? owner : super.getOwner();
++    }
++
++    @Overridden
++    protected Inventory createBukkitInventory() {
++        return new CraftInventory(this);
++    }
++
++    @Override
++    public Inventory getBukkitInventory() {
++        if (bukkitInventory == null) {
++            bukkitInventory = createBukkitInventory();
++        }
++
++        return bukkitInventory;
 +    }
 +
 +    @Override

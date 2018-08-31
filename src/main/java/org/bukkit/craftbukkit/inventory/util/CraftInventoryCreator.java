@@ -30,26 +30,52 @@ public final class CraftInventoryCreator {
         converterMap.put(InventoryType.SHULKER_BOX, DEFAULT_CONVERTER);
     }
 
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
         return converterMap.get(type).createInventory(holder, type);
     }
 
+    public Inventory createInventory(InventoryType type) {
+        return converterMap.get(type).createInventory(type);
+    }
+
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
         return converterMap.get(type).createInventory(holder, type, title);
     }
 
+    public Inventory createInventory(InventoryType type, String title) {
+        return converterMap.get(type).createInventory(type, title);
+    }
+
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, int size) {
         return DEFAULT_CONVERTER.createInventory(holder, size);
     }
 
+    public Inventory createInventory(int size) {
+        return DEFAULT_CONVERTER.createInventory(size);
+    }
+
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, int size, String title) {
         return DEFAULT_CONVERTER.createInventory(holder, size, title);
     }
 
+    public Inventory createInventory(int size, String title) {
+        return DEFAULT_CONVERTER.createInventory(size, title);
+    }
+
     public interface InventoryConverter {
 
+        @Deprecated
         Inventory createInventory(InventoryHolder holder, InventoryType type);
 
+        Inventory createInventory(InventoryType type);
+
+        @Deprecated
         Inventory createInventory(InventoryHolder holder, InventoryType type, String title);
+
+        Inventory createInventory(InventoryType type, String title);
     }
 }

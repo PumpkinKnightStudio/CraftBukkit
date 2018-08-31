@@ -22,12 +22,21 @@
  public class ContainerEnchantTable extends Container {
  
      public IInventory enchantSlots = new InventorySubcontainer(new ChatComponentText("Enchant"), 2) {
-@@ -14,6 +29,13 @@
+@@ -14,6 +29,22 @@
              super.update();
              ContainerEnchantTable.this.a((IInventory) this);
          }
 +
 +        // CraftBukkit start
++        @Override
++        public org.bukkit.inventory.Inventory getBukkitInventory() {
++            if (bukkitInventory == null) {
++                bukkitInventory = new CraftInventoryEnchanting(this);
++            }
++
++            return bukkitInventory;
++        }
++
 +        @Override
 +        public Location getLocation() {
 +            return new org.bukkit.Location(world.getWorld(), position.getX(), position.getY(), position.getZ());
@@ -36,7 +45,7 @@
      };
      public World world;
      private final BlockPosition position;
-@@ -22,6 +44,10 @@
+@@ -22,6 +53,10 @@
      public int[] costs = new int[3];
      public int[] h = new int[] { -1, -1, -1};
      public int[] i = new int[] { -1, -1, -1};
@@ -47,7 +56,7 @@
  
      public ContainerEnchantTable(PlayerInventory playerinventory, World world, BlockPosition blockposition) {
          this.world = world;
-@@ -54,6 +80,9 @@
+@@ -54,6 +89,9 @@
              this.a(new Slot(playerinventory, i, 8 + i * 18, 142));
          }
  
@@ -57,7 +66,7 @@
      }
  
      protected void c(ICrafting icrafting) {
-@@ -90,7 +119,7 @@
+@@ -90,7 +128,7 @@
              ItemStack itemstack = iinventory.getItem(0);
              int i;
  
@@ -66,7 +75,7 @@
                  if (!this.world.isClientSide) {
                      i = 0;
  
-@@ -146,12 +175,47 @@
+@@ -146,12 +184,47 @@
                              if (list != null && !list.isEmpty()) {
                                  WeightedRandomEnchant weightedrandomenchant = (WeightedRandomEnchant) list.get(this.l.nextInt(list.size()));
  
@@ -115,7 +124,7 @@
                      this.b();
                  }
              } else {
-@@ -176,25 +240,53 @@
+@@ -176,25 +249,53 @@
              if (!this.world.isClientSide) {
                  List list = this.a(itemstack, i, this.costs[i]);
  
@@ -177,7 +186,7 @@
                      if (!entityhuman.abilities.canInstantlyBuild) {
                          itemstack1.subtract(j);
                          if (itemstack1.isEmpty()) {
-@@ -233,12 +325,18 @@
+@@ -233,12 +334,18 @@
  
      public void b(EntityHuman entityhuman) {
          super.b(entityhuman);
@@ -196,7 +205,7 @@
          return this.world.getType(this.position).getBlock() != Blocks.ENCHANTING_TABLE ? false : entityhuman.d((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
      }
  
-@@ -291,4 +389,17 @@
+@@ -291,4 +398,15 @@
  
          return itemstack;
      }
@@ -208,9 +217,7 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventoryEnchanting inventory = new CraftInventoryEnchanting(this.enchantSlots);
-+        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player, this.enchantSlots.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  }

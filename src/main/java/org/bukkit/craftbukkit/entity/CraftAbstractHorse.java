@@ -5,6 +5,7 @@ import net.minecraft.server.EntityHorse;
 import net.minecraft.server.EntityHorseAbstract;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.Overridden;
 import org.bukkit.craftbukkit.inventory.CraftInventoryAbstractHorse;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.AnimalTamer;
@@ -12,6 +13,8 @@ import org.bukkit.entity.Horse;
 import org.bukkit.inventory.AbstractHorseInventory;
 
 public abstract class CraftAbstractHorse extends CraftAnimals implements AbstractHorse {
+
+    protected AbstractHorseInventory lazyInventory;
 
     public CraftAbstractHorse(CraftServer server, EntityHorseAbstract entity) {
         super(server, entity);
@@ -92,6 +95,15 @@ public abstract class CraftAbstractHorse extends CraftAnimals implements Abstrac
 
     @Override
     public AbstractHorseInventory getInventory() {
+        if (lazyInventory == null) {
+            lazyInventory = createInventory();
+        }
+
+        return lazyInventory;
+    }
+
+    @Overridden
+    protected AbstractHorseInventory createInventory() {
         return new CraftInventoryAbstractHorse(getHandle().inventoryChest);
     }
 }

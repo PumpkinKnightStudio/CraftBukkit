@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/TileEntityFurnace.java
 +++ b/net/minecraft/server/TileEntityFurnace.java
-@@ -9,6 +9,16 @@
+@@ -9,6 +9,17 @@
  import java.util.Map;
  import java.util.Map.Entry;
  import javax.annotation.Nullable;
@@ -8,16 +8,17 @@
 +import java.util.List;
 +import org.bukkit.craftbukkit.block.CraftBlock;
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.entity.HumanEntity;
 +import org.bukkit.event.inventory.FurnaceBurnEvent;
 +import org.bukkit.event.inventory.FurnaceSmeltEvent;
-+import org.bukkit.inventory.InventoryHolder;
++import org.bukkit.inventory.Inventory;
 +// CraftBukkit end
  
  public class TileEntityFurnace extends TileEntityContainer implements IWorldInventory, RecipeHolder, AutoRecipeOutput, ITickable {
  
-@@ -93,6 +103,36 @@
+@@ -93,6 +104,36 @@
          return linkedhashmap;
      }
  
@@ -45,16 +46,16 @@
 +        maxStack = size;
 +    }
 +
-+    public TileEntityFurnace(InventoryHolder owner) {
-+        this();
-+        setOwner(owner);
++    @Override
++    protected Inventory createBukkitInventory() {
++        return new CraftInventoryFurnace(this);
 +    }
 +    // CraftBukkit end
 +
      public TileEntityFurnace() {
          super(TileEntityTypes.FURNACE);
          this.items = NonNullList.a(3, ItemStack.a);
-@@ -220,7 +260,7 @@
+@@ -220,7 +261,7 @@
      }
  
      public void Y_() {
@@ -63,7 +64,7 @@
          boolean flag1 = false;
  
          if (this.isBurning()) {
-@@ -238,9 +278,20 @@
+@@ -238,9 +279,20 @@
                  IRecipe irecipe = this.world.E().b(this, this.world);
  
                  if (!this.isBurning() && this.canBurn(irecipe)) {
@@ -86,7 +87,7 @@
                          flag1 = true;
                          if (!itemstack.isEmpty()) {
                              Item item = itemstack.getItem();
-@@ -271,6 +322,7 @@
+@@ -271,6 +323,7 @@
              if (flag != this.isBurning()) {
                  flag1 = true;
                  this.world.setTypeAndData(this.position, (IBlockData) this.world.getType(this.position).set(BlockFurnace.LIT, Boolean.valueOf(this.isBurning())), 3);
@@ -94,7 +95,7 @@
              }
          }
  
-@@ -281,7 +333,7 @@
+@@ -281,7 +334,7 @@
      }
  
      private int s() {
@@ -103,7 +104,7 @@
  
          return furnacerecipe != null ? furnacerecipe.h() : 200;
      }
-@@ -308,11 +360,38 @@
+@@ -308,11 +361,38 @@
              ItemStack itemstack1 = irecipe.d();
              ItemStack itemstack2 = (ItemStack) this.items.get(2);
  

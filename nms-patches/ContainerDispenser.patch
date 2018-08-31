@@ -1,10 +1,9 @@
 --- a/net/minecraft/server/ContainerDispenser.java
 +++ b/net/minecraft/server/ContainerDispenser.java
-@@ -1,11 +1,24 @@
+@@ -1,11 +1,23 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftInventory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +// CraftBukkit end
 +
@@ -25,7 +24,7 @@
  
          int i;
          int j;
-@@ -29,6 +42,7 @@
+@@ -29,6 +41,7 @@
      }
  
      public boolean canUse(EntityHuman entityhuman) {
@@ -33,7 +32,7 @@
          return this.items.a(entityhuman);
      }
  
-@@ -63,4 +77,17 @@
+@@ -63,4 +76,15 @@
  
          return itemstack;
      }
@@ -45,9 +44,7 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventory inventory = new CraftInventory(this.items);
-+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), this.items.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  }

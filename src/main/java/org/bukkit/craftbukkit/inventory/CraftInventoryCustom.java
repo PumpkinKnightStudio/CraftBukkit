@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 import net.minecraft.server.EntityHuman;
@@ -22,18 +23,27 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 public class CraftInventoryCustom extends CraftInventory {
     public CraftInventoryCustom(InventoryHolder owner, InventoryType type) {
         super(new MinecraftInventory(owner, type));
+        getInventory().bukkitInventory = this;
     }
 
     public CraftInventoryCustom(InventoryHolder owner, InventoryType type, String title) {
         super(new MinecraftInventory(owner, type, title));
+        getInventory().bukkitInventory = this;
     }
 
     public CraftInventoryCustom(InventoryHolder owner, int size) {
         super(new MinecraftInventory(owner, size));
+        getInventory().bukkitInventory = this;
     }
 
     public CraftInventoryCustom(InventoryHolder owner, int size, String title) {
         super(new MinecraftInventory(owner, size, title));
+        getInventory().bukkitInventory = this;
+    }
+
+    @Override
+    public MinecraftInventory getInventory() {
+        return (MinecraftInventory) super.getInventory();
     }
 
     static class MinecraftInventory implements IInventory {
@@ -43,6 +53,7 @@ public class CraftInventoryCustom extends CraftInventory {
         private final IChatBaseComponent title;
         private InventoryType type;
         private final InventoryHolder owner;
+        private Inventory bukkitInventory;
 
         public MinecraftInventory(InventoryHolder owner, InventoryType type) {
             this(owner, type.getDefaultSize(), type.getDefaultTitle());
@@ -147,6 +158,11 @@ public class CraftInventoryCustom extends CraftInventory {
 
         public InventoryHolder getOwner() {
             return owner;
+        }
+
+        @Override
+        public Inventory getBukkitInventory() {
+            return bukkitInventory;
         }
 
         public boolean b(int i, ItemStack itemstack) {

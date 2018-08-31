@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/InventoryCrafting.java
 +++ b/net/minecraft/server/InventoryCrafting.java
-@@ -2,6 +2,14 @@
+@@ -2,6 +2,15 @@
  
  import java.util.Iterator;
  import javax.annotation.Nullable;
@@ -9,18 +9,20 @@
 +import org.bukkit.Location;
 +
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 +import org.bukkit.entity.HumanEntity;
 +import org.bukkit.event.inventory.InventoryType;
 +// CraftBukkit end
  
  public class InventoryCrafting implements IInventory, AutoRecipeOutput {
  
-@@ -10,6 +18,63 @@
+@@ -10,6 +19,73 @@
      private final int c;
      public final Container container;
  
 +    // CraftBukkit start - add fields
 +    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
++    private org.bukkit.inventory.Inventory bukkitInventory;
 +    private IRecipe currentRecipe;
 +    public IInventory resultInventory;
 +    private EntityHuman owner;
@@ -48,6 +50,15 @@
 +
 +    public org.bukkit.inventory.InventoryHolder getOwner() {
 +        return (owner == null) ? null : owner.getBukkitEntity();
++    }
++
++    @Override
++    public org.bukkit.inventory.Inventory getBukkitInventory() {
++        if (bukkitInventory == null) {
++            bukkitInventory = new CraftInventoryCrafting(this, resultInventory);
++        }
++
++        return bukkitInventory;
 +    }
 +
 +    public void setMaxStackSize(int size) {

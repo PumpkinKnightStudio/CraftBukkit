@@ -1,11 +1,9 @@
 --- a/net/minecraft/server/ContainerBeacon.java
 +++ b/net/minecraft/server/ContainerBeacon.java
-@@ -1,11 +1,22 @@
+@@ -1,11 +1,20 @@
  package net.minecraft.server;
  
 +//CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftInventory;
-+import org.bukkit.craftbukkit.inventory.CraftInventoryBeacon;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +//CraftBukkit end
 +
@@ -23,7 +21,7 @@
          this.beacon = iinventory1;
          this.f = new ContainerBeacon.SlotBeacon(iinventory1, 0, 136, 110);
          this.a((Slot) this.f);
-@@ -48,6 +59,7 @@
+@@ -48,6 +57,7 @@
      }
  
      public boolean canUse(EntityHuman entityhuman) {
@@ -31,7 +29,7 @@
          return this.beacon.a(entityhuman);
      }
  
-@@ -113,4 +125,24 @@
+@@ -113,4 +123,15 @@
              return 1;
          }
      }
@@ -43,16 +41,7 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventory inventory;
-+        TileEntityBeacon tileEntityBeacon = (TileEntityBeacon) this.beacon; // TODO - check this
-+        if (tileEntityBeacon.hasOverriddenInventoryHolder()) {
-+            // Don't use CraftInventoryBeacon as it's #getHolder() method may perform a cast to a Beacon
-+            inventory = new CraftInventory(tileEntityBeacon);
-+        } else {
-+            inventory = new CraftInventoryBeacon(tileEntityBeacon);
-+        }
-+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), this.beacon.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  }

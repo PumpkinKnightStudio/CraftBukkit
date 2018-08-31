@@ -13,6 +13,7 @@ import org.bukkit.Location;
 public class CraftInventoryDoubleChest extends CraftInventory implements DoubleChestInventory {
     private final CraftInventory left;
     private final CraftInventory right;
+    private DoubleChest lazyDoubleChest;
 
     public CraftInventoryDoubleChest(CraftInventory left, CraftInventory right) {
         super(new InventoryLargeChest(new ChatMessage("container.chestDouble"), (ITileInventory) left.getInventory(), (ITileInventory) right.getInventory()));
@@ -58,7 +59,11 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
 
     @Override
     public DoubleChest getHolder() {
-        return new DoubleChest(this);
+        if (lazyDoubleChest == null) {
+            lazyDoubleChest = new DoubleChest(this);
+        }
+
+        return lazyDoubleChest;
     }
 
     @Override

@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/InventoryCraftResult.java
 +++ b/net/minecraft/server/InventoryCraftResult.java
-@@ -2,12 +2,45 @@
+@@ -2,12 +2,50 @@
  
  import java.util.Iterator;
  import javax.annotation.Nullable;
@@ -26,6 +26,11 @@
 +        return null; // Result slots don't get an owner
 +    }
 +
++    @Override
++    public org.bukkit.inventory.Inventory getBukkitInventory() {
++        return null; // Result slot is included in CraftInventoryCrafting
++    }
++
 +    // Don't need a transaction; the InventoryCrafting keeps track of it for us
 +    public void onOpen(CraftHumanEntity who) {}
 +    public void onClose(CraftHumanEntity who) {}
@@ -46,7 +51,7 @@
      public InventoryCraftResult() {
          this.items = NonNullList.a(1, ItemStack.a);
      }
-@@ -62,7 +95,7 @@
+@@ -62,7 +100,7 @@
      }
  
      public int getMaxStackSize() {

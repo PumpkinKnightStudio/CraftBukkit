@@ -155,6 +155,11 @@ public class InventoryWrapper implements IInventory {
     }
 
     @Override
+    public Inventory getBukkitInventory() {
+        return inventory;
+    }
+
+    @Override
     public void setMaxStackSize(int size) {
         inventory.setMaxStackSize(size);
     }

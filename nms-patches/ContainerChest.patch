@@ -1,10 +1,9 @@
 --- a/net/minecraft/server/ContainerChest.java
 +++ b/net/minecraft/server/ContainerChest.java
-@@ -1,9 +1,37 @@
+@@ -1,9 +1,26 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftInventory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +// CraftBukkit end
 +
@@ -22,23 +21,13 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventory inventory;
-+        if (this.container instanceof PlayerInventory) {
-+            inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryPlayer((PlayerInventory) this.container);
-+        } else if (this.container instanceof InventoryLargeChest) {
-+            inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) this.container);
-+        } else {
-+            inventory = new CraftInventory(this.container);
-+        }
-+
-+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), this.container.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  
      public ContainerChest(IInventory iinventory, IInventory iinventory1, EntityHuman entityhuman) {
          this.container = iinventory1;
-@@ -11,6 +39,11 @@
+@@ -11,6 +28,11 @@
          iinventory1.startOpen(entityhuman);
          int i = (this.f - 4) * 18;
  
@@ -50,7 +39,7 @@
          int j;
          int k;
  
-@@ -33,6 +66,7 @@
+@@ -33,6 +55,7 @@
      }
  
      public boolean canUse(EntityHuman entityhuman) {

@@ -1,17 +1,16 @@
 --- a/net/minecraft/server/ContainerPlayer.java
 +++ b/net/minecraft/server/ContainerPlayer.java
-@@ -1,5 +1,10 @@
+@@ -1,5 +1,9 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +// CraftBukkit end
 +
  public class ContainerPlayer extends ContainerRecipeBook {
  
      private static final String[] h = new String[] { "item/empty_armor_slot_boots", "item/empty_armor_slot_leggings", "item/empty_armor_slot_chestplate", "item/empty_armor_slot_helmet"};
-@@ -8,10 +13,20 @@
+@@ -8,10 +12,20 @@
      public InventoryCraftResult resultInventory = new InventoryCraftResult();
      public boolean g;
      private final EntityHuman owner;
@@ -32,7 +31,7 @@
          this.a((Slot) (new SlotResult(playerinventory.player, this.craftInventory, this.resultInventory, 0, 154, 28)));
  
          int i;
-@@ -167,4 +182,17 @@
+@@ -167,4 +181,15 @@
      public int g() {
          return this.craftInventory.n();
      }
@@ -44,9 +43,7 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.craftInventory, this.resultInventory);
-+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), this.craftInventory.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  }

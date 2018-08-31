@@ -1,23 +1,25 @@
 --- a/net/minecraft/server/TileEntityBrewingStand.java
 +++ b/net/minecraft/server/TileEntityBrewingStand.java
-@@ -4,6 +4,16 @@
+@@ -4,6 +4,18 @@
  import java.util.Iterator;
  import javax.annotation.Nullable;
  
 +// CraftBukkit start
 +import java.util.List;
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.entity.HumanEntity;
 +import org.bukkit.event.inventory.BrewEvent;
 +import org.bukkit.event.inventory.BrewingStandFuelEvent;
++import org.bukkit.inventory.Inventory;
 +import org.bukkit.inventory.InventoryHolder;
 +// CraftBukkit end
 +
  public class TileEntityBrewingStand extends TileEntityContainer implements IWorldInventory, ITickable {
  
      private static final int[] a = new int[] { 3};
-@@ -15,6 +25,36 @@
+@@ -15,6 +27,36 @@
      private Item j;
      private IChatBaseComponent k;
      private int fuelLevel;
@@ -46,15 +48,15 @@
 +        maxStack = size;
 +    }
 +
-+    public TileEntityBrewingStand(InventoryHolder owner) {
-+        this();
-+        setOwner(owner);
++    @Override
++    protected Inventory createBukkitInventory() {
++        return new CraftInventoryBrewer(this);
 +    }
 +    // CraftBukkit end
  
      public TileEntityBrewingStand() {
          super(TileEntityTypes.BREWING_STAND);
-@@ -62,8 +102,19 @@
+@@ -62,8 +104,19 @@
          ItemStack itemstack = (ItemStack) this.items.get(4);
  
          if (this.fuelLevel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
@@ -76,7 +78,7 @@
              this.update();
          }
  
-@@ -71,9 +122,14 @@
+@@ -71,9 +124,14 @@
          boolean flag1 = this.brewTime > 0;
          ItemStack itemstack1 = (ItemStack) this.items.get(3);
  
@@ -93,7 +95,7 @@
  
              if (flag2 && flag) {
                  this.r();
-@@ -147,6 +203,16 @@
+@@ -147,6 +205,16 @@
  
      private void r() {
          ItemStack itemstack = (ItemStack) this.items.get(3);
@@ -110,7 +112,7 @@
  
          for (int i = 0; i < 3; ++i) {
              this.items.set(i, PotionBrewer.d(itemstack, (ItemStack) this.items.get(i)));
-@@ -213,7 +279,7 @@
+@@ -213,7 +281,7 @@
      }
  
      public int getMaxStackSize() {

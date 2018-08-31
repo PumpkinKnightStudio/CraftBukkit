@@ -8,7 +8,7 @@
  public interface IInventory extends INamableTileEntity {
  
      int getSize();
-@@ -41,4 +43,29 @@
+@@ -41,4 +43,31 @@
      default int U_() {
          return 0;
      }
@@ -23,6 +23,8 @@
 +    java.util.List<org.bukkit.entity.HumanEntity> getViewers();
 +
 +    org.bukkit.inventory.InventoryHolder getOwner();
++
++    org.bukkit.inventory.Inventory getBukkitInventory();
 +
 +    void setMaxStackSize(int size);
 +

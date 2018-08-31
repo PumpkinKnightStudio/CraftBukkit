@@ -1,18 +1,16 @@
 --- a/net/minecraft/server/ContainerBrewingStand.java
 +++ b/net/minecraft/server/ContainerBrewingStand.java
-@@ -1,5 +1,11 @@
+@@ -1,5 +1,9 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftInventory;
-+import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +// CraftBukkit end
 +
  public class ContainerBrewingStand extends Container {
  
      private final IInventory brewingStand;
-@@ -7,7 +13,13 @@
+@@ -7,7 +11,13 @@
      private int g;
      private int h;
  
@@ -26,7 +24,7 @@
          this.brewingStand = iinventory;
          this.a((Slot) (new ContainerBrewingStand.SlotPotionBottle(iinventory, 0, 56, 51)));
          this.a((Slot) (new ContainerBrewingStand.SlotPotionBottle(iinventory, 1, 79, 58)));
-@@ -54,6 +66,7 @@
+@@ -54,6 +64,7 @@
      }
  
      public boolean canUse(EntityHuman entityhuman) {
@@ -34,7 +32,7 @@
          return this.brewingStand.a(entityhuman);
      }
  
-@@ -178,4 +191,24 @@
+@@ -178,4 +189,15 @@
              return item == Items.POTION || item == Items.SPLASH_POTION || item == Items.LINGERING_POTION || item == Items.GLASS_BOTTLE;
          }
      }
@@ -46,16 +44,7 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventory inventory;
-+        TileEntityBrewingStand tileEntityBrewingStand = (TileEntityBrewingStand) this.brewingStand; //TODO - check this
-+        if (tileEntityBrewingStand.hasOverriddenInventoryHolder()) {
-+            // Don't use CraftInventoryBrewer as it's #getHolder() method performs a cast to BrewingStand
-+            inventory = new CraftInventory(tileEntityBrewingStand);
-+        } else {
-+            inventory = new CraftInventoryBrewer(tileEntityBrewingStand);
-+        }
-+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
-+        return bukkitEntity;
++        return bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), this.brewingStand.getBukkitInventory(), this);
 +    }
 +    // CraftBukkit end
  }

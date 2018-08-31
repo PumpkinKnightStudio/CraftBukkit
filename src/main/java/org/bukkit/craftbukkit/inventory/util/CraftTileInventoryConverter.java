@@ -10,22 +10,38 @@ import net.minecraft.server.TileEntityDropper;
 import net.minecraft.server.TileEntityFurnace;
 import net.minecraft.server.TileEntityHopper;
 import net.minecraft.server.TileEntityLootable;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryBeacon;
+import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.BeaconInventory;
 
 public abstract class CraftTileInventoryConverter implements CraftInventoryCreator.InventoryConverter {
 
     public abstract ITileInventory getTileEntity(InventoryHolder holder);
 
     @Override
+    public Inventory createInventory(InventoryType type) {
+        return createInventory(null, type);
+    }
+
+    @Override
+    public Inventory createInventory(InventoryType type, String title) {
+        return createInventory(null, type, title);
+    }
+
+    @Override
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
         return getInventory(getTileEntity(holder));
     }
 
     @Override
+    @Deprecated
     public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
         ITileInventory te = getTileEntity(holder);
         if (te instanceof TileEntityLootable) {
@@ -36,14 +52,15 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
     }
 
     public Inventory getInventory(ITileInventory tileEntity) {
-        return new CraftInventory(tileEntity);
+        return tileEntity.getBukkitInventory();
     }
 
     public static class Furnace extends CraftTileInventoryConverter {
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            TileEntityFurnace furnace = new TileEntityFurnace(owner);
+            TileEntityFurnace furnace = new TileEntityFurnace();
+            furnace.setOwner(owner);
             furnace.setWorld(MinecraftServer.getServer().getWorldServer(DimensionManager.OVERWORLD)); // TODO: customize this if required
             return furnace;
         }
@@ -60,7 +77,9 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            return new TileEntityBrewingStand(owner);
+            TileEntityBrewingStand tileEntityBrewingStand = new TileEntityBrewingStand();
+            tileEntityBrewingStand.setOwner(owner);
+            return tileEntityBrewingStand;
         }
 
         @Override
@@ -78,7 +97,9 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            return new TileEntityBeacon(owner);
+            TileEntityBeacon tileEntity = new TileEntityBeacon();
+            tileEntity.setOwner(owner);
+            return tileEntity;
         }
     }
 
@@ -86,7 +107,9 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            return new TileEntityDispenser(owner);
+            TileEntityDispenser tileEntity = new TileEntityDispenser();
+            tileEntity.setOwner(owner);
+            return tileEntity;
         }
     }
 
@@ -94,7 +117,9 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            return new TileEntityDropper(owner);
+            TileEntityDropper tileEntity = new TileEntityDropper();
+            tileEntity.setOwner(owner);
+            return tileEntity;
         }
     }
 
@@ -102,7 +127,9 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
         @Override
         public ITileInventory getTileEntity(InventoryHolder owner) {
-            return new TileEntityHopper(owner);
+            TileEntityHopper tileEntity = new TileEntityHopper();
+            tileEntity.setOwner(owner);
+            return tileEntity;
         }
     }
 }
