@@ -27,7 +27,7 @@
 +    // public boolean canPickUpLoot; // CraftBukkit - moved up to EntityLiving
      public boolean persistent;
      private final Map<PathType, Float> bH;
-     private MinecraftKey bI;
+     public MinecraftKey lootTableKey;
 @@ -57,6 +69,9 @@
              this.n();
          }
@@ -100,7 +100,19 @@
          NBTTagList nbttaglist;
          int i;
  
-@@ -470,11 +525,21 @@
+@@ -394,6 +449,11 @@
+     protected MinecraftKey getDefaultLootTable() {
+         return null;
+     }
++    // CraftBukkit - start
++    public MinecraftKey getLootTable() {
++        return getDefaultLootTable();
++    }
++    // CraftBukkit - end
+ 
+     protected void a(boolean flag, int i, DamageSource damagesource) {
+         MinecraftKey minecraftkey = this.lootTableKey;
+@@ -470,11 +530,21 @@
          ItemStack itemstack1 = this.getEquipment(enumitemslot);
          boolean flag = this.a(itemstack, itemstack1, enumitemslot);
  
@@ -114,7 +126,7 @@
 +        canPickup = !entityEvent.isCancelled();
 +        if (canPickup) {
 +            // CraftBukkit end
-             double d0 = this.c(enumitemslot);
+             double d0 = (double) this.c(enumitemslot);
  
              if (!itemstack1.isEmpty() && (double) (this.random.nextFloat() - 0.1F) < d0) {
 +                this.forceDrops = true; // CraftBukkit
@@ -123,7 +135,7 @@
              }
  
              this.setSlot(enumitemslot, itemstack);
-@@ -554,11 +619,11 @@
+@@ -554,11 +624,11 @@
                  double d2 = entityhuman.locZ - this.locZ;
                  double d3 = d0 * d0 + d1 * d1 + d2 * d2;
  
@@ -137,7 +149,7 @@
                      this.die();
                  } else if (d3 < 1024.0D) {
                      this.ticksFarFromPlayer = 0;
-@@ -946,12 +1011,24 @@
+@@ -942,12 +1012,24 @@
  
      public final boolean b(EntityHuman entityhuman, EnumHand enumhand) {
          if (this.isLeashed() && this.getLeashHolder() == entityhuman) {
@@ -162,7 +174,7 @@
                  this.setLeashHolder(entityhuman, true);
                  itemstack.subtract(1);
                  return true;
-@@ -972,10 +1049,12 @@
+@@ -968,10 +1050,12 @@
  
          if (this.bK) {
              if (!this.isAlive()) {
@@ -175,7 +187,7 @@
                  this.unleash(true, true);
              }
          }
-@@ -986,7 +1065,9 @@
+@@ -982,7 +1066,9 @@
              this.bK = false;
              this.leashHolder = null;
              if (!this.world.isClientSide && flag1) {
@@ -185,7 +197,7 @@
              }
  
              if (!this.world.isClientSide && flag && this.world instanceof WorldServer) {
-@@ -1056,6 +1137,7 @@
+@@ -1052,6 +1138,7 @@
  
                  this.setLeashHolder(entityleash, true);
              } else {
@@ -193,7 +205,7 @@
                  this.unleash(false, true);
              }
          }
-@@ -1151,7 +1233,14 @@
+@@ -1147,7 +1234,14 @@
              int j = EnchantmentManager.getFireAspectEnchantmentLevel(this);
  
              if (j > 0) {

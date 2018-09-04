@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Fish;
+import org.bukkit.entity.FishHook;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LingeringPotion;
 import org.bukkit.entity.LivingEntity;
@@ -134,6 +135,9 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     private List<Block> getLineOfSight(Set<Material> transparent, int maxDistance, int maxLength) {
+        if (transparent == null) {
+            transparent = Sets.newHashSet(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR);
+        }
         if (maxDistance > 120) {
             maxDistance = 120;
         }
@@ -146,14 +150,8 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
                 blocks.remove(0);
             }
             Material material = block.getType();
-            if (transparent == null) {
-                if (!material.equals(Material.AIR)) {
-                    break;
-                }
-            } else {
-                if (!transparent.contains(material)) {
-                    break;
-                }
+            if (!transparent.contains(material)) {
+                break;
             }
         }
         return blocks;
@@ -322,7 +320,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntitySpectralArrow(world, getHandle());
             } else if (Trident.class.isAssignableFrom(projectile)) {
-                launch = new EntityThrownTrident(world, getHandle(), net.minecraft.server.ItemStack.a);
+                launch = new EntityThrownTrident(world, getHandle(), new net.minecraft.server.ItemStack(net.minecraft.server.Items.TRIDENT));
             } else {
                 launch = new EntityTippedArrow(world, getHandle());
             }
@@ -337,7 +335,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
             launch = new EntityThrownExpBottle(world, getHandle());
             ((EntityProjectile) launch).a(getHandle(), getHandle().pitch, getHandle().yaw, -20.0F, 0.7F, 1.0F); // ItemExpBottle
-        } else if (Fish.class.isAssignableFrom(projectile) && getHandle() instanceof EntityHuman) {
+        } else if (FishHook.class.isAssignableFrom(projectile) && getHandle() instanceof EntityHuman) {
             launch = new EntityFishingHook(world, (EntityHuman) getHandle());
         } else if (Fireball.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
@@ -478,6 +476,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public void setSwimming(boolean swimming) {
         getHandle().setSwimming(swimming);
+    }
+
+    @Override
+    public boolean isRiptiding() {
+        return getHandle().isRiptiding();
     }
 
     @Override

@@ -95,6 +95,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.loot.LootTable;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
@@ -133,6 +134,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -145,6 +147,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.command.BukkitCommandWrapper;
 import org.bukkit.craftbukkit.command.CraftCommandMap;
 import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
+import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
 import org.bukkit.craftbukkit.tag.CraftItemTag;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -692,8 +695,8 @@ public final class CraftServer implements Server {
         ((DedicatedServer) console).propertyManager = config;
 
         boolean animals = config.getBoolean("spawn-animals", console.getSpawnAnimals());
-        boolean monsters = config.getBoolean("spawn-monsters", console.worlds.get(0).getDifficulty() != EnumDifficulty.PEACEFUL);
-        EnumDifficulty difficulty = EnumDifficulty.getById(config.getInt("difficulty", console.worlds.get(0).getDifficulty().ordinal()));
+        boolean monsters = config.getBoolean("spawn-monsters", console.getWorldServer(DimensionManager.OVERWORLD).getDifficulty() != EnumDifficulty.PEACEFUL);
+        EnumDifficulty difficulty = EnumDifficulty.getById(config.getInt("difficulty", console.getWorldServer(DimensionManager.OVERWORLD).getDifficulty().ordinal()));
 
         online.value = config.getBoolean("online-mode", console.getOnlineMode());
         console.setSpawnAnimals(config.getBoolean("spawn-animals", console.getSpawnAnimals()));
@@ -722,7 +725,7 @@ public final class CraftServer implements Server {
             logger.log(Level.WARNING, "Failed to load banned-players.json, " + ex.getMessage());
         }
 
-        for (WorldServer world : console.worlds) {
+        for (WorldServer world : console.getWorlds()) {
             world.worldData.setDifficulty(difficulty);
             world.setSpawnFlags(monsters, animals);
             if (this.getTicksPerAnimalSpawns() < 0) {
@@ -884,11 +887,11 @@ public final class CraftServer implements Server {
 
         console.convertWorld(name);
 
-        int dimension = CraftWorld.CUSTOM_DIMENSION_OFFSET + console.worlds.size();
+        int dimension = CraftWorld.CUSTOM_DIMENSION_OFFSET + console.worldServer.size();
         boolean used = false;
         do {
-            for (WorldServer server : console.worlds) {
-                used = server.dimension == dimension;
+            for (WorldServer server : console.getWorlds()) {
+                used = server.dimension.getDimensionID() == dimension;
                 if (used) {
                     dimension++;
                     break;
@@ -898,6 +901,7 @@ public final class CraftServer implements Server {
         boolean hardcore = false;
 
         IDataManager sdm = new ServerNBTManager(getWorldContainer(), name, getServer(), getHandle().getServer().dataConverterManager);
+        PersistentCollection persistentcollection = new PersistentCollection(sdm);
         WorldData worlddata = sdm.getWorldData();
         WorldSettings worldSettings = null;
         if (worlddata == null) {
@@ -909,7 +913,9 @@ public final class CraftServer implements Server {
             worlddata = new WorldData(worldSettings, name);
         }
         worlddata.checkName(name); // CraftBukkit - Migration did not rewrite the level.dat; This forces 1.8 to take the last loaded world as respawn (in this case the end)
-        WorldServer internal = (WorldServer) new WorldServer(console, sdm, worlddata, dimension, console.methodProfiler, creator.environment(), generator).b();
+
+        DimensionManager internalDimension = new DimensionManager(dimension, name, name, () -> DimensionManager.a(creator.environment().getId()).e());
+        WorldServer internal = (WorldServer) new WorldServer(console, sdm, persistentcollection, worlddata, internalDimension, console.methodProfiler, creator.environment(), generator).i_();
 
         if (!(worlds.containsKey(name.toLowerCase(java.util.Locale.ENGLISH)))) {
             return null;
@@ -923,10 +929,10 @@ public final class CraftServer implements Server {
         internal.addIWorldAccess(new WorldManager(console, internal));
         internal.worldData.setDifficulty(EnumDifficulty.EASY);
         internal.setSpawnFlags(true, true);
-        console.worlds.add(internal);
+        console.worldServer.put(internal.dimension, internal);
 
         pluginManager.callEvent(new WorldInitEvent(internal.getWorld()));
-        System.out.println("Preparing start region for level " + (console.worlds.size() - 1) + " (Seed: " + internal.getSeed() + ")");
+        System.out.println("Preparing start region for level " + (console.worldServer.size() - 1) + " (Seed: " + internal.getSeed() + ")");
 
         if (internal.getWorld().getKeepSpawnInMemory()) {
             short short1 = 196;
@@ -948,10 +954,26 @@ public final class CraftServer implements Server {
                     }
 
                     BlockPosition chunkcoordinates = internal.getSpawn();
-                    internal.getChunkProviderServer().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4);
+                    internal.getChunkProviderServer().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4, true, true);
                 }
             }
         }
+
+        DimensionManager dimensionmanager = internalDimension.e().getDimensionManager();
+        ForcedChunk forcedchunk = (ForcedChunk) persistentcollection.get(dimensionmanager, ForcedChunk::new, "chunks");
+
+        if (forcedchunk != null) {
+            LongIterator longiterator = forcedchunk.a().iterator();
+
+            while (longiterator.hasNext()) {
+                System.out.println("Loading forced chunks for dimension " + dimension + ", " + forcedchunk.a().size() * 100 / 625 + "%");
+                long k = longiterator.nextLong();
+                ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(k);
+
+                internal.getChunkProviderServer().getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, true, true);
+            }
+        }
+
         pluginManager.callEvent(new WorldLoadEvent(internal.getWorld()));
         return internal.getWorld();
     }
@@ -969,11 +991,11 @@ public final class CraftServer implements Server {
 
         WorldServer handle = ((CraftWorld) world).getHandle();
 
-        if (!(console.worlds.contains(handle))) {
+        if (!(console.worldServer.containsKey(handle.dimension))) {
             return false;
         }
 
-        if (handle.dimension == 0) {
+        if (handle.dimension == DimensionManager.OVERWORLD) {
             return false;
         }
 
@@ -998,7 +1020,7 @@ public final class CraftServer implements Server {
         }
 
         worlds.remove(world.getName().toLowerCase(java.util.Locale.ENGLISH));
-        console.worlds.remove(console.worlds.indexOf(handle));
+        console.worldServer.remove(handle.dimension);
         return true;
     }
 
@@ -1213,8 +1235,8 @@ public final class CraftServer implements Server {
     @Override
     @Deprecated
     public CraftMapView getMap(short id) {
-        PersistentCollection collection = console.worlds.get(0).worldMaps;
-        WorldMap worldmap = (WorldMap) collection.get(WorldMap::new, "map_" + id);
+        PersistentCollection collection = console.getWorldServer(DimensionManager.OVERWORLD).worldMaps;
+        WorldMap worldmap = (WorldMap) collection.get(DimensionManager.OVERWORLD, WorldMap::new, "map_" + id);
         if (worldmap == null) {
             return null;
         }
@@ -1386,7 +1408,7 @@ public final class CraftServer implements Server {
 
     @Override
     public GameMode getDefaultGameMode() {
-        return GameMode.getByValue(console.worlds.get(0).getWorldData().getGameType().getId());
+        return GameMode.getByValue(console.getWorldServer(DimensionManager.OVERWORLD).getWorldData().getGameType().getId());
     }
 
     @Override
@@ -1430,7 +1452,7 @@ public final class CraftServer implements Server {
 
     @Override
     public OfflinePlayer[] getOfflinePlayers() {
-        WorldNBTStorage storage = (WorldNBTStorage) console.worlds.get(0).getDataManager();
+        WorldNBTStorage storage = (WorldNBTStorage) console.getWorldServer(DimensionManager.OVERWORLD).getDataManager();
         String[] files = storage.getPlayerDir().list(new DatFileFilter());
         Set<OfflinePlayer> players = new HashSet<OfflinePlayer>();
 
@@ -1474,25 +1496,26 @@ public final class CraftServer implements Server {
 
     @Override
     public Inventory createInventory(InventoryHolder owner, InventoryType type) {
-        // TODO: Create the appropriate type, rather than Custom?
-        return new CraftInventoryCustom(owner, type);
+        Validate.isTrue(type.isCreatable(), "Cannot open an inventory of type ", type);
+        return CraftInventoryCreator.INSTANCE.createInventory(owner, type);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-        return new CraftInventoryCustom(owner, type, title);
+        Validate.isTrue(type.isCreatable(), "Cannot open an inventory of type ", type);
+        return CraftInventoryCreator.INSTANCE.createInventory(owner, type, title);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, int size) throws IllegalArgumentException {
         Validate.isTrue(size % 9 == 0, "Chests must have a size that is a multiple of 9!");
-        return new CraftInventoryCustom(owner, size);
+        return CraftInventoryCreator.INSTANCE.createInventory(owner, size);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, int size, String title) throws IllegalArgumentException {
         Validate.isTrue(size % 9 == 0, "Chests must have a size that is a multiple of 9!");
-        return new CraftInventoryCustom(owner, size, title);
+        return CraftInventoryCreator.INSTANCE.createInventory(owner, size, title);
     }
 
     @Override
@@ -1684,7 +1707,7 @@ public final class CraftServer implements Server {
     public Entity getEntity(UUID uuid) {
         Validate.notNull(uuid, "UUID cannot be null");
 
-        for (WorldServer world : getServer().worlds) {
+        for (WorldServer world : getServer().getWorlds()) {
             net.minecraft.server.Entity entity = world.getEntity(uuid);
             if (entity != null) {
                 return entity.getBukkitEntity();
@@ -1747,18 +1770,27 @@ public final class CraftServer implements Server {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Keyed> org.bukkit.Tag<T> getTag(String registry, NamespacedKey tag, Class<T> clazz) {
+        MinecraftKey key = CraftNamespacedKey.toMinecraft(tag);
+
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS:
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
 
-                return (org.bukkit.Tag<T>) new CraftBlockTag(console.getTagRegistry().a().b(CraftNamespacedKey.toMinecraft(tag)));
+                return (org.bukkit.Tag<T>) new CraftBlockTag(console.getTagRegistry().a(), key);
             case org.bukkit.Tag.REGISTRY_ITEMS:
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
 
-                return (org.bukkit.Tag<T>) new CraftItemTag(console.getTagRegistry().b().b(CraftNamespacedKey.toMinecraft(tag)));
+                return (org.bukkit.Tag<T>) new CraftItemTag(console.getTagRegistry().b(), key);
             default:
                 throw new IllegalArgumentException();
         }
+    }
+
+    public LootTable getLootTable(NamespacedKey key) {
+        Validate.notNull(key, "NamespacedKey cannot be null");
+
+        LootTableRegistry registry = getServer().getLootTableRegistry();
+        return new CraftLootTable(key, registry.getLootTable(CraftNamespacedKey.toMinecraft(key)));
     }
 
     @Deprecated

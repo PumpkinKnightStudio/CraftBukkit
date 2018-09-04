@@ -1,0 +1,28 @@
+--- a/net/minecraft/server/TagsServer.java
++++ b/net/minecraft/server/TagsServer.java
+@@ -11,6 +11,7 @@
+ public class TagsServer<T> extends Tags<T> {
+ 
+     private final IRegistry<T> a;
++    public int version; // CraftBukkit
+ 
+     public TagsServer(IRegistry<T> iregistry, String s, String s1) {
+         super(iregistry::c, iregistry::get, s, false, s1);
+@@ -31,7 +32,7 @@
+             while (iterator1.hasNext()) {
+                 Object object = iterator1.next();
+ 
+-                packetdataserializer.d(this.a.a(object));
++                packetdataserializer.d(this.a.a((T) object)); // CraftBukkit - decompile error
+             }
+         }
+ 
+@@ -49,7 +50,7 @@
+                 arraylist.add(this.a.fromId(packetdataserializer.g()));
+             }
+ 
+-            this.c().put(minecraftkey, Tag.a.a().a((Collection) arraylist).b(minecraftkey));
++            this.c().put(minecraftkey, (Tag<T>) Tag.a.a().a((Collection) arraylist).b(minecraftkey)); // CraftBukkit - decompile error
+         }
+ 
+     }

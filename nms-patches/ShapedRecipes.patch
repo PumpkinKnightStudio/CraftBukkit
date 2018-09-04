@@ -1,17 +1,20 @@
 --- a/net/minecraft/server/ShapedRecipes.java
 +++ b/net/minecraft/server/ShapedRecipes.java
-@@ -13,6 +13,10 @@
+@@ -13,6 +13,13 @@
  import java.util.Iterator;
  import java.util.Map;
  import java.util.Map.Entry;
 +// CraftBukkit start
++import java.util.ArrayList;
++import java.util.List;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
++import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +// CraftBukkit end
  
  public class ShapedRecipes implements IRecipe {
  
-@@ -32,6 +36,64 @@
+@@ -32,6 +39,70 @@
          this.result = itemstack;
      }
  
@@ -19,6 +22,8 @@
 +    public org.bukkit.inventory.ShapedRecipe toBukkitRecipe() {
 +        CraftItemStack result = CraftItemStack.asCraftMirror(this.result);
 +        CraftShapedRecipe recipe = new CraftShapedRecipe(result, this);
++        recipe.setGroup(this.group);
++
 +        switch (this.height) {
 +        case 1:
 +            switch (this.width) {
@@ -64,8 +69,12 @@
 +        for (RecipeItemStack list : this.items) {
 +            list.buildChoices();
 +            if (list.choices.length > 0) {
-+                net.minecraft.server.ItemStack stack = list.choices[0];
-+                recipe.setIngredient(c, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), (list.choices.length) > 1 ? 32767 : 0);
++                List<org.bukkit.Material> choices = new ArrayList<>(list.choices.length);
++                for (ItemStack i : list.choices) {
++                    choices.add(CraftMagicNumbers.getMaterial(i.getItem()));
++                }
++
++                recipe.setIngredient(c, new org.bukkit.inventory.RecipeChoice.MaterialChoice(choices));
 +            }
 +            c++;
 +        }
@@ -74,9 +83,9 @@
 +    // CraftBukkit end
 +
      public MinecraftKey getKey() {
-         return this.e;
+         return this.key;
      }
-@@ -302,11 +364,11 @@
+@@ -302,11 +373,11 @@
              packetdataserializer.a(shapedrecipes.result);
          }
  

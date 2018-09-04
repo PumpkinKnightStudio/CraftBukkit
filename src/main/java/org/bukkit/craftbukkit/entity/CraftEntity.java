@@ -13,9 +13,11 @@ import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -355,6 +357,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     public Server getServer() {
         return server;
+    }
+
+    @Override
+    public boolean isPersistent() {
+        return entity.persist;
+    }
+
+    @Override
+    public void setPersistent(boolean persistent) {
+        entity.persist = persistent;
     }
 
     public Vector getMomentum() {
@@ -718,6 +730,12 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     public void setIsInWorld(boolean virtual) {
         this.isInWorld = virtual;
+    }
+
+    @Override
+    public BlockFace getFacing() {
+        // Use this method over getDirection because it handles boats and minecarts.
+        return CraftBlock.notchToBlockFace(getHandle().getAdjustedDirection());
     }
 
     protected NBTTagCompound save() {

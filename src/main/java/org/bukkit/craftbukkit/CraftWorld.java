@@ -22,6 +22,7 @@ import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Difficulty;
 import org.bukkit.Effect;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -133,7 +134,7 @@ public class CraftWorld implements World {
     }
 
     public Chunk getChunkAt(int x, int z) {
-        return this.world.getChunkProviderServer().getChunkAt(x, z).bukkitChunk;
+        return this.world.getChunkProviderServer().getChunkAt(x, z, true, true).bukkitChunk;
     }
 
     public Chunk getChunkAt(Block block) {
@@ -181,7 +182,7 @@ public class CraftWorld implements World {
             return false;
         }
 
-        net.minecraft.server.Chunk chunk = world.getChunkProviderServer().getLoadedChunkAt(x, z);
+        net.minecraft.server.Chunk chunk = world.getChunkProviderServer().getChunkAt(x, z, false, false);
         if (chunk != null) {
             world.getChunkProviderServer().unload(chunk);
         }
@@ -198,7 +199,7 @@ public class CraftWorld implements World {
     }
 
     private boolean unloadChunk0(int x, int z, boolean save) {
-        net.minecraft.server.Chunk chunk = world.getChunkProviderServer().getChunkIfLoaded(x, z);
+        net.minecraft.server.Chunk chunk = world.getChunkProviderServer().getChunkAt(x, z, false, false);
         if (chunk == null) {
             return true;
         }
@@ -215,19 +216,13 @@ public class CraftWorld implements World {
         final long chunkKey = ChunkCoordIntPair.a(x, z);
         world.getChunkProviderServer().unloadQueue.remove(chunkKey);
 
-        net.minecraft.server.Chunk chunk = null;
-
-        chunk = Futures.getUnchecked(world.getChunkProviderServer().generateChunk(x, z));
+        net.minecraft.server.Chunk chunk = world.getChunkProviderServer().generateChunk(x, z);
         PlayerChunk playerChunk = world.getPlayerChunkMap().getChunk(x, z);
         if (playerChunk != null) {
             playerChunk.chunk = chunk;
         }
 
         if (chunk != null) {
-            world.getChunkProviderServer().chunks.put(chunkKey, chunk);
-
-            chunk.addEntities();
-
             refreshChunk(x, z);
         }
 
@@ -255,17 +250,12 @@ public class CraftWorld implements World {
     }
 
     public boolean isChunkInUse(int x, int z) {
-        return world.getPlayerChunkMap().isChunkInUse(x, z);
+        return world.getPlayerChunkMap().isChunkInUse(x, z) || world.f(x, z);
     }
 
     public boolean loadChunk(int x, int z, boolean generate) {
         chunkLoadCount++;
-        if (generate) {
-            // Use the default variant of loadChunk when generate == true.
-            return world.getChunkProviderServer().getChunkAt(x, z) != null;
-        }
-
-        return world.getChunkProviderServer().getOrLoadChunkAt(x, z) != null;
+        return world.getChunkProviderServer().getChunkAt(x, z, true, generate) != null;
     }
 
     public boolean isChunkLoaded(Chunk chunk) {
@@ -1541,7 +1531,46 @@ public class CraftWorld implements World {
     }
 
     public boolean isGameRule(String rule) {
+        Validate.isTrue(rule != null && !rule.isEmpty(), "Rule cannot be null nor empty");
         return GameRules.getGameRules().containsKey(rule);
+    }
+
+    @Override
+    public <T> T getGameRuleValue(GameRule<T> rule) {
+        Validate.notNull(rule, "GameRule cannot be null");
+        return convert(rule, getHandle().getGameRules().get(rule.getName()));
+    }
+
+    @Override
+    public <T> T getGameRuleDefault(GameRule<T> rule) {
+        Validate.notNull(rule, "GameRule cannot be null");
+        return convert(rule, GameRules.getGameRules().get(rule.getName()).a());
+    }
+
+    @Override
+    public <T> boolean setGameRule(GameRule<T> rule, T newValue) {
+        Validate.notNull(rule, "GameRule cannot be null");
+        Validate.notNull(newValue, "GameRule value cannot be null");
+
+        if (!isGameRule(rule.getName())) return false;
+
+        getHandle().getGameRules().set(rule.getName(), newValue.toString(), getHandle().getMinecraftServer());
+        return true;
+    }
+
+    private <T> T convert(GameRule<T> rule, GameRules.GameRuleValue value) {
+        if (value == null) {
+            return null;
+        }
+
+        switch (value.getType()) {
+            case BOOLEAN_VALUE:
+                return rule.getType().cast(value.b());
+            case NUMERICAL_VALUE:
+                return rule.getType().cast(value.c());
+            default:
+                throw new IllegalArgumentException("Invalid GameRule type (" + value.getType() + ") for GameRule " + rule.getName());
+        }
     }
 
     @Override
@@ -1610,6 +1639,16 @@ public class CraftWorld implements World {
 
     @Override
     public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+        spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, false);
+    }
+
+    @Override
+    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
+        spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data, force);
+    }
+
+    @Override
+    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
         if (data != null && !particle.getDataType().isInstance(data)) {
             throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
         }
@@ -1619,7 +1658,8 @@ public class CraftWorld implements World {
                 x, y, z, // Position
                 count,  // Count
                 offsetX, offsetY, offsetZ, // Random offset
-                extra // Speed?
+                extra, // Speed?
+                force
         );
 
     }

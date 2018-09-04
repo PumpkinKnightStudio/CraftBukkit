@@ -381,7 +381,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
             String id = ((NBTTagCompound) ench.get(i)).getString(ENCHANTMENTS_ID.NBT);
             int level = 0xffff & ((NBTTagCompound) ench.get(i)).getShort(ENCHANTMENTS_LVL.NBT);
 
-            Enchantment enchant = Enchantment.getByKey(CraftNamespacedKey.fromString(id));
+            Enchantment enchant = Enchantment.getByKey(CraftNamespacedKey.fromStringOrNull(id));
             if (enchant != null) {
                 enchantments.put(enchant, level);
             }
@@ -566,7 +566,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
     }
 
     public final void setDisplayName(String name) {
-        this.displayName = (name == null) ? null : new ChatComponentText(name);
+        this.displayName = CraftChatMessage.wrapOrNull(name);
     }
 
     public boolean hasDisplayName() {
@@ -580,7 +580,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
 
     @Override
     public void setLocalizedName(String name) {
-        this.locName = (name == null) ? null : new ChatComponentText(name);
+        this.locName = CraftChatMessage.wrapOrNull(name);
     }
 
     @Override
@@ -944,8 +944,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
                         UNBREAKABLE.NBT,
                         DAMAGE.NBT,
                         CraftMetaMap.MAP_SCALING.NBT,
+                        CraftMetaMap.MAP_ID.NBT,
                         CraftMetaPotion.POTION_EFFECTS.NBT,
                         CraftMetaPotion.DEFAULT_POTION.NBT,
+                        CraftMetaPotion.POTION_COLOR.NBT,
                         CraftMetaSkull.SKULL_OWNER.NBT,
                         CraftMetaSkull.SKULL_PROFILE.NBT,
                         CraftMetaSpawnEgg.ENTITY_TAG.NBT,

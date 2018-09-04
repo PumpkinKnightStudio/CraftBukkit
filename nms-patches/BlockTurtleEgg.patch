@@ -1,0 +1,44 @@
+--- a/net/minecraft/server/BlockTurtleEgg.java
++++ b/net/minecraft/server/BlockTurtleEgg.java
+@@ -2,6 +2,12 @@
+ 
+ import java.util.Random;
+ import javax.annotation.Nullable;
++import org.bukkit.craftbukkit.block.CraftBlock;
++
++// CraftBukkit start
++import org.bukkit.event.entity.EntityInteractEvent;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++// CraftBukkit end
+ 
+ public class BlockTurtleEgg extends Block {
+ 
+@@ -33,6 +39,19 @@
+             super.stepOn(world, blockposition, entity);
+         } else {
+             if (!world.isClientSide && world.random.nextInt(i) == 0) {
++                // CraftBukkit start - Step on eggs
++                org.bukkit.event.Cancellable cancellable;
++                if (entity instanceof EntityHuman) {
++                    cancellable = CraftEventFactory.callPlayerInteractEvent((EntityHuman) entity, org.bukkit.event.block.Action.PHYSICAL, blockposition, null, null, null);
++                } else {
++                    cancellable = new EntityInteractEvent(entity.getBukkitEntity(), CraftBlock.at(world, blockposition));
++                    world.getServer().getPluginManager().callEvent((EntityInteractEvent) cancellable);
++                }
++
++                if (cancellable.isCancelled()) {
++                    return;
++                }
++                // CraftBukkit end
+                 this.a(world, blockposition, world.getType(blockposition));
+             }
+ 
+@@ -70,7 +89,7 @@
+                         entityturtle.setAgeRaw(-24000);
+                         entityturtle.g(blockposition);
+                         entityturtle.setPositionRotation((double) blockposition.getX() + 0.3D + (double) j * 0.2D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.3D, 0.0F, 0.0F);
+-                        world.addEntity(entityturtle);
++                        world.addEntity(entityturtle, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.EGG); // CraftBukkit
+                     }
+                 }
+             }

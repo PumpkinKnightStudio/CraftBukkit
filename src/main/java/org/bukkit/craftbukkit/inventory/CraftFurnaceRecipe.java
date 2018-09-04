@@ -18,7 +18,9 @@ public class CraftFurnaceRecipe extends FurnaceRecipe implements CraftRecipe {
         if (recipe instanceof CraftFurnaceRecipe) {
             return (CraftFurnaceRecipe) recipe;
         }
-        return new CraftFurnaceRecipe(recipe.getKey(), recipe.getResult(), recipe.getInput(), recipe.getExperience(), recipe.getCookingTime());
+        CraftFurnaceRecipe ret = new CraftFurnaceRecipe(recipe.getKey(), recipe.getResult(), recipe.getInput(), recipe.getExperience(), recipe.getCookingTime());
+        ret.setGroup(recipe.getGroup());
+        return ret;
     }
 
     @Override
@@ -26,6 +28,6 @@ public class CraftFurnaceRecipe extends FurnaceRecipe implements CraftRecipe {
         ItemStack result = this.getResult();
         RecipeItemStack input = new RecipeItemStack(Stream.of(new RecipeItemStack.StackProvider(CraftItemStack.asNMSCopy(this.getInput()))));
 
-        MinecraftServer.getServer().getCraftingManager().a(new net.minecraft.server.FurnaceRecipe(CraftNamespacedKey.toMinecraft(this.getKey()), "", input, CraftItemStack.asNMSCopy(result), getExperience(), getCookingTime()));
+        MinecraftServer.getServer().getCraftingManager().a(new net.minecraft.server.FurnaceRecipe(CraftNamespacedKey.toMinecraft(this.getKey()), this.getGroup(), input, CraftItemStack.asNMSCopy(result), getExperience(), getCookingTime()));
     }
 }

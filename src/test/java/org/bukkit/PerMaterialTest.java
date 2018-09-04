@@ -26,7 +26,12 @@ import org.junit.runners.Parameterized.Parameters;
 import com.google.common.collect.Lists;
 import java.util.Map;
 import net.minecraft.server.Block;
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Blocks;
+import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EnumDirection;
+import net.minecraft.server.EnumHand;
+import net.minecraft.server.IBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
 
@@ -55,7 +60,7 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Test
     public void isBlock() {
         if (material != Material.AIR && material != Material.CAVE_AIR && material != Material.VOID_AIR) {
-            assertThat(material.isBlock(), is(not(CraftMagicNumbers.getBlock(material).getBlockData().isAir())));
+            assertThat(material.isBlock(), is(not(CraftMagicNumbers.getBlock(material) == null)));
         }
     }
 
@@ -186,7 +191,7 @@ public class PerMaterialTest extends AbstractTestingBase {
         if (material == Material.AIR) {
             assertTrue(material.isBlock());
         } else {
-            assertThat(material.isBlock(), is(equalTo(CraftMagicNumbers.getBlock(material) != Blocks.AIR)));
+            assertThat(material.isBlock(), is(equalTo(CraftMagicNumbers.getBlock(material) != null)));
         }
     }
 
@@ -196,6 +201,39 @@ public class PerMaterialTest extends AbstractTestingBase {
             assertTrue(material.isItem());
         } else {
             assertThat(material.isItem(), is(equalTo(CraftMagicNumbers.getItem(material) != null)));
+        }
+    }
+
+    @Test
+    public void testInteractable() throws ReflectiveOperationException {
+        if (material.isBlock()) {
+            assertThat(material.isInteractable(),
+                    is(!CraftMagicNumbers.getBlock(material).getClass()
+                            .getMethod("interact", IBlockData.class, net.minecraft.server.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, EnumDirection.class, float.class, float.class, float.class)
+                            .getDeclaringClass().equals(Block.class)));
+        } else {
+            assertFalse(material.isInteractable());
+        }
+    }
+
+    @Test
+    public void testBlockHardness() {
+        if (material.isBlock()) {
+            assertThat(material.getHardness(), is(CraftMagicNumbers.getBlock(material).strength));
+        }
+    }
+
+    @Test
+    public void testBlastResistance() {
+        if (material.isBlock()) {
+            assertThat(material.getBlastResistance(), is(CraftMagicNumbers.getBlock(material).getDurability()));
+        }
+    }
+
+    @Test
+    public void testBlockDataCreation() {
+        if (material.isBlock()) {
+            assertNotNull(material.createBlockData());
         }
     }
 }

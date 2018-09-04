@@ -1,19 +1,10 @@
 --- a/net/minecraft/server/ChunkMap.java
 +++ b/net/minecraft/server/ChunkMap.java
-@@ -31,6 +31,54 @@
+@@ -31,6 +31,46 @@
              }
          }
  
-+        org.bukkit.Server server = chunk.world.getServer();
-+        if (server != null) {
-+            /*
-+             * If it's a new world, the first few chunks are generated inside
-+             * the World constructor. We can't reliably alter that, so we have
-+             * no way of creating a CraftWorld/CraftServer at that point.
-+             */
-+            server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkLoadEvent(chunk.bukkitChunk, chunk.newChunk));
-+        }
-+
++        // CraftBukkit start
 +        // Update neighbor counts
 +        for (int x = -2; x < 3; x++) {
 +            for (int z = -2; z < 3; z++) {
@@ -51,33 +42,34 @@
 +            BlockSand.instaFall = false;
 +            chunk.world.getServer().getPluginManager().callEvent(new org.bukkit.event.world.ChunkPopulateEvent(chunk.bukkitChunk));
 +        }
++        // CraftBukkit end
 +
          return chunk1;
      }
  
-@@ -69,23 +117,25 @@
+@@ -69,23 +109,25 @@
          throw new RuntimeException("Not yet implemented");
      }
  
--    public Object remove(Object object) {
-+    // CraftBukkit start - decompile errors
-+    public Chunk remove(Object object) {
-         return this.a(object);
-     }
- 
 -    public Object remove(long i) {
++    // CraftBukkit start - decompile errors
 +    public Chunk remove(long i) {
          return this.a(i);
-     }
- 
--    public Object put(Long olong, Object object) {
-+    public Chunk put(Long olong, Chunk object) {
-         return this.a(olong, (Chunk) object);
      }
  
 -    public Object put(long i, Object object) {
 +    public Chunk put(long i, Chunk object) {
          return this.a(i, (Chunk) object);
+     }
+ 
+-    public Object remove(Object object) {
++    public Chunk remove(Object object) {
+         return this.a(object);
+     }
+ 
+-    public Object put(Long olong, Object object) {
++    public Chunk put(Long olong, Chunk object) {
+         return this.a(olong, (Chunk) object);
      }
  
 -    public Object put(Object object, Object object1) {
