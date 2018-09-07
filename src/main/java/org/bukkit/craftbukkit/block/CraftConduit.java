@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.IEntitySelector;
 import net.minecraft.server.TileEntityConduit;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Conduit;
@@ -16,13 +14,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.block.ConduitStatusEvent;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class CraftConduit extends CraftBlockEntityState<TileEntityConduit> implements Conduit {
 
@@ -161,7 +157,7 @@ public class CraftConduit extends CraftBlockEntityState<TileEntityConduit> imple
     }
 
     @Override
-    public List<Block> getSurroundingBlocks() {
+    public Collection<Block> getSurroundingBlocks() {
         List<BlockPosition> nms = this.getTileEntity().i;
         List<Block> bukkit = new ArrayList<>();
         if (nms == null || nms.isEmpty()) {

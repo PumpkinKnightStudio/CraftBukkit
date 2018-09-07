@@ -61,13 +61,14 @@
          this.i.clear();
  
          int i;
-@@ -137,13 +155,13 @@
+@@ -137,13 +155,14 @@
      }
  
      private void h() {
 -        int i = this.i.size();
 +        int i = (this.isLocked ? ((effectRange / 16) * 7) : this.i.size()); // CraftBukkit - use effectRange if locked.
          int j = i / 7 * 16;
++        if(!isLocked) effectRange = j; // CraftBukkit - set effectRange with updated range if not locked
          int k = this.position.getX();
          int l = this.position.getY();
          int i1 = this.position.getZ();
@@ -77,7 +78,7 @@
  
          if (!list.isEmpty()) {
              Iterator iterator = list.iterator();
-@@ -152,7 +170,7 @@
+@@ -152,7 +171,7 @@
                  EntityHuman entityhuman = (EntityHuman) iterator.next();
  
                  if (this.position.m(new BlockPosition(entityhuman)) <= (double) j && entityhuman.ao()) {
@@ -86,14 +87,7 @@
                  }
              }
  
-@@ -163,26 +181,29 @@
-         EntityLiving entityliving = this.j;
-         int i = this.i.size();
- 
--        if (i < 42) {
-+        if (i >= 42 && j != null) { // CraftBukkit - add null check
-             this.j = null;
-         } else if (this.j == null && this.k != null) {
+@@ -169,20 +188,23 @@
              this.j = this.l();
              this.k = null;
          } else if (this.j == null) {
@@ -123,7 +117,7 @@
          }
  
          if (entityliving != this.j) {
-@@ -210,12 +231,12 @@
+@@ -210,12 +232,12 @@
          int j = this.position.getY();
          int k = this.position.getZ();
  
@@ -138,7 +132,7 @@
              return entityliving.getUniqueID().equals(this.k);
          });
  
-@@ -264,12 +285,20 @@
+@@ -264,12 +286,20 @@
          return this.g;
      }
  
