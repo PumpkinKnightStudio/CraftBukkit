@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/EntityGhast.java
 +++ b/net/minecraft/server/EntityGhast.java
-@@ -154,11 +154,19 @@
+@@ -154,10 +154,13 @@
                      world.a((EntityHuman) null, 1016, new BlockPosition(this.ghast), 0);
                      EntityLargeFireball entitylargefireball = new EntityLargeFireball(world, this.ghast, d2, d3, d4);
  
@@ -10,15 +10,8 @@
                      entitylargefireball.locX = this.ghast.locX + vec3d.x * 4.0D;
                      entitylargefireball.locY = this.ghast.locY + (double) (this.ghast.length / 2.0F) + 0.5D;
                      entitylargefireball.locZ = this.ghast.locZ + vec3d.z * 4.0D;
--                    world.addEntity(entitylargefireball);
-+                    // CraftBukkit start - fire ProjectileLaunchEvent
 +                    entitylargefireball.projectileSource = (org.bukkit.entity.LivingEntity) ghast.getBukkitEntity();
-+                    org.bukkit.event.entity.LaunchProjectileEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitylargefireball, ItemStack.a, null, false);
-+                    if (launchEvent.isCancelled()) {
-+                        entitylargefireball.die();
-+                        return;
-+                    }
-+                    world.addEntity(entitylargefireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end - add SpawnReason
++                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitylargefireball, ItemStack.a, null, false))  return; // CraftBukkit - handle event
+                     world.addEntity(entitylargefireball);
                      this.a = -40;
                  }
-             } else if (this.a > 0) {
