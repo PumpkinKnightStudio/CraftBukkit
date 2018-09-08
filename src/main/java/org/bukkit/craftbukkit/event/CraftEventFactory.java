@@ -796,7 +796,7 @@ public class CraftEventFactory {
         callEvent(event);
         return event;
     }
-    
+
     public static boolean handleLaunchProjectileEvent(Entity projectile, ItemStack used, EnumHand hand, boolean fromPlugin) {
         boolean cancel = callLaunchProjectileEvent(projectile, used, hand, fromPlugin).isCancelled();
         if (cancel) projectile.die();
