@@ -323,7 +323,7 @@
 +            event = CraftEventFactory.callCreatureSpawnEvent((EntityLiving) entity, spawnReason);
 +        } else if (entity instanceof EntityItem) {
 +            event = CraftEventFactory.callItemSpawnEvent((EntityItem) entity);
-+        } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.Projectile) {
++        } else if(entity.getBukkitEntity() instanceof org.bukkit.entity.Projectile) {
 +            // Not all projectiles extend EntityProjectile, so check for Bukkit interface instead
 +            event = CraftEventFactory.callProjectileLaunchEvent(entity);
 +        } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.Vehicle){

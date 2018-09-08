@@ -22,7 +22,7 @@
      }
  
      private ItemStack a(EntityHuman entityhuman) {
-@@ -73,7 +79,22 @@
+@@ -73,7 +79,25 @@
                          }
  
                          if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
@@ -38,7 +38,10 @@
 +                        }
 +                        // CraftBukkit start
 +                        EnumHand hand = entityliving.getItemInMainHand().getItem() == this ? EnumHand.MAIN_HAND : (entityliving.getItemInOffHand().getItem() == this ? EnumHand.OFF_HAND : null);
-+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entityarrow, itemstack, hand, false)) return;
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityarrow, itemstack, hand, false).isCancelled()) {
++                            entityarrow.die();
++                            return;
++                        }
 +                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, entityarrow, f);
 +                        if (event.isCancelled()) {
 +                            event.getProjectile().remove();
@@ -46,13 +49,13 @@
                          }
  
                          itemstack.damage(1, entityhuman);
-@@ -81,7 +102,15 @@
+@@ -81,7 +105,15 @@
                              entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                          }
  
 -                        world.addEntity(entityarrow);
 +                        if (event.getProjectile() == entityarrow.getBukkitEntity()) {
-+                            if (!world.addEntity(entityarrow)) {
++                            if (!world.addEntity(entityarrow, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE)) {
 +                                if (entityhuman instanceof EntityPlayer) {
 +                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                                }

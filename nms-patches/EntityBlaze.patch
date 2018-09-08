@@ -1,12 +1,17 @@
 --- a/net/minecraft/server/EntityBlaze.java
 +++ b/net/minecraft/server/EntityBlaze.java
-@@ -190,6 +190,9 @@
+@@ -190,7 +190,13 @@
                              EntitySmallFireball entitysmallfireball = new EntitySmallFireball(this.a.world, this.a, d1 + this.a.getRandom().nextGaussian() * (double) f, d2, d3 + this.a.getRandom().nextGaussian() * (double) f);
  
                              entitysmallfireball.locY = this.a.locY + (double) (this.a.length / 2.0F) + 0.5D;
-+                            // CraftBukkit start - fire event
+-                            this.a.world.addEntity(entitysmallfireball);
++                            // CraftBukkit start
 +                            entitysmallfireball.projectileSource = (org.bukkit.entity.LivingEntity) a.getBukkitEntity();
-+                            if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitysmallfireball, ItemStack.a, null, false)) return; // CraftBukkit - end
-                             this.a.world.addEntity(entitysmallfireball);
++                            if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitysmallfireball, ItemStack.a, null, false).isCancelled()) {
++                                entitysmallfireball.die();
++                                return;
++                            }
++                            this.a.world.addEntity(entitysmallfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end - add SpawnReason
                          }
                      }
+                 }

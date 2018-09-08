@@ -105,7 +105,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         getHandle().setHealth((float) health);
 
-        if (health == 0) {
+        if (health <= 0) {
             getHandle().die(DamageSource.GENERIC);
         }
     }
@@ -378,11 +378,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        if (CraftEventFactory.handleLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true)) {
+        if (CraftEventFactory.callLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true).isCancelled()) {
+            launch.die();
             return null;
         }
 
-        world.addEntity(launch);
+        world.addEntity(launch, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (T) launch.getBukkitEntity();
     }
 
