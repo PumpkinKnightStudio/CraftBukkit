@@ -48,7 +48,7 @@
 +        }
 +        iprojectile.shoot(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), this.getPower(), this.a());
 +        LaunchProjectileEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent((Entity) iprojectile, itemstack, null, false);
-+        if (launchEvent.isCancelled() || !world.addEntity((Entity) iprojectile, CreatureSpawnEvent.SpawnReason.DISPENSE)) {
++        if (launchEvent.isCancelled() || !world.addEntity((Entity) iprojectile)) {
 +            return itemstack;
 +        }
 +        if (launchEvent.shouldConsumeItem()) {
