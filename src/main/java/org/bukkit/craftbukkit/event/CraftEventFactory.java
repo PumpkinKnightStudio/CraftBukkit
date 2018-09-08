@@ -785,7 +785,7 @@ public class CraftEventFactory {
     public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity) {
         Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
         ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity);
-        Bukkit.getPluginManager().callEvent(event);
+        callEvent(event);
         return event;
     }
 
@@ -794,8 +794,16 @@ public class CraftEventFactory {
         org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(used);
         EquipmentSlot slot = hand == null ? null : (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
         LaunchProjectileEvent event = new LaunchProjectileEvent(projectile.projectileSource, bukkitEntity, bukkitStack, slot, fromPlugin);
-        Bukkit.getPluginManager().callEvent(event);
+        callEvent(event);
         return event;
+    }
+
+    public static boolean handleLaunchProjectileEvent(Entity projectile, ItemStack used, EnumHand hand, boolean fromPlugin) {
+        boolean cancel = callLaunchProjectileEvent(projectile, used, hand, fromPlugin).isCancelled();
+        if (cancel) {
+            projectile.die();
+        }
+        return cancel;
     }
 
     public static ProjectileHitEvent callProjectileHitEvent(Entity entity, MovingObjectPosition position) {

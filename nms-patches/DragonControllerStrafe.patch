@@ -1,18 +1,15 @@
 --- a/net/minecraft/server/DragonControllerStrafe.java
 +++ b/net/minecraft/server/DragonControllerStrafe.java
-@@ -67,7 +67,14 @@
+@@ -67,6 +67,12 @@
                          EntityDragonFireball entitydragonfireball = new EntityDragonFireball(this.a.world, this.a, d9, d10, d11);
  
                          entitydragonfireball.setPositionRotation(d6, d7, d8, 0.0F, 0.0F);
--                        this.a.world.addEntity(entitydragonfireball);
 +                        // CraftBukkit start
 +                        entitydragonfireball.projectileSource = (org.bukkit.entity.LivingEntity) a.getBukkitEntity();
-+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitydragonfireball, ItemStack.a, null, false).isCancelled()) {
-+                            entitydragonfireball.die();
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitydragonfireball, ItemStack.a, null, false)) {
 +                            this.c = 0; // CraftBukkit - reset fireball charge
 +                            return;
-+                        }
-+                        this.a.world.addEntity(entitydragonfireball, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end
++                        } // CraftBukkit - end
+                         this.a.world.addEntity(entitydragonfireball);
                          this.c = 0;
                          if (this.d != null) {
-                             while (!this.d.b()) {

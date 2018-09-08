@@ -158,12 +158,11 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        if (CraftEventFactory.callLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true).isCancelled()) {
-            launch.die();
+        if (CraftEventFactory.handleLaunchProjectileEvent(launch, net.minecraft.server.ItemStack.a, null, true)) {
             return null;
         }
 
-        world.addEntity(launch, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        world.addEntity(launch);
         return (T) launch.getBukkitEntity();
     }
 }

@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemSnowball.java
 +++ b/net/minecraft/server/ItemSnowball.java
-@@ -9,17 +9,29 @@
+@@ -9,17 +9,32 @@
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
@@ -17,14 +17,17 @@
  
              entitysnowball.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
 -            world.addEntity(entitysnowball);
-+            if (world.addEntity(entitysnowball)) {
-+                if (!entityhuman.abilities.canInstantlyBuild) {
++            // CraftBukkit start - fire event
++            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitysnowball, itemstack, enumhand, false);
++            if (!event.isCancelled() && world.addEntity(entitysnowball)) {
++                if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
 +                    itemstack.subtract(1);
 +                }
 +
 +                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.i.nextFloat() * 0.4F + 0.8F));
-+            } else if (entityhuman instanceof EntityPlayer) {
-+                ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++            } else {
++                if (entityhuman instanceof EntityPlayer) ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
 +            }
          }
 +        // CraftBukkit end
