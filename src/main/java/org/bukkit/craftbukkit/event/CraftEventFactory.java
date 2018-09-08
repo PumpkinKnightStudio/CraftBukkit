@@ -1109,4 +1109,16 @@ public class CraftEventFactory {
 
         return !event.isCancelled();
     }
+
+    public static ConduitSelectTargetEvent callConduitTargetEvent(Block block, LivingEntity entity) {
+        return CraftEventFactory.callEvent(new ConduitSelectTargetEvent(block, entity));
+    }
+
+    public static ConduitStatusEvent callConduitStatusEvent(Block block, ConduitStatusEvent.Type type, ConduitStatusEvent.Reason reason) {
+        return CraftEventFactory.callEvent(new ConduitStatusEvent(block, type, reason));
+    }
+
+    public static ConduitValidateStructureEvent callConduitStructureEvent(Block conduit, Block current, ConduitValidateStructureEvent.Phase phase) {
+        return CraftEventFactory.callEvent(new ConduitValidateStructureEvent(conduit, current, phase));
+    }
 }
