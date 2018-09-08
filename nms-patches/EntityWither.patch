@@ -76,18 +76,13 @@
              }
  
              this.bL.setProgress(this.getHealth() / this.getMaxHealth());
-@@ -380,7 +416,13 @@
+@@ -380,6 +416,9 @@
          entitywitherskull.locY = d4;
          entitywitherskull.locX = d3;
          entitywitherskull.locZ = d5;
--        this.world.addEntity(entitywitherskull);
 +        // CraftBukkit start
 +        entitywitherskull.projectileSource = (org.bukkit.entity.LivingEntity) this.getBukkitEntity();
-+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitywitherskull, ItemStack.a, null, false).isCancelled()) {
-+            entitywitherskull.die();
-+            return;
-+        }
-+        this.world.addEntity(entitywitherskull, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.PROJECTILE); // CraftBukkit end - add SpawnReason
++        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitywitherskull, ItemStack.a, null, false)) return; // CraftBukkit - end
+         this.world.addEntity(entitywitherskull);
      }
  
-     public void a(EntityLiving entityliving, float f) {
