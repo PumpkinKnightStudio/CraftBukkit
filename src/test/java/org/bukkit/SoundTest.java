@@ -1,15 +1,16 @@
 package org.bukkit;
 
+import net.minecraft.server.IRegistry;
 import net.minecraft.server.MinecraftKey;
-import net.minecraft.server.SoundEffect;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
 import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
 
-public class SoundTest {
+public class SoundTest extends AbstractTestingBase {
 
     @Test
     public void testGetSound() {
@@ -20,7 +21,7 @@ public class SoundTest {
 
     @Test
     public void testReverse() {
-        for (MinecraftKey effect : SoundEffect.a.keySet()) {
+        for (MinecraftKey effect : IRegistry.SOUND_EVENT.keySet()) {
             assertNotNull(effect + "", Sound.valueOf(effect.getKey().replace('.', '_').toUpperCase(java.util.Locale.ENGLISH)));
         }
     }

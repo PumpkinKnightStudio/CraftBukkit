@@ -4,17 +4,19 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.server.EntityTypes;
+import net.minecraft.server.IRegistry;
 import net.minecraft.server.MinecraftKey;
+import org.bukkit.support.AbstractTestingBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EntityTypesTest {
+public class EntityTypesTest extends AbstractTestingBase {
 
     @Test
     public void testMaps() {
         Set<EntityType> allBukkit = Arrays.stream(EntityType.values()).filter((b) -> b.getName() != null).collect(Collectors.toSet());
 
-        for (Object o : EntityTypes.REGISTRY) {
+        for (Object o : IRegistry.ENTITY_TYPE) {
             EntityTypes<?> nms = (EntityTypes<?>) o; // Eclipse fail
             MinecraftKey key = EntityTypes.getName(nms);
 
