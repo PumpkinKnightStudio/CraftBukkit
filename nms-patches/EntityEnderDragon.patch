@@ -113,13 +113,3 @@
          if (flag1) {
              double d0 = axisalignedbb.a + (axisalignedbb.d - axisalignedbb.a) * (double) this.random.nextFloat();
              double d1 = axisalignedbb.b + (axisalignedbb.e - axisalignedbb.b) * (double) this.random.nextFloat();
-@@ -540,7 +597,8 @@
-             int j = EntityExperienceOrb.getOrbValue(i);
- 
-             i -= j;
--            this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j));
-+            // CraftBukkit - add SpawnReason
-+            this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.EXPERIENCE_ORB);
-         }
- 
-     }
