@@ -14,7 +14,7 @@
      }
  
      public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
-@@ -33,26 +37,55 @@
+@@ -33,7 +37,7 @@
  
                  if (k <= 0 || entityhuman.ao()) {
                      if (!world.isClientSide) {
@@ -23,43 +23,28 @@
                          if (k == 0) {
                              EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
  
-                             entitythrowntrident.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 2.5F + (float) k * 0.5F, 1.0F);
-+                            // CraftBukkit start - fire LaunchProjectileEvent
-+                            EnumHand hand = entityliving.getItemInMainHand().getItem() == this ? EnumHand.MAIN_HAND : (entityliving.getItemInOffHand().getItem() == this ? EnumHand.OFF_HAND : null);
-+                            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitythrowntrident, itemstack, hand, false);
-+                            if (event.isCancelled() || !world.addEntity(entitythrowntrident, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                                entitythrowntrident.die();
-+                                if (entityhuman instanceof EntityPlayer) {
-+                                    ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
-+                                }
-+                                return;
-+                            }
+@@ -41,18 +45,31 @@
                              if (entityhuman.abilities.canInstantlyBuild) {
                                  entitythrowntrident.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                              }
 -
 -                            world.addEntity(entitythrowntrident);
++                            // CraftBukkit start - fire event
++                            EnumHand hand = entityliving.getItemInMainHand().getItem() == this ? EnumHand.MAIN_HAND : (entityliving.getItemInOffHand().getItem() == this ? EnumHand.OFF_HAND : null);
++                            org.bukkit.event.entity.LaunchProjectileEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entitythrowntrident, itemstack, hand, false);
++                            if (event.isCancelled() || !world.addEntity(entitythrowntrident)) {
++                                entitythrowntrident.die();
++                                if (entityhuman instanceof EntityPlayer) ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
++                                return;
++                            }
++                            //world.addEntity(entitythrowntrident); // CraftBukkit - moved up
                              if (!entityhuman.abilities.canInstantlyBuild) {
-+                                // CraftBukkit - use our logic
-+                                if (event.shouldConsumeItem())
-+                                    itemstack.damage(1, entityhuman);
-+                                entityhuman.b(StatisticList.ITEM_USED.b(this));
                                  entityhuman.inventory.f(itemstack);
-+                                /*if (world.addEntity(entitythrowntrident, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.THROWN)) {
-+                                    if (!entityhuman.abilities.canInstantlyBuild && event.shouldConsumeItem()) {
-+                                        itemstack.damage(1, entityhuman);
-+                                    }
-+                                    entityhuman.b(StatisticList.ITEM_USED.b(this));
-+                                    entityhuman.inventory.f(itemstack);
-+                                }*/
                              }
-+
-+                            /*world.addEntity(entitythrowntrident); // CraftBukkit move block up
-+                            if (!entityhuman.abilities.canInstantlyBuild) {
-+                                entityhuman.inventory.f(itemstack);
-+                            } */
-+                            // CraftBukkit end
-                         }
+-                        }
++                            if (event.shouldConsumeItem()) itemstack.damage(1, entityhuman);
++                            entityhuman.b(StatisticList.ITEM_USED.b(this));
++                        } // CraftBukkit - end
                      }
  
 -                    entityhuman.b(StatisticList.ITEM_USED.b(this));
