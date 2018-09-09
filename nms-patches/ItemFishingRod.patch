@@ -32,21 +32,16 @@
              if (!world.isClientSide) {
                  EntityFishingHook entityfishinghook = new EntityFishingHook(world, entityhuman);
                  int j = EnchantmentManager.c(itemstack);
-@@ -44,6 +50,28 @@
+@@ -44,6 +50,23 @@
                  if (k > 0) {
                      entityfishinghook.b(k);
                  }
 +                // CraftBukkit start
-+                org.bukkit.event.entity.LaunchProjectileEvent launchEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callLaunchProjectileEvent(entityfishinghook, itemstack, enumhand, false);
-+                if (launchEvent.isCancelled()) {
-+                    entityfishinghook.die();
++                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entityfishinghook, itemstack, enumhand, false)) {
 +                    entityhuman.hookedFish = null;
-+                    if (entityhuman instanceof EntityPlayer) {
-+                        ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
-+                    }
++                    if (entityhuman instanceof EntityPlayer) ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
 +                    return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
-+                }
-+                // CraftBukkit end
++                } // CraftBukkit end
 +
 +                // CraftBukkit start
 +                PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), null, (org.bukkit.entity.FishHook) entityfishinghook.getBukkitEntity(), PlayerFishEvent.State.FISHING);
