@@ -105,7 +105,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         getHandle().setHealth((float) health);
 
-        if (health <= 0) {
+        if (health == 0) {
             getHandle().die(DamageSource.GENERIC);
         }
     }
