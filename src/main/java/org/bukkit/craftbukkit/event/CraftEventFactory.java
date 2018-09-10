@@ -373,8 +373,8 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static boolean handleMoistureChangeEvent(GeneratorAccess world, BlockPosition pos, IBlockData newBlock, int flag) {
-        CraftBlockState state = CraftBlockState.getBlockState(world, pos,flag);
+    public static boolean handleMoistureChangeEvent(World world, BlockPosition pos, IBlockData newBlock, int flag) {
+        CraftBlockState state = CraftBlockState.getBlockState(world, pos, flag);
         state.setData(newBlock);
 
         MoistureChangeEvent event = new MoistureChangeEvent(state.getBlock(), state);
