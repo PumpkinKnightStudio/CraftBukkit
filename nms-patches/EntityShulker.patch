@@ -31,3 +31,13 @@
                              break;
                          }
                      }
+@@ -538,7 +551,8 @@
+                     if (this.b <= 0) {
+                         this.b = 20 + EntityShulker.this.random.nextInt(10) * 20 / 2;
+                         EntityShulkerBullet entityshulkerbullet = new EntityShulkerBullet(EntityShulker.this.world, EntityShulker.this, entityliving, EntityShulker.this.dy().k());
+-
++                        // CraftBukkit - fire event
++                        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entityshulkerbullet, ItemStack.a, null, false)) return;
+                         EntityShulker.this.world.addEntity(entityshulkerbullet);
+                         EntityShulker.this.a(SoundEffects.ENTITY_SHULKER_SHOOT, 2.0F, (EntityShulker.this.random.nextFloat() - EntityShulker.this.random.nextFloat()) * 0.2F + 1.0F);
+                     }
