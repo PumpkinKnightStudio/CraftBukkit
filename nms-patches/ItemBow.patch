@@ -22,7 +22,7 @@
      }
  
      private ItemStack a(EntityHuman entityhuman) {
-@@ -73,7 +79,22 @@
+@@ -73,7 +79,23 @@
                          }
  
                          if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
@@ -42,11 +42,12 @@
 +                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, entityarrow, f);
 +                        if (event.isCancelled()) {
 +                            event.getProjectile().remove();
++                            if (entityhuman instanceof EntityPlayer) ((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
 +                            return;
                          }
  
                          itemstack.damage(1, entityhuman);
-@@ -81,7 +102,15 @@
+@@ -81,7 +103,15 @@
                              entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                          }
  
