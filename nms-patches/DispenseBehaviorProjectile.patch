@@ -11,7 +11,7 @@
  public abstract class DispenseBehaviorProjectile extends DispenseBehaviorItem {
  
      public DispenseBehaviorProjectile() {}
-@@ -10,9 +15,39 @@
+@@ -10,9 +15,42 @@
          EnumDirection enumdirection = (EnumDirection) isourceblock.e().get(BlockDispenser.FACING);
          IProjectile iprojectile = this.a(world, iposition, itemstack);
  
@@ -45,7 +45,10 @@
 +
 +        iprojectile.shoot(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), this.getPower(), this.a());
 +        ((Entity) iprojectile).projectileSource = new org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource((TileEntityDispenser) isourceblock.getTileEntity());
-+        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent((Entity) iprojectile, itemstack, null, false)) return itemstack;
++        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent((Entity) iprojectile, itemstack, null, false)) {
++            itemstack.add(1);
++            return itemstack;
++        }
 +        // CraftBukkit end
          world.addEntity((Entity) iprojectile);
 -        itemstack.subtract(1);
