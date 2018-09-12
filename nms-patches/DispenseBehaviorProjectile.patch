@@ -45,7 +45,7 @@
 +
 +        iprojectile.shoot(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), this.getPower(), this.a());
 +        ((Entity) iprojectile).projectileSource = new org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource((TileEntityDispenser) isourceblock.getTileEntity());
-+        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent((Entity) iprojectile, itemstack, null, false)) {
++        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent((Entity) iprojectile, itemstack1, null, false)) {
 +            itemstack.add(1);
 +            return itemstack;
 +        }
