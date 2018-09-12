@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/EntityGhast.java
 +++ b/net/minecraft/server/EntityGhast.java
-@@ -154,10 +154,13 @@
+@@ -154,10 +154,17 @@
                      world.a((EntityHuman) null, 1016, new BlockPosition(this.ghast), 0);
                      EntityLargeFireball entitylargefireball = new EntityLargeFireball(world, this.ghast, d2, d3, d4);
  
@@ -11,7 +11,11 @@
                      entitylargefireball.locY = this.ghast.locY + (double) (this.ghast.length / 2.0F) + 0.5D;
                      entitylargefireball.locZ = this.ghast.locZ + vec3d.z * 4.0D;
 +                    entitylargefireball.projectileSource = (org.bukkit.entity.LivingEntity) ghast.getBukkitEntity();
-+                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitylargefireball, ItemStack.a, null, false))  return; // CraftBukkit - handle event
++                    // Craftbukkit - fire LaunchProjectileEvent
++                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitylargefireball, ItemStack.a, null, false)) {
++                        this.a = -40; // CraftBukkit - reset counter
++                        return;
++                    } // CraftBukkit - end
                      world.addEntity(entitylargefireball);
                      this.a = -40;
                  }
