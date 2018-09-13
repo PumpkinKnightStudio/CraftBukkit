@@ -1114,8 +1114,8 @@ public class CraftEventFactory {
         return CraftEventFactory.callEvent(new ConduitSelectTargetEvent(block, entity));
     }
 
-    public static ConduitStatusEvent callConduitStatusEvent(Block block, ConduitStatusEvent.Type type, ConduitStatusEvent.Reason reason) {
-        return CraftEventFactory.callEvent(new ConduitStatusEvent(block, type, reason));
+    public static ConduitActivateEvent callConduitActivateEvent(Block block, boolean active, ConduitActivateEvent.Reason reason) {
+        return CraftEventFactory.callEvent(new ConduitActivateEvent(block, active, reason));
     }
 
     public static ConduitValidateStructureEvent callConduitStructureEvent(Block conduit, Block current, ConduitValidateStructureEvent.Phase phase) {
