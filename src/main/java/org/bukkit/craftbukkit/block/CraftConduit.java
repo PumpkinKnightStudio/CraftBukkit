@@ -12,7 +12,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.block.ConduitStatusEvent;
+import org.bukkit.event.block.ConduitActivateEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class CraftConduit extends CraftBlockEntityState<TileEntityConduit> imple
         conduit.targetPredicate = this.getSnapshot().targetPredicate;
 
         if (conduit.c() != this.getSnapshot().c()) {
-            conduit.a(this.getSnapshot().c(), ConduitStatusEvent.Reason.PLUGIN);
+            conduit.a(this.getSnapshot().c(), ConduitActivateEvent.Reason.PLUGIN);
         }
     }
 
