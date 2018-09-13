@@ -10,7 +10,7 @@
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.Event;
 +import org.bukkit.event.block.ConduitSelectTargetEvent;
-+import org.bukkit.event.block.ConduitStatusEvent;
++import org.bukkit.event.block.ConduitActivateEvent;
 +import org.bukkit.event.block.ConduitValidateStructureEvent;
 +import org.bukkit.event.entity.EntityDamageByBlockEvent;
 +import org.bukkit.event.entity.EntityDamageEvent;
@@ -20,15 +20,13 @@
  
      private static final Block[] e = new Block[] { Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.DARK_PRISMARINE};
      public int a;
--    private float f;
+     private float f;
 -    private boolean g;
--    private boolean h;
++    public boolean g; // CraftBukkit - private -> public
+     private boolean h;
 -    private final List<BlockPosition> i;
 -    private EntityLiving j;
 -    private UUID k;
-+    public float f; // CraftBukkit - private -> public
-+    public boolean g; // CraftBukkit - private -> public
-+    public boolean h; // CraftBukkit - private -> public
 +    public final List<BlockPosition> i; // CraftBukkit - private -> public
 +    public EntityLiving j; // CraftBukkit - private -> public
 +    public UUID k; // CraftBukkit - private -> public
@@ -54,7 +52,7 @@
  
          if (i % 40L == 0L) {
 -            this.a(this.f());
-+            this.a(this.f(), ConduitStatusEvent.Reason.NATURAL); // CraftBukkit - add reason
++            this.a(this.f(), ConduitActivateEvent.Reason.NATURAL); // CraftBukkit - add reason
              if (!this.world.isClientSide && this.c()) {
                  this.h();
                  this.i();
@@ -73,8 +71,8 @@
 -
 +                    // CraftBukkit start - fire ConduitValidateStructureEvent
 +                    ConduitValidateStructureEvent event = CraftEventFactory.callConduitStructureEvent(CraftBlock.at(this.world, this.position), CraftBlock.at(this.world, blockposition), ConduitValidateStructureEvent.Phase.IMMEDIATE_VICINITY);
-+                    if (event.getResult() == Event.Result.ALLOW) continue;
 +                    if (event.getResult() == Event.Result.DENY) return false;
++                    if (event.getResult() == Event.Result.ALLOW) continue;
 +                    // CraftBukkit end
                      if (!this.world.B(blockposition)) {
                          return false;
@@ -86,11 +84,11 @@
 -
 +                        // CraftBukkit - fire ConduitValidateStructureEvent
 +                        ConduitValidateStructureEvent event = CraftEventFactory.callConduitStructureEvent(CraftBlock.at(this.world, this.position), CraftBlock.at(this.world, blockposition1), ConduitValidateStructureEvent.Phase.STRUCTURE);
++                        if (event.getResult() == Event.Result.DENY) continue;
 +                        if (event.getResult() == Event.Result.ALLOW) {
 +                            this.i.add(blockposition1);
 +                            continue;
 +                        }
-+                        if (event.getResult() == Event.Result.DENY) continue;
 +                        // CraftBukkit - end
                          for (int l1 = 0; l1 < k1; ++l1) {
                              Block block = ablock[l1];
@@ -175,18 +173,17 @@
              return entityliving.getUniqueID().equals(this.k);
          });
  
-@@ -264,12 +312,19 @@
+@@ -264,12 +312,18 @@
          return this.g;
      }
  
 -    private void a(boolean flag) {
-+    public void a(boolean flag, ConduitStatusEvent.Reason reason) { // CraftBukkit private -> public
++    public void a(boolean flag, ConduitActivateEvent.Reason reason) { // CraftBukkit private -> public
          if (flag != this.g) {
-+            // CraftBukkit - start - fire ConduitStatusEvent
-+            ConduitStatusEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callConduitStatusEvent(CraftBlock.at(this.world, this.position), flag ? ConduitStatusEvent.Type.ACTIVATE : ConduitStatusEvent.Type.DEACTIVATE, reason);
-+            if (event.isCancelled()) {
-+                return;
-+            }
++            // CraftBukkit - start - fire ConduitActivateEvent
++            ConduitActivateEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callConduitActivateEvent(CraftBlock.at(this.world, this.position), flag, reason);
++            if (event.isCancelled() || event.isActive() == this.g) return; // CraftBukkit - return if cancelled or if 'isActive' is the same as the conduit's status
++            flag = event.isActive();
 +            // CraftBukkit end
              this.a(flag ? SoundEffects.BLOCK_CONDUIT_ACTIVATE : SoundEffects.BLOCK_CONDUIT_DEACTIVATE);
          }
