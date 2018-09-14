@@ -26,8 +26,10 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftLingeringPotion;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftSplashPotion;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
@@ -802,7 +804,17 @@ public class CraftEventFactory {
     }
 
     public static LaunchProjectileEvent callLaunchProjectileEvent(Entity projectile, ItemStack used, EnumHand hand, boolean fromPlugin) {
-        Projectile bukkitEntity = (Projectile) projectile.getBukkitEntity();
+        Projectile bukkitEntity = null;
+        if (projectile instanceof EntityPotion) {
+            Item item = ((EntityPotion) projectile).getItem().getItem();
+            if (item == Items.SPLASH_POTION) {
+                bukkitEntity = new CraftSplashPotion(projectile.getWorld().getServer(), (EntityPotion) projectile);
+            } else if (item == Items.LINGERING_POTION) {
+                bukkitEntity = new CraftLingeringPotion(projectile.getWorld().getServer(), (EntityPotion) projectile);
+            }
+        } else {
+            bukkitEntity = (Projectile) projectile.getBukkitEntity();
+        }
         org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asBukkitCopy(used);
         EquipmentSlot slot = hand == null ? null : (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
         LaunchProjectileEvent event = new LaunchProjectileEvent(projectile.projectileSource, bukkitEntity, bukkitStack, slot, fromPlugin);
@@ -812,7 +824,9 @@ public class CraftEventFactory {
 
     public static boolean handleLaunchProjectileEvent(Entity projectile, ItemStack used, EnumHand hand, boolean fromPlugin) {
         boolean cancel = callLaunchProjectileEvent(projectile, used, hand, fromPlugin).isCancelled();
-        if (cancel) projectile.die();
+        if (cancel) {
+            projectile.die();
+        }
         return cancel;
     }
 
