@@ -1,43 +1,6 @@
 --- a/net/minecraft/server/EntityDrowned.java
 +++ b/net/minecraft/server/EntityDrowned.java
-@@ -13,21 +13,21 @@
-     public EntityDrowned(World world) {
-         super(EntityTypes.DROWNED, world);
-         this.Q = 1.0F;
--        this.moveController = new EntityDrowned.e(this);
-+        this.moveController = new e(this);
-         this.a(PathType.WATER, 0.0F);
-         this.a = new NavigationGuardian(this, world);
-         this.b = new Navigation(this, world);
-     }
- 
-     protected void l() {
--        this.goalSelector.a(1, new EntityDrowned.d(this, 1.0D));
--        this.goalSelector.a(2, new EntityDrowned.g(this, 1.0D, 40, 10.0F));
--        this.goalSelector.a(2, new EntityDrowned.a(this, 1.0D, false));
--        this.goalSelector.a(5, new EntityDrowned.c(this, 1.0D));
--        this.goalSelector.a(6, new EntityDrowned.f(this, 1.0D, this.world.getSeaLevel()));
-+        this.goalSelector.a(1, new d(this, 1.0D));
-+        this.goalSelector.a(2, new g(this, 1.0D, 40, 10.0F));
-+        this.goalSelector.a(2, new a(this, 1.0D, false));
-+        this.goalSelector.a(5, new c(this, 1.0D));
-+        this.goalSelector.a(6, new f(this, 1.0D, this.world.getSeaLevel()));
-         this.goalSelector.a(7, new PathfinderGoalRandomStroll(this, 1.0D));
-         this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, true, new Class[] { EntityDrowned.class}));
--        this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget(this, EntityHuman.class, 10, true, false, new EntityDrowned.b(this)));
-+        this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget(this, EntityHuman.class, 10, true, false, new b(this)));
-         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget(this, EntityVillager.class, false));
-         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget(this, EntityIronGolem.class, true));
-         this.targetSelector.a(5, new PathfinderGoalNearestAttackableTarget(this, EntityTurtle.class, 10, true, false, EntityTurtle.bC));
-@@ -178,13 +178,14 @@
-     }
- 
-     public void a(EntityLiving entityliving, float f) {
--        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.world, this, new ItemStack(Items.TRIDENT));
-+                EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.world, this, new ItemStack(Items.TRIDENT));
-         double d0 = entityliving.locX - this.locX;
-         double d1 = entityliving.getBoundingBox().b + (double) (entityliving.length / 3.0F) - entitythrowntrident.locY;
-         double d2 = entityliving.locZ - this.locZ;
+@@ -185,6 +185,7 @@
          double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
  
          entitythrowntrident.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
@@ -54,12 +17,3 @@
              return this.a((EntityHuman) object);
          }
      }
-@@ -227,7 +228,7 @@
-                     this.i.motY += 0.002D;
-                 }
- 
--                if (this.h != ControllerMove.Operation.MOVE_TO || this.i.getNavigation().p()) {
-+                if (this.h != Operation.MOVE_TO || this.i.getNavigation().p()) {
-                     this.i.o(0.0F);
-                     return;
-                 }
