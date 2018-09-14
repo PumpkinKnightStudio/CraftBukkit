@@ -9,3 +9,11 @@
                              }
                          }
                      }
+@@ -154,6 +154,7 @@
+ 
+             entitypotion.pitch -= -20.0F;
+             entitypotion.shoot(d1, d2 + (double) (f1 * 0.2F), d3, 0.75F, 8.0F);
++            if (org.bukkit.craftbukkit.event.CraftEventFactory.handleLaunchProjectileEvent(entitypotion, entitypotion.getItem(), EnumHand.MAIN_HAND, false)) return; // CraftBukkit fire LaunchProjectileEvent
+             this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_THROW, this.bV(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+             this.world.addEntity(entitypotion);
+         }
