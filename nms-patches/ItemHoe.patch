@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/ItemHoe.java
++++ b/net/minecraft/server/ItemHoe.java
+@@ -24,7 +24,7 @@
+ 
+             if (iblockdata != null) {
+                 EntityHuman entityhuman = itemactioncontext.getEntity();
+-
++                if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockChangeEvent(world, blockposition, iblockdata, entityhuman)) return EnumInteractionResult.FAIL; // CraftBukkit - fire event
+                 world.a(entityhuman, blockposition, SoundEffects.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                 if (!world.isClientSide) {
+                     world.setTypeAndData(blockposition, iblockdata, 11);
