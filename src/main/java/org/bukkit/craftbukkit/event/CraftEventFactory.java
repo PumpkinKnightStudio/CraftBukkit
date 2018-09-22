@@ -1124,6 +1124,13 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
+    public static boolean callBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
+        org.bukkit.entity.Entity bukkitEntity = cause == null ? null : cause.getBukkitEntity();
+        org.bukkit.block.data.BlockData toData = CraftBlockData.fromData(to).clone();
+        org.bukkit.block.Block bukkitBlock = CraftBlock.at(world, position);
+        return CraftEventFactory.callEvent(new BlockChangeEvent(bukkitBlock, toData, bukkitEntity)).isCancelled();
+    }
+
     public static boolean handleBatToggleSleepEvent(Entity bat, boolean awake) {
         BatToggleSleepEvent event = new BatToggleSleepEvent((Bat) bat.getBukkitEntity(), awake);
         Bukkit.getPluginManager().callEvent(event);
