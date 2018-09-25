@@ -1124,20 +1124,16 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
-    public static EntityChangeBlockEvent callBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
-        org.bukkit.entity.Entity bukkitEntity = cause == null ? null : cause.getBukkitEntity();
-        org.bukkit.block.data.BlockData toData = CraftBlockData.fromData(to);
-        org.bukkit.block.Block bukkitBlock = CraftBlock.at(world, position);
-        return CraftEventFactory.callEvent(new EntityChangeBlockEvent(bukkitEntity, bukkitBlock, toData));
-    }
-
-    public static boolean handleBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
-        return callBlockChangeEvent(world, position, to, cause).isCancelled();
-    }
-
     public static boolean handleBatToggleSleepEvent(Entity bat, boolean awake) {
         BatToggleSleepEvent event = new BatToggleSleepEvent((Bat) bat.getBukkitEntity(), awake);
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
+    }
+
+    public static PlayerChangeBlockEvent callPlayerChangeBlockEvent(EntityPlayer player, BlockPosition position, IBlockData newData) {
+        Player bukkitPlayer = player.getBukkitEntity();
+        Block block = CraftBlock.at(player.getWorld(), position);
+        org.bukkit.block.data.BlockData bukkitData = CraftBlockData.fromData(newData);
+        return CraftEventFactory.callEvent(new PlayerChangeBlockEvent(bukkitPlayer, block, bukkitData));
     }
 }
