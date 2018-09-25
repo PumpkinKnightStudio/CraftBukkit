@@ -12,3 +12,20 @@
              iblockdata.a(world, blockposition, 0);
              world.setAir(blockposition);
          }
+@@ -106,8 +111,14 @@
+ 
+         if (iblockdata.getBlock() == this) {
+             int i = ((Integer) iblockdata.get(BlockSnow.LAYERS)).intValue();
+-
+-            return (IBlockData) iblockdata.set(BlockSnow.LAYERS, Integer.valueOf(Math.min(8, i + 1)));
++            // CraftBukkit start - fire EntityChangeBlockEvent
++            IBlockData data = iblockdata.set(BlockSnow.LAYERS, Math.min(8, i + 1));
++            if (blockactioncontext.getEntity() instanceof EntityPlayer) {
++                org.bukkit.event.player.PlayerChangeBlockEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerChangeBlockEvent((EntityPlayer)blockactioncontext.getEntity(), blockactioncontext.getClickPosition(), data);
++                if (event.isCancelled()) return blockactioncontext.getWorld().getType(blockactioncontext.getClickPosition());
++                data = ((org.bukkit.craftbukkit.block.data.CraftBlockData)event.getTo()).getState();
++            }
++            return data; // CraftBukkit end - use event BlockData
+         } else {
+             return super.getPlacedState(blockactioncontext);
+         }

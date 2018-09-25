@@ -1,15 +1,15 @@
---- a/net/minecraft/server/ItemHoe.java
-+++ b/net/minecraft/server/ItemHoe.java
-@@ -24,7 +24,11 @@
+--- a/net/minecraft/server/ItemSpade.java
++++ b/net/minecraft/server/ItemSpade.java
+@@ -30,7 +30,11 @@
  
              if (iblockdata != null) {
                  EntityHuman entityhuman = itemactioncontext.getEntity();
 -
-+                if (entityhuman instanceof EntityPlayer) { // CraftBukkit start - fire event
++                if (entityhuman instanceof EntityPlayer) { // CraftBukkit start - fire EntityChangeBlockEvent
 +                    org.bukkit.event.player.PlayerChangeBlockEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerChangeBlockEvent((EntityPlayer)entityhuman, blockposition, iblockdata);
 +                    if (event.isCancelled()) return EnumInteractionResult.FAIL;
-+                    iblockdata = ((org.bukkit.craftbukkit.block.data.CraftBlockData)event.getTo()).getState(); // CraftBukkit end
++                    iblockdata = ((org.bukkit.craftbukkit.block.data.CraftBlockData)event.getTo()).getState();
 +                } // CraftBukkit end
-                 world.a(entityhuman, blockposition, SoundEffects.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                 world.a(entityhuman, blockposition, SoundEffects.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
                  if (!world.isClientSide) {
                      world.setTypeAndData(blockposition, iblockdata, 11);
