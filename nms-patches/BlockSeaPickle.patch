@@ -1,0 +1,17 @@
+--- a/net/minecraft/server/BlockSeaPickle.java
++++ b/net/minecraft/server/BlockSeaPickle.java
+@@ -26,7 +26,13 @@
+         IBlockData iblockdata = blockactioncontext.getWorld().getType(blockactioncontext.getClickPosition());
+ 
+         if (iblockdata.getBlock() == this) {
+-            return (IBlockData) iblockdata.set(BlockSeaPickle.a, Integer.valueOf(Math.min(4, ((Integer) iblockdata.get(BlockSeaPickle.a)).intValue() + 1)));
++            // CraftBukkit start - fire EntityChangeBlockEvent
++            World world = blockactioncontext.getWorld();
++            BlockPosition clicked = blockactioncontext.getClickPosition();
++            EntityHuman human = blockactioncontext.getEntity();
++            org.bukkit.event.entity.EntityChangeBlockEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callBlockChangeEvent(world, clicked, iblockdata.set(BlockSeaPickle.a, Math.min(4, iblockdata.get(BlockSeaPickle.a) + 1)), human);
++            if (event.isCancelled()) return iblockdata;
++            return ((org.bukkit.craftbukkit.block.data.CraftBlockData)event.getBlockData()).getState(); // CraftBukkit end
+         } else {
+             Fluid fluid = blockactioncontext.getWorld().b(blockactioncontext.getClickPosition());
+             boolean flag = fluid.a(TagsFluid.WATER) && fluid.g() == 8;
