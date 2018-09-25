@@ -1124,11 +1124,15 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
-    public static boolean callBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
+    public static BlockChangeEvent callBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
         org.bukkit.entity.Entity bukkitEntity = cause == null ? null : cause.getBukkitEntity();
-        org.bukkit.block.data.BlockData toData = CraftBlockData.fromData(to).clone();
+        org.bukkit.block.data.BlockData toData = CraftBlockData.fromData(to);
         org.bukkit.block.Block bukkitBlock = CraftBlock.at(world, position);
-        return CraftEventFactory.callEvent(new BlockChangeEvent(bukkitBlock, toData, bukkitEntity)).isCancelled();
+        return CraftEventFactory.callEvent(new BlockChangeEvent(bukkitBlock, toData, bukkitEntity));
+    }
+
+    public static boolean handleBlockChangeEvent(GeneratorAccess world, BlockPosition position, IBlockData to, Entity cause) {
+        return callBlockChangeEvent(world, position, to, cause).isCancelled();
     }
 
     public static boolean handleBatToggleSleepEvent(Entity bat, boolean awake) {
