@@ -33,7 +33,7 @@
      }
  
      public Village(World world) {
-@@ -37,6 +39,7 @@
+@@ -37,10 +39,16 @@
          this.j = Maps.newHashMap();
          this.k = Lists.newArrayList();
          this.a = world;
@@ -41,7 +41,16 @@
      }
  
      public void a(World world) {
-@@ -73,7 +76,7 @@
+         this.a = world;
++        // CraftBukkit - update doors
++        for (VillageDoor door : this.b) {
++            door.world = world;
++            door.village = this;
++        } // CraftBukkit end
+     }
+ 
+     public void a(int i) {
+@@ -73,7 +81,7 @@
              BlockPosition blockposition1 = blockposition.a(this.a.random.nextInt(16) - 8, this.a.random.nextInt(6) - 3, this.a.random.nextInt(16) - 8);
  
              if (this.a(blockposition1)) {
@@ -50,7 +59,32 @@
  
                  if (entityirongolem != null) {
                      if (entityirongolem.a((GeneratorAccess) this.a, false) && entityirongolem.a((IWorldReader) this.a)) {
-@@ -370,7 +373,8 @@
+@@ -89,13 +97,13 @@
+         return null;
+     }
+ 
+-    private void j() {
++    public void j() { // CraftBukkit private -> public
+         List list = this.a.a(EntityIronGolem.class, new AxisAlignedBB((double) (this.d.getX() - this.e), (double) (this.d.getY() - 4), (double) (this.d.getZ() - this.e), (double) (this.d.getX() + this.e), (double) (this.d.getY() + 4), (double) (this.d.getZ() + this.e)));
+ 
+         this.l = list.size();
+     }
+ 
+-    private void k() {
++    public void k() { // CraftBukkit private -> public
+         List list = this.a.a(EntityVillager.class, new AxisAlignedBB((double) (this.d.getX() - this.e), (double) (this.d.getY() - 4), (double) (this.d.getZ() - this.e), (double) (this.d.getX() + this.e), (double) (this.d.getY() + 4), (double) (this.d.getZ() + this.e)));
+ 
+         this.h = list.size();
+@@ -206,6 +214,8 @@
+         this.c = this.c.a((BaseBlockPosition) villagedoor.d());
+         this.n();
+         this.f = villagedoor.h();
++        villagedoor.village = this; // CraftBukkit - add
++        villagedoor.world = a; // CraftBukkit - add
+     }
+ 
+     public boolean g() {
+@@ -370,7 +380,8 @@
          for (int i = 0; i < nbttaglist.size(); ++i) {
              NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
              VillageDoor villagedoor = new VillageDoor(new BlockPosition(nbttagcompound1.getInt("X"), nbttagcompound1.getInt("Y"), nbttagcompound1.getInt("Z")), nbttagcompound1.getInt("IDX"), nbttagcompound1.getInt("IDZ"), nbttagcompound1.getInt("TS"));
@@ -60,7 +94,7 @@
              this.b.add(villagedoor);
          }
  
-@@ -466,7 +470,7 @@
+@@ -466,7 +477,7 @@
  
      }
  

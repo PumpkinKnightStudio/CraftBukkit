@@ -96,7 +96,10 @@ public class CraftVillage implements Village {
     public Collection<VillageDoor> getDoors() {
         ImmutableList.Builder<VillageDoor> builder = new ImmutableList.Builder<>();
         for (net.minecraft.server.VillageDoor door : getHandle().b) {
-            builder.add(new CraftVillageDoor(door));
+            // Re-validate door has a valid world & village
+            if (door.world == null) door.world = getHandle().a;
+            if (door.village == null) door.village = getHandle();
+            builder.add(door.bukkitVillageDoor);
         }
         List<VillageDoor> result = builder.build();
         return result.isEmpty() ? null : result;
@@ -110,5 +113,15 @@ public class CraftVillage implements Village {
     @Override
     public boolean isAnnihilated() {
         return getHandle().g(); // PAIL rename isAnnihilated
+    }
+
+    @Override
+    public void updateVillagerCount() {
+        getHandle().k(); // PAIL rename updateVillagerCount
+    }
+
+    @Override
+    public void updateGolemCount() {
+        getHandle().j(); // PAIL rename updateGolemCount
     }
 }

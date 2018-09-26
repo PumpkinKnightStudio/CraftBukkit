@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/VillageDoor.java
 +++ b/net/minecraft/server/VillageDoor.java
-@@ -2,12 +2,14 @@
+@@ -2,12 +2,17 @@
  
  public class VillageDoor {
  
@@ -14,8 +14,19 @@
 -    private boolean e;
 +    public boolean e; // CraftBukkit private -> public
      private int f;
-+    public World world; // CraftBukkit - add field
-+    public Village village; // CraftBukkit - add field
++    // CraftBukkit start - fields
++    public World world;
++    public Village village;
++    public org.bukkit.village.VillageDoor bukkitVillageDoor;
++    // CraftBukkit end
  
      public VillageDoor(BlockPosition blockposition, int i, int j, int k) {
          this(blockposition, a(i, j), k);
+@@ -22,6 +27,7 @@
+         this.c = enumdirection;
+         this.b = blockposition.shift(enumdirection, 2);
+         this.d = i;
++        this.bukkitVillageDoor = new org.bukkit.craftbukkit.village.CraftVillageDoor(this);
+     }
+ 
+     public int b(int i, int j, int k) {

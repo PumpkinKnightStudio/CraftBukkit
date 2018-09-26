@@ -1,6 +1,72 @@
 --- a/net/minecraft/server/PersistentVillage.java
 +++ b/net/minecraft/server/PersistentVillage.java
-@@ -191,7 +191,10 @@
+@@ -7,7 +7,7 @@
+ 
+ public class PersistentVillage extends PersistentBase {
+ 
+-    private World world;
++    public World world; // CraftBukkit - private -> public
+     private final List<BlockPosition> b = Lists.newArrayList();
+     private final List<VillageDoor> c = Lists.newArrayList();
+     private final List<Village> villages = Lists.newArrayList();
+@@ -19,7 +19,7 @@
+ 
+     public PersistentVillage(World world) {
+         super(a(world.worldProvider));
+-        this.world = world;
++        this.a(world); // CraftBukkit - Forward to 'setWorld' method
+         this.c();
+     }
+ 
+@@ -130,7 +130,8 @@
+         boolean flag = true;
+         boolean flag1 = true;
+         boolean flag2 = true;
+-        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
++        addDoorsAround(blockposition, 16, 4, 16); // CraftBukkit - forward to new method. Radius retrieved from old for loop
++        /*BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+ 
+         for (int i = -16; i < 16; ++i) {
+             for (int j = -4; j < 4; ++j) {
+@@ -149,12 +150,35 @@
+                     }
+                 }
+             }
+-        }
++        }*/
++
++    }
++    // CraftBukkit - add method so we can check in a specified radius
++    public void addDoorsAround(BlockPosition position, int x, int y, int z) {
++        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
++
++        for (int i = -x; i < x; ++i) {
++            for (int j = -y; j < y; ++j) {
++                for (int k = -z; k < z; ++k) {
++                    blockposition_mutableblockposition.g(position).d(i, j, k);
++                    IBlockData iblockdata = this.world.getType(blockposition_mutableblockposition);
++
++                    if (this.a(iblockdata)) {
++                        VillageDoor villagedoor = this.c(blockposition_mutableblockposition);
+ 
++                        if (villagedoor == null) {
++                            this.a(iblockdata, blockposition_mutableblockposition);
++                        } else {
++                            villagedoor.a(this.time);
++                        }
++                    }
++                }
++            }
++        }
+     }
+ 
+     @Nullable
+-    private VillageDoor c(BlockPosition blockposition) {
++    public VillageDoor c(BlockPosition blockposition) { // CraftBukkit make public
+         Iterator iterator = this.c.iterator();
+ 
+         VillageDoor villagedoor;
+@@ -191,7 +215,10 @@
          int j = this.a(blockposition, enumdirection1, i + 1);
  
          if (i != j) {
@@ -12,7 +78,16 @@
          }
  
      }
-@@ -237,7 +240,7 @@
+@@ -227,7 +254,7 @@
+         return true;
+     }
+ 
+-    private boolean a(IBlockData iblockdata) {
++    public boolean a(IBlockData iblockdata) { // CraftBukkit private -> public
+         return iblockdata.getBlock() instanceof BlockDoor && iblockdata.getMaterial() == Material.WOOD;
+     }
+ 
+@@ -237,7 +264,7 @@
  
          for (int i = 0; i < nbttaglist.size(); ++i) {
              NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);

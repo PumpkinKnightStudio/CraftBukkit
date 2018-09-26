@@ -43,6 +43,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.village.CraftVillageCollection;
 import org.bukkit.entity.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.minecart.CommandMinecart;
@@ -64,6 +65,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
+import org.bukkit.village.VillageCollection;
 
 public class CraftWorld implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
@@ -75,6 +77,7 @@ public class CraftWorld implements World {
     private final ChunkGenerator generator;
     private final List<BlockPopulator> populators = new ArrayList<BlockPopulator>();
     private final BlockMetadataStore blockMetadata = new BlockMetadataStore(this);
+    private VillageCollection villageCollection;
     private int monsterSpawn = -1;
     private int animalSpawn = -1;
     private int waterAnimalSpawn = -1;
@@ -1630,5 +1633,12 @@ public class CraftWorld implements World {
             // Add unload request
             cps.unload(chunk);
         }
+    }
+
+    public VillageCollection getVillageCollection() {
+        if (this.villageCollection == null) {
+            this.villageCollection = new CraftVillageCollection(world.af());
+        }
+        return this.villageCollection;
     }
 }
