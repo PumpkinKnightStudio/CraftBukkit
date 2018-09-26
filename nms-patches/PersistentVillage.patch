@@ -1,0 +1,23 @@
+--- a/net/minecraft/server/PersistentVillage.java
++++ b/net/minecraft/server/PersistentVillage.java
+@@ -191,7 +191,10 @@
+         int j = this.a(blockposition, enumdirection1, i + 1);
+ 
+         if (i != j) {
+-            this.c.add(new VillageDoor(blockposition, i < j ? enumdirection : enumdirection1, this.time));
++            // CraftBukkit - add world to VillageDoor
++            VillageDoor villageDoor = new VillageDoor(blockposition, i < j ? enumdirection : enumdirection1, this.time);
++            villageDoor.world = this.world;
++            this.c.add(villageDoor); // CraftBukkit end
+         }
+ 
+     }
+@@ -237,7 +240,7 @@
+ 
+         for (int i = 0; i < nbttaglist.size(); ++i) {
+             NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
+-            Village village = new Village();
++            Village village = new Village(this.world); // CraftBukkit - use world constructor
+ 
+             village.a(nbttagcompound1);
+             this.villages.add(village);

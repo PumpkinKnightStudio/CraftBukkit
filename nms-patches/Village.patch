@@ -1,6 +1,47 @@
 --- a/net/minecraft/server/Village.java
 +++ b/net/minecraft/server/Village.java
-@@ -73,7 +73,7 @@
+@@ -11,24 +11,26 @@
+ 
+ public class Village {
+ 
+-    private World a;
+-    private final List<VillageDoor> b = Lists.newArrayList();
++    public World a; // CraftBukkit private -> public
++    public final List<VillageDoor> b = Lists.newArrayList();  // CraftBukkit private -> public
+     private BlockPosition c;
+-    private BlockPosition d;
++    public BlockPosition d; // CraftBukkit private -> public
+     private int e;
+     private int f;
+     private int g;
+     private int h;
+     private int i;
+-    private final Map<String, Integer> j;
+-    private final List<Village.Aggressor> k;
+-    private int l;
++    public final Map<String, Integer> j; // CraftBukkit private -> public
++    public final List<Village.Aggressor> k; // CraftBukkit private -> public
++    public int l; // CraftBukkit private -> public
++    public org.bukkit.village.Village bukkitVillage; // CraftBukkit - add field
+ 
+     public Village() {
+         this.c = BlockPosition.ZERO;
+         this.d = BlockPosition.ZERO;
+         this.j = Maps.newHashMap();
+         this.k = Lists.newArrayList();
++        bukkitVillage = new org.bukkit.craftbukkit.village.CraftVillage(this);
+     }
+ 
+     public Village(World world) {
+@@ -37,6 +39,7 @@
+         this.j = Maps.newHashMap();
+         this.k = Lists.newArrayList();
+         this.a = world;
++        bukkitVillage = new org.bukkit.craftbukkit.village.CraftVillage(this);
+     }
+ 
+     public void a(World world) {
+@@ -73,7 +76,7 @@
              BlockPosition blockposition1 = blockposition.a(this.a.random.nextInt(16) - 8, this.a.random.nextInt(6) - 3, this.a.random.nextInt(16) - 8);
  
              if (this.a(blockposition1)) {
@@ -9,3 +50,22 @@
  
                  if (entityirongolem != null) {
                      if (entityirongolem.a((GeneratorAccess) this.a, false) && entityirongolem.a((IWorldReader) this.a)) {
+@@ -370,7 +373,8 @@
+         for (int i = 0; i < nbttaglist.size(); ++i) {
+             NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
+             VillageDoor villagedoor = new VillageDoor(new BlockPosition(nbttagcompound1.getInt("X"), nbttagcompound1.getInt("Y"), nbttagcompound1.getInt("Z")), nbttagcompound1.getInt("IDX"), nbttagcompound1.getInt("IDZ"), nbttagcompound1.getInt("TS"));
+-
++            villagedoor.world = a; // CraftBukkit
++            villagedoor.village = this; // CraftBukkit
+             this.b.add(villagedoor);
+         }
+ 
+@@ -466,7 +470,7 @@
+ 
+     }
+ 
+-    class Aggressor {
++    public class Aggressor { // CraftBukkit - make public
+ 
+         public EntityLiving a;
+         public int b;
