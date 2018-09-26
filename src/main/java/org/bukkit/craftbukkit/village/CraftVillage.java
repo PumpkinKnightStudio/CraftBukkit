@@ -11,7 +11,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.village.Village;
 import org.bukkit.village.VillageDoor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +94,12 @@ public class CraftVillage implements Village {
 
     @Override
     public Collection<VillageDoor> getDoors() {
-        return null;
+        ImmutableList.Builder<VillageDoor> builder = new ImmutableList.Builder<>();
+        for (net.minecraft.server.VillageDoor door : getHandle().b) {
+            builder.add(new CraftVillageDoor(door));
+        }
+        List<VillageDoor> result = builder.build();
+        return result.isEmpty() ? null : result;
     }
 
     @Override
