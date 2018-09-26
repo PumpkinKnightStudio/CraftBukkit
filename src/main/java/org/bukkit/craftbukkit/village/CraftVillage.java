@@ -84,7 +84,7 @@ public class CraftVillage implements Village {
     public Collection<LivingEntity> getAggressors() {
         ImmutableList.Builder<LivingEntity> builder = new ImmutableList.Builder<>();
         for (net.minecraft.server.Village.Aggressor villageAggressor : getHandle().k) {
-            if (villageAggressor.a != null) {
+            if (villageAggressor.a != null && villageAggressor.a.isAlive()) { // logic retrieved from Village remove aggressors check
                 builder.add((LivingEntity) villageAggressor.a.getBukkitEntity());
             }
         }
