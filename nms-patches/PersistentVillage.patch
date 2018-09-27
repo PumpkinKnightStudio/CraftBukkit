@@ -18,6 +18,15 @@
          this.c();
      }
  
+@@ -109,7 +109,7 @@
+         }
+     }
+ 
+-    private void h() {
++    public void h() { // CraftBukkit private -> public
+         for (int i = 0; i < this.c.size(); ++i) {
+             VillageDoor villagedoor = (VillageDoor) this.c.get(i);
+             Village village = this.getClosestVillage(villagedoor.d(), 32);
 @@ -130,7 +130,8 @@
          boolean flag = true;
          boolean flag1 = true;
