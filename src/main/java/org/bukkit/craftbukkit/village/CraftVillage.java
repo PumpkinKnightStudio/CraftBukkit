@@ -43,13 +43,13 @@ public class CraftVillage implements Village {
     }
 
     @Override
-    public int getNumVillagers() {
-        return getHandle().e(); // PAIL rename getNumVillagers
+    public int getVillagerCount() {
+        return getHandle().e(); // PAIL rename villagerCount
     }
 
     @Override
-    public int getNumGolems() {
-        return getHandle().l; // PAIL rename numIronGolems
+    public int getIronGolemCount() {
+        return getHandle().l; // PAIL rename ironGolemCount
     }
 
     @Override
@@ -121,7 +121,7 @@ public class CraftVillage implements Village {
     }
 
     @Override
-    public void updateGolemCount() {
-        getHandle().j(); // PAIL rename updateGolemCount
+    public void updateIronGolemCount() {
+        getHandle().j(); // PAIL rename updateIronGolemCount
     }
 }
