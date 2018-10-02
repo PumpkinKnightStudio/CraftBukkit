@@ -1,9 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.EntityIronGolem;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.village.Village;
 
 public class CraftIronGolem extends CraftGolem implements IronGolem {
     public CraftIronGolem(CraftServer server, EntityIronGolem entity) {
@@ -26,6 +28,12 @@ public class CraftIronGolem extends CraftGolem implements IronGolem {
 
     public void setPlayerCreated(boolean playerCreated) {
         getHandle().setPlayerCreated(playerCreated);
+    }
+
+    @Override
+    public Village getVillage() {
+        net.minecraft.server.Village nms = getHandle().getWorld().af().getClosestVillage(new BlockPosition(getHandle()), 32); // 32 retrieved from 'mobTick'
+        return nms == null ? null : nms.bukkitVillage;
     }
 
     @Override

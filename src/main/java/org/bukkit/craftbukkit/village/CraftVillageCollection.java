@@ -40,7 +40,7 @@ public class CraftVillageCollection implements VillageCollection {
     }
 
     @Override
-    public Village getNearestVillage(Location location, int radius) {
+    public Village getClosestVillage(Location location, int radius) {
         net.minecraft.server.Village nms = getHandle().getClosestVillage(new BlockPosition(location.getX(), location.getY(), location.getZ()), radius);
         return nms == null ? null : nms.bukkitVillage;
     }

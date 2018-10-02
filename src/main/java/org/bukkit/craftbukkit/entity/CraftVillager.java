@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.EntityVillager;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
@@ -15,6 +17,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.village.Village;
 
 public class CraftVillager extends CraftAgeable implements Villager, InventoryHolder {
 
@@ -127,6 +130,12 @@ public class CraftVillager extends CraftAgeable implements Villager, InventoryHo
     @Override
     public void setRiches(int riches) {
         getHandle().riches = riches;
+    }
+
+    @Override
+    public Village getVillage() {
+        net.minecraft.server.Village nms = getHandle().getWorld().af().getClosestVillage(new BlockPosition(getHandle()), 32); // 32 retrieved from 'mobTick'
+        return nms == null ? null : nms.bukkitVillage;
     }
 
     @Nullable
