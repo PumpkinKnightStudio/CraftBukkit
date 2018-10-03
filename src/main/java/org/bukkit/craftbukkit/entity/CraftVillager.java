@@ -134,8 +134,7 @@ public class CraftVillager extends CraftAgeable implements Villager, InventoryHo
 
     @Override
     public Village getVillage() {
-        net.minecraft.server.Village nms = getHandle().getWorld().af().getClosestVillage(new BlockPosition(getHandle()), 32); // 32 retrieved from 'mobTick'
-        return nms == null ? null : nms.bukkitVillage;
+        return getHandle().village == null ? null : getHandle().village.bukkitVillage;
     }
 
     @Nullable

@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/EntityIronGolem.java
 +++ b/net/minecraft/server/EntityIronGolem.java
+@@ -8,7 +8,7 @@
+     protected static final DataWatcherObject<Byte> a = DataWatcher.a(EntityIronGolem.class, DataWatcherRegistry.a);
+     private int b;
+     @Nullable
+-    private Village c;
++    public Village c; // CraftBukkit private -> public
+     private int bC;
+     private int bD;
+ 
 @@ -28,8 +28,12 @@
          this.goalSelector.a(8, new PathfinderGoalRandomLookaround(this));
          this.targetSelector.a(1, new PathfinderGoalDefendVillage(this));
