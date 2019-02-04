@@ -1,11 +1,12 @@
 --- a/net/minecraft/server/EntityItem.java
 +++ b/net/minecraft/server/EntityItem.java
-@@ -3,16 +3,21 @@
+@@ -3,16 +3,22 @@
  import java.util.Iterator;
  import java.util.UUID;
  import javax.annotation.Nullable;
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityPickupItemEvent;
++import org.bukkit.event.entity.EntityTryPickupItemEvent;
 +import org.bukkit.event.player.PlayerPickupItemEvent;
 +// CraftBukkit end
  
@@ -23,7 +24,7 @@
  
      public EntityItem(World world) {
          super(EntityTypes.ITEM, world);
-@@ -48,9 +53,12 @@
+@@ -48,9 +54,12 @@
              this.die();
          } else {
              super.tick();
@@ -39,7 +40,7 @@
  
              this.lastX = this.locX;
              this.lastY = this.locY;
-@@ -100,9 +108,11 @@
+@@ -100,9 +109,11 @@
                  this.motY *= -0.5D;
              }
  
@@ -51,7 +52,7 @@
  
              this.impulse |= this.at();
              if (!this.world.isClientSide) {
-@@ -117,6 +127,12 @@
+@@ -117,6 +128,12 @@
              }
  
              if (!this.world.isClientSide && this.age >= 6000) {
@@ -64,7 +65,7 @@
                  this.die();
              }
  
-@@ -165,6 +181,7 @@
+@@ -165,6 +182,7 @@
                      } else if (itemstack1.getCount() + itemstack.getCount() > itemstack1.getMaxStackSize()) {
                          return false;
                      } else {
@@ -72,7 +73,7 @@
                          itemstack1.add(itemstack.getCount());
                          entityitem.pickupDelay = Math.max(entityitem.pickupDelay, this.pickupDelay);
                          entityitem.age = Math.min(entityitem.age, this.age);
-@@ -197,6 +214,11 @@
+@@ -197,6 +215,11 @@
          } else if (!this.getItemStack().isEmpty() && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
              return false;
          } else {
@@ -84,7 +85,7 @@
              this.aA();
              this.e = (int) ((float) this.e - f);
              if (this.e <= 0) {
-@@ -255,6 +277,35 @@
+@@ -255,6 +278,39 @@
              Item item = itemstack.getItem();
              int i = itemstack.getCount();
  
@@ -103,7 +104,7 @@
 +                }
 +
 +                // Call newer event afterwards
-+                EntityPickupItemEvent entityEvent = new EntityPickupItemEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
++                EntityPickupItemEvent entityEvent = new EntityPickupItemEvent(entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
 +                entityEvent.setCancelled(!entityhuman.canPickUpLoot);
 +                this.world.getServer().getPluginManager().callEvent(entityEvent);
 +                if (entityEvent.isCancelled()) {
@@ -115,12 +116,16 @@
 +                // Possibly < 0; fix here so we do not have to modify code below
 +                this.pickupDelay = 0;
 +            }
++            if ((this.pickupDelay <= 0 && canHold <= 0) || !entityhuman.canPickUpLoot) {
++                EntityTryPickupItemEvent entityEvent = new EntityTryPickupItemEvent(entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity());
++                this.world.getServer().getPluginManager().callEvent(entityEvent);
++            }
 +            // CraftBukkit end
 +
              if (this.pickupDelay == 0 && (this.g == null || 6000 - this.age <= 200 || this.g.equals(entityhuman.getUniqueID())) && entityhuman.inventory.pickup(itemstack)) {
                  entityhuman.receive(this, i);
                  if (itemstack.isEmpty()) {
-@@ -294,7 +345,9 @@
+@@ -294,7 +350,9 @@
      }
  
      public void setItemStack(ItemStack itemstack) {
