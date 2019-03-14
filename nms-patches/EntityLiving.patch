@@ -26,6 +26,15 @@
  public abstract class EntityLiving extends Entity {
  
      private static final Logger a = LogManager.getLogger();
+@@ -63,7 +82,7 @@
+     protected float bd;
+     protected int be;
+     public float lastDamage;
+-    protected boolean bg;
++    public boolean bg; // CraftBukkit - public
+     public float bh;
+     public float bi;
+     public float bj;
 @@ -93,6 +112,20 @@
      protected int bw;
      private float bO;
@@ -629,10 +638,7 @@
 +            if (event.isCancelled()) {
 +                return false;
 +            }
- 
--            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
--            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
--            float f2 = f1 - f;
++
 +            f = (float) event.getFinalDamage();
 +
 +            // Resistance
@@ -646,7 +652,7 @@
 +                    }
 +                }
 +            }
- 
++
 +            // Apply damage to helmet
 +            if ((damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && this.getEquipment(EnumItemSlot.HEAD) != null) {
 +                this.getEquipment(EnumItemSlot.HEAD).damage((int) (event.getDamage() * 4.0F + this.random.nextFloat() * event.getDamage() * 2.0F), this);
@@ -668,11 +674,14 @@
 +                    this.c((EntityLiving) entity);
 +                }
 +            }
-+
+ 
+-            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
+-            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
+-            float f2 = f1 - f;
 +            absorptionModifier = (float) -event.getDamage(DamageModifier.ABSORPTION);
 +            this.setAbsorptionHearts(Math.max(this.getAbsorptionHearts() - absorptionModifier, 0.0F));
 +            float f2 = absorptionModifier;
-+
+ 
 +            if (f2 > 0.0F && f2 < 3.4028235E37F && this instanceof EntityHuman) {
 +                ((EntityHuman) this).a(StatisticList.DAMAGE_ABSORBED, Math.round(f2 * 10.0F));
 +            }
@@ -743,7 +752,51 @@
                      this.setFlag(7, false);
                  }
              } else {
-@@ -1907,6 +2294,7 @@
+@@ -1857,12 +2244,27 @@
+         this.world.methodProfiler.enter("jump");
+         if (this.bg) {
+             if (this.W > 0.0D && (!this.onGround || this.W > 0.4D)) {
+-                this.c(TagsFluid.WATER);
++                // CraftBukkit start - call event and added postJump
++                if (CraftEventFactory.handleEntityJumpEvent(this)) {
++                    this.c(TagsFluid.WATER);
++                    this.postJump();
++                }
++                // CraftBukkit - end
+             } else if (this.ax()) {
+-                this.c(TagsFluid.LAVA);
++                // CraftBukkit start - call event and added postJump
++                if (CraftEventFactory.handleEntityJumpEvent(this)) {
++                    this.c(TagsFluid.LAVA);
++                    this.postJump();
++                }
++                // CraftBukkit - end
+             } else if ((this.onGround || this.W > 0.0D && this.W <= 0.4D) && this.bJ == 0) {
+-                this.cH();
+-                this.bJ = 10;
++                // CraftBukkit start - call event and added postJump
++                if (CraftEventFactory.handleEntityJumpEvent(this)) {
++                    this.cH();
++                    this.bJ = 10;
++                    this.postJump();
++                }
++                // CraftBukkit - end
+             }
+         } else {
+             this.bJ = 0;
+@@ -1888,6 +2290,11 @@
+         this.world.methodProfiler.exit();
+     }
+ 
++    // CraftBukkit start - added postJump
++    protected void postJump() {
++    }
++    // CraftBukkit end
++
+     private void n() {
+         boolean flag = this.getFlag(7);
+ 
+@@ -1907,6 +2314,7 @@
          }
  
          if (!this.world.isClientSide) {
@@ -751,7 +804,7 @@
              this.setFlag(7, flag);
          }
  
-@@ -2034,11 +2422,11 @@
+@@ -2034,11 +2442,11 @@
      }
  
      public boolean isInteractable() {
@@ -765,7 +818,7 @@
      }
  
      protected void aA() {
-@@ -2198,7 +2586,27 @@
+@@ -2198,7 +2606,27 @@
      protected void q() {
          if (!this.activeItem.isEmpty() && this.isHandRaised()) {
              this.b(this.activeItem, 16);
@@ -794,7 +847,7 @@
              this.da();
          }
  
-@@ -2277,10 +2685,18 @@
+@@ -2277,10 +2705,18 @@
              }
  
              if (flag1) {

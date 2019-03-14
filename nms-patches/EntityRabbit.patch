@@ -15,7 +15,25 @@
  
      protected void n() {
          this.goalSelector.a(1, new PathfinderGoalFloat(this));
-@@ -393,9 +399,23 @@
+@@ -76,11 +82,14 @@
+ 
+     public void o(boolean flag) {
+         super.o(flag);
+-        if (flag) {
+-            this.a(this.dz(), this.cD(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
+-        }
++        // CraftBukkit start - moved jumping sound into postJump
++    }
+ 
++    protected void postJump() {
++        super.postJump();
++        this.a(this.dz(), this.cD(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
+     }
++    // CraftBukkit - end
+ 
+     public void dy() {
+         this.o(true);
+@@ -393,9 +402,23 @@
                      Integer integer = (Integer) iblockdata.get(BlockCarrots.AGE);
  
                      if (integer == 0) {

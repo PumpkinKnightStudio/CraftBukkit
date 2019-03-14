@@ -104,6 +104,15 @@ public class CraftEventFactory {
     }
 
     /**
+     * EntityJumpEvent
+     */
+    public static boolean handleEntityJumpEvent(EntityLiving entity) {
+        EntityJumpEvent event = new EntityJumpEvent((LivingEntity) entity.getBukkitEntity());
+        Bukkit.getPluginManager().callEvent(event);
+        return !event.isCancelled();
+    }
+
+    /**
      * PlayerBedEnterEvent
      */
     public static EntityHuman.EnumBedResult callPlayerBedEnterEvent(EntityHuman player, BlockPosition bed, EntityHuman.EnumBedResult nmsBedResult) {

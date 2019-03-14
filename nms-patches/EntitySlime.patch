@@ -63,3 +63,27 @@
          }
  
          super.die();
+@@ -422,9 +452,7 @@
+                         }
+ 
+                         this.k.getControllerJump().a();
+-                        if (this.k.dz()) {
+-                            this.k.a(this.k.dw(), this.k.cD(), ((this.k.getRandom().nextFloat() - this.k.getRandom().nextFloat()) * 0.2F + 1.0F) * 0.8F);
+-                        }
++                        // CraftBukkit start - moved jumping sound into postJump
+                     } else {
+                         this.k.bh = 0.0F;
+                         this.k.bj = 0.0F;
+@@ -437,4 +465,12 @@
+             }
+         }
+     }
++
++    protected void postJump() {
++        super.postJump();
++        if (this.dz()) {
++            this.a(this.dw(), this.cD(), ((this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.2F + 1.0F) * 0.8F);
++        }
++    }
++    // CraftBukkit - end
+ }
