@@ -536,19 +536,10 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
-    public boolean isJumping() {
-        if (getHandle().bg) return true; // PAIL jumping
+    public void jump() {
+        getHandle().o(true); // PAIL setJumping
         if (getHandle() instanceof EntityInsentient) {
-            return ((EntityInsentient) this.getHandle()).getControllerJump().a; // PAIL jumping
-        }
-        return false;
-    }
-
-    @Override
-    public void setJumping(boolean jumping) {
-        getHandle().o(jumping); // PAIL setJumping
-        if (getHandle() instanceof EntityInsentient) {
-            ((EntityInsentient) this.getHandle()).getControllerJump().a = jumping; // PAIL jumping
+            ((EntityInsentient) this.getHandle()).getControllerJump().a(); // PAIL jump
         }
     }
 }

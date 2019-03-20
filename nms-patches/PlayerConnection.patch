@@ -432,7 +432,7 @@
 -                                this.player.cH();
 +                                // CraftBukkit start - call event and added postJump
 +                                if (CraftEventFactory.handleEntityJumpEvent(this.player)) {
-+                                    this.player.cH();
++                                    this.player.cH(); // PAIL jump
 +                                    this.player.postJump();
 +                                }
 +                                // CraftBukkit - end

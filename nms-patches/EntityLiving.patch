@@ -26,15 +26,6 @@
  public abstract class EntityLiving extends Entity {
  
      private static final Logger a = LogManager.getLogger();
-@@ -63,7 +82,7 @@
-     protected float bd;
-     protected int be;
-     public float lastDamage;
--    protected boolean bg;
-+    public boolean bg; // CraftBukkit - public
-     public float bh;
-     public float bi;
-     public float bj;
 @@ -93,6 +112,20 @@
      protected int bw;
      private float bO;
@@ -759,7 +750,7 @@
 -                this.c(TagsFluid.WATER);
 +                // CraftBukkit start - call event and added postJump
 +                if (CraftEventFactory.handleEntityJumpEvent(this)) {
-+                    this.c(TagsFluid.WATER);
++                    this.c(TagsFluid.WATER); // PAIL jumpFluid
 +                    this.postJump();
 +                }
 +                // CraftBukkit - end
@@ -767,7 +758,7 @@
 -                this.c(TagsFluid.LAVA);
 +                // CraftBukkit start - call event and added postJump
 +                if (CraftEventFactory.handleEntityJumpEvent(this)) {
-+                    this.c(TagsFluid.LAVA);
++                    this.c(TagsFluid.LAVA); // PAIL jumpFluid
 +                    this.postJump();
 +                }
 +                // CraftBukkit - end
@@ -776,8 +767,8 @@
 -                this.bJ = 10;
 +                // CraftBukkit start - call event and added postJump
 +                if (CraftEventFactory.handleEntityJumpEvent(this)) {
-+                    this.cH();
-+                    this.bJ = 10;
++                    this.cH(); // PAIL jump
++                    this.bJ = 10;  // PAIL jumpTicks
 +                    this.postJump();
 +                }
 +                // CraftBukkit - end

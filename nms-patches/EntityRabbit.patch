@@ -27,7 +27,7 @@
  
 +    protected void postJump() {
 +        super.postJump();
-+        this.a(this.dz(), this.cD(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
++        this.a(this.dz(), this.cD(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F); // PAIL playSound, getJumpSound, getSoundVolume
      }
 +    // CraftBukkit - end
  
