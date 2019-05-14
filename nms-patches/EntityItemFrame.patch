@@ -1,18 +1,25 @@
 --- a/net/minecraft/server/EntityItemFrame.java
 +++ b/net/minecraft/server/EntityItemFrame.java
-@@ -108,6 +108,11 @@
+@@ -108,6 +108,18 @@
              return false;
          } else if (!damagesource.isExplosion() && !this.getItem().isEmpty()) {
              if (!this.world.isClientSide) {
-+                // CraftBukkit start - fire EntityDamageEvent
++                // CraftBukkit start - fire EntityDamageEvent and ItemFrameRemoveItemEvent
 +                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f, false) || this.dead) {
 +                    return true;
++                }
++                {
++                    org.bukkit.entity.Entity entity = damagesource.getEntity() == null ? null : damagesource.getEntity().getBukkitEntity();
++                    org.bukkit.event.hanging.ItemFrameRemoveItemEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEvent(new org.bukkit.event.hanging.ItemFrameRemoveItemEvent((org.bukkit.entity.ItemFrame) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(getItem()), entity));
++                    if (event.isCancelled()) {
++                        return true;
++                    }
 +                }
 +                // CraftBukkit end
                  this.b(damagesource.getEntity(), false);
                  this.a(SoundEffects.ENTITY_ITEM_FRAME_REMOVE_ITEM, 1.0F, 1.0F);
              }
-@@ -193,6 +198,12 @@
+@@ -193,6 +205,12 @@
      }
  
      public void setItem(ItemStack itemstack, boolean flag) {
@@ -25,12 +32,42 @@
          if (!itemstack.isEmpty()) {
              itemstack = itemstack.cloneItemStack();
              itemstack.setCount(1);
-@@ -200,7 +211,7 @@
+@@ -200,7 +218,7 @@
          }
  
          this.getDataWatcher().set(EntityItemFrame.ITEM, itemstack);
 -        if (!itemstack.isEmpty()) {
 +        if (!itemstack.isEmpty() && playSound) { // CraftBukkit
              this.a(SoundEffects.ENTITY_ITEM_FRAME_ADD_ITEM, 1.0F, 1.0F);
+         }
+ 
+@@ -295,14 +313,27 @@
+         if (!this.world.isClientSide) {
+             if (this.getItem().isEmpty()) {
+                 if (!itemstack.isEmpty()) {
+-                    this.setItem(itemstack);
++                    // CraftBukkit start
++                    org.bukkit.event.hanging.ItemFrameAddItemEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEvent(new org.bukkit.event.hanging.ItemFrameAddItemEvent((org.bukkit.entity.ItemFrame) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), entityhuman.getBukkitEntity()));
++                    if (event.isCancelled()) {
++                        return true;
++                    }
++                    this.setItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getItem()));
++                    // CraftBukkit end
+                     if (!entityhuman.abilities.canInstantlyBuild) {
+                         itemstack.subtract(1);
+                     }
+                 }
+             } else {
++                // CraftBukkit start
++                org.bukkit.entity.ItemFrame bukkitFrame = (org.bukkit.entity.ItemFrame) this.getBukkitEntity();
++                org.bukkit.event.hanging.ItemFrameRotateEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEvent(new org.bukkit.event.hanging.ItemFrameRotateEvent(bukkitFrame, entityhuman.getBukkitEntity(), bukkitFrame.getRotation().rotateClockwise()));
++                if (event.isCancelled()) {
++                    return true;
++                }
+                 this.a(SoundEffects.ENTITY_ITEM_FRAME_ROTATE_ITEM, 1.0F, 1.0F);
+-                this.setRotation(this.getRotation() + 1);
++                this.setRotation(event.getRotation().ordinal());
++                // CraftBukkit end
+             }
          }
  
