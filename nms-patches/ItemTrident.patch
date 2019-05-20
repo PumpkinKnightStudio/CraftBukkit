@@ -27,17 +27,25 @@
                          if (k == 0) {
                              EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
  
-@@ -48,7 +55,20 @@
+@@ -48,7 +55,28 @@
                                  entitythrowntrident.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                              }
  
 -                            world.addEntity(entitythrowntrident);
 +                            // CraftBukkit start
-+                            if (!world.addEntity(entitythrowntrident)) {
-+                                if (entityhuman instanceof EntityPlayer) {
-+                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
-+                                }
++                            org.bukkit.event.entity.EntityShootTridentEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootTridentEvent(entityliving, itemstack, entitythrowntrident);
++                            if (event.isCancelled()) {
++                                event.getProjectile().remove();
 +                                return;
++                            }
++
++                            if (event.getProjectile() == entitythrowntrident.getBukkitEntity()) {
++                                if (!world.addEntity(entitythrowntrident)) {
++                                    if (entityhuman instanceof EntityPlayer) {
++                                        ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                                    }
++                                    return;
++                                }
 +                            }
 +
 +                            itemstack.damage(1, entityhuman, (entityhuman1) -> {
@@ -49,7 +57,7 @@
                              world.a((EntityHuman) null, (Entity) entitythrowntrident, SoundEffects.ITEM_TRIDENT_THROW, SoundCategory.PLAYERS, 1.0F, 1.0F);
                              if (!entityhuman.abilities.canInstantlyBuild) {
                                  entityhuman.inventory.f(itemstack);
-@@ -58,6 +78,10 @@
+@@ -58,6 +86,10 @@
  
                      entityhuman.b(StatisticList.ITEM_USED.b(this));
                      if (k > 0) {

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.BlockPropertyInstrument;
@@ -141,10 +142,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityShootCrossbowEvent;
+import org.bukkit.event.entity.EntityShootTridentEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -452,18 +456,65 @@ public class CraftEventFactory {
     }
 
     /**
+     * EntityLoadCrossbowEvent
+     */
+    public static EntityLoadCrossbowEvent callEntityLoadCrossbowEvent(EntityLiving who, ItemStack crossbow, ItemStack arrowItem, int loadCount, boolean willConsume) {
+        LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
+        CraftItemStack itemCrossbow = CraftItemStack.asCraftMirror(crossbow);
+        CraftItemStack itemArrow = CraftItemStack.asCraftMirror(arrowItem);
+
+        EntityLoadCrossbowEvent event = new EntityLoadCrossbowEvent(shooter, itemCrossbow, itemArrow, loadCount, willConsume);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    /**
+     * EntityLoadCrossbowEvent
+     */
+    public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving who, ItemStack crossbow, List<ItemStack> arrowItems, List<Entity> projectiles, float force) {
+        LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
+        CraftItemStack itemCrossbow = CraftItemStack.asCraftMirror(crossbow);
+        List<org.bukkit.inventory.ItemStack> itemArrows = arrowItems.stream().map(CraftItemStack::asCraftMirror).collect(Collectors.toList());
+        List<org.bukkit.entity.Entity> entityProjectiles = projectiles.stream().map(Entity::getBukkitEntity).collect(Collectors.toList());
+        EntityShootCrossbowEvent event = new EntityShootCrossbowEvent(shooter, itemCrossbow, itemArrows, entityProjectiles, force);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    /**
      * EntityShootBowEvent
      */
-    public static EntityShootBowEvent callEntityShootBowEvent(EntityLiving who, ItemStack itemstack, Entity entityArrow, float force) {
+    public static EntityShootBowEvent callEntityShootBowEvent(EntityLiving who, ItemStack itemstack, ItemStack arrowItemstack, Entity entityArrow, float force, boolean willConsumeArrow) {
         LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
+        CraftItemStack arrowItem = CraftItemStack.asCraftMirror(arrowItemstack);
         org.bukkit.entity.Entity arrow = entityArrow.getBukkitEntity();
 
         if (itemInHand != null && (itemInHand.getType() == Material.AIR || itemInHand.getAmount() == 0)) {
             itemInHand = null;
         }
 
-        EntityShootBowEvent event = new EntityShootBowEvent(shooter, itemInHand, arrow, force);
+        EntityShootBowEvent event = new EntityShootBowEvent(shooter, itemInHand, arrowItem, arrow, force, willConsumeArrow);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    /**
+     * EntityShootTridentEvent
+     */
+    public static EntityShootTridentEvent callEntityShootTridentEvent(EntityLiving who, ItemStack itemstack, Entity entityTrident) {
+        LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
+        CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
+        org.bukkit.entity.Entity trident = entityTrident.getBukkitEntity();
+
+        if (itemInHand != null && (itemInHand.getType() == Material.AIR || itemInHand.getAmount() == 0)) {
+            itemInHand = null;
+        }
+
+        EntityShootTridentEvent event = new EntityShootTridentEvent(shooter, itemInHand, trident);
         Bukkit.getPluginManager().callEvent(event);
 
         return event;
