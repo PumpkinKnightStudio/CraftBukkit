@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/Entity.java
 +++ b/net/minecraft/server/Entity.java
-@@ -20,8 +20,57 @@
+@@ -20,8 +20,58 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
@@ -8,6 +8,7 @@
 +import org.bukkit.Bukkit;
 +import org.bukkit.Location;
 +import org.bukkit.Server;
++import org.bukkit.TravelAgent;
 +import org.bukkit.block.BlockFace;
 +import org.bukkit.command.CommandSender;
 +import org.bukkit.entity.Hanging;
@@ -58,7 +59,7 @@
      protected static final Logger LOGGER = LogManager.getLogger();
      private static final AtomicInteger entityCount = new AtomicInteger();
      private static final List<ItemStack> c = Collections.emptyList();
-@@ -106,6 +155,20 @@
+@@ -106,6 +156,20 @@
      private long aH;
      private EntitySize size;
      private float headHeight;
@@ -79,7 +80,7 @@
  
      public Entity(EntityTypes<?> entitytypes, World world) {
          this.id = Entity.entityCount.incrementAndGet();
-@@ -204,6 +267,12 @@
+@@ -204,6 +268,12 @@
      }
  
      protected void setPose(EntityPose entitypose) {
@@ -92,7 +93,7 @@
          this.datawatcher.set(Entity.POSE, entitypose);
      }
  
-@@ -212,6 +281,33 @@
+@@ -212,6 +282,33 @@
      }
  
      protected void setYawPitch(float f, float f1) {
@@ -126,7 +127,7 @@
          this.yaw = f % 360.0F;
          this.pitch = f1 % 360.0F;
      }
-@@ -224,6 +320,7 @@
+@@ -224,6 +321,7 @@
          float f1 = this.size.height;
  
          this.a(new AxisAlignedBB(d0 - (double) f, d1, d2 - (double) f, d0 + (double) f, d1 + (double) f1, d2 + (double) f));
@@ -134,7 +135,7 @@
      }
  
      public void tick() {
-@@ -234,6 +331,15 @@
+@@ -234,6 +332,15 @@
          this.entityBaseTick();
      }
  
@@ -150,7 +151,7 @@
      public void entityBaseTick() {
          this.world.getMethodProfiler().enter("entityBaseTick");
          if (this.isPassenger() && this.getVehicle().dead) {
-@@ -250,7 +356,7 @@
+@@ -250,7 +357,7 @@
          this.lastZ = this.locZ;
          this.lastPitch = this.pitch;
          this.lastYaw = this.yaw;
@@ -159,7 +160,7 @@
          this.az();
          this.m();
          if (this.world.isClientSide) {
-@@ -300,12 +406,44 @@
+@@ -300,12 +407,44 @@
  
      protected void burnFromLava() {
          if (!this.isFireProof()) {
@@ -205,7 +206,7 @@
          int j = i * 20;
  
          if (this instanceof EntityLiving) {
-@@ -401,6 +539,28 @@
+@@ -401,6 +540,28 @@
                  block1.a((IBlockAccess) this.world, this);
              }
  
@@ -234,7 +235,7 @@
              if (this.playStepSound() && (!this.onGround || !this.isSneaking() || !(this instanceof EntityHuman)) && !this.isPassenger()) {
                  double d0 = vec3d1.x;
                  double d1 = vec3d1.y;
-@@ -454,7 +614,14 @@
+@@ -454,7 +615,14 @@
                  if (!flag) {
                      ++this.fireTicks;
                      if (this.fireTicks == 0) {
@@ -250,7 +251,7 @@
                      }
                  }
  
-@@ -565,7 +732,7 @@
+@@ -565,7 +733,7 @@
          VoxelShape voxelshape = this.world.getWorldBorder().a();
          Stream<VoxelShape> stream = VoxelShapes.c(voxelshape, VoxelShapes.a(axisalignedbb.shrink(1.0E-7D)), OperatorBoolean.AND) ? Stream.empty() : Stream.of(voxelshape);
          AxisAlignedBB axisalignedbb1 = axisalignedbb.a(vec3d).g(1.0E-7D);
@@ -259,7 +260,7 @@
              return !this.x(entity);
          }).flatMap((entity) -> {
              return Stream.of(entity.ap(), this.j(entity));
-@@ -649,6 +816,7 @@
+@@ -649,6 +817,7 @@
          this.locX = (axisalignedbb.minX + axisalignedbb.maxX) / 2.0D;
          this.locY = axisalignedbb.minY;
          this.locZ = (axisalignedbb.minZ + axisalignedbb.maxZ) / 2.0D;
@@ -267,7 +268,7 @@
      }
  
      protected SoundEffect getSoundSwim() {
-@@ -820,7 +988,7 @@
+@@ -820,7 +989,7 @@
          return null;
      }
  
@@ -276,7 +277,7 @@
          if (!this.isFireProof()) {
              this.damageEntity(DamageSource.FIRE, (float) i);
          }
-@@ -1053,6 +1221,13 @@
+@@ -1053,6 +1222,13 @@
      }
  
      public void spawnIn(World world) {
@@ -290,7 +291,7 @@
          this.world = world;
      }
  
-@@ -1078,6 +1253,7 @@
+@@ -1078,6 +1254,7 @@
              this.lastYaw -= 360.0F;
          }
  
@@ -298,7 +299,7 @@
          this.setPosition(this.locX, this.locY, this.locZ);
          this.setYawPitch(f, f1);
      }
-@@ -1246,7 +1422,7 @@
+@@ -1246,7 +1423,7 @@
      public boolean c(NBTTagCompound nbttagcompound) {
          String s = this.getSaveID();
  
@@ -307,7 +308,7 @@
              nbttagcompound.setString("id", s);
              this.save(nbttagcompound);
              return true;
-@@ -1265,15 +1441,33 @@
+@@ -1265,15 +1442,33 @@
              Vec3D vec3d = this.getMot();
  
              nbttagcompound.set("Motion", this.a(vec3d.x, vec3d.y, vec3d.z));
@@ -342,7 +343,7 @@
              IChatBaseComponent ichatbasecomponent = this.getCustomName();
  
              if (ichatbasecomponent != null) {
-@@ -1331,6 +1525,11 @@
+@@ -1331,6 +1526,11 @@
                  }
              }
  
@@ -354,7 +355,7 @@
              return nbttagcompound;
          } catch (Throwable throwable) {
              CrashReport crashreport = CrashReport.a(throwable, "Saving entity NBT");
-@@ -1371,7 +1570,7 @@
+@@ -1371,7 +1571,7 @@
              this.setAirTicks(nbttagcompound.getShort("Air"));
              this.onGround = nbttagcompound.getBoolean("OnGround");
              if (nbttagcompound.hasKey("Dimension")) {
@@ -363,7 +364,7 @@
              }
  
              this.invulnerable = nbttagcompound.getBoolean("Invulnerable");
-@@ -1414,6 +1613,43 @@
+@@ -1414,6 +1614,43 @@
              } else {
                  throw new IllegalStateException("Entity has invalid position");
              }
@@ -407,7 +408,7 @@
          } catch (Throwable throwable) {
              CrashReport crashreport = CrashReport.a(throwable, "Loading entity NBT");
              CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity being loaded");
-@@ -1489,9 +1725,22 @@
+@@ -1489,9 +1726,22 @@
          } else if (this.world.isClientSide) {
              return null;
          } else {
@@ -430,7 +431,7 @@
              this.world.addEntity(entityitem);
              return entityitem;
          }
-@@ -1595,7 +1844,7 @@
+@@ -1595,7 +1845,7 @@
              }
  
              this.vehicle = entity;
@@ -439,7 +440,7 @@
              return true;
          }
      }
-@@ -1620,15 +1869,36 @@
+@@ -1620,15 +1870,36 @@
              Entity entity = this.vehicle;
  
              this.vehicle = null;
@@ -478,7 +479,7 @@
              if (!this.world.isClientSide && entity instanceof EntityHuman && !(this.getRidingPassenger() instanceof EntityHuman)) {
                  this.passengers.add(0, entity);
              } else {
-@@ -1636,15 +1906,33 @@
+@@ -1636,15 +1907,33 @@
              }
  
          }
@@ -513,7 +514,7 @@
      }
  
      protected boolean q(Entity entity) {
-@@ -1687,11 +1975,17 @@
+@@ -1687,11 +1976,17 @@
              int i = this.ab();
  
              if (this.ai) {
@@ -533,7 +534,7 @@
                      this.world.getMethodProfiler().exit();
                  }
  
-@@ -1771,6 +2065,13 @@
+@@ -1771,6 +2066,13 @@
      }
  
      public void setSwimming(boolean flag) {
@@ -547,7 +548,7 @@
          this.setFlag(4, flag);
      }
  
-@@ -1831,16 +2132,56 @@
+@@ -1831,16 +2133,56 @@
      }
  
      public void setAirTicks(int i) {
@@ -582,9 +583,8 @@
 +                this.setOnFire(entityCombustEvent.getDuration(), false);
 +            }
 +            // CraftBukkit end
-         }
- 
--        this.damageEntity(DamageSource.LIGHTNING, 5.0F);
++        }
++
 +        // CraftBukkit start
 +        if (thisBukkitEntity instanceof Hanging) {
 +            HangingBreakByEntityEvent hangingEvent = new HangingBreakByEntityEvent((Hanging) thisBukkitEntity, stormBukkitEntity);
@@ -593,8 +593,9 @@
 +            if (hangingEvent.isCancelled()) {
 +                return;
 +            }
-+        }
-+
+         }
+ 
+-        this.damageEntity(DamageSource.LIGHTNING, 5.0F);
 +        if (this.isFireProof()) {
 +            return;
 +        }
@@ -607,7 +608,7 @@
      }
  
      public void j(boolean flag) {
-@@ -1988,20 +2329,33 @@
+@@ -1988,20 +2330,33 @@
  
      @Nullable
      public Entity a(DimensionManager dimensionmanager) {
@@ -644,7 +645,7 @@
              if (dimensionmanager1 == DimensionManager.THE_END && dimensionmanager == DimensionManager.OVERWORLD) {
                  blockposition = worldserver1.getHighestBlockYAt(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, worldserver1.getSpawn());
              } else if (dimensionmanager == DimensionManager.THE_END) {
-@@ -2039,6 +2393,25 @@
+@@ -2039,6 +2394,35 @@
                  vec3d = shapedetector_c.b;
                  f = (float) shapedetector_c.c;
              }
@@ -652,25 +653,35 @@
 +
 +            // CraftBukkit start
 +            Location enter = this.getBukkitEntity().getLocation();
-+            Location exit = new Location(worldserver1.getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ());
++            Location exit = blockposition != null ? new Location(worldserver1.getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()) : null;
 +
-+            EntityPortalEvent event = new EntityPortalEvent(this.getBukkitEntity(), enter, exit);
++            boolean useTravelAgent = dimensionmanager.getDimensionID() < CraftWorld.CUSTOM_DIMENSION_OFFSET && !(dimensionmanager1 == DimensionManager.THE_END && dimensionmanager == DimensionManager.THE_END); // don't use agent for custom worlds or return from THE_END
++
++            TravelAgent agent = exit != null ? (TravelAgent) ((CraftWorld) exit.getWorld()).getHandle().getTravelAgent() : org.bukkit.craftbukkit.CraftTravelAgent.DEFAULT; // return arbitrary TA to compensate for implementation dependent plugins
++            boolean oldCanCreate = agent.getCanCreatePortal();
++            agent.setCanCreatePortal(false); // General entities cannot create portals
++
++            EntityPortalEvent event = new EntityPortalEvent(this.getBukkitEntity(), enter, exit, agent);
++            event.useTravelAgent(useTravelAgent);
 +            event.getEntity().getServer().getPluginManager().callEvent(event);
 +            if (event.isCancelled() || event.getTo() == null || event.getTo().getWorld() == null || !this.isAlive()) {
++                agent.setCanCreatePortal(oldCanCreate);
 +                return null;
 +            }
 +
-+            exit = event.getTo();
++            exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
++            agent.setCanCreatePortal(oldCanCreate);
++
 +            worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
 +            blockposition = new BlockPosition(exit.getX(), exit.getY(), exit.getZ());
 +
-+            this.dimension = dimensionmanager;
++            this.dimension = worldserver1.dimension;
 +            this.decouple();
 +            // CraftBukkit end
  
              this.world.getMethodProfiler().exitEnter("reloading");
              Entity entity = this.getEntityType().a((World) worldserver1);
-@@ -2048,6 +2421,14 @@
+@@ -2048,6 +2432,14 @@
                  entity.setPositionRotation(blockposition, entity.yaw + f, entity.pitch);
                  entity.setMot(vec3d);
                  worldserver1.addEntityTeleport(entity);
@@ -685,7 +696,7 @@
              }
  
              this.dead = true;
-@@ -2249,7 +2630,26 @@
+@@ -2249,7 +2641,26 @@
      }
  
      public void a(AxisAlignedBB axisalignedbb) {
