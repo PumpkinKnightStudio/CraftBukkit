@@ -10,6 +10,7 @@ import net.minecraft.server.WorldServer;
 
 import org.bukkit.Location;
 import org.bukkit.TravelAgent;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
@@ -23,16 +24,21 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
 
     public CraftTravelAgent(WorldServer worldserver) {
         super(worldserver);
-        if (DEFAULT == null && worldserver.dimension == DimensionManager.OVERWORLD) {
+        if (DEFAULT == null && worldserver.worldProvider.isOverworld()) {
             DEFAULT = this;
         }
     }
 
     @Override
     public Location findOrCreate(Location target) {
-        Location found = this.findPortal(target);
-        if (found == null && this.getCanCreatePortal() && this.createPortal(target)) {
-            found = this.findPortal(target);
+        return findOrCreate(null, target);
+    }
+
+    @Override
+    public Location findOrCreate(Entity entity, Location target) {
+        Location found = this.findPortal(entity, target);
+        if (found == null && this.getCanCreatePortal() && this.createPortal(entity, target)) {
+            found = this.findPortal(entity, target);
         }
         if (found == null) {
             found = target; // fallback to original if unable to find or create
@@ -43,13 +49,20 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
 
     @Override
     public Location findPortal(Location location) {
+        return findPortal(null, location);
+    }
+
+    @Override
+    public Location findPortal(Entity entity, Location location) {
         PortalTravelAgent pta = ((CraftWorld) location.getWorld()).getHandle().getTravelAgent();
         Vector direction = location.getDirection();
-        ShapeDetector.c portalShape = pta.findPortal(
+        Vec3D portalOffset = entity != null ? ((CraftEntity) entity).getHandle().getPortalOffset() : new Vec3D(0, 0, 0);
+        EnumDirection portalDirection = entity != null ? ((CraftEntity) entity).getHandle().getPortalDirection() : EnumDirection.fromAngle(location.getYaw());
+        ShapeDetector.c portalShape = pta.findPortal( // PAIL: rename
                 new BlockPosition(location.getX(), location.getY(), location.getZ()),
                 new Vec3D(direction.getX(), direction.getY(), direction.getZ()),
-                EnumDirection.fromAngle(location.getYaw()), 0, 0, canCreatePortal, this.getSearchRadius());
-        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw(), location.getPitch()) : null;
+                portalDirection, portalOffset.x, portalOffset.y, canCreatePortal, this.getSearchRadius());
+        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw() + (float) portalShape.c, location.getPitch()) : null;  // PAIL: rename
     }
 
     @Override

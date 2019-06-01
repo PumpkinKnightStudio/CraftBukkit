@@ -383,7 +383,7 @@
 +            Location enter = this.getBukkitEntity().getLocation();
 +            Location exit = new Location(worldserver1.getWorld(), d0, d1, d2, f1, f);
 +
-+            boolean useTravelAgent = !(dimensionmanager1 == DimensionManager.THE_END && dimensionmanager == DimensionManager.THE_END); // don't use agent for custom worlds or return from THE_END
++            boolean useTravelAgent = dimensionmanager1.getDimensionID() < CraftWorld.CUSTOM_DIMENSION_OFFSET && dimensionmanager != DimensionManager.THE_END && dimensionmanager1 != DimensionManager.THE_END; // don't use agent for custom worlds or return from THE_END
 +
 +            TravelAgent agent = (TravelAgent) ((CraftWorld) exit.getWorld()).getHandle().getTravelAgent();
 +            PlayerPortalEvent event = new PlayerPortalEvent(this.getBukkitEntity(), enter, exit, agent, cause);
@@ -393,7 +393,7 @@
 +                return null;
 +            }
 +
-+            exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
++            exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getPlayer(), event.getTo()) : event.getTo();
 +            if (exit == null) {
 +                return null;
 +            }
@@ -448,7 +448,7 @@
  
                  for (int l = -2; l <= 2; ++l) {
                      for (int i1 = -2; i1 <= 2; ++i1) {
-@@ -581,11 +830,20 @@
+@@ -581,14 +830,23 @@
                              int i2 = k + i1 * 0 - l * 1;
                              boolean flag2 = j1 < 0;
  
@@ -469,7 +469,11 @@
 +                // CraftBukkit end
                  this.setPositionRotation((double) i, (double) j, (double) k, f1, 0.0F);
                  this.setMot(Vec3D.a);
-             } else if (!worldserver1.getTravelAgent().a(this, f2)) {
+-            } else if (!worldserver1.getTravelAgent().a(this, f2)) {
++            } else if (false && !worldserver1.getTravelAgent().a(this, f2)) { // CraftBukkit - handled by the TravelAgent of the portal event above
+                 worldserver1.getTravelAgent().a((Entity) this);
+                 worldserver1.getTravelAgent().a(this, f2);
+             }
 @@ -614,11 +872,16 @@
              this.lastSentExp = -1;
              this.lastHealthSent = -1.0F;

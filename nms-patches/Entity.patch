@@ -583,8 +583,9 @@
 +                this.setOnFire(entityCombustEvent.getDuration(), false);
 +            }
 +            // CraftBukkit end
-+        }
-+
+         }
+ 
+-        this.damageEntity(DamageSource.LIGHTNING, 5.0F);
 +        // CraftBukkit start
 +        if (thisBukkitEntity instanceof Hanging) {
 +            HangingBreakByEntityEvent hangingEvent = new HangingBreakByEntityEvent((Hanging) thisBukkitEntity, stormBukkitEntity);
@@ -593,9 +594,8 @@
 +            if (hangingEvent.isCancelled()) {
 +                return;
 +            }
-         }
- 
--        this.damageEntity(DamageSource.LIGHTNING, 5.0F);
++        }
++
 +        if (this.isFireProof()) {
 +            return;
 +        }
@@ -655,7 +655,7 @@
 +            Location enter = this.getBukkitEntity().getLocation();
 +            Location exit = blockposition != null ? new Location(worldserver1.getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()) : null;
 +
-+            boolean useTravelAgent = dimensionmanager.getDimensionID() < CraftWorld.CUSTOM_DIMENSION_OFFSET && !(dimensionmanager1 == DimensionManager.THE_END && dimensionmanager == DimensionManager.THE_END); // don't use agent for custom worlds or return from THE_END
++            boolean useTravelAgent = dimensionmanager1.getDimensionID() < CraftWorld.CUSTOM_DIMENSION_OFFSET && dimensionmanager != DimensionManager.THE_END && dimensionmanager1 != DimensionManager.THE_END; // don't use agent for custom worlds or return from THE_END
 +
 +            TravelAgent agent = exit != null ? (TravelAgent) ((CraftWorld) exit.getWorld()).getHandle().getTravelAgent() : org.bukkit.craftbukkit.CraftTravelAgent.DEFAULT; // return arbitrary TA to compensate for implementation dependent plugins
 +            boolean oldCanCreate = agent.getCanCreatePortal();
@@ -669,13 +669,13 @@
 +                return null;
 +            }
 +
-+            exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
++            exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getEntity(), event.getTo()) : event.getTo();
 +            agent.setCanCreatePortal(oldCanCreate);
 +
 +            worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
 +            blockposition = new BlockPosition(exit.getX(), exit.getY(), exit.getZ());
 +
-+            this.dimension = worldserver1.dimension;
++            this.dimension = dimensionmanager;
 +            this.decouple();
 +            // CraftBukkit end
  
