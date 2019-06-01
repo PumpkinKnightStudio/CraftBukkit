@@ -438,7 +438,7 @@
              d2 = MathHelper.a(d2, d5, d7);
              this.setPositionRotation(d0, d1, d2, f1, f);
 -            if (dimensionmanager == DimensionManager.THE_END) {
-+            if (dimensionmanager.getType() == DimensionManager.THE_END) { // CraftBukkit - getType()
++            if (dimensionmanager.getType() == DimensionManager.THE_END && !event.useTravelAgent()) { // CraftBukkit - getType() and portal travel agent
                  int i = MathHelper.floor(this.locX);
                  int j = MathHelper.floor(this.locY) - 1;
                  int k = MathHelper.floor(this.locZ);

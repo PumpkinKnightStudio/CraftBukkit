@@ -58,11 +58,11 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
         Vector direction = location.getDirection();
         Vec3D portalOffset = entity != null ? ((CraftEntity) entity).getHandle().getPortalOffset() : new Vec3D(0, 0, 0);
         EnumDirection portalDirection = entity != null ? ((CraftEntity) entity).getHandle().getPortalDirection() : EnumDirection.fromAngle(location.getYaw());
-        ShapeDetector.c portalShape = pta.findPortal( // PAIL: rename
+        ShapeDetector.c portalShape = pta.findPortal( // PAIL: rename ShapeDetector.Shape
                 new BlockPosition(location.getX(), location.getY(), location.getZ()),
                 new Vec3D(direction.getX(), direction.getY(), direction.getZ()),
                 portalDirection, portalOffset.x, portalOffset.y, canCreatePortal, this.getSearchRadius());
-        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw() + (float) portalShape.c, location.getPitch()) : null;  // PAIL: rename
+        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw() + (float) portalShape.c, location.getPitch()) : null;  // PAIL: rename position
     }
 
     @Override
