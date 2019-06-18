@@ -35,7 +35,7 @@
              return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
          } else if (!entityhuman.f(itemstack).isEmpty()) {
              if (!d(itemstack)) {
-@@ -71,32 +76,65 @@
+@@ -71,32 +76,45 @@
  
      }
  
@@ -86,25 +86,6 @@
 +        if (entityliving instanceof EntityPlayer) {
 +            ((EntityPlayer) entityliving).getBukkitEntity().updateInventory();
 +        }
-+        // for (int k = 0; k < j; ++k) {
-+        //     if (k > 0) {
-+        //         itemstack1 = itemstack2.cloneItemStack();
-+        //     }
-+
-+        //     if (itemstack1.isEmpty() && flag) {
-+        //         itemstack1 = new ItemStack(Items.ARROW);
-+        //         itemstack2 = itemstack1.cloneItemStack();
-+        //     }
-+        //     // CraftBukkit start - SPIGOT-4870, MC-150847
-+        //     else if (itemstack1.isEmpty()) {
-+        //         return false;
-+        //     }
-+        //     // CraftBukkit end
-+
-+        //     if (!a(entityliving, itemstack, itemstack1, k > 0, flag)) {
-+        //         return false;
-+        //     }
-+        // }
 +        // CraftBukkit end
          return true;
      }
@@ -114,7 +95,7 @@
          if (itemstack1.isEmpty()) {
              return false;
          } else {
-@@ -117,19 +155,19 @@
+@@ -117,19 +135,19 @@
          }
      }
  
@@ -137,7 +118,7 @@
          NBTTagCompound nbttagcompound = itemstack.getOrCreateTag();
          NBTTagList nbttaglist;
  
-@@ -146,7 +184,7 @@
+@@ -146,7 +164,7 @@
          nbttagcompound.set("ChargedProjectiles", nbttaglist);
      }
  
@@ -146,7 +127,7 @@
          List<ItemStack> list = Lists.newArrayList();
          NBTTagCompound nbttagcompound = itemstack.getTag();
  
-@@ -165,7 +203,7 @@
+@@ -165,7 +183,7 @@
          return list;
      }
  
@@ -155,7 +136,7 @@
          NBTTagCompound nbttagcompound = itemstack.getTag();
  
          if (nbttagcompound != null) {
-@@ -183,19 +221,21 @@
+@@ -183,19 +201,21 @@
          });
      }
  
@@ -189,7 +170,7 @@
  
              if (entityliving instanceof ICrossbow) {
                  ICrossbow icrossbow = (ICrossbow) entityliving;
-@@ -214,7 +254,14 @@
+@@ -214,7 +234,14 @@
              itemstack.damage(flag1 ? 3 : 1, entityliving, (entityliving1) -> {
                  entityliving1.d(enumhand);
              });
@@ -205,25 +186,11 @@
              world.a((EntityHuman) null, entityliving.locX, entityliving.locY, entityliving.locZ, SoundEffects.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, f);
          }
      }
-@@ -242,28 +289,77 @@
+@@ -242,22 +269,57 @@
          List<ItemStack> list = j(itemstack);
          float[] afloat = a(entityliving.getRandom());
  
 +        // CraftBukkit start - use a clean way to handle firing
-+        // for (int i = 0; i < list.size(); ++i) {
-+        //     ItemStack itemstack1 = (ItemStack) list.get(i);
-+        //     boolean flag = entityliving instanceof EntityHuman && ((EntityHuman) entityliving).abilities.canInstantlyBuild;
-+        //
-+        //     if (!itemstack1.isEmpty()) {
-+        //         if (i == 0) {
-+        //             a(world, entityliving, enumhand, itemstack, itemstack1, afloat[i], flag, f, f1, 0.0F);
-+        //         } else if (i == 1) {
-+        //             a(world, entityliving, enumhand, itemstack, itemstack1, afloat[i], flag, f, f1, -10.0F);
-+        //         } else if (i == 2) {
-+        //             a(world, entityliving, enumhand, itemstack, itemstack1, afloat[i], flag, f, f1, 10.0F);
-+        //         }
-+        //     }
-+        // }
 +        List<Entity> projectiles = new java.util.ArrayList<>(list.size());
 +        boolean flag = entityliving instanceof EntityHuman && ((EntityHuman) entityliving).abilities.canInstantlyBuild;
          for (int i = 0; i < list.size(); ++i) {
@@ -248,7 +215,9 @@
                  }
              }
 +            projectiles.add(object);
-+        }
+         }
+-
+-        a(world, entityliving, itemstack);
 +        org.bukkit.event.entity.EntityShootCrossbowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, list, projectiles, f1);
 +        boolean willUncharge = event.getWillConsumeArrow() == org.bukkit.event.Event.Result.ALLOW || (event.getWillConsumeArrow() == org.bukkit.event.Event.Result.DEFAULT && !event.isCancelled());
 +        if (event.isCancelled()) {
@@ -277,43 +246,12 @@
 +                pitch = a(ItemCrossbow.i.nextBoolean());
 +            }
 +            a(world, entityliving, enumhand, itemstack, ((org.bukkit.craftbukkit.entity.CraftEntity) finalProjectiles.get(i)).getHandle(), pitch, flag, f, f1, angle);
-         }
- 
--        a(world, entityliving, itemstack);
++        }
 +        if (willUncharge) {
 +            a(world, entityliving, itemstack);
 +            a(itemstack, false);
 +        }
++        // CraftBukkit end
      }
  
      private static float[] a(Random random) {
-         boolean flag = random.nextBoolean();
- 
--        return new float[] { 1.0F, a(flag), a(!flag)};
-+        return new float[]{1.0F, a(flag), a(!flag)};
-     }
- 
-     private static float a(boolean flag) {
-@@ -330,14 +426,14 @@
- 
-     private SoundEffect a(int i) {
-         switch (i) {
--        case 1:
--            return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_1;
--        case 2:
--            return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_2;
--        case 3:
--            return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_3;
--        default:
--            return SoundEffects.ITEM_CROSSBOW_LOADING_START;
-+            case 1:
-+                return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_1;
-+            case 2:
-+                return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_2;
-+            case 3:
-+                return SoundEffects.ITEM_CROSSBOW_QUICK_CHARGE_3;
-+            default:
-+                return SoundEffects.ITEM_CROSSBOW_LOADING_START;
-         }
-     }
- 

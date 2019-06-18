@@ -475,8 +475,14 @@ public class CraftEventFactory {
     public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving who, ItemStack crossbow, List<ItemStack> arrowItems, List<Entity> projectiles, float force) {
         LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
         CraftItemStack itemCrossbow = CraftItemStack.asCraftMirror(crossbow);
-        List<org.bukkit.inventory.ItemStack> itemArrows = arrowItems.stream().map(CraftItemStack::asCraftMirror).collect(Collectors.toList());
-        List<org.bukkit.entity.Entity> entityProjectiles = projectiles.stream().map(Entity::getBukkitEntity).collect(Collectors.toList());
+        List<org.bukkit.inventory.ItemStack> itemArrows = new ArrayList(arrowItems.size());
+        for (ItemStack arrowItem: arrowItems) {
+            itemArrows.add(CraftItemStack.asCraftMirror(arrowItem));
+        }
+        List<org.bukkit.entity.Entity> entityProjectiles = new ArrayList(projectiles.size());
+        for (Entity projectile: projectiles) {
+            entityProjectiles.add(projectile.getBukkitEntity());
+        }
         EntityShootCrossbowEvent event = new EntityShootCrossbowEvent(shooter, itemCrossbow, itemArrows, entityProjectiles, force);
         Bukkit.getPluginManager().callEvent(event);
 
