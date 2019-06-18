@@ -1,14 +1,16 @@
 --- a/net/minecraft/server/ItemCrossbow.java
 +++ b/net/minecraft/server/ItemCrossbow.java
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,9 @@
  package net.minecraft.server;
  
  import com.google.common.collect.Lists;
++import org.bukkit.event.Event;
 +
++import java.util.ArrayList;
  import java.util.List;
  import java.util.Random;
  import java.util.function.Predicate;
-@@ -12,6 +13,8 @@
+@@ -12,6 +15,8 @@
  
      public ItemCrossbow(Item.Info item_info) {
          super(item_info);
@@ -17,7 +19,7 @@
          this.a(new MinecraftKey("pull"), (itemstack, world, entityliving) -> {
              return entityliving != null && itemstack.getItem() == this ? (d(itemstack) ? 0.0F : (float) (itemstack.k() - entityliving.dm()) / (float) e(itemstack)) : 0.0F;
          });
-@@ -24,6 +27,8 @@
+@@ -24,6 +29,8 @@
          this.a(new MinecraftKey("firework"), (itemstack, world, entityliving) -> {
              return entityliving != null && d(itemstack) && a(itemstack, Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
          });
@@ -26,7 +28,7 @@
      }
  
      @Override
-@@ -42,7 +47,7 @@
+@@ -42,7 +49,7 @@
  
          if (d(itemstack)) {
              a(world, entityhuman, enumhand, itemstack, l(itemstack), 1.0F);
@@ -35,7 +37,7 @@
              return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
          } else if (!entityhuman.f(itemstack).isEmpty()) {
              if (!d(itemstack)) {
-@@ -71,32 +76,45 @@
+@@ -71,32 +78,52 @@
  
      }
  
@@ -55,7 +57,13 @@
 +            itemstack1 = new ItemStack(Items.ARROW);
 +            itemstack2 = itemstack1.cloneItemStack();
 +        }
-+        org.bukkit.event.entity.EntityLoadCrossbowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityLoadCrossbowEvent(entityliving, itemstack, itemstack2, j, !flag);
++        List<ItemStack> itemsToLoad = new ArrayList<>(j);
++        for (int c = 0; c < j; ++c) {
++            ItemStack stack = itemstack2.cloneItemStack();
++            stack.setCount(0);
++            itemsToLoad.add(stack);
++        }
++        org.bukkit.event.entity.EntityLoadCrossbowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityLoadCrossbowEvent(entityliving, itemstack, itemstack2, itemsToLoad, flag? Event.Result.DENY : Event.Result.DEFAULT);
 +        boolean willConsume = event.getWillConsumeArrow() == org.bukkit.event.Event.Result.ALLOW || (event.getWillConsumeArrow() == org.bukkit.event.Event.Result.DEFAULT && !event.isCancelled());
 +        if (willConsume) {
 +            if (itemstack1.isEmpty()) {
@@ -95,7 +103,7 @@
          if (itemstack1.isEmpty()) {
              return false;
          } else {
-@@ -117,19 +135,19 @@
+@@ -117,19 +144,19 @@
          }
      }
  
@@ -118,7 +126,7 @@
          NBTTagCompound nbttagcompound = itemstack.getOrCreateTag();
          NBTTagList nbttaglist;
  
-@@ -146,7 +164,7 @@
+@@ -146,7 +173,7 @@
          nbttagcompound.set("ChargedProjectiles", nbttaglist);
      }
  
@@ -127,7 +135,7 @@
          List<ItemStack> list = Lists.newArrayList();
          NBTTagCompound nbttagcompound = itemstack.getTag();
  
-@@ -165,7 +183,7 @@
+@@ -165,7 +192,7 @@
          return list;
      }
  
@@ -136,7 +144,7 @@
          NBTTagCompound nbttagcompound = itemstack.getTag();
  
          if (nbttagcompound != null) {
-@@ -183,19 +201,21 @@
+@@ -183,19 +210,21 @@
          });
      }
  
@@ -170,7 +178,7 @@
  
              if (entityliving instanceof ICrossbow) {
                  ICrossbow icrossbow = (ICrossbow) entityliving;
-@@ -214,7 +234,14 @@
+@@ -214,7 +243,14 @@
              itemstack.damage(flag1 ? 3 : 1, entityliving, (entityliving1) -> {
                  entityliving1.d(enumhand);
              });
@@ -186,12 +194,13 @@
              world.a((EntityHuman) null, entityliving.locX, entityliving.locY, entityliving.locZ, SoundEffects.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, f);
          }
      }
-@@ -242,22 +269,57 @@
+@@ -242,22 +278,60 @@
          List<ItemStack> list = j(itemstack);
          float[] afloat = a(entityliving.getRandom());
  
 +        // CraftBukkit start - use a clean way to handle firing
 +        List<Entity> projectiles = new java.util.ArrayList<>(list.size());
++        List<Float> angles = new java.util.ArrayList<>(list.size());
 +        boolean flag = entityliving instanceof EntityHuman && ((EntityHuman) entityliving).abilities.canInstantlyBuild;
          for (int i = 0; i < list.size(); ++i) {
              ItemStack itemstack1 = (ItemStack) list.get(i);
@@ -205,12 +214,14 @@
 -                } else if (i == 2) {
 -                    a(world, entityliving, enumhand, itemstack, itemstack1, afloat[i], flag, f, f1, 10.0F);
 +            Entity object;
++            float f3 = i == 0 ? 0.0F : ((float) Math.pow(-1, i)) * 10.0F;
++            angles.add(f3);
 +            boolean flag1 = itemstack1.getItem() == Items.FIREWORK_ROCKET;
 +            if (flag1) {
 +                object = new EntityFireworks(world, itemstack1, entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight() - 0.15000000596046448D, entityliving.locZ, true);
 +            } else {
 +                object = a(world, entityliving, itemstack, itemstack1);
-+                if (flag || i != 0) {
++                if (flag || f3 != 0.0F) {
 +                    ((EntityArrow) object).fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                  }
              }
@@ -218,7 +229,7 @@
          }
 -
 -        a(world, entityliving, itemstack);
-+        org.bukkit.event.entity.EntityShootCrossbowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, list, projectiles, f1);
++        org.bukkit.event.entity.EntityShootCrossbowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, list, projectiles, angles, f1);
 +        boolean willUncharge = event.getWillConsumeArrow() == org.bukkit.event.Event.Result.ALLOW || (event.getWillConsumeArrow() == org.bukkit.event.Event.Result.DEFAULT && !event.isCancelled());
 +        if (event.isCancelled()) {
 +            for (org.bukkit.entity.Entity entity: event.getProjectiles()) {
@@ -231,11 +242,11 @@
 +            return;
 +        }
 +        List<org.bukkit.entity.Entity> finalProjectiles = event.getProjectiles();
-+        List<Float> angles = event.getAngles();
++        List<Float> finalAngles = event.getAngles();
 +        for (int i = 0; i < finalProjectiles.size(); ++i) {
 +            float angle;
-+            if (angles.size() > i) {
-+                angle = angles.get(i);
++            if (finalAngles.size() > i) {
++                angle = finalAngles.get(i);
 +            } else {
 +                angle = ItemCrossbow.i.nextFloat();
 +            }

@@ -1,11 +1,19 @@
 --- a/net/minecraft/server/EntitySkeletonAbstract.java
 +++ b/net/minecraft/server/EntitySkeletonAbstract.java
-@@ -156,8 +156,19 @@
+@@ -3,6 +3,7 @@
+ import java.time.LocalDate;
+ import java.time.temporal.ChronoField;
+ import javax.annotation.Nullable;
++import org.bukkit.event.Event;
+ 
+ public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
+ 
+@@ -156,8 +157,19 @@
          double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
 +        // CraftBukkit start
-+        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), null, entityarrow, 0.8F, false);
++        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), null, entityarrow, 0.8F, Event.Result.DENY);
 +        if (event.isCancelled()) {
 +            event.getProjectile().remove();
 +            return;

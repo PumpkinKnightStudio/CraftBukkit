@@ -1,6 +1,13 @@
 --- a/net/minecraft/server/ItemBow.java
 +++ b/net/minecraft/server/ItemBow.java
-@@ -6,12 +6,16 @@
+@@ -1,17 +1,23 @@
+ package net.minecraft.server;
+ 
++import org.bukkit.event.Event;
++
+ import java.util.function.Predicate;
+ 
+ public class ItemBow extends ItemProjectileWeapon {
  
      public ItemBow(Item.Info item_info) {
          super(item_info);
@@ -17,7 +24,7 @@
      }
  
      @Override
-@@ -31,7 +35,7 @@
+@@ -31,7 +37,7 @@
  
                  if ((double) f >= 0.1D) {
                      boolean flag1 = flag && itemstack1.getItem() == Items.ARROW;
@@ -26,12 +33,12 @@
                      if (!world.isClientSide) {
                          ItemArrow itemarrow = (ItemArrow) ((ItemArrow) (itemstack1.getItem() instanceof ItemArrow ? itemstack1.getItem() : Items.ARROW));
                          EntityArrow entityarrow = itemarrow.a(world, itemstack1, (EntityLiving) entityhuman);
-@@ -56,6 +60,20 @@
+@@ -56,6 +62,20 @@
                          if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
                              entityarrow.setOnFire(100);
                          }
 +                        // CraftBukkit start
-+                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, f, !flag1 && !entityhuman.abilities.canInstantlyBuild);
++                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, f, (flag1 || entityhuman.abilities.canInstantlyBuild) ? Event.Result.DENY : Event.Result.DEFAULT);
 +                        willConsume = event.getWillConsumeArrow() == org.bukkit.event.Event.Result.ALLOW || (event.getWillConsumeArrow() == org.bukkit.event.Event.Result.DEFAULT && !event.isCancelled());
 +                        if (event.isCancelled()) {
 +                            event.getProjectile().remove();
@@ -47,7 +54,7 @@
  
                          itemstack.damage(1, entityhuman, (entityhuman1) -> {
                              entityhuman1.d(entityhuman.getRaisedHand());
-@@ -64,11 +82,23 @@
+@@ -64,11 +84,23 @@
                              entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                          }
  
