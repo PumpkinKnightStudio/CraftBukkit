@@ -400,7 +400,7 @@
 +                world.captureBlockStates = false;
 +                if (world.capturedBlockStates.size() > 0) {
 +                    List<BlockState> blocks = (List<BlockState>) world.capturedBlockStates.clone();
-+                    PortalCreateEvent createEvent = new PortalCreateEvent(blocks, this.world.getWorld(), this.getBukkitEntity(), PortalCreateEvent.CreateReason.NETHER_PAIR);
++                    PortalCreateEvent createEvent = new PortalCreateEvent(blocks, event.getTo().getWorld(), event.getPlayer(), PortalCreateEvent.CreateReason.NETHER_PAIR);
 +
 +                    this.world.getServer().getPluginManager().callEvent(createEvent);
 +                    if (!createEvent.isCancelled()) {
