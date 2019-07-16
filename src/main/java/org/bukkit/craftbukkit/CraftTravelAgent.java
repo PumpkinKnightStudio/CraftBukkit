@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit;
 
 import net.minecraft.server.BlockPosition;
-import net.minecraft.server.DimensionManager;
 import net.minecraft.server.EnumDirection;
 import net.minecraft.server.PortalTravelAgent;
 import net.minecraft.server.ShapeDetector;
@@ -37,8 +36,8 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
     @Override
     public Location findOrCreate(Entity entity, Location target) {
         Location found = this.findPortal(entity, target);
-        if (found == null && this.getCanCreatePortal() && this.createPortal(entity, target)) {
-            found = this.findPortal(entity, target);
+        if (found == null && this.getCanCreatePortal()) {
+            found = this.createPortal(entity, target);
         }
         if (found == null) {
             found = target; // fallback to original if unable to find or create
@@ -62,16 +61,16 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
                 new BlockPosition(location.getX(), location.getY(), location.getZ()),
                 new Vec3D(direction.getX(), direction.getY(), direction.getZ()),
                 portalDirection, portalOffset.x, portalOffset.y, canCreatePortal, this.getSearchRadius());
-        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw() + (float) portalShape.c, location.getPitch()) : null;  // PAIL: rename position
+        return portalShape != null ? new Location(location.getWorld(), portalShape.a.getX(), portalShape.a.getY(), portalShape.a.getZ(), location.getYaw(), location.getPitch()) : null;  // PAIL: rename position
     }
 
     @Override
     public boolean createPortal(Location location) {
-        return createPortal(null, location);
+        return createPortal(null, location) != null;
     }
 
     @Override
-    public boolean createPortal(Entity entity, Location location) {
+    public Location createPortal(Entity entity, Location location) {
         PortalTravelAgent pta = ((CraftWorld) location.getWorld()).getHandle().getTravelAgent();
         return pta.createPortal(entity, location.getX(), location.getY(), location.getZ(), this.getCreationRadius());
     }

@@ -1,10 +1,11 @@
 --- a/net/minecraft/server/BlockPortal.java
 +++ b/net/minecraft/server/BlockPortal.java
-@@ -4,6 +4,13 @@
+@@ -4,6 +4,14 @@
  import java.util.Random;
  import javax.annotation.Nullable;
  
 +// CraftBukkit start
++import org.bukkit.block.BlockState;
 +import org.bukkit.craftbukkit.block.CraftBlock;
 +import org.bukkit.craftbukkit.block.CraftBlockState;
 +import org.bukkit.event.entity.EntityPortalEnterEvent;
@@ -14,7 +15,7 @@
  public class BlockPortal extends Block {
  
      public static final BlockStateEnum<EnumDirection.EnumAxis> AXIS = BlockProperties.D;
-@@ -34,7 +41,8 @@
+@@ -34,7 +42,8 @@
              }
  
              if (world.getType(blockposition).a((IBlockAccess) world, blockposition, EntityTypes.ZOMBIE_PIGMAN)) {
@@ -24,7 +25,7 @@
  
                  if (entity != null) {
                      entity.portalCooldown = entity.aW();
-@@ -48,8 +56,10 @@
+@@ -48,8 +57,10 @@
          BlockPortal.Shape blockportal_shape = this.b(generatoraccess, blockposition);
  
          if (blockportal_shape != null) {
@@ -37,7 +38,7 @@
          } else {
              return false;
          }
-@@ -85,6 +95,10 @@
+@@ -85,6 +96,10 @@
      @Override
      public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
          if (!entity.isPassenger() && !entity.isVehicle() && entity.canPortal()) {
@@ -48,7 +49,7 @@
              entity.c(blockposition);
          }
  
-@@ -177,6 +191,7 @@
+@@ -177,6 +192,7 @@
          private BlockPosition position;
          private int height;
          private int width;
@@ -56,7 +57,7 @@
  
          public Shape(GeneratorAccess generatoraccess, BlockPosition blockposition, EnumDirection.EnumAxis enumdirection_enumaxis) {
              this.a = generatoraccess;
-@@ -235,6 +250,9 @@
+@@ -235,6 +251,9 @@
          }
  
          protected int c() {
@@ -66,7 +67,7 @@
              int i;
  
              label56:
-@@ -257,11 +275,21 @@
+@@ -257,11 +276,21 @@
                          block = this.a.getType(blockposition.shift(this.d)).getBlock();
                          if (block != Blocks.OBSIDIAN) {
                              break label56;
@@ -88,7 +89,7 @@
                          }
                      }
                  }
-@@ -271,6 +299,11 @@
+@@ -271,6 +300,11 @@
                  if (this.a.getType(this.position.shift(this.c, i).up(this.height)).getBlock() != Blocks.OBSIDIAN) {
                      this.height = 0;
                      break;
@@ -100,7 +101,7 @@
                  }
              }
  
-@@ -294,7 +327,29 @@
+@@ -294,15 +328,37 @@
              return this.position != null && this.width >= 2 && this.width <= 21 && this.height >= 3 && this.height <= 21;
          }
  
@@ -108,34 +109,35 @@
 +        // CraftBukkit start - return boolean
 +        public boolean createPortal() {
 +            org.bukkit.World bworld = this.a.getMinecraftWorld().getWorld();
-+
-+            // Copy below for loop
-+            for (int i = 0; i < this.width; ++i) {
-+                BlockPosition blockposition = this.position.shift(this.c, i);
-+
-+                for (int j = 0; j < this.height; ++j) {
++            // CraftBukkit end
+             for (int i = 0; i < this.width; ++i) {
+                 BlockPosition blockposition = this.position.shift(this.c, i);
+ 
+                 for (int j = 0; j < this.height; ++j) {
+-                    this.a.setTypeAndData(blockposition.up(j), (IBlockData) Blocks.NETHER_PORTAL.getBlockData().set(BlockPortal.AXIS, this.b), 18);
++                    // CraftBukkit start - store blocks for event
 +                    BlockPosition pos = blockposition.up(j);
 +                    CraftBlockState state = CraftBlockState.getBlockState(this.a.getMinecraftWorld(), pos, 18);
 +                    state.setData((IBlockData) Blocks.NETHER_PORTAL.getBlockData().set(BlockPortal.AXIS, this.b));
 +                    blocks.add(state);
-+                }
-+            }
-+
++                    // CraftBukkit end
+                 }
+             }
+ 
++            // CraftBukkit start - call event
 +            PortalCreateEvent event = new PortalCreateEvent(blocks, bworld, null, PortalCreateEvent.CreateReason.FIRE);
 +            this.a.getMinecraftWorld().getMinecraftServer().server.getPluginManager().callEvent(event);
 +
 +            if (event.isCancelled()) {
 +                return false;
 +            }
++
++            for (BlockState blockstate : blocks) {
++                blockstate.update(true);
++            }
++
++            return true;
 +            // CraftBukkit end
-             for (int i = 0; i < this.width; ++i) {
-                 BlockPosition blockposition = this.position.shift(this.c, i);
- 
-@@ -303,6 +358,7 @@
-                 }
-             }
- 
-+            return true; // CraftBukkit
          }
  
          private boolean g() {

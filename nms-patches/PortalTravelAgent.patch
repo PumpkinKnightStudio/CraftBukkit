@@ -32,10 +32,10 @@
  
      public boolean a(Entity entity) {
 +        // CraftBukkit start - Allow for portal creation to be based on coordinates instead of entity and add custom creation radius
-+        return this.createPortal(entity.bukkitEntity, entity.locX, entity.locY, entity.locZ, 16);
++        return this.createPortal(entity.bukkitEntity, entity.locX, entity.locY, entity.locZ, 16) != null;
 +    }
 +
-+    public boolean createPortal(org.bukkit.entity.Entity entity, double x, double y, double z, int creationRadius) {
++    public org.bukkit.Location createPortal(org.bukkit.entity.Entity entity, double x, double y, double z, int creationRadius) {
 +        // CraftBukkit end
          boolean flag = true;
          double d0 = -1.0D;
@@ -100,50 +100,21 @@
                                  d4 = d1 * d1 + d3 * d3 + d2 * d2;
                                  if (d0 < 0.0D || d4 < d0) {
                                      d0 = d4;
-@@ -258,6 +273,7 @@
-             l5 = -l5;
-         }
- 
-+        org.bukkit.craftbukkit.util.BlockStateListPopulator blockList = new org.bukkit.craftbukkit.util.BlockStateListPopulator(this.world); // CraftBukkit - Use BlockStateListPopulator
-         if (d0 < 0.0D) {
-             i1 = MathHelper.clamp(i1, 70, this.world.getHeight() - 10);
-             j5 = i1;
-@@ -271,7 +287,7 @@
-                         boolean flag1 = l2 < 0;
- 
-                         blockposition_mutableblockposition.d(j3, l3, i4);
--                        this.world.setTypeUpdate(blockposition_mutableblockposition, flag1 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData());
-+                        blockList.setTypeAndData(blockposition_mutableblockposition, flag1 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData(), 3); // CraftBukkit
-                     }
-                 }
-             }
-@@ -281,7 +297,7 @@
+@@ -281,7 +296,7 @@
              for (i3 = -1; i3 < 4; ++i3) {
                  if (k2 == -1 || k2 == 2 || i3 == -1 || i3 == 3) {
                      blockposition_mutableblockposition.d(i5 + k2 * k5, j5 + i3, j2 + k2 * l5);
 -                    this.world.setTypeAndData(blockposition_mutableblockposition, Blocks.OBSIDIAN.getBlockData(), 3);
-+                    blockList.setTypeAndData(blockposition_mutableblockposition, Blocks.OBSIDIAN.getBlockData(), 3); // CraftBukkit
++                    this.world.setTypeUpdate(blockposition_mutableblockposition, Blocks.OBSIDIAN.getBlockData());
                  }
              }
          }
-@@ -291,10 +307,19 @@
-         for (i3 = 0; i3 < 2; ++i3) {
-             for (l2 = 0; l2 < 3; ++l2) {
-                 blockposition_mutableblockposition.d(i5 + i3 * k5, j5 + l2, j2 + i3 * l5);
--                this.world.setTypeAndData(blockposition_mutableblockposition, iblockdata, 18);
-+                blockList.setTypeAndData(blockposition_mutableblockposition, iblockdata, 18); // CraftBukkit
+@@ -295,7 +310,7 @@
              }
          }
  
-+        // CraftBukkit start
-+        org.bukkit.World bworld = this.world.getWorld();
-+        org.bukkit.event.world.PortalCreateEvent event = new org.bukkit.event.world.PortalCreateEvent((java.util.List<org.bukkit.block.BlockState>) (java.util.List) blockList.getList(), bworld, entity, org.bukkit.event.world.PortalCreateEvent.CreateReason.NETHER_PAIR);
-+
-+        this.world.getServer().getPluginManager().callEvent(event);
-+        if (!event.isCancelled()) {
-+            blockList.updateList();
-+        }
-+        // CraftBukkit end
-         return true;
+-        return true;
++        return new org.bukkit.Location(this.world.getWorld(), i5 + 0.5, j5, j2 + 0.5, entity.getLocation().getYaw(), entity.getLocation().getPitch()); // CraftBukkit - return portal location
      }
  
+     public void a(long i) {
