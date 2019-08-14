@@ -1,6 +1,34 @@
 --- a/net/minecraft/server/ChunkProviderServer.java
 +++ b/net/minecraft/server/ChunkProviderServer.java
-@@ -92,7 +92,7 @@
+@@ -25,7 +25,7 @@
+     private final WorldServer world;
+     private final Thread serverThread;
+     private final LightEngineThreaded lightEngine;
+-    private final ChunkProviderServer.a serverThreadQueue;
++    public final ChunkProviderServer.a serverThreadQueue; // CraftBukkit - private -> public
+     public final PlayerChunkMap playerChunkMap;
+     private final WorldPersistentData worldPersistentData;
+     private long lastTickTime;
+@@ -77,6 +77,18 @@
+         this.cacheChunk[0] = ichunkaccess;
+     }
+ 
++    // CraftBukkit start
++    @Nullable
++    public IChunkAccess getChunkAtImmediately(int x, int z) {
++        PlayerChunk chunkHolder = this.getChunk(ChunkCoordIntPair.pair(x, z));
++
++        // Bypass cache for MT-Safety
++        // This function is supposed to bypass ticket level
++
++        return chunkHolder == null ? null : chunkHolder.f();
++    }
++    // CraftBukkit end
++
+     @Nullable
+     @Override
+     public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {
+@@ -92,7 +104,7 @@
              for (int l = 0; l < 4; ++l) {
                  if (k == this.cachePos[l] && chunkstatus == this.cacheStatus[l]) {
                      ichunkaccess = this.cacheChunk[l];
@@ -9,7 +37,7 @@
                          return ichunkaccess;
                      }
                  }
-@@ -136,12 +136,12 @@
+@@ -136,12 +148,12 @@
              if (playerchunk == null) {
                  return null;
              } else {
@@ -24,7 +52,7 @@
  
                      if (ichunkaccess1 != null) {
                          this.a(k, ichunkaccess1, ChunkStatus.FULL);
-@@ -168,7 +168,15 @@
+@@ -168,7 +180,15 @@
          int l = 33 + ChunkStatus.a(chunkstatus);
          PlayerChunk playerchunk = this.getChunk(k);
  
@@ -41,7 +69,7 @@
              this.chunkMapDistance.a(TicketType.UNKNOWN, chunkcoordintpair, l, chunkcoordintpair);
              if (this.a(playerchunk, l)) {
                  GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
-@@ -187,7 +195,7 @@
+@@ -187,7 +207,7 @@
      }
  
      private boolean a(@Nullable PlayerChunk playerchunk, int i) {
@@ -50,7 +78,7 @@
      }
  
      public boolean isLoaded(int i, int j) {
-@@ -289,11 +297,31 @@
+@@ -289,11 +309,31 @@
  
      @Override
      public void close() throws IOException {
@@ -83,7 +111,7 @@
      public void tick(BooleanSupplier booleansupplier) {
          this.world.getMethodProfiler().enter("purge");
          this.chunkMapDistance.purgeTickets();
-@@ -313,13 +341,13 @@
+@@ -313,13 +353,13 @@
          this.lastTickTime = i;
          WorldData worlddata = this.world.getWorldData();
          boolean flag = worlddata.getType() == WorldType.DEBUG_ALL_BLOCK_STATES;
@@ -99,7 +127,7 @@
  
              this.world.getMethodProfiler().enter("naturalSpawnCount");
              int l = this.chunkMapDistance.b();
-@@ -348,8 +376,30 @@
+@@ -348,8 +388,30 @@
                              for (int j1 = 0; j1 < i1; ++j1) {
                                  EnumCreatureType enumcreaturetype = aenumcreaturetype1[j1];
  
@@ -131,7 +159,7 @@
  
                                      if (object2intmap.getInt(enumcreaturetype) <= k1) {
                                          SpawnerCreature.a(enumcreaturetype, (World) this.world, chunk, blockposition);
-@@ -497,12 +547,18 @@
+@@ -497,12 +559,18 @@
  
          @Override
          protected boolean executeNext() {

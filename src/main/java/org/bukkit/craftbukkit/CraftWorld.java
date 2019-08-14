@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
@@ -80,6 +81,7 @@ import net.minecraft.server.PacketPlayOutWorldEvent;
 import net.minecraft.server.PlayerChunk;
 import net.minecraft.server.ProtoChunkExtension;
 import net.minecraft.server.RayTrace;
+import net.minecraft.server.RegionFile;
 import net.minecraft.server.SoundCategory;
 import net.minecraft.server.Ticket;
 import net.minecraft.server.TicketType;
@@ -341,8 +343,21 @@ public class CraftWorld implements World {
 
     @Override
     public boolean isChunkGenerated(int x, int z) {
+        if (!Bukkit.isPrimaryThread()) {
+            return CompletableFuture.supplyAsync(() -> {
+                return CraftWorld.this.isChunkGenerated(x, z);
+            }, world.getChunkProvider().serverThreadQueue).join();
+        }
+        IChunkAccess chunk = world.getChunkProvider().getChunkAtImmediately(x, z);
+        if (chunk == null) {
+            chunk = world.getChunkProvider().playerChunkMap.getUnloadingChunk(x, z); // perhaps it's unloading?
+        }
+        if (chunk != null) {
+            return chunk.getChunkStatus().getType() == ChunkStatus.Type.LEVELCHUNK;
+        }
         try {
-            return isChunkLoaded(x, z) || world.getChunkProvider().playerChunkMap.chunkExists(new ChunkCoordIntPair(x, z));
+            ChunkStatus status = world.getChunkProvider().playerChunkMap.getChunkStatusOnDisk(new ChunkCoordIntPair(x, z));
+            return status != null && status.getType() == ChunkStatus.Type.LEVELCHUNK;
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -450,20 +465,51 @@ public class CraftWorld implements World {
 
     @Override
     public boolean loadChunk(int x, int z, boolean generate) {
-        IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, generate ? ChunkStatus.FULL : ChunkStatus.EMPTY, true);
+        ChunkCoordIntPair chunkPos = new ChunkCoordIntPair(x, z);
 
-        // If generate = false, but the chunk already exists, we will get this back.
-        if (chunk instanceof ProtoChunkExtension) {
-            // We then cycle through again to get the full chunk immediately, rather than after the ticket addition
-            chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, true);
-        }
-
-        if (chunk instanceof net.minecraft.server.Chunk) {
-            world.getChunkProvider().addTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
+        if (generate) {
+            world.getChunkProvider().addTicket(TicketType.PLUGIN, chunkPos, 1, Unit.INSTANCE);
+            world.getChunkAt(x, z);
             return true;
         }
 
-        return false;
+        IChunkAccess immediate = world.getChunkProvider().getChunkAtImmediately(x, z);
+        if (immediate == null) {
+            immediate = world.getChunkProvider().playerChunkMap.getUnloadingChunk(x, z);
+        }
+
+        if (immediate != null) {
+            if (immediate.getChunkStatus().getType() != ChunkStatus.Type.LEVELCHUNK) {
+                return false; // not full
+            }
+            world.getChunkProvider().addTicket(TicketType.PLUGIN, chunkPos, 1, Unit.INSTANCE);
+            world.getChunkAt(x, z);
+            return true;
+        }
+
+        RegionFile file;
+        try {
+            file = world.getChunkProvider().playerChunkMap.getRegionFile(chunkPos, false);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+
+
+        ChunkStatus status = file.getStatusIfCached(x, z);
+        if (!file.d(chunkPos) || (status != null && status.getType() != ChunkStatus.Type.LEVELCHUNK)) {
+            // not on disk or not full status
+            return false;
+        }
+
+        // load from disk only (so that we don't double-load on getChunkAt)
+        IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.EMPTY, true);
+        if (chunk.getChunkStatus().getType() != ChunkStatus.Type.LEVELCHUNK) {
+            return false; // not full status
+        }
+
+        world.getChunkProvider().addTicket(TicketType.PLUGIN, chunkPos, 1, Unit.INSTANCE);
+        world.getChunkAt(x, z);
+        return true;
     }
 
     @Override

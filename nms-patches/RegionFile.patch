@@ -1,0 +1,59 @@
+--- a/net/minecraft/server/RegionFile.java
++++ b/net/minecraft/server/RegionFile.java
+@@ -24,6 +24,30 @@
+     private final int[] d = new int[1024];
+     private final List<Boolean> e;
+ 
++    // CraftBukkit start - cache chunk status per region file
++    private final ChunkStatus[] statuses = new ChunkStatus[32 * 32];
++
++    private boolean closed; // this is to catch invalid accesses
++
++    // invoked on write/read from regionfiles ONLY
++    public void setStatus(int x, int z, ChunkStatus status) {
++        if (this.closed) {
++            // We've used an invalid region file.
++            throw new IllegalStateException("RegionFile is closed");
++        }
++        this.statuses[this.f(new ChunkCoordIntPair(x, z))] = status;
++    }
++
++    public ChunkStatus getStatusIfCached(int x, int z) {
++        if (this.closed) {
++            // We've used an invalid region file.
++            throw new IllegalStateException("RegionFile is closed");
++        }
++        final int location = this.f(new ChunkCoordIntPair(x, z));
++        return this.statuses[location];
++    }
++    // CraftBukkit end
++
+     public RegionFile(File file) throws IOException {
+         this.b = new RandomAccessFile(file, "rw");
+         if (this.b.length() < 4096L) {
+@@ -218,7 +242,7 @@
+         return this.c[this.f(chunkcoordintpair)];
+     }
+ 
+-    public boolean d(ChunkCoordIntPair chunkcoordintpair) {
++    public boolean d(ChunkCoordIntPair chunkcoordintpair) { // PAIL chunkExists
+         return this.getOffset(chunkcoordintpair) != 0;
+     }
+ 
+@@ -230,7 +254,7 @@
+         this.b.writeInt(i);
+     }
+ 
+-    private int f(ChunkCoordIntPair chunkcoordintpair) {
++    private int f(ChunkCoordIntPair chunkcoordintpair) { // PAIL getChunkLocation
+         return chunkcoordintpair.j() + chunkcoordintpair.k() * 32;
+     }
+ 
+@@ -243,6 +267,7 @@
+     }
+ 
+     public void close() throws IOException {
++        this.closed = true; // CraftBukkit
+         this.b.close();
+     }
+ 

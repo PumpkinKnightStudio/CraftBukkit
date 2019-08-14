@@ -145,16 +145,60 @@
  
              return either != null ? (String) either.map((chunk) -> {
                  return "done";
-@@ -769,7 +798,7 @@
+@@ -765,11 +794,51 @@
+         }
+     }
+ 
++    // CraftBukkit start - chunk status cache
++    public ChunkStatus getChunkStatusOnDisk(ChunkCoordIntPair chunkPos) throws IOException {
++        RegionFile regionFile = this.getRegionFile(chunkPos, false);
++
++        if (!regionFile.d(chunkPos)) {
++            return null;
++        }
++
++        ChunkStatus status = regionFile.getStatusIfCached(chunkPos.x, chunkPos.z);
++
++        if (status != null) {
++            return status;
++        }
++
++        NBTTagCompound compound = this.readChunkData(chunkPos); // this will update the region file cache
++
++        return ChunkRegionLoader.getStatus(compound);
++    }
++
++    public void updateChunkStatusOnDisk(ChunkCoordIntPair chunkPos, @Nullable NBTTagCompound compound) throws IOException {
++        this.getRegionFile(chunkPos, false).setStatus(chunkPos.x, chunkPos.z, ChunkRegionLoader.getStatus(compound));
++    }
++
++    // this is required for checking in loadChunk(x, z, false) and isGenerated(x, z) since the chunk holder is removed from
++    // the active chunk holder map and placed into pendingUnload
++    public IChunkAccess getUnloadingChunk(int chunkX, int chunkZ) {
++        PlayerChunk chunkHolder = this.pendingUnload.get(ChunkCoordIntPair.pair(chunkX, chunkZ));
++        return chunkHolder == null ? null : chunkHolder.f();
++    }
++    // CraftBukkit end
++
+     @Nullable
      private NBTTagCompound readChunkData(ChunkCoordIntPair chunkcoordintpair) throws IOException {
          NBTTagCompound nbttagcompound = this.read(chunkcoordintpair);
++        // CraftBukkit start - chunk status cache
++        if (nbttagcompound == null) {
++            return null;
++        }
++
++        nbttagcompound = this.getChunkData(this.world.getWorldProvider().getDimensionManager(), this.m, nbttagcompound, chunkcoordintpair, world); // CraftBukkit
  
 -        return nbttagcompound == null ? null : this.getChunkData(this.world.getWorldProvider().getDimensionManager(), this.m, nbttagcompound);
-+        return nbttagcompound == null ? null : this.getChunkData(this.world.getWorldProvider().getDimensionManager(), this.m, nbttagcompound, chunkcoordintpair, world); // CraftBukkit
++        this.updateChunkStatusOnDisk(chunkcoordintpair, nbttagcompound);
++
++        return nbttagcompound;
++        // CraftBukkit end
      }
  
      boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair) {
-@@ -1101,7 +1130,7 @@
+@@ -1101,7 +1170,7 @@
          public final Set<EntityPlayer> trackedPlayers = Sets.newHashSet();
  
          public EntityTracker(Entity entity, int i, int j, boolean flag) {
@@ -163,7 +207,7 @@
              this.tracker = entity;
              this.trackingDistance = i;
              this.e = SectionPosition.a(entity);
-@@ -1154,7 +1183,7 @@
+@@ -1154,7 +1223,7 @@
  
          public void updatePlayer(EntityPlayer entityplayer) {
              if (entityplayer != this.tracker) {
@@ -172,7 +216,7 @@
                  int i = Math.min(this.trackingDistance, (PlayerChunkMap.this.viewDistance - 1) * 16);
                  boolean flag = vec3d.x >= (double) (-i) && vec3d.x <= (double) i && vec3d.z >= (double) (-i) && vec3d.z <= (double) i && this.tracker.a(entityplayer);
  
-@@ -1170,6 +1199,17 @@
+@@ -1170,6 +1239,17 @@
                          }
                      }
  

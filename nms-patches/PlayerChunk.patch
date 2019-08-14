@@ -25,7 +25,7 @@
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
          CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(chunkstatus.c());
  
-@@ -80,9 +89,9 @@
+@@ -80,13 +89,13 @@
      @Nullable
      public Chunk getChunk() {
          CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture = this.a();
@@ -37,6 +37,11 @@
      }
  
      @Nullable
+-    public IChunkAccess f() {
++    public IChunkAccess f() { // PAIL getAnyChunkCachedImmediately
+         for (int i = PlayerChunk.CHUNK_STATUSES.size() - 1; i >= 0; --i) {
+             ChunkStatus chunkstatus = (ChunkStatus) PlayerChunk.CHUNK_STATUSES.get(i);
+             CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = this.getStatusFutureUnchecked(chunkstatus);
 @@ -223,7 +232,7 @@
          CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(i);
  
