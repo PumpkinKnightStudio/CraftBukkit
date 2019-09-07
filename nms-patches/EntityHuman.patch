@@ -229,7 +229,7 @@
      }
  
      public void openSign(TileEntitySign tileentitysign) {}
-@@ -911,8 +1003,15 @@
+@@ -911,13 +1003,24 @@
                      if (entity instanceof EntityLiving) {
                          f3 = ((EntityLiving) entity).getHealth();
                          if (j > 0 && !entity.isBurning()) {
@@ -247,7 +247,17 @@
                          }
                      }
  
-@@ -940,8 +1039,11 @@
+                     Vec3D vec3d = entity.getMot();
+-                    boolean flag5 = entity.damageEntity(DamageSource.playerAttack(this), f);
++                    // CraftBukkit start
++                    DamageSource damageSource = DamageSource.playerAttack(this);
++                    //boolean flag5 = entity.damageEntity(DamageSource.playerAttack(this), f);
++                    boolean flag5 = entity.damageEntity(damageSource, f);
++                    // CraftBukkit end
+ 
+                     if (flag5) {
+                         if (i > 0) {
+@@ -940,8 +1043,11 @@
                                  EntityLiving entityliving = (EntityLiving) iterator.next();
  
                                  if (entityliving != this && entityliving != entity && !this.r(entityliving) && (!(entityliving instanceof EntityArmorStand) || !((EntityArmorStand) entityliving).isMarker()) && this.h((Entity) entityliving) < 9.0D) {
@@ -260,7 +270,7 @@
                                  }
                              }
  
-@@ -950,9 +1052,26 @@
+@@ -950,9 +1056,26 @@
                          }
  
                          if (entity instanceof EntityPlayer && entity.velocityChanged) {
@@ -287,7 +297,7 @@
                          }
  
                          if (flag2) {
-@@ -997,7 +1116,14 @@
+@@ -997,7 +1120,14 @@
  
                              this.a(StatisticList.DAMAGE_DEALT, Math.round(f5 * 10.0F));
                              if (j > 0) {
@@ -303,19 +313,25 @@
                              }
  
                              if (this.world instanceof WorldServer && f5 > 2.0F) {
-@@ -1013,6 +1139,11 @@
+@@ -1013,6 +1143,17 @@
                          if (flag4) {
                              entity.extinguish();
                          }
-+                        // CraftBukkit start - resync on cancelled event
++                        // CraftBukkit start
 +                        if (this instanceof EntityPlayer) {
-+                            ((EntityPlayer) this).getBukkitEntity().updateInventory();
++                            // resync on cancelled event
++                            Player player = ((EntityPlayer) this).getBukkitEntity();
++                            player.updateInventory();
++                            // call PlayerInteractEntityEvent
++                            if(entity.isInvulnerable(damageSource) || (entity instanceof EntityArmorStand && entity.isInvisible())) {
++                                org.bukkit.craftbukkit.event.CraftEventFactory.callEvent(new org.bukkit.event.player.PlayerInteractEntityEvent(player, entity.getBukkitEntity()));
++                            }
 +                        }
 +                        // CraftBukkit end
                      }
                  }
  
-@@ -1072,15 +1203,15 @@
+@@ -1072,15 +1213,15 @@
          return this.bW;
      }
  
@@ -335,7 +351,7 @@
                  return Either.left(EntityHuman.EnumBedResult.NOT_POSSIBLE_HERE);
              }
  
-@@ -1108,6 +1239,34 @@
+@@ -1108,6 +1249,34 @@
                  }
              }
          }
@@ -370,7 +386,7 @@
  
          this.e(blockposition);
          this.sleepTicks = 0;
-@@ -1148,6 +1307,24 @@
+@@ -1148,6 +1317,24 @@
              ((WorldServer) this.world).everyoneSleeping();
          }
  
@@ -395,7 +411,7 @@
          this.sleepTicks = flag ? 0 : 100;
          if (flag2) {
              optional.ifPresent((blockposition) -> {
-@@ -1201,9 +1378,11 @@
+@@ -1201,9 +1388,11 @@
          if (blockposition != null) {
              this.g = blockposition;
              this.bU = flag;
@@ -407,7 +423,7 @@
          }
  
      }
-@@ -1275,7 +1454,11 @@
+@@ -1275,7 +1464,11 @@
              this.setMot(vec3d2.x, d3 * 0.6D, vec3d2.z);
              this.aO = f;
              this.fallDistance = 0.0F;
@@ -420,7 +436,7 @@
          } else {
              super.e(vec3d);
          }
-@@ -1597,26 +1780,31 @@
+@@ -1597,26 +1790,31 @@
  
      protected void releaseShoulderEntities() {
          if (this.e + 20L < this.world.getTime()) {
