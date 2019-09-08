@@ -11,7 +11,7 @@
  public class ItemMinecart extends Item {
  
      private static final IDispenseBehavior a = new DispenseBehaviorItem() {
-@@ -38,14 +43,43 @@
+@@ -38,14 +43,55 @@
                  }
              }
  
@@ -32,19 +32,31 @@
 +                return itemstack;
 +            }
 +
-+            if (!event.getItem().equals(craftItem)) {
++            IDispenseBehavior newDispenseBehavior = null;
++            ItemStack dispenseItem = itemstack;
++
++            org.bukkit.inventory.ItemStack eventItem = event.getItem();
++            if (!eventItem.equals(craftItem)) {
 +                itemstack.add(1);
-+                // Chain to handler for new item
-+                ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-+                IDispenseBehavior idispensebehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(eventStack.getItem());
-+                if (idispensebehavior != IDispenseBehavior.NONE && idispensebehavior != this) {
-+                    idispensebehavior.dispense(isourceblock, eventStack);
-+                    return itemstack;
-+                }
++                dispenseItem = CraftItemStack.asNMSCopy(eventItem);
++                newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
 +            }
 +
-+            itemstack1 = CraftItemStack.asNMSCopy(event.getItem());
-+            EntityMinecartAbstract entityminecartabstract = EntityMinecartAbstract.a(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), ((ItemMinecart) itemstack1.getItem()).b);
++            if (event.isDropItem()) {
++                if (dispenseItem == itemstack) {
++                    itemstack.add(1);
++                }
++                newDispenseBehavior = new DispenseBehaviorItem();
++            }
++
++            if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != this) {
++                newDispenseBehavior.dispense(isourceblock, dispenseItem);
++                return itemstack;
++            }
++
++            itemstack1 = CraftItemStack.asNMSCopy(eventItem);
++            org.bukkit.util.Vector eventVelocity = event.getVelocity();
++            EntityMinecartAbstract entityminecartabstract = EntityMinecartAbstract.a(world, eventVelocity.getX(), eventVelocity.getY(), eventVelocity.getZ(), ((ItemMinecart) itemstack1.getItem()).b);
  
              if (itemstack.hasName()) {
                  entityminecartabstract.setCustomName(itemstack.getName());
@@ -58,7 +70,7 @@
              return itemstack;
          }
  
-@@ -87,7 +121,12 @@
+@@ -87,7 +133,12 @@
                      entityminecartabstract.setCustomName(itemstack.getName());
                  }
  

@@ -11,7 +11,7 @@
  public class DispenseBehaviorShulkerBox extends DispenseBehaviorMaybe {
  
      public DispenseBehaviorShulkerBox() {}
-@@ -14,6 +19,30 @@
+@@ -14,6 +19,38 @@
              BlockPosition blockposition = isourceblock.getBlockPosition().shift(enumdirection);
              EnumDirection enumdirection1 = isourceblock.getWorld().isEmpty(blockposition.down()) ? enumdirection : EnumDirection.UP;
  
@@ -28,14 +28,22 @@
 +                return itemstack;
 +            }
 +
-+            if (!event.getItem().equals(craftItem)) {
-+                // Chain to handler for new item
-+                ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-+                IDispenseBehavior idispensebehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(eventStack.getItem());
-+                if (idispensebehavior != IDispenseBehavior.NONE && idispensebehavior != this) {
-+                    idispensebehavior.dispense(isourceblock, eventStack);
-+                    return itemstack;
-+                }
++            IDispenseBehavior newDispenseBehavior = null;
++            ItemStack dispenseItem = itemstack;
++
++            org.bukkit.inventory.ItemStack eventItem = event.getItem();
++            if (!eventItem.equals(craftItem)) {
++                dispenseItem = CraftItemStack.asNMSCopy(eventItem);
++                newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
++            }
++
++            if (event.isDropItem()) {
++                newDispenseBehavior = new DispenseBehaviorItem();
++            }
++
++            if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != this) {
++                newDispenseBehavior.dispense(isourceblock, dispenseItem);
++                return itemstack;
 +            }
 +            // CraftBukkit end
 +

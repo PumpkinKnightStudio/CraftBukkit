@@ -1,13 +1,19 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.server.BlockDispenser;
 import net.minecraft.server.Blocks;
+import net.minecraft.server.DispenseBehaviorItem;
+import net.minecraft.server.IDispenseBehavior;
+import net.minecraft.server.ItemStack;
+import net.minecraft.server.SourceBlock;
 import net.minecraft.server.TileEntityDispenser;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.projectiles.BlockProjectileSource;
@@ -60,5 +66,41 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
         } else {
             return false;
         }
+    }
+
+    @Override
+    public boolean dispenseItem(org.bukkit.inventory.ItemStack item) {
+        Preconditions.checkArgument(item != null, "item");
+        Block block = getBlock();
+        if (block.getType() != Material.DISPENSER) {
+            return false;
+        }
+
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+        if (!nmsItem.isEmpty()) {
+            CraftWorld world = (CraftWorld) this.getWorld();
+            IDispenseBehavior dispenseBehavior = BlockDispenser.REGISTRY.get(nmsItem.getItem());
+            nmsItem = dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
+            item.setAmount(nmsItem.getCount());
+        }
+        return true;
+    }
+
+    @Override
+    public boolean dropItem(org.bukkit.inventory.ItemStack item) {
+        Preconditions.checkArgument(item != null, "item");
+        Block block = getBlock();
+        if (block.getType() != Material.DISPENSER) {
+            return false;
+        }
+
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+        if (!nmsItem.isEmpty()) {
+            CraftWorld world = (CraftWorld) this.getWorld();
+            IDispenseBehavior dispenseBehavior = new DispenseBehaviorItem();
+            nmsItem = dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
+            item.setAmount(nmsItem.getCount());
+        }
+        return true;
     }
 }

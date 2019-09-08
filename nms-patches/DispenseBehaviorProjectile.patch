@@ -11,7 +11,7 @@
  public abstract class DispenseBehaviorProjectile extends DispenseBehaviorItem {
  
      public DispenseBehaviorProjectile() {}
-@@ -11,9 +16,38 @@
+@@ -11,9 +16,49 @@
          EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockData().get(BlockDispenser.FACING);
          IProjectile iprojectile = this.a(world, iposition, itemstack);
  
@@ -32,15 +32,26 @@
 +            return itemstack;
 +        }
 +
-+        if (!event.getItem().equals(craftItem)) {
++        IDispenseBehavior newDispenseBehavior = null;
++        ItemStack dispenseItem = itemstack;
++
++        org.bukkit.inventory.ItemStack eventItem = event.getItem();
++        if (!eventItem.equals(craftItem)) {
 +            itemstack.add(1);
-+            // Chain to handler for new item
-+            ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-+            IDispenseBehavior idispensebehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(eventStack.getItem());
-+            if (idispensebehavior != IDispenseBehavior.NONE && idispensebehavior != this) {
-+                idispensebehavior.dispense(isourceblock, eventStack);
-+                return itemstack;
++            dispenseItem = CraftItemStack.asNMSCopy(eventItem);
++            newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
++        }
++
++        if (event.isDropItem()) {
++            if (dispenseItem == itemstack) {
++                itemstack.add(1);
 +            }
++            newDispenseBehavior = new DispenseBehaviorItem();
++        }
++
++        if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != this) {
++            newDispenseBehavior.dispense(isourceblock, dispenseItem);
++            return itemstack;
 +        }
 +
 +        iprojectile.shoot(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), this.getPower(), this.a());
