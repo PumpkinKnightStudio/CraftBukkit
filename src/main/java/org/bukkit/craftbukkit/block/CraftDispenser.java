@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import java.util.function.Function;
 import com.google.common.base.Preconditions;
 import net.minecraft.server.BlockDispenser;
 import net.minecraft.server.Blocks;
@@ -19,6 +20,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.projectiles.BlockProjectileSource;
 
 public class CraftDispenser extends CraftLootable<TileEntityDispenser> implements Dispenser {
+
+    private static final Function<ItemStack, IDispenseBehavior> DISPENSE_BEHAVIOR = (item) -> BlockDispenser.REGISTRY.get(item.getItem());
+    private static final Function<ItemStack, IDispenseBehavior> DROP_BEHAVIOR = (item) -> new DispenseBehaviorItem();
 
     public CraftDispenser(final Block block) {
         super(block, TileEntityDispenser.class);
@@ -70,24 +74,15 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
 
     @Override
     public boolean dispenseItem(org.bukkit.inventory.ItemStack item) {
-        Preconditions.checkArgument(item != null, "item");
-        Block block = getBlock();
-        if (block.getType() != Material.DISPENSER) {
-            return false;
-        }
-
-        ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-        if (!nmsItem.isEmpty()) {
-            CraftWorld world = (CraftWorld) this.getWorld();
-            IDispenseBehavior dispenseBehavior = BlockDispenser.REGISTRY.get(nmsItem.getItem());
-            nmsItem = dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
-            item.setAmount(nmsItem.getCount());
-        }
-        return true;
+        return dispenseItem(item, DISPENSE_BEHAVIOR);
     }
 
     @Override
     public boolean dropItem(org.bukkit.inventory.ItemStack item) {
+        return dispenseItem(item, DROP_BEHAVIOR);
+    }
+
+    private boolean dispenseItem(org.bukkit.inventory.ItemStack item, Function<ItemStack, IDispenseBehavior> behaviorFunction) {
         Preconditions.checkArgument(item != null, "item");
         Block block = getBlock();
         if (block.getType() != Material.DISPENSER) {
@@ -97,7 +92,7 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
         ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
         if (!nmsItem.isEmpty()) {
             CraftWorld world = (CraftWorld) this.getWorld();
-            IDispenseBehavior dispenseBehavior = new DispenseBehaviorItem();
+            IDispenseBehavior dispenseBehavior = behaviorFunction.apply(nmsItem);
             nmsItem = dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
             item.setAmount(nmsItem.getCount());
         }
