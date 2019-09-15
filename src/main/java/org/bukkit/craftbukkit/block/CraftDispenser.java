@@ -93,8 +93,7 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
         if (!nmsItem.isEmpty()) {
             CraftWorld world = (CraftWorld) this.getWorld();
             IDispenseBehavior dispenseBehavior = behaviorFunction.apply(nmsItem);
-            nmsItem = dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
-            item.setAmount(nmsItem.getCount());
+            dispenseBehavior.dispense(new SourceBlock(world.getHandle(), this.getPosition()), nmsItem);
         }
         return true;
     }
