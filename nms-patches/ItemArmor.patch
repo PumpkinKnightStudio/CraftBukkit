@@ -5,54 +5,23 @@
  import java.util.UUID;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.block.BlockDispenseArmorEvent;
 +// CraftBukkit end
 +
  public class ItemArmor extends Item {
  
      private static final UUID[] k = new UUID[]{UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"), UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"), UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"), UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")};
-@@ -30,6 +35,43 @@
+@@ -29,6 +34,12 @@
+         } else {
              EntityLiving entityliving = (EntityLiving) list.get(0);
              EnumItemSlot enumitemslot = EntityInsentient.h(itemstack);
-             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
 +            // CraftBukkit start
-+            World world = isourceblock.getWorld();
-+            org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
-+            CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
-+
-+            BlockDispenseArmorEvent event = new BlockDispenseArmorEvent(block, craftItem.clone(), (org.bukkit.craftbukkit.entity.CraftLivingEntity) entityliving.getBukkitEntity());
-+            if (!BlockDispenser.eventFired) {
-+                world.getServer().getPluginManager().callEvent(event);
-+            }
-+
-+            if (event.isCancelled()) {
-+                itemstack.add(1);
-+                return itemstack;
-+            }
-+
-+            IDispenseBehavior newDispenseBehavior = null;
-+            ItemStack dispenseItem = itemstack;
-+
-+            org.bukkit.inventory.ItemStack eventItem = event.getItem();
-+            if (!eventItem.equals(craftItem)) {
-+                itemstack.add(1);
-+                dispenseItem = CraftItemStack.asNMSCopy(eventItem);
-+                newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
-+            }
-+
-+            if (event.isDropItem()) {
-+                if (dispenseItem == itemstack) {
-+                    itemstack.add(1);
-+                }
-+                newDispenseBehavior = new DispenseBehaviorItem();
-+            }
-+
-+            if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != ItemArmor.a) {
-+                newDispenseBehavior.dispense(isourceblock, dispenseItem);
++            BlockDispenseArmorEvent event = CraftEventFactory.callBlockDispenseArmorEvent(isourceblock, itemstack, 1, entityliving);
++            if (event == null) {
 +                return itemstack;
 +            }
 +            // CraftBukkit end
+             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
  
              entityliving.setSlot(enumitemslot, itemstack1);
-             if (entityliving instanceof EntityInsentient) {

@@ -4,65 +4,33 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.block.BlockDispenseEvent;
 +// CraftBukkit end
 +
  public class DispenseBehaviorBoat extends DispenseBehaviorItem {
  
      private final DispenseBehaviorItem b = new DispenseBehaviorItem();
-@@ -29,12 +34,51 @@
+@@ -29,11 +34,20 @@
              d3 = 0.0D;
          }
  
 -        EntityBoat entityboat = new EntityBoat(world, d0, d1 + d3, d2);
 +        // EntityBoat entityboat = new EntityBoat(world, d0, d1 + d3, d2);
 +        // CraftBukkit start
-+        ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-+        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
-+        CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
-+
-+        BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(d0, d1 + d3, d2));
-+        if (!BlockDispenser.eventFired) {
-+            world.getServer().getPluginManager().callEvent(event);
-+        }
-+
-+        if (event.isCancelled()) {
-+            itemstack.add(1);
++        BlockDispenseEvent event = CraftEventFactory.callBlockDispenseEvent(isourceblock, itemstack, 1, new org.bukkit.util.Vector(d0, d1 + d3, d2));
++        if (event == null) {
 +            return itemstack;
 +        }
 +
-+        IDispenseBehavior newDispenseBehavior = null;
-+        ItemStack dispenseItem = itemstack;
-+
-+        org.bukkit.inventory.ItemStack eventItem = event.getItem();
-+        if (!eventItem.equals(craftItem)) {
-+            itemstack.add(1);
-+            dispenseItem = CraftItemStack.asNMSCopy(eventItem);
-+            newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
-+        }
-+
-+        if (event.isDropItem()) {
-+            if (dispenseItem == itemstack) {
-+                itemstack.add(1);
-+            }
-+            newDispenseBehavior = new DispenseBehaviorItem();
-+        }
-+
-+        if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != this) {
-+            newDispenseBehavior.dispense(isourceblock, dispenseItem);
-+            return itemstack;
-+        }
-+
-+        EntityBoat entityboat = new EntityBoat(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
++        org.bukkit.util.Vector eventVelocity = event.getVelocity();
++        EntityBoat entityboat = new EntityBoat(world, eventVelocity.getX(), eventVelocity.getY(), eventVelocity.getZ());
 +        // CraftBukkit end
  
          entityboat.setType(this.c);
          entityboat.yaw = enumdirection.l();
 -        world.addEntity(entityboat);
--        itemstack.subtract(1);
-+        if (!world.addEntity(entityboat)) itemstack.add(1); // CraftBukkit
-+        // itemstack.subtract(1); // CraftBukkit - handled during event processing
++        if (!world.addEntity(entityboat)) return itemstack; // CraftBukkit
+         itemstack.subtract(1);
          return itemstack;
      }
- 

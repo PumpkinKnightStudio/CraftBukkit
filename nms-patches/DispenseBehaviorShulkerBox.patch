@@ -4,45 +4,20 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.block.BlockDispenseEvent;
 +// CraftBukkit end
 +
  public class DispenseBehaviorShulkerBox extends DispenseBehaviorMaybe {
  
      public DispenseBehaviorShulkerBox() {}
-@@ -14,6 +19,38 @@
+@@ -14,6 +19,13 @@
              BlockPosition blockposition = isourceblock.getBlockPosition().shift(enumdirection);
              EnumDirection enumdirection1 = isourceblock.getWorld().isEmpty(blockposition.down()) ? enumdirection : EnumDirection.UP;
  
 +            // CraftBukkit start
-+            org.bukkit.block.Block bukkitBlock = isourceblock.getWorld().getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
-+            CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
-+
-+            BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
-+            if (!BlockDispenser.eventFired) {
-+                isourceblock.getWorld().getServer().getPluginManager().callEvent(event);
-+            }
-+
-+            if (event.isCancelled()) {
-+                return itemstack;
-+            }
-+
-+            IDispenseBehavior newDispenseBehavior = null;
-+            ItemStack dispenseItem = itemstack;
-+
-+            org.bukkit.inventory.ItemStack eventItem = event.getItem();
-+            if (!eventItem.equals(craftItem)) {
-+                dispenseItem = CraftItemStack.asNMSCopy(eventItem);
-+                newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(dispenseItem.getItem());
-+            }
-+
-+            if (event.isDropItem()) {
-+                newDispenseBehavior = new DispenseBehaviorItem();
-+            }
-+
-+            if (newDispenseBehavior != null && newDispenseBehavior != IDispenseBehavior.NONE && newDispenseBehavior != this) {
-+                newDispenseBehavior.dispense(isourceblock, dispenseItem);
++            BlockDispenseEvent event = CraftEventFactory.callBlockDispenseEvent(isourceblock, itemstack, 1, new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
++            if (event == null) {
 +                return itemstack;
 +            }
 +            // CraftBukkit end

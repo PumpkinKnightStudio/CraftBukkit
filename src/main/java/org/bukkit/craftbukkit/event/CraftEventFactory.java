@@ -10,7 +10,9 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
+import net.minecraft.server.BlockDispenser;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.BlockPropertyInstrument;
 import net.minecraft.server.ChatMessage;
@@ -19,6 +21,7 @@ import net.minecraft.server.Container;
 import net.minecraft.server.ContainerMerchant;
 import net.minecraft.server.DamageSource;
 import net.minecraft.server.DimensionManager;
+import net.minecraft.server.DispenseBehaviorItem;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityAnimal;
 import net.minecraft.server.EntityAreaEffectCloud;
@@ -50,7 +53,9 @@ import net.minecraft.server.Explosion;
 import net.minecraft.server.GeneratorAccess;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.IChatBaseComponent;
+import net.minecraft.server.IDispenseBehavior;
 import net.minecraft.server.IInventory;
+import net.minecraft.server.ISourceBlock;
 import net.minecraft.server.ItemActionContext;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.Items;
@@ -116,6 +121,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockDispenseArmorEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockFormEvent;
@@ -201,6 +208,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 
 public class CraftEventFactory {
     public static final DamageSource MELTING = CraftDamageSource.copyOf(DamageSource.BURN);
@@ -226,6 +234,63 @@ public class CraftEventFactory {
     public static <T extends Event> T callEvent(T event) {
         Bukkit.getServer().getPluginManager().callEvent(event);
         return event;
+    }
+
+    /**
+     * BlockDispenseArmorEvent
+     * returns null to indicate abort
+     */
+    public static BlockDispenseArmorEvent callBlockDispenseArmorEvent(ISourceBlock sourceBlock, ItemStack originalItem, int dispensedAmount, EntityLiving entity) {
+        return callBlockDispenseEvent(sourceBlock, originalItem, dispensedAmount, (block, item) -> new BlockDispenseArmorEvent(block, item, (LivingEntity) entity.getBukkitEntity()));
+    }
+
+    /**
+     * BlockDispenseEvent
+     * returns null to indicate abort
+     */
+    public static BlockDispenseEvent callBlockDispenseEvent(ISourceBlock sourceBlock, ItemStack originalItem, int dispensedAmount, Vector velocity) {
+        return callBlockDispenseEvent(sourceBlock, originalItem, dispensedAmount, (block, item) -> new BlockDispenseEvent(block, item, velocity));
+    }
+
+    private static <T extends BlockDispenseEvent> T callBlockDispenseEvent(ISourceBlock sourceBlock, ItemStack originalItem, int dispensedAmount, BiFunction<Block, org.bukkit.inventory.ItemStack, T> eventCreator) {
+        BlockPosition blockPos = sourceBlock.getBlockPosition();
+        World world = sourceBlock.getWorld();
+        Block block = world.getWorld().getBlockAt(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        CraftItemStack craftItem = CraftItemStack.asCraftMirror(CraftItemStack.copyNMSStack(originalItem, dispensedAmount));
+
+        T event = eventCreator.apply(block, craftItem);
+        if (!BlockDispenser.eventFired) {
+            world.getServer().getPluginManager().callEvent(event);
+        } else {
+            return event; // continue with the original dispense behavior
+        }
+
+        if (event.isCancelled()) {
+            return null; // abort the original dispense behavior
+        }
+
+        IDispenseBehavior newDispenseBehavior = null;
+        ItemStack newDispensedItem = originalItem;
+
+        org.bukkit.inventory.ItemStack eventItem = event.getItem();
+        if (!eventItem.equals(craftItem)) {
+            newDispensedItem = CraftItemStack.asNMSCopy(eventItem);
+            newDispenseBehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(newDispensedItem.getItem());
+        }
+
+        if (event.isDropItem()) {
+            newDispenseBehavior = new DispenseBehaviorItem();
+        }
+
+        if (newDispenseBehavior == null) {
+            return event; // continue with the original dispense behavior
+        } else {
+            // run new dispense behavior and abort the original one:
+            if (newDispenseBehavior != IDispenseBehavior.NONE) {
+                newDispenseBehavior.dispense(sourceBlock, newDispensedItem);
+            }
+            return null;
+        }
     }
 
     /**
