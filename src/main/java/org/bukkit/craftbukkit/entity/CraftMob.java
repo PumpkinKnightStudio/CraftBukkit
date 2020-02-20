@@ -42,6 +42,36 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
     }
 
     @Override
+    public void setForwardMoveOverride(Float amount) {
+        getHandle().forwardMoveOverride = amount;
+    }
+
+    @Override
+    public Float getForwardMoveOverride() {
+        return getHandle().forwardMoveOverride;
+    }
+
+    @Override
+    public void setStrafeMoveOverride(Float amount) {
+        getHandle().strafeMoveOverride = amount;
+    }
+
+    @Override
+    public Float getStrafeMoveOverride() {
+        return getHandle().strafeMoveOverride;
+    }
+
+    @Override
+    public void setJumpOverride(Boolean jumping) {
+        getHandle().jumpOverride = jumping;
+    }
+
+    @Override
+    public Boolean getJumpOverride() {
+        return getHandle().jumpOverride;
+    }
+
+    @Override
     public EntityInsentient getHandle() {
         return (EntityInsentient) entity;
     }
