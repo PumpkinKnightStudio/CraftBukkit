@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import net.minecraft.server.AdvancementDataWorld;
 import net.minecraft.server.Block;
 import net.minecraft.server.ChatDeserializer;
@@ -263,28 +264,54 @@ public final class CraftMagicNumbers implements UnsafeValues {
         String minimumVersion = MinecraftServer.getServer().server.minimumAPI;
         int minimumIndex = SUPPORTED_API.indexOf(minimumVersion);
 
-        if (pdf.getAPIVersion() != null) {
-            int pluginIndex = SUPPORTED_API.indexOf(pdf.getAPIVersion());
+        if (!isLegacy(pdf)) {
+            String apiVersion = getSupportedAPIVersion(pdf);
+            int pluginIndex = SUPPORTED_API.indexOf(apiVersion);
 
-            if (pluginIndex == -1) {
-                throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
+            if (apiVersion == null) {
+                if (pdf.getAPIVersions().size() == 1) {
+                    throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersions().get(0));
+                } else {
+                    throw new InvalidPluginException("Unsupported API versions " + pdf.getAPIVersions());
+                }
             }
 
             if (pluginIndex < minimumIndex) {
-                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersions() + " is lower than the minimum allowed version. Please update or replace it.");
             }
         } else {
             if (minimumIndex == -1) {
                 CraftLegacy.init();
                 Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
             } else {
-                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+                throw new InvalidPluginException("Plugin API version (legacy) is lower than the minimum allowed version. Please update or replace it.");
             }
         }
     }
 
+    /**
+     * From a plugin's API versions, get the highest version supported by the server.
+     *
+     * @return an API version, or null if none are supported
+     */
+    @Nullable
+    private static String getSupportedAPIVersion(PluginDescriptionFile pdf) {
+        String result = null;
+        int pluginIndex = -1;
+
+        for (String testVersion : pdf.getAPIVersions()) {
+            int testIndex = SUPPORTED_API.indexOf(testVersion);
+            if (testIndex > pluginIndex) {
+                pluginIndex = testIndex;
+                result = testVersion;
+            }
+        }
+
+        return result;
+    }
+
     public static boolean isLegacy(PluginDescriptionFile pdf) {
-        return pdf.getAPIVersion() == null;
+        return pdf.getAPIVersions().isEmpty();
     }
 
     @Override
