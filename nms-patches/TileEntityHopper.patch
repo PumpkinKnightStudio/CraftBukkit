@@ -65,7 +65,7 @@
 +                        // CraftBukkit start - Call event when pushing items into other inventories
 +                        boolean canTransfer = a(iinventory, enumdirection).anyMatch(a -> {
 +                            ItemStack item = iinventory.getItem(a);
-+                            return item.isEmpty() || a(item, itemstack);
++                            return item.isEmpty() || (item.getMaxStackSize() > item.getCount() && a(item, itemstack));
 +                        });
 +
 +                        if(canTransfer) {
@@ -106,7 +106,7 @@
 +            // CraftBukkit start - Call event on collection of items from inventories into the hopper
 +            boolean canTransfer = a(ihopper, enumdirection).anyMatch(a -> {
 +                ItemStack item = ihopper.getItem(a);
-+                return item.isEmpty() || a(item, itemstack1);
++                return item.isEmpty() || (item.getMaxStackSize() > item.getCount() && a(item, itemstack1));
 +            });
  
 -            if (itemstack2.isEmpty()) {
