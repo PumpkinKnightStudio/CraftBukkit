@@ -65,7 +65,7 @@
 +                        // CraftBukkit start - Call event when pushing items into other inventories
 +                        boolean canTransfer = a(iinventory, enumdirection).anyMatch(a -> {
 +                            ItemStack item = iinventory.getItem(a);
-+                            return item.isEmpty() || (item.getMaxStackSize() > item.getCount() && a(item, itemstack));
++                            return a(iinventory, itemstack, a, enumdirection) && (item.isEmpty() || (item.getMaxStackSize() > item.getCount() && a(item, itemstack)));
 +                        });
 +
 +                        if(canTransfer) {
