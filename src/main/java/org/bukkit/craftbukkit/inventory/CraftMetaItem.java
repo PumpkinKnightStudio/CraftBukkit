@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,15 +43,20 @@ import net.minecraft.server.EnumItemSlot;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.ItemBlock;
+import net.minecraft.server.MinecraftKey;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
 import net.minecraft.server.NBTTagString;
+import net.minecraft.server.RegistryBlocks;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.EnumUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
@@ -260,6 +266,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     static final ItemMetaKey DAMAGE = new ItemMetaKey("Damage");
     @Specific(Specific.To.NBT)
     static final ItemMetaKey BLOCK_DATA = new ItemMetaKey("BlockStateTag");
+    static final ItemMetaKey CAN_PLACE_ON = new ItemMetaKey("CanPlaceOn");
+    static final ItemMetaKey CAN_DESTROY = new ItemMetaKey("CanDestroy");
     static final ItemMetaKey BUKKIT_CUSTOM_TAG = new ItemMetaKey("PublicBukkitValues");
 
     private IChatBaseComponent displayName;
@@ -269,6 +277,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private NBTTagCompound blockData;
     private Map<Enchantment, Integer> enchantments;
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
+    private Set<Keyed> canPlaceOn;
+    private Set<Keyed> canDestroy;
     private int repairCost;
     private int hideFlag;
     private boolean unbreakable;
@@ -304,6 +314,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         if (meta.hasAttributeModifiers()) {
             this.attributeModifiers = LinkedHashMultimap.create(meta.attributeModifiers);
+        }
+
+        if (meta.hasCanPlaceOn()) {
+            this.canPlaceOn = new HashSet<>(meta.canPlaceOn);
+        }
+
+        if (meta.hasCanDestroy()) {
+            this.canDestroy = new HashSet<>(meta.canDestroy);
         }
 
         this.repairCost = meta.repairCost;
@@ -365,6 +383,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         this.enchantments = buildEnchantments(tag, ENCHANTMENTS);
         this.attributeModifiers = buildModifiers(tag, ATTRIBUTES);
+        this.canPlaceOn = buildKeyedSet(tag, CAN_PLACE_ON);
+        this.canDestroy = buildKeyedSet(tag, CAN_DESTROY);
 
         if (tag.hasKey(REPAIR.NBT)) {
             repairCost = tag.getInt(REPAIR.NBT);
@@ -473,6 +493,34 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return modifiers;
     }
 
+    static Set<Keyed> buildKeyedSet(NBTTagCompound tag, ItemMetaKey key) {
+        if (!tag.hasKeyOfType(key.NBT, CraftMagicNumbers.NBT.TAG_LIST)) {
+            return null;
+        }
+
+        Set<Keyed> keyedValues = new HashSet<>();
+        NBTTagList keyedValuesNBT = tag.getList(key.NBT, CraftMagicNumbers.NBT.TAG_LIST);
+        int size = keyedValuesNBT.size();
+
+        for (int i = 0; i < size; i++) {
+            String string = keyedValuesNBT.getString(i);
+            if (string == null || string.isEmpty()) {
+                continue; // Ignore null or empty strings
+            }
+
+            if (string.startsWith("#")) { // Tags
+                Tag<Material> blockTag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, CraftNamespacedKey.fromString(string.substring(1)), Material.class);
+                if (blockTag != null) {
+                    keyedValues.add(blockTag);
+                }
+            } else { // Materials
+                keyedValues.add(CraftMagicNumbers.getMaterial(RegistryBlocks.BLOCK.get(MinecraftKey.a(string))));
+            }
+        }
+
+        return keyedValues;
+    }
+
     CraftMetaItem(Map<String, Object> map) {
         setDisplayName(SerializableMeta.getString(map, NAME.BUKKIT, true));
         setLocalizedName(SerializableMeta.getString(map, LOCNAME.BUKKIT, true));
@@ -494,6 +542,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         enchantments = buildEnchantments(map, ENCHANTMENTS);
         attributeModifiers = buildModifiers(map, ATTRIBUTES);
+        canPlaceOn = buildKeyedSet(map, CAN_PLACE_ON);
+        canDestroy = buildKeyedSet(map, CAN_DESTROY);
 
         Integer repairCost = SerializableMeta.getObject(Integer.class, map, REPAIR.BUKKIT, true);
         if (repairCost != null) {
@@ -612,6 +662,32 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return result;
     }
 
+    static Set<Keyed> buildKeyedSet(Map<String, Object> map, ItemMetaKey key) {
+        List<?> keyedList = SerializableMeta.getObject(List.class, map, key.BUKKIT, true);
+        if (keyedList == null) {
+            return null;
+        }
+
+        Set<Keyed> values = new HashSet<>();
+        for (Object entry : keyedList) {
+            if (entry == null || !(entry instanceof String)) {
+                continue;
+            }
+
+            String entryString = (String) entry;
+            if (entryString.startsWith("#")) { // Tags
+                Tag<Material> blockTag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, CraftNamespacedKey.fromString(entryString.substring(1)), Material.class);
+                if (blockTag != null) {
+                    values.add(blockTag);
+                }
+            } else { // Materials
+                values.add(CraftMagicNumbers.getMaterial(RegistryBlocks.BLOCK.get(MinecraftKey.a(entryString))));
+            }
+        }
+
+        return values;
+    }
+
     @Overridden
     void applyToItem(NBTTagCompound itemTag) {
         if (hasDisplayName()) {
@@ -639,6 +715,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         applyEnchantments(enchantments, itemTag, ENCHANTMENTS);
         applyModifiers(attributeModifiers, itemTag, ATTRIBUTES);
+        applyKeyedSet(canPlaceOn, itemTag, CAN_PLACE_ON);
+        applyKeyedSet(canDestroy, itemTag, CAN_DESTROY);
 
         if (hasRepairCost()) {
             itemTag.setInt(REPAIR.NBT, repairCost);
@@ -733,6 +811,28 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         tag.set(key.NBT, list);
     }
 
+    static void applyKeyedSet(Set<Keyed> keyedValues, NBTTagCompound tag, ItemMetaKey key) {
+        if (keyedValues == null || keyedValues.isEmpty()) {
+            return;
+        }
+
+        NBTTagList list = new NBTTagList();
+        for (Keyed keyedValue : keyedValues) {
+            if (keyedValue == null) {
+                continue;
+            }
+
+            if (keyedValue instanceof Material) {
+                list.add(NBTTagString.a(keyedValue.getKey().toString()));
+            }
+            else if (keyedValue instanceof Tag) {
+                list.add(NBTTagString.a("#" + keyedValue.getKey().toString()));
+            }
+        }
+
+        tag.set(key.NBT, list);
+    }
+
     void setDisplayTag(NBTTagCompound tag, String key, NBTBase value) {
         final NBTTagCompound display = tag.getCompound(DISPLAY.NBT);
 
@@ -750,7 +850,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Overridden
     boolean isEmpty() {
-        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || hasLore() || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers());
+        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || hasLore() || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers() || hasCanPlaceOn() || hasCanDestroy());
     }
 
     @Override
@@ -1077,6 +1177,44 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return this.persistentDataContainer;
     }
 
+    @Override
+    public void setCanPlaceOn(Collection<Keyed> values) {
+        for (Keyed keyed : values) {
+            Preconditions.checkArgument(keyed instanceof Material || keyed instanceof Tag, "keyed value must be of type Material or Tag");
+        }
+
+        this.canPlaceOn = (values != null && !values.isEmpty()) ? new HashSet<>(values) : null;
+    }
+
+    @Override
+    public Set<Keyed> getCanPlaceOn() {
+        return hasCanPlaceOn() ? new HashSet<>(canPlaceOn) : null;
+    }
+
+    @Override
+    public boolean hasCanPlaceOn() {
+        return canPlaceOn != null && !canPlaceOn.isEmpty();
+    }
+
+    @Override
+    public void setCanDestroy(Collection<Keyed> values) {
+        for (Keyed keyed : values) {
+            Preconditions.checkArgument(keyed instanceof Material || keyed instanceof Tag, "keyed value must be of type Material or Tag");
+        }
+
+        this.canDestroy = (values != null && !values.isEmpty()) ? new HashSet<>(values) : null;
+    }
+
+    @Override
+    public Set<Keyed> getCanDestroy() {
+        return hasCanDestroy() ? new HashSet<>(canDestroy) : null;
+    }
+
+    @Override
+    public boolean hasCanDestroy() {
+        return canDestroy != null && !canDestroy.isEmpty();
+    }
+
     private static boolean compareModifiers(Multimap<Attribute, AttributeModifier> first, Multimap<Attribute, AttributeModifier> second) {
         if (first == null || second == null) {
             return false;
@@ -1138,6 +1276,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 && (this.hasBlockData() ? that.hasBlockData() && this.blockData.equals(that.blockData) : !that.hasBlockData())
                 && (this.hasRepairCost() ? that.hasRepairCost() && this.repairCost == that.repairCost : !that.hasRepairCost())
                 && (this.hasAttributeModifiers() ? that.hasAttributeModifiers() && compareModifiers(this.attributeModifiers, that.attributeModifiers) : !that.hasAttributeModifiers())
+                && (this.hasCanPlaceOn() ? that.hasCanPlaceOn() && canPlaceOn.equals(that.canPlaceOn) : !that.hasCanPlaceOn())
+                && (this.hasCanDestroy() ? that.hasCanDestroy() && canDestroy.equals(that.canDestroy) : !that.hasCanDestroy())
                 && (this.unhandledTags.equals(that.unhandledTags))
                 && (this.persistentDataContainer.equals(that.persistentDataContainer))
                 && (this.hideFlag == that.hideFlag)
@@ -1177,6 +1317,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         hash = 61 * hash + (isUnbreakable() ? 1231 : 1237);
         hash = 61 * hash + (hasDamage() ? this.damage : 0);
         hash = 61 * hash + (hasAttributeModifiers() ? this.attributeModifiers.hashCode() : 0);
+        hash = 61 * hash + (hasCanPlaceOn() ? this.canPlaceOn.hashCode() : 0);
+        hash = 61 * hash + (hasCanDestroy() ? this.canDestroy.hashCode() : 0);
         hash = 61 * hash + version;
         return hash;
     }
@@ -1196,6 +1338,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
             if (this.hasAttributeModifiers()) {
                 clone.attributeModifiers = LinkedHashMultimap.create(this.attributeModifiers);
+            }
+            if (this.hasCanPlaceOn()) {
+                clone.canPlaceOn = new HashSet<>(this.canPlaceOn);
+            }
+            if (this.hasCanDestroy()) {
+                clone.canDestroy = new HashSet<>(this.canDestroy);
             }
             clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getRaw(), DATA_TYPE_REGISTRY);
             clone.hideFlag = this.hideFlag;
@@ -1238,6 +1386,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         serializeEnchantments(enchantments, builder, ENCHANTMENTS);
         serializeModifiers(attributeModifiers, builder, ATTRIBUTES);
+        serializeKeyedSet(canPlaceOn, builder, CAN_PLACE_ON);
+        serializeKeyedSet(canDestroy, builder, CAN_DESTROY);
 
         if (hasRepairCost()) {
             builder.put(REPAIR.BUKKIT, repairCost);
@@ -1321,6 +1471,28 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         builder.put(key.BUKKIT, mods);
     }
 
+    static void serializeKeyedSet(Set<Keyed> keyedValues, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {
+        if (keyedValues == null || keyedValues.isEmpty()) {
+            return;
+        }
+
+        ImmutableList.Builder<String> serializedValues = ImmutableList.builder();
+        for (Keyed value : keyedValues) {
+            if (value == null) {
+                continue;
+            }
+
+            if (value instanceof Material) {
+                serializedValues.add(value.getKey().toString());
+            }
+            if (value instanceof Tag) {
+                serializedValues.add("#" + value.getKey().toString());
+            }
+        }
+
+        builder.put(key.BUKKIT, serializedValues.build());
+    }
+
     static void safelyAdd(Iterable<?> addFrom, Collection<IChatBaseComponent> addTo, int maxItemLength) {
         if (addFrom == null) {
             return;
@@ -1393,6 +1565,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         ATTRIBUTES_UUID_HIGH.NBT,
                         ATTRIBUTES_UUID_LOW.NBT,
                         ATTRIBUTES_SLOT.NBT,
+                        CAN_PLACE_ON.NBT,
+                        CAN_DESTROY.NBT,
                         CraftMetaMap.MAP_SCALING.NBT,
                         CraftMetaMap.MAP_ID.NBT,
                         CraftMetaPotion.POTION_EFFECTS.NBT,
