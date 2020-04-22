@@ -818,10 +818,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         NBTTagList list = new NBTTagList();
         for (Keyed keyedValue : keyedValues) {
-            if (keyedValue == null) {
-                continue;
-            }
-
             if (keyedValue instanceof Material) {
                 list.add(NBTTagString.a(keyedValue.getKey().toString()));
             }
@@ -1478,14 +1474,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         ImmutableList.Builder<String> serializedValues = ImmutableList.builder();
         for (Keyed value : keyedValues) {
-            if (value == null) {
-                continue;
-            }
-
             if (value instanceof Material) {
                 serializedValues.add(value.getKey().toString());
             }
-            if (value instanceof Tag) {
+            else if (value instanceof Tag) {
                 serializedValues.add("#" + value.getKey().toString());
             }
         }
