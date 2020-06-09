@@ -23,6 +23,7 @@ import net.minecraft.server.DimensionManager;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityAnimal;
 import net.minecraft.server.EntityAreaEffectCloud;
+import net.minecraft.server.EntityCat;
 import net.minecraft.server.EntityDamageSource;
 import net.minecraft.server.EntityDamageSourceIndirect;
 import net.minecraft.server.EntityEnderCrystal;
@@ -99,6 +100,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Bat;
+import org.bukkit.entity.Cat;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -140,6 +142,7 @@ import org.bukkit.event.block.MoistureChangeEvent;
 import org.bukkit.event.block.NotePlayEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.BatToggleSleepEvent;
+import org.bukkit.event.entity.CatGiveGiftEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.CreeperPowerEvent;
@@ -270,6 +273,17 @@ public class CraftEventFactory {
         }
 
         return nmsBedResult;
+    }
+
+    /**
+     * Cat Give Gift Event
+     */
+    public static CatGiveGiftEvent callCatGiveGiftEvent(EntityCat cat, List<ItemStack> giftsToGive){
+        List<org.bukkit.inventory.ItemStack> bukkitGifts = new ArrayList<>(giftsToGive.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()));
+        Cat bukkitCat = (Cat) cat.getBukkitEntity();
+        CatGiveGiftEvent catGiveGiftEvent = new CatGiveGiftEvent(bukkitCat, bukkitGifts);
+        Bukkit.getPluginManager().callEvent(catGiveGiftEvent);
+        return catGiveGiftEvent;
     }
 
     /**
