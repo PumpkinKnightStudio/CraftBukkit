@@ -1,24 +1,61 @@
 --- a/net/minecraft/server/EntityCat.java
 +++ b/net/minecraft/server/EntityCat.java
-@@ -15,7 +15,7 @@
-     private static final DataWatcherObject<Boolean> bA = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
-     private static final DataWatcherObject<Boolean> bB = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
-     private static final DataWatcherObject<Integer> bC = DataWatcher.a(EntityCat.class, DataWatcherRegistry.b);
--    public static final Map<Integer, MinecraftKey> bx = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
-+    public static final Map<Integer, MinecraftKey> bx = (Map) SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // CraftBukkit - decompile error
+@@ -1,6 +1,12 @@
+ package net.minecraft.server;
+ 
+ import com.google.common.collect.Maps;
++//CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.event.entity.CatGiveGiftEvent;
++//Craft Bukkit end
++
+ import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -16,7 +22,7 @@
+     private static final DataWatcherObject<Boolean> bC = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
+     private static final DataWatcherObject<Boolean> bD = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
+     private static final DataWatcherObject<Integer> bE = DataWatcher.a(EntityCat.class, DataWatcherRegistry.b);
+-    public static final Map<Integer, MinecraftKey> bz = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
++    public static final Map<Integer, MinecraftKey> bz = (Map) SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // CraftBukkit - decompile error
          hashmap.put(0, new MinecraftKey("textures/entity/cat/tabby.png"));
          hashmap.put(1, new MinecraftKey("textures/entity/cat/black.png"));
          hashmap.put(2, new MinecraftKey("textures/entity/cat/red.png"));
-@@ -341,7 +341,7 @@
+@@ -347,7 +353,7 @@
                  }
-             } else if (this.k(itemstack)) {
+             } else if (this.i(itemstack)) {
                  this.a(entityhuman, itemstack);
 -                if (this.random.nextInt(3) == 0) {
 +                if (this.random.nextInt(3) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) { // CraftBukkit
                      this.tame(entityhuman);
-                     this.setWillSit(true);
+                     this.goalSit.setSitting(true);
                      this.world.broadcastEntityEffect(this, (byte) 7);
-@@ -529,7 +529,7 @@
+@@ -498,14 +504,18 @@
+             LootTable loottable = this.a.world.getMinecraftServer().getLootTableRegistry().getLootTable(LootTables.af);
+             LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.a.world)).set(LootContextParameters.POSITION, blockposition_mutableblockposition).set(LootContextParameters.THIS_ENTITY, this.a).a(random);
+             List<ItemStack> list = loottable.populateLoot(loottableinfo_builder.build(LootContextParameterSets.GIFT));
+-            Iterator iterator = list.iterator();
++            //Craftbukkit start
++            CatGiveGiftEvent catGiveGiftEvent = CraftEventFactory.callCatGiveGiftEvent(this.a, list);
++            if(!catGiveGiftEvent.isCancelled()) {
++                Iterator iterator = catGiveGiftEvent.getGifts().stream().map(CraftItemStack::asNMSCopy).iterator();
+ 
+-            while (iterator.hasNext()) {
+-                ItemStack itemstack = (ItemStack) iterator.next();
++                while (iterator.hasNext()) {
++                    ItemStack itemstack = (ItemStack) iterator.next();
+ 
+-                this.a.world.addEntity(new EntityItem(this.a.world, (double) ((float) blockposition_mutableblockposition.getX() - MathHelper.sin(this.a.aI * 0.017453292F)), (double) blockposition_mutableblockposition.getY(), (double) ((float) blockposition_mutableblockposition.getZ() + MathHelper.cos(this.a.aI * 0.017453292F)), itemstack));
++                    this.a.world.addEntity(new EntityItem(this.a.world, (double) ((float) blockposition_mutableblockposition.getX() - MathHelper.sin(this.a.aI * 0.017453292F)), (double) blockposition_mutableblockposition.getY(), (double) ((float) blockposition_mutableblockposition.getZ() + MathHelper.cos(this.a.aI * 0.017453292F)), itemstack));
++                }
+             }
+-
++            //CraftBukkit end
+         }
+ 
+         @Override
+@@ -533,7 +543,7 @@
      static class PathfinderGoalTemptChance extends PathfinderGoalTempt {
  
          @Nullable
@@ -27,7 +64,7 @@
          private final EntityCat d;
  
          public PathfinderGoalTemptChance(EntityCat entitycat, double d0, RecipeItemStack recipeitemstack, boolean flag) {
-@@ -564,9 +564,9 @@
+@@ -568,9 +578,9 @@
          private final EntityCat i;
  
          public a(EntityCat entitycat, Class<T> oclass, float f, double d0, double d1) {
