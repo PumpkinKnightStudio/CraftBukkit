@@ -1,0 +1,51 @@
+--- a/net/minecraft/server/BlockRespawnAnchor.java
++++ b/net/minecraft/server/BlockRespawnAnchor.java
+@@ -3,6 +3,10 @@
+ import java.util.Iterator;
+ import java.util.Optional;
+ import java.util.stream.Stream;
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.block.RespawnAnchorChargeEvent;
++// CraftBukkit end
+ 
+ public class BlockRespawnAnchor extends Block {
+ 
+@@ -20,7 +24,13 @@
+         if (enumhand == EnumHand.MAIN_HAND && !a(itemstack) && a(entityhuman.b(EnumHand.OFF_HAND))) {
+             return EnumInteractionResult.PASS;
+         } else if (a(itemstack) && h(iblockdata)) {
+-            a(world, blockposition, iblockdata);
++            // CraftBukkit start
++            RespawnAnchorChargeEvent event = CraftEventFactory.callRespawnAnchorChargeEvent(blockposition, entityhuman, enumhand, itemstack, iblockdata.get(BlockRespawnAnchor.a) + 1); // PAIL rename CHARGES
++            if (event.isCancelled()) {
++                return EnumInteractionResult.PASS;
++            }
++            setCharges(world, blockposition, iblockdata, event.getCharges());
++            // CraftBukkit end
+             if (!entityhuman.abilities.canInstantlyBuild) {
+                 itemstack.subtract(1);
+             }
+@@ -79,7 +89,7 @@
+ 
+     private void d(IBlockData iblockdata, World world, final BlockPosition blockposition) {
+         world.a(blockposition, false);
+-        Stream stream = EnumDirection.EnumDirectionLimit.HORIZONTAL.a();
++        Stream<EnumDirection> stream = EnumDirection.EnumDirectionLimit.HORIZONTAL.a(); // CraftBukkit - decompile error
+ 
+         blockposition.getClass();
+         boolean flag = stream.map(blockposition::shift).anyMatch((blockposition1) -> {
+@@ -105,6 +115,13 @@
+         return world.getDimensionManager().isRespawnAnchorWorks();
+     }
+ 
++    // CraftBukkit start - add setCharge(World, BlockPosition, IBlockData, int)
++    public static void setCharges(World world, BlockPosition blockposition, IBlockData iblockdata, int charge) {
++        world.setTypeAndData(blockposition, iblockdata.set(BlockRespawnAnchor.a, charge), 3);
++        world.playSound((EntityHuman) null, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, SoundEffects.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS, 1.0F, 1.0F);
++    }
++    // CraftBukkit end
++
+     public static void a(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockRespawnAnchor.a, (Integer) iblockdata.get(BlockRespawnAnchor.a) + 1), 3);
+         world.playSound((EntityHuman) null, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, SoundEffects.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS, 1.0F, 1.0F);

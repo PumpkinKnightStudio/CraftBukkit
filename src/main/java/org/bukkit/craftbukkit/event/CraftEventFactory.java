@@ -141,6 +141,7 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.FluidLevelChangeEvent;
 import org.bukkit.event.block.MoistureChangeEvent;
 import org.bukkit.event.block.NotePlayEvent;
+import org.bukkit.event.block.RespawnAnchorChargeEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.BatToggleSleepEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -1583,5 +1584,24 @@ public class CraftEventFactory {
     public static void callStriderTemperatureChangeEvent(EntityStrider strider, boolean shivering) {
         StriderTemperatureChangeEvent event = new StriderTemperatureChangeEvent((Strider) strider.getBukkitEntity(), shivering);
         Bukkit.getPluginManager().callEvent(event);
+    }
+
+    public static RespawnAnchorChargeEvent callRespawnAnchorChargeEvent(BlockPosition anchor, EntityHuman player, EnumHand hand, ItemStack item, int charges) {
+        CraftWorld world = player.world.getWorld();
+        Block anchorBlock = world.getBlockAt(anchor.getX(), anchor.getY(), anchor.getZ());
+
+        RespawnAnchorChargeEvent event = new RespawnAnchorChargeEvent(anchorBlock, (HumanEntity) player.getBukkitEntity(), (hand == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND), CraftItemStack.asBukkitCopy(item), charges);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static RespawnAnchorChargeEvent callRespawnAnchorChargeEvent(BlockPosition anchor, World nmsWorld, BlockPosition dispenser, ItemStack item, int charges) {
+        CraftWorld world = nmsWorld.getWorld();
+        Block anchorBlock = world.getBlockAt(anchor.getX(), anchor.getY(), anchor.getZ());
+        Block dispenserBlock = world.getBlockAt(dispenser.getX(), dispenser.getY(), dispenser.getZ());
+
+        RespawnAnchorChargeEvent event = new RespawnAnchorChargeEvent(anchorBlock, dispenserBlock, CraftItemStack.asBukkitCopy(item), charges);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
     }
 }
