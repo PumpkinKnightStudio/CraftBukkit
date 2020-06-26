@@ -560,16 +560,43 @@
                  if (iblockdata.a((Tag) TagsBlock.BEEHIVES, (blockbase_blockdata) -> {
                      return blockbase_blockdata.b(BlockBeehive.b);
                  }) && (Integer) iblockdata.get(BlockBeehive.b) >= 5) {
-@@ -528,8 +895,13 @@
+@@ -525,11 +892,40 @@
+                 World world = isourceblock.getWorld();
+                 IBlockData iblockdata = world.getType(blockposition);
+ 
++                // CraftBukkit start
++                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
++                CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
++
++                BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
++                if (!BlockDispenser.eventFired) {
++                    world.getServer().getPluginManager().callEvent(event);
++                }
++
++                if (event.isCancelled()) {
++                    return itemstack;
++                }
++
++                if (!event.getItem().equals(craftItem)) {
++                    // Chain to handler for new item
++                    ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
++                    IDispenseBehavior idispensebehavior = (IDispenseBehavior) BlockDispenser.REGISTRY.get(eventStack.getItem());
++                    if (idispensebehavior != IDispenseBehavior.NONE && idispensebehavior != this) {
++                        idispensebehavior.dispense(isourceblock, eventStack);
++                        return itemstack;
++                    }
++                }
++                // CraftBukkit end
++
                  this.a(true);
                  if (iblockdata.a(Blocks.RESPAWN_ANCHOR)) {
                      if ((Integer) iblockdata.get(BlockRespawnAnchor.a) != 4) {
 -                        BlockRespawnAnchor.a(world, blockposition, iblockdata);
 -                        itemstack.subtract(1);
 +                        // CraftBukkit start
-+                        RespawnAnchorChargeEvent event = CraftEventFactory.callRespawnAnchorChargeEvent(blockposition, world, isourceblock.getBlockPosition(), itemstack, iblockdata.get(BlockRespawnAnchor.a) + 1);
-+                        if (!event.isCancelled()) {
-+                            BlockRespawnAnchor.setCharges(world, blockposition, iblockdata, event.getCharges());
++                        RespawnAnchorChargeEvent anchorChargeEvent = CraftEventFactory.callRespawnAnchorChargeEvent(blockposition, world, isourceblock.getBlockPosition(), itemstack, iblockdata.get(BlockRespawnAnchor.a) + 1);
++                        if (!anchorChargeEvent.isCancelled()) {
++                            BlockRespawnAnchor.setCharges(world, blockposition, iblockdata, anchorChargeEvent.getCharges());
 +                            itemstack.subtract(1);
 +                        }
 +                        // CraftBukkit end
