@@ -530,6 +530,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
+    public void setFireProof(boolean fireproof) {
+        this.entity.fireproof = fireproof;
+    }
+
+    @Override
+    public boolean isFireProof() {
+        return entity.isFireProof();
+    }
+
+    @Override
     public void remove() {
         entity.die();
     }

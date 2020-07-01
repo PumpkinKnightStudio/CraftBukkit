@@ -73,6 +73,15 @@
          a(entityitem, itemstack, itemstack1);
          entityitem.pickupDelay = Math.max(entityitem.pickupDelay, entityitem1.pickupDelay);
          entityitem.age = Math.min(entityitem.age, entityitem1.age);
+@@ -207,7 +224,7 @@
+ 
+     @Override
+     public boolean isFireProof() {
+-        return this.getItemStack().getItem().u() || super.isFireProof();
++        return super.isFireProof(); // CraftBukkit
+     }
+ 
+     @Override
 @@ -219,6 +236,11 @@
          } else if (!this.getItemStack().getItem().a(damagesource)) {
              return false;
@@ -126,13 +135,14 @@
              if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(entityhuman.getUniqueID())) && entityhuman.inventory.pickup(itemstack)) {
                  entityhuman.receive(this, i);
                  if (itemstack.isEmpty()) {
-@@ -323,7 +379,9 @@
+@@ -323,7 +379,10 @@
      }
  
      public void setItemStack(ItemStack itemstack) {
 +        com.google.common.base.Preconditions.checkArgument(!itemstack.isEmpty(), "Cannot drop air"); // CraftBukkit
          this.getDataWatcher().set(EntityItem.ITEM, itemstack);
 +        this.getDataWatcher().markDirty(EntityItem.ITEM); // CraftBukkit - SPIGOT-4591, must mark dirty
++        this.fireproof = this.getItemStack().getItem().u(); // CraftBukkit - PAIL rename isFireProof
      }
  
      @Override
