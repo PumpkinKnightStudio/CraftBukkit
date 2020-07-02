@@ -1,0 +1,10 @@
+--- a/net/minecraft/server/DragonControllerLandedFlame.java
++++ b/net/minecraft/server/DragonControllerLandedFlame.java
+@@ -71,6 +71,7 @@
+             this.d.setDuration(200);
+             this.d.setParticle(Particles.DRAGON_BREATH);
+             this.d.addEffect(new MobEffect(MobEffects.HARM));
++            this.d.isDragonBreath = true; // CraftBukkit - MC-84595
+             this.a.world.addEntity(this.d);
+         }
+ 
