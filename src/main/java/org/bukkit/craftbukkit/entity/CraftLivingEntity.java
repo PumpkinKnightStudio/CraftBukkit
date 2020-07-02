@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.server.DamageSource;
 import net.minecraft.server.EntityArmorStand;
 import net.minecraft.server.EntityArrow;
@@ -14,6 +15,7 @@ import net.minecraft.server.EntityDragonFireball;
 import net.minecraft.server.EntityEgg;
 import net.minecraft.server.EntityEnderPearl;
 import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityFireworks;
 import net.minecraft.server.EntityFishingHook;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityInsentient;
@@ -45,11 +47,11 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Egg;
@@ -57,6 +59,7 @@ import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LingeringPotion;
@@ -428,13 +431,18 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
             launch = EntityTypes.LLAMA_SPIT.a(world);
 
-            ((EntityLlamaSpit) launch).shooter = getHandle();
+            ((EntityLlamaSpit) launch).setShooter(getHandle());
             ((EntityLlamaSpit) launch).shoot(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
             launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
 
             launch = new EntityShulkerBullet(world, getHandle(), null, null);
+            launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        } else if (Firework.class.isAssignableFrom(projectile)) {
+            Location location = getEyeLocation();
+
+            launch = new EntityFireworks(world, net.minecraft.server.ItemStack.b, getHandle());
             launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         }
 
@@ -588,17 +596,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public void attack(Entity target) {
         Preconditions.checkArgument(target != null, "target == null");
 
-        getHandle().B(((CraftEntity) target).getHandle()); // PAIL rename attack
+        getHandle().attackEntity(((CraftEntity) target).getHandle());
     }
 
     @Override
     public void swingMainHand() {
-        getHandle().a(EnumHand.MAIN_HAND); // PAIL rename swingHand
+        getHandle().swingHand(EnumHand.MAIN_HAND, true);
     }
 
     @Override
     public void swingOffHand() {
-        getHandle().a(EnumHand.OFF_HAND); // PAIL rename swingHand
+        getHandle().swingHand(EnumHand.OFF_HAND, true);
     }
 
     @Override
@@ -609,6 +617,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public boolean isCollidable() {
         return getHandle().collides;
+    }
+
+    @Override
+    public Set<UUID> getCollidableExemptions() {
+        return getHandle().collidableExemptions;
     }
 
     @Override

@@ -184,7 +184,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean applicableTo(Material type) {
-        switch(type){
+        switch (type) {
             case FURNACE:
             case CHEST:
             case TRAPPED_CHEST:
@@ -195,6 +195,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case ACACIA_WALL_SIGN:
             case BIRCH_SIGN:
             case BIRCH_WALL_SIGN:
+            case CRIMSON_SIGN:
+            case CRIMSON_WALL_SIGN:
             case DARK_OAK_SIGN:
             case DARK_OAK_WALL_SIGN:
             case JUNGLE_SIGN:
@@ -203,6 +205,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case OAK_WALL_SIGN:
             case SPRUCE_SIGN:
             case SPRUCE_WALL_SIGN:
+            case WARPED_SIGN:
+            case WARPED_WALL_SIGN:
             case SPAWNER:
             case BREWING_STAND:
             case ENCHANTING_TABLE:
@@ -237,6 +241,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case BELL:
             case BLAST_FURNACE:
             case CAMPFIRE:
+            case SOUL_CAMPFIRE:
             case JIGSAW:
             case LECTERN:
             case SMOKER:
@@ -293,13 +298,15 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                     break;
             }
         }
-        TileEntity te = (blockEntityTag == null) ? null : TileEntity.create(blockEntityTag);
+        TileEntity te = (blockEntityTag == null) ? null : TileEntity.create(CraftMagicNumbers.getBlock(material).getBlockData(), blockEntityTag);
 
         switch (material) {
         case ACACIA_SIGN:
         case ACACIA_WALL_SIGN:
         case BIRCH_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_SIGN:
+        case CRIMSON_WALL_SIGN:
         case DARK_OAK_SIGN:
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
@@ -308,6 +315,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_SIGN:
+        case WARPED_WALL_SIGN:
             if (te == null) {
                 te = new TileEntitySign();
             }
@@ -459,58 +468,59 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             }
             return new CraftEnchantingTable(material, (TileEntityEnchantTable) te);
         case ENDER_CHEST:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityEnderChest();
             }
             return new CraftEnderChest(material, (TileEntityEnderChest) te);
         case DAYLIGHT_DETECTOR:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityLightDetector();
             }
             return new CraftDaylightDetector(material, (TileEntityLightDetector) te);
         case COMPARATOR:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityComparator();
             }
             return new CraftComparator(material, (TileEntityComparator) te);
         case BARREL:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBarrel();
             }
             return new CraftBarrel(material, (TileEntityBarrel) te);
         case BELL:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBell();
             }
             return new CraftBell(material, (TileEntityBell) te);
         case BLAST_FURNACE:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBlastFurnace();
             }
             return new CraftBlastFurnace(material, (TileEntityBlastFurnace) te);
         case CAMPFIRE:
-            if (te == null){
+        case SOUL_CAMPFIRE:
+            if (te == null) {
                 te = new TileEntityCampfire();
             }
             return new CraftCampfire(material, (TileEntityCampfire) te);
         case JIGSAW:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityJigsaw();
             }
             return new CraftJigsaw(material, (TileEntityJigsaw) te);
         case LECTERN:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityLectern();
             }
             return new CraftLectern(material, (TileEntityLectern) te);
         case SMOKER:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntitySmoker();
             }
             return new CraftSmoker(material, (TileEntitySmoker) te);
         case BEE_NEST:
         case BEEHIVE:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBeehive();
             }
             return new CraftBeehive(material, (TileEntityBeehive) te);
@@ -529,6 +539,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case ACACIA_WALL_SIGN:
         case BIRCH_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_SIGN:
+        case CRIMSON_WALL_SIGN:
         case DARK_OAK_SIGN:
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
@@ -537,6 +549,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_SIGN:
+        case WARPED_WALL_SIGN:
             valid = blockState instanceof CraftSign;
             break;
         case CHEST:
@@ -668,6 +682,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             valid = blockState instanceof CraftBlastFurnace;
             break;
         case CAMPFIRE:
+        case SOUL_CAMPFIRE:
             valid = blockState instanceof CraftCampfire;
             break;
         case JIGSAW:

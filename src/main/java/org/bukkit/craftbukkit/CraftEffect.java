@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit;
 import net.minecraft.server.Block;
 import net.minecraft.server.Item;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -12,19 +13,22 @@ import org.bukkit.potion.Potion;
 public class CraftEffect {
     public static <T> int getDataValue(Effect effect, T data) {
         int datavalue;
-        switch(effect) {
+        switch (effect) {
         case VILLAGER_PLANT_GROW:
             datavalue = (Integer) data;
             break;
         case POTION_BREAK:
             datavalue = ((Potion) data).toDamageValue() & 0x3F;
             break;
+        case INSTANT_POTION_BREAK:
+            datavalue = ((Color) data).asRGB();
+            break;
         case RECORD_PLAY:
             Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
             datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
             break;
         case SMOKE:
-            switch((BlockFace) data) { // TODO: Verify (Where did these values come from...?)
+            switch ((BlockFace) data) { // TODO: Verify (Where did these values come from...?)
             case SOUTH_EAST:
                 datavalue = 0;
                 break;

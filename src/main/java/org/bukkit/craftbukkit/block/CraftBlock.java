@@ -254,10 +254,7 @@ public class CraftBlock implements Block {
         BlockFace[] values = BlockFace.values();
 
         for (BlockFace face : values) {
-            if ((this.getX() + face.getModX() == block.getX()) &&
-                (this.getY() + face.getModY() == block.getY()) &&
-                (this.getZ() + face.getModZ() == block.getZ())
-            ) {
+            if ((this.getX() + face.getModX() == block.getX()) && (this.getY() + face.getModY() == block.getY()) && (this.getZ() + face.getModZ() == block.getZ())) {
                 return face;
             }
         }
@@ -318,6 +315,8 @@ public class CraftBlock implements Block {
         case ACACIA_WALL_SIGN:
         case BIRCH_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_SIGN:
+        case CRIMSON_WALL_SIGN:
         case DARK_OAK_SIGN:
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
@@ -326,6 +325,8 @@ public class CraftBlock implements Block {
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_SIGN:
+        case WARPED_WALL_SIGN:
             return new CraftSign(this);
         case CHEST:
         case TRAPPED_CHEST:
@@ -452,6 +453,7 @@ public class CraftBlock implements Block {
         case BLAST_FURNACE:
             return new CraftBlastFurnace(this);
         case CAMPFIRE:
+        case SOUL_CAMPFIRE:
             return new CraftCampfire(this);
         case JIGSAW:
             return new CraftJigsaw(this);
@@ -554,18 +556,27 @@ public class CraftBlock implements Block {
     @Override
     public int getBlockPower(BlockFace face) {
         int power = 0;
-        BlockRedstoneWire wire = (BlockRedstoneWire) Blocks.REDSTONE_WIRE;
         net.minecraft.server.World world = this.world.getMinecraftWorld();
         int x = getX();
         int y = getY();
         int z = getZ();
-        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y - 1, z), EnumDirection.DOWN)) power = wire.getPower(power, world.getType(new BlockPosition(x, y - 1, z)));
-        if ((face == BlockFace.UP || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y + 1, z), EnumDirection.UP)) power = wire.getPower(power, world.getType(new BlockPosition(x, y + 1, z)));
-        if ((face == BlockFace.EAST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x + 1, y, z), EnumDirection.EAST)) power = wire.getPower(power, world.getType(new BlockPosition(x + 1, y, z)));
-        if ((face == BlockFace.WEST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x - 1, y, z), EnumDirection.WEST)) power = wire.getPower(power, world.getType(new BlockPosition(x - 1, y, z)));
-        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z - 1), EnumDirection.NORTH)) power = wire.getPower(power, world.getType(new BlockPosition(x, y, z - 1)));
-        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z + 1), EnumDirection.SOUTH)) power = wire.getPower(power, world.getType(new BlockPosition(x, y, z + 1)));
+        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y - 1, z), EnumDirection.DOWN)) power = getPower(power, world.getType(new BlockPosition(x, y - 1, z)));
+        if ((face == BlockFace.UP || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y + 1, z), EnumDirection.UP)) power = getPower(power, world.getType(new BlockPosition(x, y + 1, z)));
+        if ((face == BlockFace.EAST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x + 1, y, z), EnumDirection.EAST)) power = getPower(power, world.getType(new BlockPosition(x + 1, y, z)));
+        if ((face == BlockFace.WEST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x - 1, y, z), EnumDirection.WEST)) power = getPower(power, world.getType(new BlockPosition(x - 1, y, z)));
+        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z - 1), EnumDirection.NORTH)) power = getPower(power, world.getType(new BlockPosition(x, y, z - 1)));
+        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z + 1), EnumDirection.SOUTH)) power = getPower(power, world.getType(new BlockPosition(x, y, z + 1)));
         return power > 0 ? power : (face == BlockFace.SELF ? isBlockIndirectlyPowered() : isBlockFaceIndirectlyPowered(face)) ? 15 : 0;
+    }
+
+    private static int getPower(int i, IBlockData iblockdata) {
+        if (!iblockdata.getBlock().a(Blocks.REDSTONE_WIRE)) {
+            return i;
+        } else {
+            int j = iblockdata.get(BlockRedstoneWire.POWER);
+
+            return j > i ? j : i;
+        }
     }
 
     @Override
@@ -590,17 +601,20 @@ public class CraftBlock implements Block {
 
     @Override
     public boolean breakNaturally() {
-        return breakNaturally(new ItemStack(Material.AIR));
+        return breakNaturally(null);
     }
 
     @Override
     public boolean breakNaturally(ItemStack item) {
         // Order matters here, need to drop before setting to air so skulls can get their data
-        net.minecraft.server.Block block = this.getNMSBlock();
+        net.minecraft.server.IBlockData iblockdata = this.getNMS();
+        net.minecraft.server.Block block = iblockdata.getBlock();
+        net.minecraft.server.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
         boolean result = false;
 
-        if (block != null && block != Blocks.AIR) {
-            net.minecraft.server.Block.dropItems(getNMS(), world.getMinecraftWorld(), position, world.getTileEntity(position), null, CraftItemStack.asNMSCopy(item));
+        // Modelled off EntityHuman#hasBlock
+        if (block != Blocks.AIR && (item == null || !iblockdata.isAlwaysDestroyable() || nmsItem.canDestroySpecialBlock(iblockdata))) {
+            net.minecraft.server.Block.dropItems(iblockdata, world.getMinecraftWorld(), position, world.getTileEntity(position), null, nmsItem);
             result = true;
         }
 
@@ -609,7 +623,7 @@ public class CraftBlock implements Block {
 
     @Override
     public Collection<ItemStack> getDrops() {
-        return getDrops(new ItemStack(Material.AIR));
+        return getDrops(null);
     }
 
     @Override
@@ -623,7 +637,7 @@ public class CraftBlock implements Block {
         net.minecraft.server.ItemStack nms = CraftItemStack.asNMSCopy(item);
 
         // Modelled off EntityHuman#hasBlock
-        if (iblockdata.getMaterial().isAlwaysDestroyable() || nms.canDestroySpecialBlock(iblockdata)) {
+        if (item == null || !iblockdata.isAlwaysDestroyable() || nms.canDestroySpecialBlock(iblockdata)) {
             return net.minecraft.server.Block.getDrops(iblockdata, (WorldServer) world.getMinecraftWorld(), position, world.getTileEntity(position), entity == null ? null : ((CraftEntity) entity).getHandle(), nms)
                     .stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList());
         } else {

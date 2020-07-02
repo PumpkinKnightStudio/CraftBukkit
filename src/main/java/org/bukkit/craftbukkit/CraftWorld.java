@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.server.ArraySetSorted;
 import net.minecraft.server.AxisAlignedBB;
 import net.minecraft.server.BiomeBase;
@@ -67,7 +67,6 @@ import net.minecraft.server.EntityZombie;
 import net.minecraft.server.EnumDifficulty;
 import net.minecraft.server.EnumDirection;
 import net.minecraft.server.EnumMobSpawn;
-import net.minecraft.server.ExceptionWorldConflict;
 import net.minecraft.server.Explosion;
 import net.minecraft.server.GameRules;
 import net.minecraft.server.GroupDataEntity;
@@ -82,14 +81,15 @@ import net.minecraft.server.PersistentRaid;
 import net.minecraft.server.PlayerChunk;
 import net.minecraft.server.ProtoChunkExtension;
 import net.minecraft.server.RayTrace;
+import net.minecraft.server.SavedFile;
 import net.minecraft.server.SoundCategory;
+import net.minecraft.server.StructureGenerator;
 import net.minecraft.server.Ticket;
 import net.minecraft.server.TicketType;
 import net.minecraft.server.Unit;
 import net.minecraft.server.Vec3D;
+import net.minecraft.server.WorldGenFeatureHugeFungiConfiguration;
 import net.minecraft.server.WorldGenerator;
-import net.minecraft.server.WorldProvider;
-import net.minecraft.server.WorldProviderTheEnd;
 import net.minecraft.server.WorldServer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BlockChangeDelegate;
@@ -102,10 +102,10 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Raid;
 import org.bukkit.Sound;
 import org.bukkit.StructureType;
 import org.bukkit.TreeType;
-import org.bukkit.Raid;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Biome;
@@ -119,8 +119,6 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftItem;
-import org.bukkit.craftbukkit.entity.CraftLightningStrike;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
@@ -173,6 +171,7 @@ import org.bukkit.entity.Giant;
 import org.bukkit.entity.Golem;
 import org.bukkit.entity.Guardian;
 import org.bukkit.entity.Hanging;
+import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.Illager;
@@ -196,6 +195,7 @@ import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PolarBear;
@@ -219,6 +219,7 @@ import org.bukkit.entity.Spellcaster;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Squid;
 import org.bukkit.entity.Stray;
+import org.bukkit.entity.Strider;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.ThrownExpBottle;
@@ -237,6 +238,7 @@ import org.bukkit.entity.Wither;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.entity.Wolf;
+import org.bukkit.entity.Zoglin;
 import org.bukkit.entity.Zombie;
 import org.bukkit.entity.ZombieHorse;
 import org.bukkit.entity.ZombieVillager;
@@ -276,6 +278,7 @@ public class CraftWorld implements World {
     private int monsterSpawn = -1;
     private int animalSpawn = -1;
     private int waterAnimalSpawn = -1;
+    private int waterAmbientSpawn = -1;
     private int ambientSpawn = -1;
 
     private static final Random rand = new Random();
@@ -333,13 +336,14 @@ public class CraftWorld implements World {
 
     @Override
     public Chunk getChunkAt(Block block) {
+        Preconditions.checkArgument(block != null, "null block");
+
         return getChunkAt(block.getX() >> 4, block.getZ() >> 4);
     }
 
     @Override
     public boolean isChunkLoaded(int x, int z) {
-        net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAt(x, z, false);
-        return chunk != null;
+        return world.getChunkProvider().isChunkLoaded(x, z);
     }
 
     @Override
@@ -379,19 +383,18 @@ public class CraftWorld implements World {
 
     @Override
     public boolean unloadChunkRequest(int x, int z) {
-        net.minecraft.server.IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, false);
-        if (chunk != null) {
-            world.getChunkProvider().removeTicket(TicketType.PLUGIN, chunk.getPos(), 1, Unit.INSTANCE);
+        if (isChunkLoaded(x, z)) {
+            world.getChunkProvider().removeTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
         }
 
         return true;
     }
 
     private boolean unloadChunk0(int x, int z, boolean save) {
-        net.minecraft.server.Chunk chunk = (net.minecraft.server.Chunk) world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, false);
-        if (chunk == null) {
+        if (!isChunkLoaded(x, z)) {
             return true;
         }
+        net.minecraft.server.Chunk chunk = world.getChunkAt(x, z);
 
         chunk.mustNotSave = !save;
         unloadChunkRequest(x, z);
@@ -471,11 +474,15 @@ public class CraftWorld implements World {
 
     @Override
     public boolean isChunkLoaded(Chunk chunk) {
+        Preconditions.checkArgument(chunk != null, "null chunk");
+
         return isChunkLoaded(chunk.getX(), chunk.getZ());
     }
 
     @Override
     public void loadChunk(Chunk chunk) {
+        Preconditions.checkArgument(chunk != null, "null chunk");
+
         loadChunk(chunk.getX(), chunk.getZ());
         ((CraftChunk) getChunkAt(chunk.getX(), chunk.getZ())).getHandle().bukkitChunk = chunk;
     }
@@ -587,9 +594,7 @@ public class CraftWorld implements World {
         EntityItem entity = new EntityItem(world, loc.getX(), loc.getY(), loc.getZ(), CraftItemStack.asNMSCopy(item));
         entity.pickupDelay = 10;
         world.addEntity(entity, SpawnReason.CUSTOM);
-        // TODO this is inconsistent with how Entity.getBukkitEntity() works.
-        // However, this entity is not at the moment backed by a server entity class so it may be left.
-        return new CraftItem(world.getServer(), entity);
+        return (org.bukkit.entity.Item) entity.getBukkitEntity();
     }
 
     @Override
@@ -621,7 +626,7 @@ public class CraftWorld implements World {
             ((EntityTippedArrow) arrow).setType(CraftPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
         } else if (SpectralArrow.class.isAssignableFrom(clazz)) {
             arrow = EntityTypes.SPECTRAL_ARROW.a(world);
-        } else if (Trident.class.isAssignableFrom(clazz)){
+        } else if (Trident.class.isAssignableFrom(clazz)) {
             arrow = EntityTypes.TRIDENT.a(world);
         } else {
             arrow = EntityTypes.ARROW.a(world);
@@ -640,16 +645,19 @@ public class CraftWorld implements World {
 
     @Override
     public LightningStrike strikeLightning(Location loc) {
-        EntityLightning lightning = new EntityLightning(world, loc.getX(), loc.getY(), loc.getZ(), false);
+        EntityLightning lightning = EntityTypes.LIGHTNING_BOLT.a(world);
+        lightning.teleportAndSync(loc.getX(), loc.getY(), loc.getZ());
         world.strikeLightning(lightning);
-        return new CraftLightningStrike(server, lightning);
+        return (LightningStrike) lightning.getBukkitEntity();
     }
 
     @Override
     public LightningStrike strikeLightningEffect(Location loc) {
-        EntityLightning lightning = new EntityLightning(world, loc.getX(), loc.getY(), loc.getZ(), true);
+        EntityLightning lightning = EntityTypes.LIGHTNING_BOLT.a(world);
+        lightning.teleportAndSync(loc.getX(), loc.getY(), loc.getZ());
+        lightning.setEffect(true);
         world.strikeLightning(lightning);
-        return new CraftLightningStrike(server, lightning);
+        return (LightningStrike) lightning.getBukkitEntity();
     }
 
     @Override
@@ -660,35 +668,35 @@ public class CraftWorld implements World {
         net.minecraft.server.WorldGenFeatureConfiguration conf;
         switch (type) {
         case BIG_TREE:
-            gen = WorldGenerator.FANCY_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.FANCY_TREE;
             break;
         case BIRCH:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.BIRCH_TREE;
             break;
         case REDWOOD:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.SPRUCE_TREE;
             break;
         case TALL_REDWOOD:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.PINE_TREE;
             break;
         case JUNGLE:
-            gen = WorldGenerator.MEGA_JUNGLE_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.MEGA_JUNGLE_TREE;
             break;
         case SMALL_JUNGLE:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.JUNGLE_TREE_NOVINE;
             break;
         case COCOA_TREE:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.JUNGLE_TREE;
             break;
         case JUNGLE_BUSH:
-            gen = WorldGenerator.JUNGLE_GROUND_BUSH;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.JUNGLE_BUSH;
             break;
         case RED_MUSHROOM:
@@ -700,36 +708,44 @@ public class CraftWorld implements World {
             conf = BiomeDecoratorGroups.HUGE_BROWN_MUSHROOM;
             break;
         case SWAMP:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.SWAMP_TREE;
             break;
         case ACACIA:
-            gen = WorldGenerator.ACACIA_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.ACACIA_TREE;
             break;
         case DARK_OAK:
-            gen = WorldGenerator.DARK_OAK_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.DARK_OAK_TREE;
             break;
         case MEGA_REDWOOD:
-            gen = WorldGenerator.MEGA_SPRUCE_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.MEGA_PINE_TREE;
             break;
         case TALL_BIRCH:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.TALL_BIRCH_TREE_BEES_0002;
             break;
         case CHORUS_PLANT:
             ((BlockChorusFlower) Blocks.CHORUS_FLOWER).a(world, pos, rand, 8);
             return true;
+        case CRIMSON_FUNGUS:
+            gen = WorldGenerator.HUGE_FUNGUS;
+            conf = WorldGenFeatureHugeFungiConfiguration.b;
+            break;
+        case WARPED_FUNGUS:
+            gen = WorldGenerator.HUGE_FUNGUS;
+            conf = WorldGenFeatureHugeFungiConfiguration.d;
+            break;
         case TREE:
         default:
-            gen = WorldGenerator.NORMAL_TREE;
+            gen = WorldGenerator.TREE;
             conf = BiomeDecoratorGroups.NORMAL_TREE;
             break;
         }
 
-        return gen.generate(world, world.worldProvider.getChunkGenerator(), rand, pos, conf);
+        return gen.generate(world, world.getStructureManager(), world.getChunkProvider().getChunkGenerator(), rand, pos, conf);
     }
 
     @Override
@@ -758,12 +774,12 @@ public class CraftWorld implements World {
 
     @Override
     public String getName() {
-        return world.worldData.getName();
+        return world.worldDataServer.getName();
     }
 
     @Override
     public UUID getUID() {
-        return world.getDataManager().getUUID();
+        return world.uuid;
     }
 
     @Override
@@ -896,7 +912,7 @@ public class CraftWorld implements World {
     @Override
     public int getHighestBlockYAt(int x, int z, org.bukkit.HeightMap heightMap) {
         // Transient load for this tick
-        return world.getChunkAt(x >> 4, z >> 4).a(CraftHeightMap.toNMS(heightMap), x, z);
+        return world.getChunkAt(x >> 4, z >> 4).getHighestBlock(CraftHeightMap.toNMS(heightMap), x, z);
     }
 
     @Override
@@ -1009,7 +1025,7 @@ public class CraftWorld implements World {
     @SuppressWarnings("unchecked")
     @Deprecated
     public <T extends Entity> Collection<T> getEntitiesByClass(Class<T>... classes) {
-        return (Collection<T>)getEntitiesByClasses(classes);
+        return (Collection<T>) getEntitiesByClasses(classes);
     }
 
     @Override
@@ -1240,16 +1256,12 @@ public class CraftWorld implements World {
     @Override
     public void save() {
         this.server.checkSaveState();
-        try {
-            boolean oldSave = world.savingDisabled;
+        boolean oldSave = world.savingDisabled;
 
-            world.savingDisabled = false;
-            world.save(null, false, false);
+        world.savingDisabled = false;
+        world.save(null, false, false);
 
-            world.savingDisabled = oldSave;
-        } catch (ExceptionWorldConflict ex) {
-            ex.printStackTrace();
-        }
+        world.savingDisabled = oldSave;
     }
 
     @Override
@@ -1264,7 +1276,7 @@ public class CraftWorld implements World {
 
     @Override
     public void setDifficulty(Difficulty difficulty) {
-        this.getHandle().worldData.setDifficulty(EnumDifficulty.getById(difficulty.getValue()));
+        this.getHandle().worldDataServer.setDifficulty(EnumDifficulty.getById(difficulty.getValue()));
     }
 
     @Override
@@ -1289,12 +1301,12 @@ public class CraftWorld implements World {
 
     @Override
     public int getWeatherDuration() {
-        return world.worldData.getWeatherDuration();
+        return world.worldDataServer.getWeatherDuration();
     }
 
     @Override
     public void setWeatherDuration(int duration) {
-        world.worldData.setWeatherDuration(duration);
+        world.worldDataServer.setWeatherDuration(duration);
     }
 
     @Override
@@ -1304,23 +1316,23 @@ public class CraftWorld implements World {
 
     @Override
     public void setThundering(boolean thundering) {
-        world.worldData.setThundering(thundering);
+        world.worldDataServer.setThundering(thundering);
         setThunderDuration(0); // Reset weather duration (legacy behaviour)
     }
 
     @Override
     public int getThunderDuration() {
-        return world.worldData.getThunderDuration();
+        return world.worldDataServer.getThunderDuration();
     }
 
     @Override
     public void setThunderDuration(int duration) {
-        world.worldData.setThunderDuration(duration);
+        world.worldDataServer.setThunderDuration(duration);
     }
 
     @Override
     public long getSeed() {
-        return world.worldData.getSeed();
+        return world.getSeed();
     }
 
     @Override
@@ -1491,6 +1503,8 @@ public class CraftWorld implements World {
             } else if (LlamaSpit.class.isAssignableFrom(clazz)) {
                 entity = EntityTypes.LLAMA_SPIT.a(world);
                 entity.setPositionRotation(x, y, z, yaw, pitch);
+            } else if (Firework.class.isAssignableFrom(clazz)) {
+                entity = new EntityFireworks(world, x, y, z, net.minecraft.server.ItemStack.b);
             }
         } else if (Minecart.class.isAssignableFrom(clazz)) {
             if (PoweredMinecart.class.isAssignableFrom(clazz)) {
@@ -1561,7 +1575,7 @@ public class CraftWorld implements World {
                     entity = EntityTypes.HORSE.a(world);
                 }
             } else if (Skeleton.class.isAssignableFrom(clazz)) {
-                if (Stray.class.isAssignableFrom(clazz)){
+                if (Stray.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.STRAY.a(world);
                 } else if (WitherSkeleton.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.WITHER_SKELETON.a(world);
@@ -1591,7 +1605,7 @@ public class CraftWorld implements World {
                     entity = EntityTypes.CAT.a(world);
                 }
             } else if (PigZombie.class.isAssignableFrom(clazz)) {
-                entity = EntityTypes.ZOMBIE_PIGMAN.a(world);
+                entity = EntityTypes.ZOMBIFIED_PIGLIN.a(world);
             } else if (Zombie.class.isAssignableFrom(clazz)) {
                 if (Husk.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.HUSK.a(world);
@@ -1633,7 +1647,7 @@ public class CraftWorld implements World {
             } else if (Endermite.class.isAssignableFrom(clazz)) {
                 entity = EntityTypes.ENDERMITE.a(world);
             } else if (Guardian.class.isAssignableFrom(clazz)) {
-                if (ElderGuardian.class.isAssignableFrom(clazz)){
+                if (ElderGuardian.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.ELDER_GUARDIAN.a(world);
                 } else {
                     entity = EntityTypes.GUARDIAN.a(world);
@@ -1682,6 +1696,14 @@ public class CraftWorld implements World {
                 entity = EntityTypes.FOX.a(world);
             } else if (Bee.class.isAssignableFrom(clazz)) {
                 entity = EntityTypes.BEE.a(world);
+            } else if (Hoglin.class.isAssignableFrom(clazz)) {
+                entity = EntityTypes.HOGLIN.a(world);
+            } else if (Piglin.class.isAssignableFrom(clazz)) {
+                entity = EntityTypes.PIGLIN.a(world);
+            } else if (Strider.class.isAssignableFrom(clazz)) {
+                entity = EntityTypes.STRIDER.a(world);
+            } else if (Zoglin.class.isAssignableFrom(clazz)) {
+                entity = EntityTypes.ZOGLIN.a(world);
             }
 
             if (entity != null) {
@@ -1749,9 +1771,7 @@ public class CraftWorld implements World {
         } else if (ExperienceOrb.class.isAssignableFrom(clazz)) {
             entity = new EntityExperienceOrb(world, x, y, z, 0);
         } else if (LightningStrike.class.isAssignableFrom(clazz)) {
-            entity = new EntityLightning(world, x, y, z, false);
-        } else if (Firework.class.isAssignableFrom(clazz)) {
-            entity = new EntityFireworks(world, x, y, z, net.minecraft.server.ItemStack.a);
+            entity = EntityTypes.LIGHTNING_BOLT.a(world);
         } else if (AreaEffectCloud.class.isAssignableFrom(clazz)) {
             entity = new EntityAreaEffectCloud(world, x, y, z);
         } else if (EvokerFangs.class.isAssignableFrom(clazz)) {
@@ -1775,7 +1795,7 @@ public class CraftWorld implements World {
         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
 
         if (entity instanceof EntityInsentient) {
-            ((EntityInsentient) entity).prepare(getHandle(), getHandle().getDamageScaler(new BlockPosition(entity)), EnumMobSpawn.COMMAND, (GroupDataEntity) null, null);
+            ((EntityInsentient) entity).prepare(getHandle(), getHandle().getDamageScaler(entity.getChunkCoordinates()), EnumMobSpawn.COMMAND, (GroupDataEntity) null, null);
         }
 
         if (function != null) {
@@ -1861,7 +1881,7 @@ public class CraftWorld implements World {
 
     @Override
     public File getWorldFolder() {
-        return world.getDataManager().getDirectory();
+        return world.convertable.getWorldFolder(SavedFile.ROOT).toFile();
     }
 
     @Override
@@ -1886,12 +1906,12 @@ public class CraftWorld implements World {
 
     @Override
     public org.bukkit.WorldType getWorldType() {
-        return org.bukkit.WorldType.getByName(world.getWorldData().getType().name());
+        return world.isFlatWorld() ? org.bukkit.WorldType.FLAT : org.bukkit.WorldType.NORMAL;
     }
 
     @Override
     public boolean canGenerateStructures() {
-        return world.getWorldData().shouldGenerateMapFeatures();
+        return world.worldDataServer.getGeneratorSettings().shouldGenerateMapFeatures();
     }
 
     @Override
@@ -1901,7 +1921,7 @@ public class CraftWorld implements World {
 
     @Override
     public void setHardcore(boolean hardcore) {
-        world.getWorldData().setHardcore(hardcore);
+        world.worldDataServer.b.hardcore = true;
     }
 
     @Override
@@ -1932,6 +1952,16 @@ public class CraftWorld implements World {
     @Override
     public void setTicksPerWaterSpawns(int ticksPerWaterSpawns) {
         world.ticksPerWaterSpawns = ticksPerWaterSpawns;
+    }
+
+    @Override
+    public long getTicksPerWaterAmbientSpawns() {
+        return world.ticksPerWaterAmbientSpawns;
+    }
+
+    @Override
+    public void setTicksPerWaterAmbientSpawns(int ticksPerWaterAmbientSpawns) {
+        world.ticksPerWaterAmbientSpawns = ticksPerWaterAmbientSpawns;
     }
 
     @Override
@@ -2007,6 +2037,20 @@ public class CraftWorld implements World {
     }
 
     @Override
+    public int getWaterAmbientSpawnLimit() {
+        if (waterAmbientSpawn < 0) {
+            return server.getWaterAmbientSpawnLimit();
+        }
+
+        return waterAmbientSpawn;
+    }
+
+    @Override
+    public void setWaterAmbientSpawnLimit(int limit) {
+        waterAmbientSpawn = limit;
+    }
+
+    @Override
     public int getAmbientSpawnLimit() {
         if (ambientSpawn < 0) {
             return server.getAmbientSpawnLimit();
@@ -2050,7 +2094,7 @@ public class CraftWorld implements World {
         double z = loc.getZ();
 
         PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), SoundCategory.valueOf(category.name()), new Vec3D(x, y, z), volume, pitch);
-        world.getMinecraftServer().getPlayerList().sendPacketNearby(null, x, y, z, volume > 1.0F ? 16.0F * volume : 16.0D, this.world.getWorldProvider().getDimensionManager(), packet);
+        world.getMinecraftServer().getPlayerList().sendPacketNearby(null, x, y, z, volume > 1.0F ? 16.0F * volume : 16.0D, this.world.getDimensionKey(), packet);
     }
 
     private static Map<String, GameRules.GameRuleKey<?>> gamerules;
@@ -2255,7 +2299,7 @@ public class CraftWorld implements World {
     @Override
     public Location locateNearestStructure(Location origin, StructureType structureType, int radius, boolean findUnexplored) {
         BlockPosition originPos = new BlockPosition(origin.getX(), origin.getY(), origin.getZ());
-        BlockPosition nearest = getHandle().getChunkProvider().getChunkGenerator().findNearestMapFeature(getHandle(), structureType.getName(), originPos, radius, findUnexplored);
+        BlockPosition nearest = getHandle().getChunkProvider().getChunkGenerator().findNearestMapFeature(getHandle(), StructureGenerator.a.get(structureType.getName()), originPos, radius, findUnexplored);
         return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
     }
 
@@ -2277,11 +2321,6 @@ public class CraftWorld implements World {
 
     @Override
     public DragonBattle getEnderDragonBattle() {
-        WorldProvider worldProvider = getHandle().worldProvider;
-        if (!(worldProvider instanceof WorldProviderTheEnd)) {
-            return null;
-        }
-
-        return new CraftDragonBattle(((WorldProviderTheEnd) worldProvider).o()); // PAIL rename getDragonBattle
+        return (getHandle().getDragonBattle() == null) ? null : new CraftDragonBattle(getHandle().getDragonBattle());
     }
 }

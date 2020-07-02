@@ -48,7 +48,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
         old.die();
 
-        EntityItemFrame frame = new EntityItemFrame(world,position,direction);
+        EntityItemFrame frame = new EntityItemFrame(world, position, direction);
         frame.setItem(item);
         world.addEntity(frame);
         this.entity = frame;
@@ -126,6 +126,26 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         default:
             throw new IllegalArgumentException(rotation + " is not applicable to an ItemFrame");
         }
+    }
+
+    @Override
+    public boolean isVisible() {
+        return !getHandle().isInvisible();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        getHandle().setInvisible(!visible);
+    }
+
+    @Override
+    public boolean isFixed() {
+        return getHandle().ao;
+    }
+
+    @Override
+    public void setFixed(boolean fixed) {
+        getHandle().ao = fixed;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,15 +32,12 @@ import net.minecraft.server.PacketPlayInCloseWindow;
 import net.minecraft.server.PacketPlayOutOpenWindow;
 import net.minecraft.server.TileEntity;
 import net.minecraft.server.TileEntityContainer;
-import net.minecraft.server.Vec3D;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -48,6 +46,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.HumanEntity;
@@ -129,36 +128,6 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
-    public Location getBedSpawnLocation() {
-        World world = getServer().getWorld(getHandle().spawnWorld);
-        BlockPosition bed = getHandle().getBed();
-
-        if (world != null && bed != null) {
-            Optional<Vec3D> spawnLoc = EntityHuman.getBed(((CraftWorld) world).getHandle(), bed, getHandle().isRespawnForced());
-            if (spawnLoc.isPresent()) {
-                Vec3D vec = spawnLoc.get();
-                return new Location(world, vec.x, vec.y, vec.z);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void setBedSpawnLocation(Location location) {
-        setBedSpawnLocation(location, false);
-    }
-
-    @Override
-    public void setBedSpawnLocation(Location location, boolean override) {
-        if (location == null) {
-            getHandle().setRespawnPosition(null, override, false);
-        } else {
-            getHandle().setRespawnPosition(new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()), override, false);
-            getHandle().spawnWorld = location.getWorld().getName();
-        }
-    }
-
-    @Override
     public boolean sleep(Location location, boolean force) {
         Preconditions.checkArgument(location != null, "Location cannot be null");
         Preconditions.checkArgument(location.getWorld() != null, "Location needs to be in a world");
@@ -192,7 +161,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public Location getBedLocation() {
         Preconditions.checkState(isSleeping(), "Not sleeping");
 
-        BlockPosition bed = getHandle().getBed();
+        BlockPosition bed = getHandle().getBedPosition().get();
         return new Location(getWorld(), bed.getX(), bed.getY(), bed.getZ());
     }
 
@@ -350,7 +319,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
         String title = container.getBukkitView().getTitle();
 
-        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, new ChatComponentText(title)));
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0]));
         getHandle().activeContainer = container;
         getHandle().activeContainer.addSlotListener(player);
     }
@@ -420,7 +389,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         // Now open the window
         Containers<?> windowType = CraftContainer.getNotchInventoryType(inventory.getTopInventory());
         String title = inventory.getTitle();
-        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, new ChatComponentText(title)));
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0]));
         player.activeContainer = container;
         player.activeContainer.addSlotListener(player);
     }
@@ -491,6 +460,11 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
+    public float getAttackCooldown() {
+        return getHandle().getAttackCooldown(0.5f);
+    }
+
+    @Override
     public boolean hasCooldown(Material material) {
         Preconditions.checkArgument(material != null, "material");
 
@@ -531,6 +505,16 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     @Override
     public int undiscoverRecipes(Collection<NamespacedKey> recipes) {
         return getHandle().undiscoverRecipes(bukkitKeysToMinecraftRecipes(recipes));
+    }
+
+    @Override
+    public boolean hasDiscoveredRecipe(NamespacedKey recipe) {
+        return false;
+    }
+
+    @Override
+    public Set<NamespacedKey> getDiscoveredRecipes() {
+        return ImmutableSet.of();
     }
 
     private Collection<IRecipe<?>> bukkitKeysToMinecraftRecipes(Collection<NamespacedKey> recipeKeys) {

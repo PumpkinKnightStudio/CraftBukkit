@@ -19,9 +19,9 @@ import org.junit.Assert;
 
 /**
  *  If you are getting: java.lang.ExceptionInInitializerError
- *    at net.minecraft.server.StatisticList.<clinit>(SourceFile:58)
- *    at net.minecraft.server.Item.<clinit>(SourceFile:252)
- *    at net.minecraft.server.Block.<clinit>(Block.java:577)
+ *    at net.minecraft.server.StatisticList.&lt;clinit&gt;(SourceFile:58)
+ *    at net.minecraft.server.Item.&lt;clinit&gt;(SourceFile:252)
+ *    at net.minecraft.server.Block.&lt;clinit&gt;(Block.java:577)
  *
  *  extend this class to solve it.
  */
@@ -35,12 +35,14 @@ public abstract class AbstractTestingBase {
     static {
         DispenserRegistry.init();
         // Set up resource manager
-        ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA, Thread.currentThread());
+        ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA);
         // add tags and loot tables for unit tests
         resourceManager.a(TAG_REGISTRY = new TagRegistry());
         resourceManager.a(LOOT_TABLE_REGISTRY = new LootTableRegistry(new LootPredicateManager()));
         // Register vanilla pack
         resourceManager.a(MoreExecutors.directExecutor(), MoreExecutors.directExecutor(), Collections.singletonList(new ResourcePackVanilla("minecraft")), CompletableFuture.completedFuture(Unit.INSTANCE)).join();
+        // Bind tags
+        TAG_REGISTRY.bind();
 
         DummyServer.setup();
         DummyEnchantments.setup();
@@ -52,6 +54,6 @@ public abstract class AbstractTestingBase {
             }
         }
         INVALIDATED_MATERIALS = builder.build();
-        Assert.assertEquals("Expected 554 invalidated materials (got " + INVALIDATED_MATERIALS.size() + ")", 554, INVALIDATED_MATERIALS.size());
+        Assert.assertEquals("Expected 564 invalidated materials (got " + INVALIDATED_MATERIALS.size() + ")", 564, INVALIDATED_MATERIALS.size());
     }
 }

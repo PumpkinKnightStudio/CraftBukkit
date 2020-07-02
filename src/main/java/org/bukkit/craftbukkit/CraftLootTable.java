@@ -82,7 +82,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
                 Entity nmsLootedEntity = ((CraftEntity) context.getLootedEntity()).getHandle();
                 builder.set(LootContextParameters.THIS_ENTITY, nmsLootedEntity);
                 builder.set(LootContextParameters.DAMAGE_SOURCE, DamageSource.GENERIC);
-                builder.set(LootContextParameters.POSITION, new BlockPosition(nmsLootedEntity));
+                builder.set(LootContextParameters.POSITION, nmsLootedEntity.getChunkCoordinates());
             }
 
             if (context.getKiller() != null) {
@@ -100,18 +100,42 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
         }
 
         // SPIGOT-5603 - Avoid IllegalArgumentException in LootTableInfo#build()
-        LootContextParameterSet.a nmsBuilder = new LootContextParameterSet.a(); // PAIL rename Builder
-        for (LootContextParameter<?> param : getHandle().getLootContextParameterSet().a()) { // PAIL rename required
-            nmsBuilder.a(param); // PAIL rename addRequired
+        LootContextParameterSet.Builder nmsBuilder = new LootContextParameterSet.Builder();
+        for (LootContextParameter<?> param : getHandle().getLootContextParameterSet().getRequired()) {
+            nmsBuilder.addRequired(param);
         }
-        for (LootContextParameter<?> param : getHandle().getLootContextParameterSet().b()) { // PAIL rename optional
-            if (!getHandle().getLootContextParameterSet().a().contains(param)) { // PAIL rename required
-                nmsBuilder.b(param); // PAIL rename addOptional
+        for (LootContextParameter<?> param : getHandle().getLootContextParameterSet().getOptional()) {
+            if (!getHandle().getLootContextParameterSet().getRequired().contains(param)) {
+                nmsBuilder.addOptional(param);
             }
         }
-        nmsBuilder.b(LootContextParameters.LOOTING_MOD); // PAIL rename addOptional
+        nmsBuilder.addOptional(LootContextParameters.LOOTING_MOD);
 
-        return builder.build(nmsBuilder.a()); // PAIL rename build
+        return builder.build(nmsBuilder.build());
+    }
+
+    public static LootContext convertContext(LootTableInfo info) {
+        BlockPosition position = info.getContextParameter(LootContextParameters.POSITION);
+        Location location = new Location(info.getWorld().getWorld(), position.getX(), position.getY(), position.getZ());
+        LootContext.Builder contextBuilder = new LootContext.Builder(location);
+
+        if (info.hasContextParameter(LootContextParameters.KILLER_ENTITY)) {
+            CraftEntity killer = info.getContextParameter(LootContextParameters.KILLER_ENTITY).getBukkitEntity();
+            if (killer instanceof CraftHumanEntity) {
+                contextBuilder.killer((CraftHumanEntity) killer);
+            }
+        }
+
+        if (info.hasContextParameter(LootContextParameters.THIS_ENTITY)) {
+            contextBuilder.lootedEntity(info.getContextParameter(LootContextParameters.THIS_ENTITY).getBukkitEntity());
+        }
+
+        if (info.hasContextParameter(LootContextParameters.LOOTING_MOD)) {
+            contextBuilder.lootingModifier(info.getContextParameter(LootContextParameters.LOOTING_MOD));
+        }
+
+        contextBuilder.luck(info.getLuck());
+        return contextBuilder.build();
     }
 
     @Override

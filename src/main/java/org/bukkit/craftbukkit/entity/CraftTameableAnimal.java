@@ -14,7 +14,7 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
 
     @Override
     public EntityTameableAnimal getHandle() {
-        return (EntityTameableAnimal)super.getHandle();
+        return (EntityTameableAnimal) super.getHandle();
     }
 
     public UUID getOwnerUUID() {
@@ -74,7 +74,7 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
 
     public void setSitting(boolean sitting) {
         getHandle().setSitting(sitting);
-        getHandle().getGoalSit().setSitting(sitting);
+        getHandle().setWillSit(sitting);
     }
 
     @Override

@@ -19,7 +19,7 @@ public class CraftDragonBattle implements DragonBattle {
 
     @Override
     public EnderDragon getEnderDragon() {
-        Entity entity = handle.d.getEntity(handle.m);
+        Entity entity = handle.world.getEntity(handle.dragonUUID);
         return (entity != null) ? (EnderDragon) entity.getBukkitEntity() : null;
     }
 
@@ -30,39 +30,53 @@ public class CraftDragonBattle implements DragonBattle {
 
     @Override
     public Location getEndPortalLocation() {
-        return new Location(handle.d.getWorld(), handle.o.getX(), handle.o.getY(), handle.o.getZ());
+        if (handle.exitPortalLocation == null) {
+            return null;
+        }
+
+        return new Location(handle.world.getWorld(), handle.exitPortalLocation.getX(), handle.exitPortalLocation.getY(), handle.exitPortalLocation.getZ());
+    }
+
+    @Override
+    public boolean generateEndPortal(boolean withPortals) {
+        if (handle.exitPortalLocation != null || handle.j() != null) {
+            return false;
+        }
+
+        this.handle.a(withPortals);
+        return true;
     }
 
     @Override
     public boolean hasBeenPreviouslyKilled() {
-        return handle.d(); // PAIL rename hasBeenPreviouslyKilled
+        return handle.isPreviouslyKilled();
     }
 
     @Override
     public void initiateRespawn() {
-        this.handle.e(); // PAIL rename initiateRespawn
+        this.handle.initiateRespawn();
     }
 
     @Override
     public RespawnPhase getRespawnPhase() {
-        return toBukkitRespawnPhase(handle.p);
+        return toBukkitRespawnPhase(handle.respawnPhase);
     }
 
     @Override
     public boolean setRespawnPhase(RespawnPhase phase) {
         Preconditions.checkArgument(phase != null && phase != RespawnPhase.NONE, "Invalid respawn phase provided: %s", phase);
 
-        if (handle.p == null) {
+        if (handle.respawnPhase == null) {
             return false;
         }
 
-        this.handle.a(toNMSRespawnPhase(phase));
+        this.handle.setRespawnPhase(toNMSRespawnPhase(phase));
         return true;
     }
 
     @Override
     public void resetCrystals() {
-        this.handle.f(); // PAIL rename resetCrystals
+        this.handle.resetCrystals();
     }
 
     @Override

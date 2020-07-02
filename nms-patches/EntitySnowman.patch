@@ -1,18 +1,17 @@
 --- a/net/minecraft/server/EntitySnowman.java
 +++ b/net/minecraft/server/EntitySnowman.java
-@@ -1,6 +1,10 @@
+@@ -1,6 +1,9 @@
  package net.minecraft.server;
  
  import javax.annotation.Nullable;
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.player.PlayerShearEntityEvent;
 +// CraftBukkit end
  
- public class EntitySnowman extends EntityGolem implements IRangedEntity {
+ public class EntitySnowman extends EntityGolem implements IShearable, IRangedEntity {
  
-@@ -62,7 +66,7 @@
-             }
+@@ -60,7 +63,7 @@
+             int k = MathHelper.floor(this.locZ());
  
              if (this.world.getBiome(new BlockPosition(i, 0, k)).getAdjustedTemperature(new BlockPosition(i, j, k)) > 1.0F) {
 -                this.damageEntity(DamageSource.BURN, 1.0F);
@@ -20,7 +19,7 @@
              }
  
              if (!this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
-@@ -78,7 +82,7 @@
+@@ -76,7 +79,7 @@
                  BlockPosition blockposition = new BlockPosition(i, j, k);
  
                  if (this.world.getType(blockposition).isAir() && this.world.getBiome(blockposition).getAdjustedTemperature(blockposition) < 0.8F && iblockdata.canPlace(this.world, blockposition)) {
@@ -29,18 +28,15 @@
                  }
              }
          }
-@@ -110,6 +114,14 @@
+@@ -107,6 +110,11 @@
+         ItemStack itemstack = entityhuman.b(enumhand);
  
-         if (itemstack.getItem() == Items.SHEARS && this.hasPumpkin()) {
+         if (itemstack.getItem() == Items.SHEARS && this.canShear()) {
++            // CraftBukkit start
++            if (!CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand)) {
++                return EnumInteractionResult.PASS;
++            }
++            // CraftBukkit end
+             this.shear(SoundCategory.PLAYERS);
              if (!this.world.isClientSide) {
-+                // CraftBukkit start
-+                PlayerShearEntityEvent event = new PlayerShearEntityEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), this.getBukkitEntity());
-+                this.world.getServer().getPluginManager().callEvent(event);
-+
-+                if (event.isCancelled()) {
-+                    return false;
-+                }
-+                // CraftBukkit end
-                 this.setHasPumpkin(false);
                  itemstack.damage(1, entityhuman, (entityhuman1) -> {
-                     entityhuman1.broadcastItemBreak(enumhand);

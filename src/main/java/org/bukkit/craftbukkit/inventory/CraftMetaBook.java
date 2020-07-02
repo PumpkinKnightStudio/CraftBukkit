@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.ArrayList;
@@ -97,7 +96,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         setTitle(SerializableMeta.getString(map, BOOK_TITLE.BUKKIT, true));
 
         Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, BOOK_PAGES.BUKKIT, true);
-        if(pages != null) {
+        if (pages != null) {
             for (Object page : pages) {
                 if (page instanceof String) {
                     addPage((String) page);
@@ -128,7 +127,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
             if (hasPages()) {
                 NBTTagList list = new NBTTagList();
                 for (IChatBaseComponent page : pages) {
-                    list.add(NBTTagString.a(page == null ? "" : page.getLegacyString()));
+                    list.add(NBTTagString.a(page == null ? "" : CraftChatMessage.fromComponent(page)));
                 }
                 itemData.set(BOOK_PAGES.NBT, list);
             }

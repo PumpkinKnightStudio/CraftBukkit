@@ -56,22 +56,22 @@ public class ItemMetaTest extends AbstractTestingBase {
 
     static final int MAX_FIREWORK_POWER = 127; // Please update ItemStackFireworkTest if/when this gets changed.
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testPowerLimitExact() {
         newFireworkMeta().setPower(MAX_FIREWORK_POWER + 1);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testPowerLimitMax() {
         newFireworkMeta().setPower(Integer.MAX_VALUE);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testPowerLimitMin() {
         newFireworkMeta().setPower(Integer.MIN_VALUE);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testPowerLimitNegative() {
         newFireworkMeta().setPower(-1);
     }
@@ -321,6 +321,23 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaSuspiciousStew meta = ((CraftMetaSuspiciousStew) cleanStack.getItemMeta());
                     meta.addCustomEffect(PotionEffectType.CONFUSION.createEffect(1, 0), false);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.ITEM_FRAME) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final CraftMetaEntityTag meta = ((CraftMetaEntityTag) cleanStack.getItemMeta());
+                    meta.entityTag = new NBTTagCompound();
+                    meta.entityTag.setBoolean("Invisible", true);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.COMPASS) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final CraftMetaCompass meta = ((CraftMetaCompass) cleanStack.getItemMeta());
+                    meta.setLodestoneTracked(true);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }

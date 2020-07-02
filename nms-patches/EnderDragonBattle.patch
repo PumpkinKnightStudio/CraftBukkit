@@ -1,52 +1,33 @@
 --- a/net/minecraft/server/EnderDragonBattle.java
 +++ b/net/minecraft/server/EnderDragonBattle.java
-@@ -21,7 +21,7 @@
-     private static final Logger LOGGER = LogManager.getLogger();
-     private static final Predicate<Entity> b = IEntitySelector.a.and(IEntitySelector.a(0.0D, 128.0D, 0.0D, 192.0D));
-     public final BossBattleServer bossBattle;
--    private final WorldServer d;
-+    public final WorldServer d; // CraftBukkit PAIL private -> public, rename world
-     private final List<Integer> e;
-     private final ShapeDetector f;
-     private int g;
-@@ -30,10 +30,10 @@
-     private int j;
-     private boolean k;
-     private boolean l;
--    private UUID m;
-+    public UUID m; // CraftBukkit PAIL private -> public, rename dragonUUID
-     private boolean n;
--    private BlockPosition o;
--    private EnumDragonRespawn p;
-+    public BlockPosition o; // CraftBukkit PAIL private -> public, rename portalLocation
-+    public EnumDragonRespawn p; // CraftBukkit PAIL private -> public, rename respawnPhase
-     private int q;
-     private List<EntityEnderCrystal> r;
- 
-@@ -194,7 +194,7 @@
- 
+@@ -245,7 +245,7 @@
      }
  
--    protected void a(EnumDragonRespawn enumdragonrespawn) {
-+    public void a(EnumDragonRespawn enumdragonrespawn) { // CraftBukkit PAIL protected -> public, rename setRespawnPhase
-         if (this.p == null) {
-             throw new IllegalStateException("Dragon respawn isn't in progress, can't skip ahead in the animation.");
-         } else {
-@@ -376,7 +376,7 @@
+     @Nullable
+-    private ShapeDetector.ShapeDetectorCollection j() {
++    public ShapeDetector.ShapeDetectorCollection j() { // PAIL private -> public, rename getExitPortalShape()
+         int i;
+         int j;
+ 
+@@ -376,10 +376,10 @@
  
      private void a(BlockPosition blockposition) {
-         this.d.triggerEffect(3000, blockposition, 0);
--        WorldGenerator.END_GATEWAY.b((WorldGenFeatureConfiguration) WorldGenEndGatewayConfiguration.a()).a(this.d, this.d.getChunkProvider().getChunkGenerator(), new Random(), blockposition);
-+        WorldGenerator.END_GATEWAY.b(WorldGenEndGatewayConfiguration.a()).a(this.d, this.d.getChunkProvider().getChunkGenerator(), new Random(), blockposition); // CraftBukkit - decompile error
+         this.world.triggerEffect(3000, blockposition, 0);
+-        WorldGenerator.END_GATEWAY.b((WorldGenFeatureConfiguration) WorldGenEndGatewayConfiguration.a()).a(this.world, this.world.getStructureManager(), this.world.getChunkProvider().getChunkGenerator(), new Random(), blockposition);
++        WorldGenerator.END_GATEWAY.b(WorldGenEndGatewayConfiguration.a()).a(this.world, this.world.getStructureManager(), this.world.getChunkProvider().getChunkGenerator(), new Random(), blockposition); // CraftBukkit - decompile error
      }
  
-     private void a(boolean flag) {
+-    private void a(boolean flag) {
++    public void a(boolean flag) { // PAIL private -> public, rename generateExitPortal()
+         WorldGenEndTrophy worldgenendtrophy = new WorldGenEndTrophy(flag);
+ 
+         if (this.exitPortalLocation == null) {
 @@ -388,7 +388,7 @@
              }
          }
  
--        worldgenendtrophy.b((WorldGenFeatureConfiguration) WorldGenFeatureConfiguration.e).a(this.d, this.d.getChunkProvider().getChunkGenerator(), new Random(), this.o);
-+        worldgenendtrophy.b(WorldGenFeatureConfiguration.e).a(this.d, this.d.getChunkProvider().getChunkGenerator(), new Random(), this.o); // CraftBukkit - decompile error
+-        worldgenendtrophy.b((WorldGenFeatureConfiguration) WorldGenFeatureConfiguration.k).a(this.world, this.world.getStructureManager(), this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation);
++        worldgenendtrophy.b(WorldGenFeatureConfiguration.k).a(this.world, this.world.getStructureManager(), this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation); // CraftBukkit - decompile error
      }
  
      private EntityEnderDragon o() {

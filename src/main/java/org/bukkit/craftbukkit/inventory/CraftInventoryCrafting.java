@@ -43,7 +43,7 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
         List<net.minecraft.server.ItemStack> mcResultItems = getResultInventory().getContents();
 
         int i = 0;
-        for (i = 0; i < mcResultItems.size(); i++ ) {
+        for (i = 0; i < mcResultItems.size(); i++) {
             items[i] = CraftItemStack.asCraftMirror(mcResultItems.get(i));
         }
 
@@ -105,7 +105,7 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
             if (i < contents.length) {
                 getMatrixInventory().setItem(i, CraftItemStack.asNMSCopy(contents[i]));
             } else {
-                getMatrixInventory().setItem(i, net.minecraft.server.ItemStack.a);
+                getMatrixInventory().setItem(i, net.minecraft.server.ItemStack.b);
             }
         }
     }

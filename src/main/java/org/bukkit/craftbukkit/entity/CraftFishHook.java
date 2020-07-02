@@ -2,35 +2,17 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.EntityFishingHook;
-import net.minecraft.server.EntityHuman;
 import net.minecraft.server.MathHelper;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
-import org.bukkit.projectiles.ProjectileSource;
 
-public class CraftFishHook extends AbstractProjectile implements FishHook {
+public class CraftFishHook extends CraftProjectile implements FishHook {
     private double biteChance = -1;
 
     public CraftFishHook(CraftServer server, EntityFishingHook entity) {
         super(server, entity);
-    }
-
-    @Override
-    public ProjectileSource getShooter() {
-        if (getHandle().owner != null) {
-            return getHandle().owner.getBukkitEntity();
-        }
-
-        return null;
-    }
-
-    @Override
-    public void setShooter(ProjectileSource shooter) {
-        if (shooter instanceof CraftHumanEntity) {
-            getHandle().owner = (EntityHuman) ((CraftHumanEntity) shooter).entity;
-        }
     }
 
     @Override
@@ -54,9 +36,9 @@ public class CraftFishHook extends AbstractProjectile implements FishHook {
 
         if (this.biteChance == -1) {
             if (hook.world.isRainingAt(new BlockPosition(MathHelper.floor(hook.locX()), MathHelper.floor(hook.locY()) + 1, MathHelper.floor(hook.locZ())))) {
-                return 1/300.0;
+                return 1 / 300.0;
             }
-            return 1/500.0;
+            return 1 / 500.0;
         }
         return this.biteChance;
     }

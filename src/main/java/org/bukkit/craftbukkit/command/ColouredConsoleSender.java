@@ -14,10 +14,12 @@ public class ColouredConsoleSender extends CraftConsoleCommandSender {
     private final Terminal terminal;
     private final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
     private final ChatColor[] colors = ChatColor.values();
+    private final boolean jansiPassthrough;
 
     protected ColouredConsoleSender() {
         super();
         this.terminal = ((CraftServer) getServer()).getReader().getTerminal();
+        this.jansiPassthrough = Boolean.getBoolean("jansi.passthrough");
 
         replacements.put(ChatColor.BLACK, Ansi.ansi().a(Attribute.RESET).fg(Ansi.Color.BLACK).boldOff().toString());
         replacements.put(ChatColor.DARK_BLUE, Ansi.ansi().a(Attribute.RESET).fg(Ansi.Color.BLUE).boldOff().toString());
@@ -45,9 +47,10 @@ public class ColouredConsoleSender extends CraftConsoleCommandSender {
 
     @Override
     public void sendMessage(String message) {
-        if (terminal.isAnsiSupported()) {
+        // support jansi passthrough VM option when jansi doesn't detect an ANSI supported terminal
+        if (jansiPassthrough || terminal.isAnsiSupported()) {
             if (!conversationTracker.isConversingModaly()) {
-                String result = message;
+                String result = message.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "x(" + ChatColor.COLOR_CHAR + "[0-9a-f]){6}", ""); // Hex is not supported by ANSI console
                 for (ChatColor color : colors) {
                     if (replacements.containsKey(color)) {
                         result = result.replaceAll("(?i)" + color.toString(), replacements.get(color));

@@ -4,8 +4,10 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,11 +27,13 @@ import net.minecraft.server.DynamicOpsNBT;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.IRegistry;
 import net.minecraft.server.Item;
+import net.minecraft.server.LootDeserializationContext;
 import net.minecraft.server.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangsonParser;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
+import net.minecraft.server.SavedFile;
 import net.minecraft.server.SharedConstants;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -197,7 +201,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "5684afcc1835d966e1b6eb0ed3f72edb";
+        return "25afc67716a170ea965092c1067ff439";
     }
 
     @Override
@@ -220,19 +224,26 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return stack;
     }
 
+    private static File getBukkitDataPackFolder() {
+        return new File(MinecraftServer.getServer().a(SavedFile.DATAPACKS).toFile(), "bukkit");
+    }
+
     @Override
     public Advancement loadAdvancement(NamespacedKey key, String advancement) {
         if (Bukkit.getAdvancement(key) != null) {
             throw new IllegalArgumentException("Advancement " + key + " already exists.");
         }
+        MinecraftKey minecraftkey = CraftNamespacedKey.toMinecraft(key);
 
-        net.minecraft.server.Advancement.SerializedAdvancement nms = (net.minecraft.server.Advancement.SerializedAdvancement) ChatDeserializer.a(AdvancementDataWorld.DESERIALIZER, advancement, net.minecraft.server.Advancement.SerializedAdvancement.class);
+        JsonElement jsonelement = AdvancementDataWorld.DESERIALIZER.fromJson(advancement, JsonElement.class);
+        JsonObject jsonobject = ChatDeserializer.m(jsonelement, "advancement");
+        net.minecraft.server.Advancement.SerializedAdvancement nms = net.minecraft.server.Advancement.SerializedAdvancement.a(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().aI()));
         if (nms != null) {
-            MinecraftServer.getServer().getAdvancementData().REGISTRY.a(Maps.newHashMap(Collections.singletonMap(CraftNamespacedKey.toMinecraft(key), nms)));
+            MinecraftServer.getServer().getAdvancementData().REGISTRY.a(Maps.newHashMap(Collections.singletonMap(minecraftkey, nms)));
             Advancement bukkit = Bukkit.getAdvancement(key);
 
             if (bukkit != null) {
-                File file = new File(MinecraftServer.getServer().bukkitDataPackFolder, "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
+                File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
                 file.getParentFile().mkdirs();
 
                 try {
@@ -252,11 +263,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     @Override
     public boolean removeAdvancement(NamespacedKey key) {
-        File file = new File(MinecraftServer.getServer().bukkitDataPackFolder, "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
+        File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
         return file.delete();
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15");
+    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16");
 
     @Override
     public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {

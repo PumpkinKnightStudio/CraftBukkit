@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import net.minecraft.server.DimensionManager;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ResourceKey;
 import net.minecraft.server.WorldMap;
 import net.minecraft.server.WorldServer;
 import org.bukkit.Bukkit;
@@ -35,8 +35,7 @@ public final class CraftMapView implements MapView {
         if (text.startsWith("map_")) {
             try {
                 return Integer.parseInt(text.substring("map_".length()));
-            }
-            catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 throw new IllegalStateException("Map has non-numeric ID");
             }
         } else {
@@ -61,7 +60,7 @@ public final class CraftMapView implements MapView {
 
     @Override
     public World getWorld() {
-        DimensionManager dimension = worldMap.map;
+        ResourceKey<net.minecraft.server.World> dimension = worldMap.map;
         WorldServer world = MinecraftServer.getServer().getWorldServer(dimension);
 
         return (world == null) ? null : world.getWorld();
@@ -69,7 +68,7 @@ public final class CraftMapView implements MapView {
 
     @Override
     public void setWorld(World world) {
-        worldMap.map = ((CraftWorld) world).getHandle().getWorldProvider().getDimensionManager();
+        worldMap.map = ((CraftWorld) world).getHandle().getDimensionKey();
     }
 
     @Override
@@ -165,7 +164,7 @@ public final class CraftMapView implements MapView {
             for (int i = 0; i < buf.length; ++i) {
                 byte color = buf[i];
                 // There are 208 valid color id's, 0 -> 127 and -128 -> -49
-                if (color >= 0 || color <= -49) render.buffer[i] = color;
+                if (color >= 0 || color <= -21) render.buffer[i] = color;
             }
 
             for (int i = 0; i < canvas.getCursors().size(); ++i) {
