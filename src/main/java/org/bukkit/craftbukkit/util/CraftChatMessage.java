@@ -111,6 +111,10 @@ public final class CraftChatMessage {
                             throw new AssertionError("Unexpected message format");
                         }
                     } else { // Color resets formatting
+                        // Append any pending formatting, so that we can restore it when going back to plain text:
+                        if (needsAdd) {
+                            appendNewComponent(index);
+                        }
                         modifier = RESET.setColor(format);
                     }
                     needsAdd = true;
@@ -126,6 +130,7 @@ public final class CraftChatMessage {
                 case 3:
                     if (needsAdd) {
                         appendNewComponent(index);
+                        needsAdd = false;
                     }
                     currentChatComponent = null;
                     break;
