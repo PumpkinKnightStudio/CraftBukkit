@@ -114,14 +114,25 @@ public final class CraftChatMessage {
                         default:
                             throw new AssertionError("Unexpected message format");
                         }
+                    } else if (format == EnumChatFormat.RESET) {
+                        // Append any pending formatting, so that we can restore it when going back to plain text:
+                        if (needsAdd) {
+                            appendNewComponent(index);
+                        }
+                        // Explicitly reset all formatting:
+                        modifier = RESET.setColor(format);
+                        // We only explicitly reset the formatting once and then implicitly inherit those features to the following components:
+                        appendNewComponent(index, true);
                     } else { // Color resets formatting
                         // Append any pending formatting, so that we can restore it when going back to plain text:
                         if (needsAdd) {
                             appendNewComponent(index);
                         }
-                        modifier = RESET.setColor(format);
+                        modifier = ChatModifier.b.setColor(format);
                     }
-                    needsAdd = true;
+                    if (format != EnumChatFormat.RESET) {
+                        needsAdd = true;
+                    }
                     break;
                 case 2:
                     if (!(match.startsWith("http://") || match.startsWith("https://"))) {
@@ -150,13 +161,20 @@ public final class CraftChatMessage {
         }
 
         private void appendNewComponent(int index) {
-            IChatBaseComponent addition = new ChatComponentText(message.substring(currentIndex, index)).setChatModifier(modifier);
+            appendNewComponent(index, false);
+        }
+
+        private void appendNewComponent(int index, boolean inherit) {
+            IChatMutableComponent addition = new ChatComponentText(message.substring(currentIndex, index)).setChatModifier(modifier);
             currentIndex = index;
             if (currentChatComponent == null) {
                 currentChatComponent = new ChatComponentText("");
                 list.add(currentChatComponent);
             }
             currentChatComponent.addSibling(addition);
+            if (inherit) {
+                currentChatComponent = addition;
+            }
         }
 
         private IChatBaseComponent[] getOutput() {
