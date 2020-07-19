@@ -92,7 +92,7 @@ public final class CraftChatMessage {
                             if (needsAdd) {
                                 appendNewComponent(index);
                             }
-                            modifier = RESET.setColor(ChatHexColor.a(hex.toString()));
+                            modifier = ChatModifier.b.setColor(ChatHexColor.a(hex.toString()));
                             hex = null;
                         }
                     } else if (format.isFormat() && format != EnumChatFormat.RESET) {
