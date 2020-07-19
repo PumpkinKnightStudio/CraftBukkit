@@ -66,6 +66,7 @@ public final class CraftChatMessage {
             Matcher matcher = (keepNewlines ? INCREMENTAL_PATTERN_KEEP_NEWLINES : INCREMENTAL_PATTERN).matcher(message);
             String match = null;
             boolean needsAdd = false;
+            boolean alreadyReset = false;
             while (matcher.find()) {
                 int groupId = 0;
                 while ((match = matcher.group(++groupId)) == null) {
@@ -119,10 +120,19 @@ public final class CraftChatMessage {
                         if (needsAdd) {
                             appendNewComponent(index);
                         }
-                        // Explicitly reset all formatting:
-                        modifier = RESET.setColor(format);
-                        // We only explicitly reset the formatting once and then implicitly inherit those features to the following components:
-                        appendNewComponent(index, true);
+                        if (!alreadyReset) {
+                            alreadyReset = true;
+                            // Explicitly reset all formatting:
+                            modifier = RESET.setColor(format);
+                            // We only explicitly reset the formatting once and then implicitly inherit those features to the following components:
+                            appendNewComponent(index, true);
+                        } else {
+                            // We already inserted an explicit reset earlier, so clearing all formatting is enough.
+                            // We also don't need to inherit any text features for this reset.
+                            // However, we still append this reset as an empty component without text in order to be able to recognize it when converting back to plain text.
+                            modifier = ChatModifier.b.setColor(format);
+                            appendNewComponent(index, false);
+                        }
                     } else { // Color resets formatting
                         // Append any pending formatting, so that we can restore it when going back to plain text:
                         if (needsAdd) {
@@ -206,45 +216,39 @@ public final class CraftChatMessage {
         if (component == null) return "";
         StringBuilder out = new StringBuilder();
 
-        boolean hadFormat = false;
+        boolean first = true;
         for (IChatBaseComponent c : component) {
             ChatModifier modi = c.getChatModifier();
+            if (!first && c.getText().isEmpty() && ChatModifier.b.equals(modi)) {
+                out.append(ChatColor.RESET);
+                continue;
+            }
+            first = false;
             ChatHexColor color = modi.getColor();
-            if (!c.getText().isEmpty() || color != null) {
-                if (color != null) {
-                    if (color.format != null) {
-                        out.append(color.format);
-                    } else {
-                        out.append(ChatColor.COLOR_CHAR).append("x");
-                        for (char magic : color.b().substring(1).toCharArray()) {
-                            out.append(ChatColor.COLOR_CHAR).append(magic);
-                        }
+            if (color != null) {
+                if (color.format != null) {
+                    out.append(color.format);
+                } else {
+                    out.append(ChatColor.COLOR_CHAR).append("x");
+                    for (char magic : color.b().substring(1).toCharArray()) {
+                        out.append(ChatColor.COLOR_CHAR).append(magic);
                     }
-                    hadFormat = true;
-                } else if (hadFormat) {
-                    out.append(ChatColor.RESET);
-                    hadFormat = false;
                 }
             }
             if (modi.isBold()) {
                 out.append(EnumChatFormat.BOLD);
-                hadFormat = true;
             }
             if (modi.isItalic()) {
                 out.append(EnumChatFormat.ITALIC);
-                hadFormat = true;
             }
             if (modi.isUnderlined()) {
                 out.append(EnumChatFormat.UNDERLINE);
-                hadFormat = true;
             }
             if (modi.isStrikethrough()) {
                 out.append(EnumChatFormat.STRIKETHROUGH);
-                hadFormat = true;
             }
             if (modi.isRandom()) {
                 out.append(EnumChatFormat.OBFUSCATED);
-                hadFormat = true;
             }
             c.b((x) -> {
                 out.append(x);

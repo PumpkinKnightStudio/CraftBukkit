@@ -16,16 +16,15 @@ public class CraftChatMessageTest {
         testString("§l§fFoo");
         testString("§f§fFoo");
         testString("§fFoo§f§l"); // Keeps empty format at end
-        // testString("§fFoo§r"); // TODO However, reset at the end does not get retained currently
+        testString("§fFoo§r");
         testString("Foo");
-        // TODO Reset codes at the start do not get retained (since MC 1.16)
-        // testString("§r§oFoo"); // Retains reset at start (item names can use this to get rid of italics)
+        testString("§r§oFoo"); // Retains reset at start (item names can use this to get rid of italics)
 
         testString("§fFoo§rBar");
-        // TODO Repeated resets are not retained currently:
-        // testString("§fFoo§r§rBar");
-        // testString("§fFoo§rBaz§rBar");
-        // testString("§r§rFoo");
+        // Repeated resets:
+        testString("§fFoo§r§rBar");
+        testString("§fFoo§rBaz§rBar");
+        testString("§r§rFoo");
 
         testString("Foo§bBar");
         testString("F§loo§b§oBa§b§lr"); // any non color formatting code implies previous color code.
@@ -51,7 +50,7 @@ public class CraftChatMessageTest {
         IChatBaseComponent[] components = CraftChatMessage.fromString("Hello§0\n§rFoo\n§5Test§0\nBar§0\n§0Baz");
         assertEquals("Has 5 components", 5, components.length);
         assertEquals("Hello§0", CraftChatMessage.fromComponent(components[0]));
-        assertEquals(/*§r*/"Foo", CraftChatMessage.fromComponent(components[1]));
+        assertEquals("§rFoo", CraftChatMessage.fromComponent(components[1]));
         assertEquals("§5Test§0", CraftChatMessage.fromComponent(components[2]));
         // Note: The color code from the end of the previous line gets copied to the next line.
         // We cannot differentiate between an explicitly set color code and one which has been inherited from the previous line.
@@ -61,19 +60,23 @@ public class CraftChatMessageTest {
 
     @Test
     public void testComponents() {
-        testComponent("Foo§bBar§rBaz", create("Foo", "§bBar", "Baz"));
-        testComponent("§fFoo§bBar§rBaz", create("", "§fFoo", "§bBar", "Baz"));
-        testComponent("§fFoo§bBar§rBaz", create("", "§fFoo", "§bBar", "", "Baz"));
-        testComponent("§fFoo§bBar§rBaz", create("§fFoo", "§bBar", "Baz"));
-        testComponent("Foo§bBar§rBaz", create("", "Foo", "§bBar", "Baz"));
-        testComponent("§fFoo§bBar§rBaz", create("§fFoo", "§bBar", "Baz"));
-        testComponent("F§foo§bBar§rBaz", create("F§foo", "§bBar", "Baz"));
+        testComponent("Foo§bBar§rBaz", create("Foo", "§bBar", "§rBaz"));
+        testComponent("§fFoo§bBar§rBaz", create("", "§fFoo", "§bBar", "§rBaz"));
+        testComponent("§fFoo§bBar§rBaz", create("", "§fFoo", "§bBar", "", "§rBaz"));
+        testComponent("§fFoo§bBar§rBaz", create("§fFoo", "§bBar", "§rBaz"));
+        testComponent("Foo§bBar§rBaz", create("", "Foo", "§bBar", "§rBaz"));
+        testComponent("§fFoo§bBar§rBaz", create("§fFoo", "§bBar", "§rBaz"));
+        testComponent("F§foo§bBar§rBaz", create("F§foo", "§bBar", "§rBaz"));
     }
 
     private IChatBaseComponent create(String txt, String... rest) {
         IChatMutableComponent cmp = CraftChatMessage.fromString(txt, false)[0].mutableCopy();
         for (String s : rest) {
-            cmp.addSibling(CraftChatMessage.fromString(s, true)[0]);
+            // The root component produced by CraftChatMessage#fromString is empty.
+            // We omit it here, because it would get interpreted as reset when it is part of another component.
+            for (IChatBaseComponent sibling : CraftChatMessage.fromString(s, true)[0].getSiblings()) {
+                cmp.addSibling(sibling);
+            }
         }
 
         return cmp;
