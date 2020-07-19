@@ -87,6 +87,10 @@ public final class CraftChatMessage {
                         hex.append(c);
 
                         if (hex.length() == 7) {
+                            // Append any pending formatting, so that we can restore it when going back to plain text:
+                            if (needsAdd) {
+                                appendNewComponent(index);
+                            }
                             modifier = RESET.setColor(ChatHexColor.a(hex.toString()));
                             hex = null;
                         }
