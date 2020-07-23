@@ -664,6 +664,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public String getNbtTag(ItemStack stack) {
+        return CraftItemStack.asNMSCopy(stack).getTag().toString();
+    }
+
+    @Override
     public int getTicksPerMonsterSpawns() {
         return this.configuration.getInt("ticks-per.monster-spawns");
     }
