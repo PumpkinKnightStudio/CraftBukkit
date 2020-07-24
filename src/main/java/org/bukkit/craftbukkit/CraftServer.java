@@ -665,7 +665,7 @@ public final class CraftServer implements Server {
 
     @Override
     public String getNbtTag(ItemStack stack) {
-        return CraftItemStack.asNMSCopy(stack).getTag().toString();
+        return CraftItemStack.asNMSCopy(stack).getOrCreateTag().toString();
     }
 
     @Override
