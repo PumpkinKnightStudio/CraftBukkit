@@ -61,12 +61,12 @@ public final class CraftChatMessage {
                 output = new IChatBaseComponent[]{currentChatComponent};
                 return;
             }
+            currentChatComponent.setChatModifier(RESET);
             list.add(currentChatComponent);
 
             Matcher matcher = (keepNewlines ? INCREMENTAL_PATTERN_KEEP_NEWLINES : INCREMENTAL_PATTERN).matcher(message);
             String match = null;
             boolean needsAdd = false;
-            boolean alreadyReset = false;
             while (matcher.find()) {
                 int groupId = 0;
                 while ((match = matcher.group(++groupId)) == null) {
@@ -120,19 +120,9 @@ public final class CraftChatMessage {
                         if (needsAdd) {
                             appendNewComponent(index);
                         }
-                        if (!alreadyReset) {
-                            alreadyReset = true;
-                            // Explicitly reset all formatting:
-                            modifier = RESET.setColor(format);
-                            // We only explicitly reset the formatting once and then implicitly inherit those features to the following components:
-                            appendNewComponent(index, true);
-                        } else {
-                            // We already inserted an explicit reset earlier, so clearing all formatting is enough.
-                            // We also don't need to inherit any text features for this reset.
-                            // However, we still append this reset as an empty component without text in order to be able to recognize it when converting back to plain text.
-                            modifier = ChatModifier.b.setColor(format);
-                            appendNewComponent(index, false);
-                        }
+                        // We append this reset as an empty component in order to be able to recognize it when converting back to plain text:
+                        modifier = ChatModifier.b.setColor(format);
+                        appendNewComponent(index);
                     } else { // Color resets formatting
                         // Append any pending formatting, so that we can restore it when going back to plain text:
                         if (needsAdd) {
@@ -171,20 +161,13 @@ public final class CraftChatMessage {
         }
 
         private void appendNewComponent(int index) {
-            appendNewComponent(index, false);
-        }
-
-        private void appendNewComponent(int index, boolean inherit) {
-            IChatMutableComponent addition = new ChatComponentText(message.substring(currentIndex, index)).setChatModifier(modifier);
+            IChatBaseComponent addition = new ChatComponentText(message.substring(currentIndex, index)).setChatModifier(modifier);
             currentIndex = index;
             if (currentChatComponent == null) {
-                currentChatComponent = new ChatComponentText("");
+                currentChatComponent = new ChatComponentText("").setChatModifier(RESET);
                 list.add(currentChatComponent);
             }
             currentChatComponent.addSibling(addition);
-            if (inherit) {
-                currentChatComponent = addition;
-            }
         }
 
         private IChatBaseComponent[] getOutput() {
