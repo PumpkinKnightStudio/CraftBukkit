@@ -8,12 +8,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -38,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -53,6 +58,7 @@ import net.minecraft.server.BiomeManager;
 import net.minecraft.server.Block;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.BossBattleCustom;
+import net.minecraft.server.ChatDeserializer;
 import net.minecraft.server.CommandDispatcher;
 import net.minecraft.server.CommandListenerWrapper;
 import net.minecraft.server.CommandReload;
@@ -93,6 +99,7 @@ import net.minecraft.server.RegistryMaterials;
 import net.minecraft.server.RegistryReadOps;
 import net.minecraft.server.ResourceKey;
 import net.minecraft.server.ServerCommand;
+import net.minecraft.server.SystemUtils;
 import net.minecraft.server.Tags;
 import net.minecraft.server.TicketType;
 import net.minecraft.server.Vec3D;
@@ -983,21 +990,48 @@ public final class CraftServer implements Server {
 
         boolean hardcore = creator.hardcore();
 
-        RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a((DynamicOps) DynamicOpsNBT.a, console.dataPackResources.h(), console.f);
+        IRegistryCustom.Dimension iregistrycustom_dimension = console.f;
+
+        RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a((DynamicOps) DynamicOpsNBT.a, console.dataPackResources.h(), iregistrycustom_dimension);
         WorldDataServer worlddata = (WorldDataServer) worldSession.a((DynamicOps) registryreadops, console.datapackconfiguration);
 
         WorldSettings worldSettings;
-        // See MinecraftServer.a(String, String, long, WorldType, JsonElement)
         if (worlddata == null) {
-            Properties properties = new Properties();
-            properties.put("generator-settings", Objects.toString(creator.generatorSettings()));
-            properties.put("level-seed", Objects.toString(creator.seed()));
-            properties.put("generate-structures", Objects.toString(creator.generateStructures()));
-            properties.put("level-type", Objects.toString(creator.type().getName()));
+            GeneratorSettings generatorSettings;
+            if (!creator.generatorSettings().isEmpty()) {
+                JsonObject settingsJsonObj = new JsonObject();
+                settingsJsonObj.addProperty("generate_features", creator.generateStructures());
+                settingsJsonObj.addProperty("seed", creator.seed());
 
-            GeneratorSettings generatorsettings = GeneratorSettings.a(console.aX(), properties);
+                JsonObject dimensionsObj = new JsonObject();
+                dimensionsObj.add(DimensionManager.OVERWORLD_KEY.getKey(), ChatDeserializer.a(creator.generatorSettings()));
+                settingsJsonObj.add("dimensions", dimensionsObj);
+
+                RegistryReadOps<JsonElement> registryReadOps = RegistryReadOps.a(JsonOps.INSTANCE, console.dataPackResources.h(), iregistrycustom_dimension);
+
+                Dynamic<JsonElement> dynamic = new Dynamic<>(registryReadOps, settingsJsonObj);
+
+                for (String s : ImmutableList.of("RandomSeed", "generatorName", "generatorOptions", "generatorVersion", "legacy_custom_options", "MapFeatures", "BonusChest")) {
+                    Optional<? extends Dynamic<?>> optional = dynamic.get(s).result();
+
+                    if (optional.isPresent()) {
+                        dynamic = dynamic.set(s, optional.get());
+                    }
+                }
+
+                generatorSettings = GeneratorSettings.a.parse(dynamic).resultOrPartial(SystemUtils.a("WorldCreator generatorSettings: ", this.getLogger()::severe)).orElseThrow(() -> new RuntimeException("Invalid JSON settings"));
+            } else {
+                // If we have no explicit generatorSettings, let the game decide.
+                Properties properties = new Properties();
+                properties.put("level-seed", Objects.toString(creator.seed()));
+                properties.put("generate-structures", Objects.toString(creator.generateStructures()));
+                properties.put("level-type", creator.type().getName());
+
+                generatorSettings = GeneratorSettings.a(console.aX(), properties);
+            }
+
             worldSettings = new WorldSettings(name, EnumGamemode.getById(getDefaultGameMode().getValue()), hardcore, EnumDifficulty.EASY, false, new GameRules(), console.datapackconfiguration);
-            worlddata = new WorldDataServer(worldSettings, generatorsettings, Lifecycle.stable());
+            worlddata = new WorldDataServer(worldSettings, generatorSettings, Lifecycle.stable());
         }
         worlddata.checkName(name);
         worlddata.a(console.getServerModName(), console.getModded().isPresent());
