@@ -58,7 +58,6 @@ import net.minecraft.server.BiomeManager;
 import net.minecraft.server.Block;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.BossBattleCustom;
-import net.minecraft.server.ChatDeserializer;
 import net.minecraft.server.CommandDispatcher;
 import net.minecraft.server.CommandListenerWrapper;
 import net.minecraft.server.CommandReload;
@@ -998,13 +997,13 @@ public final class CraftServer implements Server {
         WorldSettings worldSettings;
         if (worlddata == null) {
             GeneratorSettings generatorSettings;
-            if (!creator.generatorSettings().isEmpty()) {
+            if (creator.generatorSettingsJson() != null) {
                 JsonObject settingsJsonObj = new JsonObject();
                 settingsJsonObj.addProperty("generate_features", creator.generateStructures());
                 settingsJsonObj.addProperty("seed", creator.seed());
 
                 JsonObject dimensionsObj = new JsonObject();
-                dimensionsObj.add(DimensionManager.OVERWORLD_KEY.getKey(), ChatDeserializer.a(creator.generatorSettings()));
+                dimensionsObj.add(DimensionManager.OVERWORLD_KEY.getKey(), creator.generatorSettingsJson());
                 settingsJsonObj.add("dimensions", dimensionsObj);
 
                 RegistryReadOps<JsonElement> registryReadOps = RegistryReadOps.a(JsonOps.INSTANCE, console.dataPackResources.h(), iregistrycustom_dimension);
