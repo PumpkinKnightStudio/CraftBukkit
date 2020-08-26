@@ -1,5 +1,6 @@
 package com.mojang.brigadier.tree;
 
+// CHECKSTYLE:OFF
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -70,8 +71,8 @@ public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
         return modifier;
     }
 
-    public boolean canUse(final S source) {
-        // CraftBukkit start
+    // CraftBukkit start
+    public synchronized boolean canUse(final S source) {
         if (source instanceof CommandListenerWrapper) {
             try {
                 ((CommandListenerWrapper) source).currentCommand = this;

@@ -11,8 +11,12 @@
  public class BlockEnderPortal extends BlockTileEntity {
  
      protected static final VoxelShape a = Block.a(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D);
-@@ -28,6 +33,15 @@
-                 return;
+@@ -25,9 +30,18 @@
+             WorldServer worldserver = ((WorldServer) world).getMinecraftServer().getWorldServer(resourcekey);
+ 
+             if (worldserver == null) {
+-                return;
++                // return; // CraftBukkit - always fire event in case plugins wish to change it
              }
  
 +            // CraftBukkit start - Entity in portal
@@ -20,10 +24,10 @@
 +            world.getServer().getPluginManager().callEvent(event);
 +
 +            if (entity instanceof EntityPlayer) {
-+                ((EntityPlayer) entity).a(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
++                ((EntityPlayer) entity).b(worldserver, PlayerTeleportEvent.TeleportCause.END_PORTAL);
 +                return;
 +            }
 +            // CraftBukkit end
-             entity.a(worldserver);
+             entity.b(worldserver);
          }
  

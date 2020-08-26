@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
@@ -91,9 +92,8 @@ import net.minecraft.server.PlayerList;
 import net.minecraft.server.RegistryMaterials;
 import net.minecraft.server.RegistryReadOps;
 import net.minecraft.server.ResourceKey;
-import net.minecraft.server.SaveData;
 import net.minecraft.server.ServerCommand;
-import net.minecraft.server.TagsServer;
+import net.minecraft.server.Tags;
 import net.minecraft.server.TicketType;
 import net.minecraft.server.Vec3D;
 import net.minecraft.server.VillageSiege;
@@ -153,6 +153,7 @@ import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
+import org.bukkit.craftbukkit.inventory.CraftSmithingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftSmokingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftStonecuttingRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
@@ -196,6 +197,7 @@ import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.SmithingRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.loot.LootTable;
@@ -244,6 +246,7 @@ public final class CraftServer implements Server {
     private int monsterSpawn = -1;
     private int animalSpawn = -1;
     private int waterAnimalSpawn = -1;
+    private int waterAmbientSpawn = -1;
     private int ambientSpawn = -1;
     private File container;
     private WarningState warningState = WarningState.DEFAULT;
@@ -330,6 +333,7 @@ public final class CraftServer implements Server {
         monsterSpawn = configuration.getInt("spawn-limits.monsters");
         animalSpawn = configuration.getInt("spawn-limits.animals");
         waterAnimalSpawn = configuration.getInt("spawn-limits.water-animals");
+        waterAmbientSpawn = configuration.getInt("spawn-limits.water-ambient");
         ambientSpawn = configuration.getInt("spawn-limits.ambient");
         console.autosavePeriod = configuration.getInt("ticks-per.autosave");
         warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
@@ -426,7 +430,7 @@ public final class CraftServer implements Server {
         }
     }
 
-    private void syncCommands() {
+    public void syncCommands() {
         // Clear existing commands
         CommandDispatcher dispatcher = console.dataPackResources.commandDispatcher = new CommandDispatcher();
 
@@ -669,6 +673,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getTicksPerWaterAmbientSpawns() {
+        return this.configuration.getInt("ticks-per.water-ambient-spawns");
+    }
+
+    @Override
     public int getTicksPerAmbientSpawns() {
         return this.configuration.getInt("ticks-per.ambient-spawns");
     }
@@ -742,7 +751,7 @@ public final class CraftServer implements Server {
         configuration = YamlConfiguration.loadConfiguration(getConfigFile());
         commandsConfiguration = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
 
-        console.propertyManager = new DedicatedServerSettings(console.options);
+        console.propertyManager = new DedicatedServerSettings(console.aX(), console.options);
         DedicatedServerProperties config = console.propertyManager.getProperties();
 
         console.setPVP(config.pvp);
@@ -751,6 +760,7 @@ public final class CraftServer implements Server {
         monsterSpawn = configuration.getInt("spawn-limits.monsters");
         animalSpawn = configuration.getInt("spawn-limits.animals");
         waterAnimalSpawn = configuration.getInt("spawn-limits.water-animals");
+        waterAmbientSpawn = configuration.getInt("spawn-limits.water-ambient");
         ambientSpawn = configuration.getInt("spawn-limits.ambient");
         warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
         TicketType.PLUGIN.loadPeriod = configuration.getInt("chunk-gc.period-in-ticks");
@@ -789,6 +799,12 @@ public final class CraftServer implements Server {
                 world.ticksPerWaterSpawns = 1;
             } else {
                 world.ticksPerWaterSpawns = this.getTicksPerWaterSpawns();
+            }
+
+            if (this.getTicksPerWaterAmbientSpawns() < 0) {
+                world.ticksPerWaterAmbientSpawns = 1;
+            } else {
+                world.ticksPerWaterAmbientSpawns = this.getTicksPerWaterAmbientSpawns();
             }
 
             if (this.getTicksPerAmbientSpawns() < 0) {
@@ -967,9 +983,7 @@ public final class CraftServer implements Server {
 
         boolean hardcore = creator.hardcore();
 
-        IRegistryCustom.Dimension iregistrycustom_dimension = IRegistryCustom.b();
-
-        RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a((DynamicOps) DynamicOpsNBT.a, console.dataPackResources.h(), (IRegistryCustom) iregistrycustom_dimension);
+        RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a((DynamicOps) DynamicOpsNBT.a, console.dataPackResources.h(), console.f);
         WorldDataServer worlddata = (WorldDataServer) worldSession.a((DynamicOps) registryreadops, console.datapackconfiguration);
 
         WorldSettings worldSettings;
@@ -981,40 +995,40 @@ public final class CraftServer implements Server {
             properties.put("generate-structures", Objects.toString(creator.generateStructures()));
             properties.put("level-type", Objects.toString(creator.type().getName()));
 
-            GeneratorSettings generatorsettings = GeneratorSettings.a(properties);
+            GeneratorSettings generatorsettings = GeneratorSettings.a(console.aX(), properties);
             worldSettings = new WorldSettings(name, EnumGamemode.getById(getDefaultGameMode().getValue()), hardcore, EnumDifficulty.EASY, false, new GameRules(), console.datapackconfiguration);
             worlddata = new WorldDataServer(worldSettings, generatorsettings, Lifecycle.stable());
         }
+        worlddata.checkName(name);
         worlddata.a(console.getServerModName(), console.getModded().isPresent());
 
         if (console.options.has("forceUpgrade")) {
             net.minecraft.server.Main.convertWorld(worldSession, DataConverterRegistry.a(), console.options.has("eraseCache"), () -> {
                 return true;
-            }, worlddata.getGeneratorSettings().g());
+            }, worlddata.getGeneratorSettings().d().d().stream().map((entry) -> {
+                return ResourceKey.a(IRegistry.K, ((ResourceKey) entry.getKey()).a());
+            }).collect(ImmutableSet.toImmutableSet()));
         }
 
         long j = BiomeManager.a(creator.seed());
         List<MobSpawner> list = ImmutableList.of(new MobSpawnerPhantom(), new MobSpawnerPatrol(), new MobSpawnerCat(), new VillageSiege(), new MobSpawnerTrader(worlddata));
-        RegistryMaterials<WorldDimension> registrymaterials = worlddata.getGeneratorSettings().e();
+        RegistryMaterials<WorldDimension> registrymaterials = worlddata.getGeneratorSettings().d();
         WorldDimension worlddimension = (WorldDimension) registrymaterials.a(actualDimension);
         DimensionManager dimensionmanager;
         net.minecraft.server.ChunkGenerator chunkgenerator;
 
         if (worlddimension == null) {
-            dimensionmanager = DimensionManager.a();
-            chunkgenerator = GeneratorSettings.a((new Random()).nextLong());
+            dimensionmanager = (DimensionManager) console.f.a().d(DimensionManager.OVERWORLD);
+            chunkgenerator = GeneratorSettings.a(console.f.b(IRegistry.ay), console.f.b(IRegistry.ar), (new Random()).nextLong());
         } else {
             dimensionmanager = worlddimension.b();
             chunkgenerator = worlddimension.c();
         }
 
-        ResourceKey<DimensionManager> typeKey = (ResourceKey) console.f.a().c(dimensionmanager).orElseThrow(() -> {
-            return new IllegalStateException("Unregistered dimension type: " + dimensionmanager);
-        });
-        ResourceKey<net.minecraft.server.World> worldKey = ResourceKey.a(IRegistry.ae, new MinecraftKey(name.toLowerCase(java.util.Locale.ENGLISH)));
+        ResourceKey<net.minecraft.server.World> worldKey = ResourceKey.a(IRegistry.L, new MinecraftKey(name.toLowerCase(java.util.Locale.ENGLISH)));
 
-        WorldServer internal = (WorldServer) new WorldServer(console, console.executorService, worldSession, worlddata, worldKey, typeKey, dimensionmanager, getServer().worldLoadListenerFactory.create(11),
-                chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), creator.environment() == Environment.NORMAL, creator.environment(), generator);
+        WorldServer internal = (WorldServer) new WorldServer(console, console.executorService, worldSession, worlddata, worldKey, dimensionmanager, getServer().worldLoadListenerFactory.create(11),
+                chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator);
 
         if (!(worlds.containsKey(name.toLowerCase(java.util.Locale.ENGLISH)))) {
             return null;
@@ -1071,6 +1085,7 @@ public final class CraftServer implements Server {
             }
 
             handle.getChunkProvider().close(save);
+            handle.convertable.close();
         } catch (Exception ex) {
             getLogger().log(Level.SEVERE, null, ex);
         }
@@ -1156,6 +1171,8 @@ public final class CraftServer implements Server {
                 toAdd = CraftSmokingRecipe.fromBukkitRecipe((SmokingRecipe) recipe);
             } else if (recipe instanceof StonecuttingRecipe) {
                 toAdd = CraftStonecuttingRecipe.fromBukkitRecipe((StonecuttingRecipe) recipe);
+            } else if (recipe instanceof SmithingRecipe) {
+                toAdd = CraftSmithingRecipe.fromBukkitRecipe((SmithingRecipe) recipe);
             } else if (recipe instanceof ComplexRecipe) {
                 throw new UnsupportedOperationException("Cannot add custom complex recipe");
             } else {
@@ -1183,6 +1200,13 @@ public final class CraftServer implements Server {
             }
         }
         return results;
+    }
+
+    @Override
+    public Recipe getRecipe(NamespacedKey recipeKey) {
+        Preconditions.checkArgument(recipeKey != null, "recipeKey == null");
+
+        return getServer().getCraftingManager().getRecipe(CraftNamespacedKey.toMinecraft(recipeKey)).map(IRecipe::toBukkitRecipe).orElse(null);
     }
 
     @Override
@@ -1644,6 +1668,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getWaterAmbientSpawnLimit() {
+        return waterAmbientSpawn;
+    }
+
+    @Override
     public int getAmbientSpawnLimit() {
         return ambientSpawn;
     }
@@ -1936,13 +1965,13 @@ public final class CraftServer implements Server {
             case org.bukkit.Tag.REGISTRY_BLOCKS:
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
 
-                TagsServer<Block> blockTags = console.getTagRegistry().getBlockTags();
-                return blockTags.b().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, key)).collect(ImmutableList.toImmutableList());
+                Tags<Block> blockTags = console.getTagRegistry().getBlockTags();
+                return blockTags.a().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, key)).collect(ImmutableList.toImmutableList());
             case org.bukkit.Tag.REGISTRY_ITEMS:
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
 
-                TagsServer<Item> itemTags = console.getTagRegistry().getItemTags();
-                return itemTags.b().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, key)).collect(ImmutableList.toImmutableList());
+                Tags<Item> itemTags = console.getTagRegistry().getItemTags();
+                return itemTags.a().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, key)).collect(ImmutableList.toImmutableList());
             default:
                 throw new IllegalArgumentException();
         }

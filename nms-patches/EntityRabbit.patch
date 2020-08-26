@@ -2,7 +2,7 @@
 +++ b/net/minecraft/server/EntityRabbit.java
 @@ -17,8 +17,14 @@
          super(entitytypes, world);
-         this.bp = new EntityRabbit.ControllerJumpRabbit(this);
+         this.bi = new EntityRabbit.ControllerJumpRabbit(this);
          this.moveController = new EntityRabbit.ControllerMoveRabbit(this);
 +        this.initializePathFinderGoals(); // CraftBukkit - moved code
 +    }
@@ -14,7 +14,7 @@
 +    // CraftBukkit end
  
      @Override
-     protected void initPathfinder() {
+     public void initPathfinder() {
 @@ -285,7 +291,7 @@
          if (i == 99) {
              this.getAttributeInstance(GenericAttributes.ARMOR).setValue(8.0D);

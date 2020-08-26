@@ -32,6 +32,7 @@ import net.minecraft.server.EntityFireworks;
 import net.minecraft.server.EntityGhast;
 import net.minecraft.server.EntityGolem;
 import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityIllagerWizard;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityItem;
 import net.minecraft.server.EntityLiving;
@@ -40,6 +41,7 @@ import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityPotion;
 import net.minecraft.server.EntityRaider;
 import net.minecraft.server.EntitySlime;
+import net.minecraft.server.EntityStrider;
 import net.minecraft.server.EntityTypes;
 import net.minecraft.server.EntityVillager;
 import net.minecraft.server.EntityWaterAnimal;
@@ -51,6 +53,7 @@ import net.minecraft.server.GeneratorAccess;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.IInventory;
+import net.minecraft.server.IProjectile;
 import net.minecraft.server.ItemActionContext;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.Items;
@@ -89,6 +92,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftRaider;
+import org.bukkit.craftbukkit.entity.CraftSpellcaster;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
@@ -97,6 +101,7 @@ import org.bukkit.craftbukkit.util.CraftDamageSource;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.Cat;
@@ -104,6 +109,7 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
@@ -112,6 +118,8 @@ import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Raider;
+import org.bukkit.entity.Spellcaster;
+import org.bukkit.entity.Strider;
 import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Vehicle;
@@ -146,6 +154,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.CreeperPowerEvent;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -153,6 +162,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityEnterLoveModeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
@@ -179,11 +189,13 @@ import org.bukkit.event.entity.PlayerLeashEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.StriderTemperatureChangeEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.event.inventory.TradeSelectEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent.BedEnterResult;
@@ -192,6 +204,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
@@ -211,6 +224,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.projectiles.ProjectileSource;
 
 public class CraftEventFactory {
     public static final DamageSource MELTING = CraftDamageSource.copyOf(DamageSource.BURN);
@@ -271,6 +285,26 @@ public class CraftEventFactory {
         }
 
         return nmsBedResult;
+    }
+
+    /**
+     * Entity Enter Love Mode Event
+     */
+    public static EntityEnterLoveModeEvent callEntityEnterLoveModeEvent(EntityHuman entityHuman, EntityAnimal entityAnimal, int loveTicks) {
+        EntityEnterLoveModeEvent entityEnterLoveModeEvent = new EntityEnterLoveModeEvent((Animals) entityAnimal.getBukkitEntity(), entityHuman != null ? (HumanEntity) entityHuman.getBukkitEntity() : null, loveTicks);
+        Bukkit.getPluginManager().callEvent(entityEnterLoveModeEvent);
+        return entityEnterLoveModeEvent;
+    }
+
+    /**
+     * Player Harvest Block Event
+     */
+    public static PlayerHarvestBlockEvent callPlayerHarvestBlockEvent(World world, BlockPosition blockposition, EntityHuman who, List<ItemStack> itemsToHarvest) {
+        List<org.bukkit.inventory.ItemStack> bukkitItemsToHarvest = new ArrayList<>(itemsToHarvest.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()));
+        Player player = (Player) who.getBukkitEntity();
+        PlayerHarvestBlockEvent playerHarvestBlockEvent = new PlayerHarvestBlockEvent(player, CraftBlock.at(world, blockposition), bukkitItemsToHarvest);
+        Bukkit.getPluginManager().callEvent(playerHarvestBlockEvent);
+        return playerHarvestBlockEvent;
     }
 
     /**
@@ -1227,6 +1261,13 @@ public class CraftEventFactory {
                 cause = IgniteCause.FLINT_AND_STEEL;
         }
 
+        if (igniter instanceof IProjectile) {
+            Entity shooter = ((IProjectile) igniter).getShooter();
+            if (shooter != null) {
+                bukkitIgniter = shooter.getBukkitEntity();
+            }
+        }
+
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, bukkitIgniter);
         world.getServer().getPluginManager().callEvent(event);
         return event;
@@ -1391,6 +1432,13 @@ public class CraftEventFactory {
         return event;
     }
 
+    public static PrepareSmithingEvent callPrepareSmithingEvent(InventoryView view, ItemStack item) {
+        PrepareSmithingEvent event = new PrepareSmithingEvent(view, CraftItemStack.asCraftMirror(item).clone());
+        event.getView().getPlayer().getServer().getPluginManager().callEvent(event);
+        event.getInventory().setItem(2, event.getResult());
+        return event;
+    }
+
     public static EntityToggleGlideEvent callToggleGlideEvent(EntityLiving entity, boolean gliding) {
         EntityToggleGlideEvent event = new EntityToggleGlideEvent((LivingEntity) entity.getBukkitEntity(), gliding);
         entity.world.getServer().getPluginManager().callEvent(event);
@@ -1430,7 +1478,7 @@ public class CraftEventFactory {
         BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getBlockData());
         // Suppress during worldgen
         if (world instanceof World) {
-            world.getMinecraftWorld().getMinecraftServer().server.getPluginManager().callEvent(event);
+            ((World) world).getMinecraftServer().server.getPluginManager().callEvent(event);
         }
         return event;
     }
@@ -1542,22 +1590,6 @@ public class CraftEventFactory {
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    /**
-     * EntityPortalEvent
-     */
-    public static EntityPortalEvent callEntityPortalEvent(Entity entity, World exitWorld, BlockPosition exitPosition, int searchRadius) {
-        org.bukkit.entity.Entity bukkitEntity = entity.getBukkitEntity();
-        Location enter = bukkitEntity.getLocation();
-        Location exit = new Location(exitWorld.getWorld(), exitPosition.getX(), exitPosition.getY(), exitPosition.getZ());
-
-        EntityPortalEvent event = new EntityPortalEvent(bukkitEntity, enter, exit, searchRadius);
-        event.getEntity().getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled() || event.getTo() == null || event.getTo().getWorld() == null || !entity.isAlive()) {
-            return null;
-        }
-        return event;
-    }
-
     public static LootGenerateEvent callLootGenerateEvent(IInventory inventory, LootTable lootTable, LootTableInfo lootInfo, List<ItemStack> loot, boolean plugin) {
         CraftWorld world = lootInfo.getWorld().getWorld();
         Entity entity = lootInfo.getContextParameter(LootContextParameters.THIS_ENTITY);
@@ -1568,5 +1600,16 @@ public class CraftEventFactory {
         LootGenerateEvent event = new LootGenerateEvent(world, (entity != null ? entity.getBukkitEntity() : null), inventory.getOwner(), craftLootTable, CraftLootTable.convertContext(lootInfo), bukkitLoot, plugin);
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+
+    public static void callStriderTemperatureChangeEvent(EntityStrider strider, boolean shivering) {
+        StriderTemperatureChangeEvent event = new StriderTemperatureChangeEvent((Strider) strider.getBukkitEntity(), shivering);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+
+    public static boolean handleEntitySpellCastEvent(EntityIllagerWizard caster, EntityIllagerWizard.Spell spell) {
+        EntitySpellCastEvent event = new EntitySpellCastEvent((Spellcaster) caster.getBukkitEntity(), CraftSpellcaster.toBukkitSpell(spell));
+        Bukkit.getPluginManager().callEvent(event);
+        return !event.isCancelled();
     }
 }

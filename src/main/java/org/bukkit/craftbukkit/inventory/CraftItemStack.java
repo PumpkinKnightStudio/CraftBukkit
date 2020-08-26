@@ -469,6 +469,8 @@ public final class CraftItemStack extends ItemStack {
             case ACACIA_WALL_SIGN:
             case BIRCH_SIGN:
             case BIRCH_WALL_SIGN:
+            case CRIMSON_SIGN:
+            case CRIMSON_WALL_SIGN:
             case DARK_OAK_SIGN:
             case DARK_OAK_WALL_SIGN:
             case JUNGLE_SIGN:
@@ -477,6 +479,8 @@ public final class CraftItemStack extends ItemStack {
             case OAK_WALL_SIGN:
             case SPRUCE_SIGN:
             case SPRUCE_WALL_SIGN:
+            case WARPED_SIGN:
+            case WARPED_WALL_SIGN:
             case SPAWNER:
             case BREWING_STAND:
             case ENCHANTING_TABLE:
@@ -511,6 +515,7 @@ public final class CraftItemStack extends ItemStack {
             case BELL:
             case BLAST_FURNACE:
             case CAMPFIRE:
+            case SOUL_CAMPFIRE:
             case JIGSAW:
             case LECTERN:
             case SMOKER:
@@ -523,6 +528,14 @@ public final class CraftItemStack extends ItemStack {
                 return new CraftMetaCrossbow(item.getTag());
             case SUSPICIOUS_STEW:
                 return new CraftMetaSuspiciousStew(item.getTag());
+            case COD_BUCKET:
+            case PUFFERFISH_BUCKET:
+            case SALMON_BUCKET:
+            case ITEM_FRAME:
+            case PAINTING:
+                return new CraftMetaEntityTag(item.getTag());
+            case COMPASS:
+                return new CraftMetaCompass(item.getTag());
             default:
                 return new CraftMetaItem(item.getTag());
         }
