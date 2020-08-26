@@ -1,6 +1,18 @@
 --- a/net/minecraft/server/EntityCat.java
 +++ b/net/minecraft/server/EntityCat.java
-@@ -15,7 +15,7 @@
+@@ -7,6 +7,11 @@
+ import java.util.Random;
+ import java.util.function.Predicate;
+ import javax.annotation.Nullable;
++//CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.event.entity.CatGiveGiftEvent;
++//CraftBukkit end
+ 
+ public class EntityCat extends EntityTameableAnimal {
+ 
+@@ -15,7 +20,7 @@
      private static final DataWatcherObject<Boolean> bt = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
      private static final DataWatcherObject<Boolean> bu = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
      private static final DataWatcherObject<Integer> bv = DataWatcher.a(EntityCat.class, DataWatcherRegistry.b);
@@ -9,7 +21,7 @@
          hashmap.put(0, new MinecraftKey("textures/entity/cat/tabby.png"));
          hashmap.put(1, new MinecraftKey("textures/entity/cat/black.png"));
          hashmap.put(2, new MinecraftKey("textures/entity/cat/red.png"));
-@@ -341,7 +341,7 @@
+@@ -341,7 +346,7 @@
                  }
              } else if (this.k(itemstack)) {
                  this.a(entityhuman, itemstack);
@@ -18,7 +30,30 @@
                      this.tame(entityhuman);
                      this.setWillSit(true);
                      this.world.broadcastEntityEffect(this, (byte) 7);
-@@ -529,7 +529,7 @@
+@@ -494,13 +499,18 @@
+             LootTable loottable = this.a.world.getMinecraftServer().getLootTableRegistry().getLootTable(LootTables.ak);
+             LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.a.world)).set(LootContextParameters.ORIGIN, this.a.getPositionVector()).set(LootContextParameters.THIS_ENTITY, this.a).a(random);
+             List<ItemStack> list = loottable.populateLoot(loottableinfo_builder.build(LootContextParameterSets.GIFT));
+-            Iterator iterator = list.iterator();
+ 
+-            while (iterator.hasNext()) {
+-                ItemStack itemstack = (ItemStack) iterator.next();
++            //CraftBukkit start
++            CatGiveGiftEvent catGiveGiftEvent = CraftEventFactory.callCatGiveGiftEvent(this.a, list);
++            if(!catGiveGiftEvent.isCancelled()) {
++                Iterator iterator = catGiveGiftEvent.getGifts().stream().map(CraftItemStack::asNMSCopy).iterator();
++                while (iterator.hasNext()) {
++                    ItemStack itemstack = (ItemStack) iterator.next();
++                    this.a.world.addEntity(new EntityItem(this.a.world, (double) blockposition_mutableblockposition.getX() - (double) MathHelper.sin(this.a.aA * 0.017453292F), (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + (double) MathHelper.cos(this.a.aA * 0.017453292F), itemstack));
+ 
+-                this.a.world.addEntity(new EntityItem(this.a.world, (double) blockposition_mutableblockposition.getX() - (double) MathHelper.sin(this.a.aA * 0.017453292F), (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + (double) MathHelper.cos(this.a.aA * 0.017453292F), itemstack));
++                }
+             }
++            //CraftBukkit end
+ 
+         }
+ 
+@@ -529,7 +539,7 @@
      static class PathfinderGoalTemptChance extends PathfinderGoalTempt {
  
          @Nullable
@@ -27,7 +62,7 @@
          private final EntityCat d;
  
          public PathfinderGoalTemptChance(EntityCat entitycat, double d0, RecipeItemStack recipeitemstack, boolean flag) {
-@@ -564,9 +564,9 @@
+@@ -564,9 +574,9 @@
          private final EntityCat i;
  
          public a(EntityCat entitycat, Class<T> oclass, float f, double d0, double d1) {
