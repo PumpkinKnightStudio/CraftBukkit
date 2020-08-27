@@ -997,13 +997,13 @@ public final class CraftServer implements Server {
         WorldSettings worldSettings;
         if (worlddata == null) {
             GeneratorSettings generatorSettings;
-            if (creator.generatorSettingsJson() != null) {
+            if (creator.dimensionSettings() != null) {
                 JsonObject settingsJsonObj = new JsonObject();
                 settingsJsonObj.addProperty("generate_features", creator.generateStructures());
                 settingsJsonObj.addProperty("seed", creator.seed());
 
                 JsonObject dimensionsObj = new JsonObject();
-                dimensionsObj.add(DimensionManager.OVERWORLD_KEY.getKey(), creator.generatorSettingsJson());
+                dimensionsObj.add(DimensionManager.OVERWORLD_KEY.getKey(), creator.dimensionSettings());
                 settingsJsonObj.add("dimensions", dimensionsObj);
 
                 RegistryReadOps<JsonElement> registryReadOps = RegistryReadOps.a(JsonOps.INSTANCE, console.dataPackResources.h(), iregistrycustom_dimension);
@@ -1019,9 +1019,13 @@ public final class CraftServer implements Server {
                 }
 
                 generatorSettings = GeneratorSettings.a.parse(dynamic).resultOrPartial(SystemUtils.a("WorldCreator generatorSettings: ", this.getLogger()::severe)).orElseThrow(() -> new RuntimeException("Invalid JSON settings"));
+
+                // We need to pretend to be an overworld for the game to be happy.
+                actualDimension = WorldDimension.OVERWORLD;
             } else {
-                // If we have no explicit generatorSettings, let the game decide.
+                // If we have no explicit dimensionSettings, let the game decide.
                 Properties properties = new Properties();
+                properties.put("generator-settings", creator.generatorSettings());
                 properties.put("level-seed", Objects.toString(creator.seed()));
                 properties.put("generate-structures", Objects.toString(creator.generateStructures()));
                 properties.put("level-type", creator.type().getName());
@@ -1051,6 +1055,7 @@ public final class CraftServer implements Server {
         net.minecraft.server.ChunkGenerator chunkgenerator;
 
         if (worlddimension == null) {
+            this.getLogger().warning("null dimension when creating world. Falling back to default overworld.");
             dimensionmanager = (DimensionManager) console.f.a().d(DimensionManager.OVERWORLD);
             chunkgenerator = GeneratorSettings.a(console.f.b(IRegistry.ay), console.f.b(IRegistry.ar), (new Random()).nextLong());
         } else {
