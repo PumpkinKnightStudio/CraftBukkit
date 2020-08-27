@@ -1,17 +1,19 @@
 --- a/net/minecraft/server/EntityDolphin.java
 +++ b/net/minecraft/server/EntityDolphin.java
-@@ -1,5 +1,10 @@
- package net.minecraft.server;
- 
+@@ -7,6 +7,12 @@
+ import java.util.Random;
+ import java.util.function.Predicate;
+ import javax.annotation.Nullable;
++//CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftItem;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.DolphinFollowEvent;
 +import org.bukkit.event.entity.DolphinTossItemEvent;
-+
- import java.util.EnumSet;
- import java.util.List;
- import java.util.Objects;
-@@ -17,6 +22,7 @@
++//CraftBukkit end
+ 
+ public class EntityDolphin extends EntityWaterAnimal {
+ 
+@@ -17,6 +23,7 @@
      public static final Predicate<EntityItem> b = (entityitem) -> {
          return !entityitem.p() && entityitem.isAlive() && entityitem.isInWater();
      };
@@ -19,7 +21,7 @@
  
      public EntityDolphin(EntityTypes<? extends EntityDolphin> entitytypes, World world) {
          super(entitytypes, world);
-@@ -109,7 +115,7 @@
+@@ -109,7 +116,7 @@
          this.goalSelector.a(8, new EntityDolphin.d());
          this.goalSelector.a(8, new PathfinderGoalFollowBoat(this));
          this.goalSelector.a(9, new PathfinderGoalAvoidTarget<>(this, EntityGuardian.class, 8.0F, 1.0D, 1.0D));
@@ -28,7 +30,7 @@
      }
  
      public static AttributeProvider.Builder eM() {
-@@ -176,6 +182,12 @@
+@@ -176,6 +183,12 @@
              ItemStack itemstack = entityitem.getItemStack();
  
              if (this.canPickup(itemstack)) {
@@ -41,7 +43,7 @@
                  this.a(entityitem);
                  this.setSlot(EnumItemSlot.MAINHAND, itemstack);
                  this.dropChanceHand[EnumItemSlot.MAINHAND.b()] = 2.0F;
-@@ -323,7 +335,7 @@
+@@ -323,7 +336,7 @@
  
          @Override
          public boolean a() {
@@ -50,7 +52,7 @@
          }
  
          @Override
-@@ -422,6 +434,16 @@
+@@ -422,6 +435,16 @@
          @Override
          public boolean a() {
              this.c = this.a.world.a(EntityDolphin.bp, (EntityLiving) this.a);
@@ -67,7 +69,7 @@
              return this.c == null ? false : this.c.isSwimming() && this.a.getGoalTarget() != this.c;
          }
  
-@@ -432,12 +454,14 @@
+@@ -432,12 +455,14 @@
  
          @Override
          public void c() {
@@ -83,7 +85,7 @@
              this.a.getNavigation().o();
          }
  
-@@ -451,7 +475,7 @@
+@@ -451,7 +476,7 @@
              }
  
              if (this.c.isSwimming() && this.c.world.random.nextInt(6) == 0) {
@@ -92,7 +94,7 @@
              }
  
          }
-@@ -519,6 +543,10 @@
+@@ -519,6 +544,10 @@
  
                  entityitem.setPickupDelay(40);
                  entityitem.setThrower(EntityDolphin.this.getUniqueID());
