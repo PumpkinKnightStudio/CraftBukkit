@@ -24,6 +24,7 @@ import net.minecraft.server.EntityAnimal;
 import net.minecraft.server.EntityAreaEffectCloud;
 import net.minecraft.server.EntityDamageSource;
 import net.minecraft.server.EntityDamageSourceIndirect;
+import net.minecraft.server.EntityDolphin;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityExperienceOrb;
@@ -104,6 +105,7 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Dolphin;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Firework;
@@ -144,50 +146,10 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.FluidLevelChangeEvent;
 import org.bukkit.event.block.MoistureChangeEvent;
 import org.bukkit.event.block.NotePlayEvent;
-import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
-import org.bukkit.event.entity.BatToggleSleepEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.entity.CreeperPowerEvent;
-import org.bukkit.event.entity.EntityBreakDoorEvent;
-import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntitySpellCastEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityEnterLoveModeEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.EntityPlaceEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.event.entity.EntityPotionEffectEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.EntityToggleGlideEvent;
-import org.bukkit.event.entity.EntityToggleSwimEvent;
-import org.bukkit.event.entity.EntityTransformEvent;
-import org.bukkit.event.entity.ExpBottleEvent;
-import org.bukkit.event.entity.FireworkExplodeEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.HorseJumpEvent;
-import org.bukkit.event.entity.ItemDespawnEvent;
-import org.bukkit.event.entity.ItemMergeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.LingeringPotionSplashEvent;
-import org.bukkit.event.entity.PigZapEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.PlayerLeashEntityEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.entity.StriderTemperatureChangeEvent;
-import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
@@ -311,6 +273,30 @@ public class CraftEventFactory {
         TradeSelectEvent tradeSelectEvent = new TradeSelectEvent(merchant.getBukkitView(), newIndex);
         Bukkit.getPluginManager().callEvent(tradeSelectEvent);
         return tradeSelectEvent;
+    }
+
+    /**
+     * Dolphin Follow Event
+     */
+    public static DolphinFollowEvent callDolphinFollowEvent(EntityDolphin entityDolphin, EntityHuman entityHuman){
+        DolphinFollowEvent dolphinFollowEvent = new DolphinFollowEvent((Dolphin) entityDolphin.getBukkitEntity(), entityHuman.getBukkitEntity());
+        Bukkit.getPluginManager().callEvent(dolphinFollowEvent);
+        return dolphinFollowEvent;
+    }
+
+    /**
+     * Dolphin Unfollow Event
+     */
+    public static DolphinUnfollowEvent callDolphinUnfollowEvent(EntityDolphin entityDolphin, EntityHuman entityHuman){
+        DolphinUnfollowEvent dolphinUnfollowEvent = new DolphinUnfollowEvent((Dolphin) entityDolphin.getBukkitEntity(), entityHuman.getBukkitEntity());
+        Bukkit.getPluginManager().callEvent(dolphinUnfollowEvent);
+        return dolphinUnfollowEvent;
+    }
+
+    public static DolphinTossItemEvent callDolphinTossItemEvent(EntityDolphin entityDolphin, EntityItem entityItem){
+        DolphinTossItemEvent dolphinTossItemEvent = new DolphinTossItemEvent((Dolphin) entityDolphin.getBukkitEntity(), (Item) entityItem.getBukkitEntity());
+        Bukkit.getPluginManager().callEvent(dolphinTossItemEvent);
+        return dolphinTossItemEvent;
     }
 
     /**
