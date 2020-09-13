@@ -144,8 +144,10 @@ import net.minecraft.server.EntityZombieVillager;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.NBTTagCompound;
 import org.bukkit.EntityEffect;
+import org.bukkit.Fluid;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
@@ -154,6 +156,7 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
+import org.bukkit.craftbukkit.tag.CraftTag;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftVector;
 import org.bukkit.entity.Pose;
@@ -951,6 +954,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public Pose getPose() {
         return Pose.values()[getHandle().getPose().ordinal()];
+    }
+
+    @Override
+    public boolean isEyesInFluid(Tag<Fluid> tag) {
+        return getHandle().a(CraftTag.getMinecraft(Tag.REGISTRY_FLUIDS, tag)); // PAIL rename a(Tag<FluidType>) -> eyesInFluid
     }
 
     public void storeBukkitValues(NBTTagCompound c) {
