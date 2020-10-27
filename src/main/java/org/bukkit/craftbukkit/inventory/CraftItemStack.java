@@ -31,7 +31,9 @@ public final class CraftItemStack extends ItemStack {
             return net.minecraft.server.ItemStack.b;
         }
 
-        Item item = CraftMagicNumbers.getItem(original.getType(), original.getDurability());
+        boolean hasDurability = original.getType().getMaxDurability() > 0;
+        short data =  hasDurability ? 0 :  original.getDurability();
+        Item item = CraftMagicNumbers.getItem(original.getType(), data);
 
         if (item == null) {
             return net.minecraft.server.ItemStack.b;
@@ -41,7 +43,9 @@ public final class CraftItemStack extends ItemStack {
         if (original.hasItemMeta()) {
             setItemMeta(stack, original.getItemMeta());
         }
-        return stack;
+        if (hasDurability) {
+            stack.setDamage(original.getDurability());
+        }
     }
 
     public static net.minecraft.server.ItemStack copyNMSStack(net.minecraft.server.ItemStack original, int amount) {
