@@ -92,7 +92,7 @@ public final class CraftChatMessage {
                             if (needsAdd) {
                                 appendNewComponent(index);
                             }
-                            modifier = ChatModifier.b.setColor(ChatHexColor.a(hex.toString()));
+                            modifier = ChatModifier.a.setColor(ChatHexColor.a(hex.toString())); // PAIL empty, parse
                             hex = null;
                         }
                     } else if (format.isFormat() && format != EnumChatFormat.RESET) {
@@ -130,7 +130,7 @@ public final class CraftChatMessage {
                             // We already inserted an explicit reset earlier, so clearing all formatting is enough.
                             // We also don't need to inherit any text features for this reset.
                             // However, we still append this reset as an empty component without text in order to be able to recognize it when converting back to plain text.
-                            modifier = ChatModifier.b.setColor(format);
+                            modifier = ChatModifier.a.setColor(format);
                             appendNewComponent(index, false);
                         }
                     } else { // Color resets formatting
@@ -138,7 +138,7 @@ public final class CraftChatMessage {
                         if (needsAdd) {
                             appendNewComponent(index);
                         }
-                        modifier = ChatModifier.b.setColor(format);
+                        modifier = ChatModifier.a.setColor(format);
                     }
                     if (format != EnumChatFormat.RESET) {
                         needsAdd = true;
@@ -219,7 +219,7 @@ public final class CraftChatMessage {
         boolean first = true;
         for (IChatBaseComponent c : component) {
             ChatModifier modi = c.getChatModifier();
-            if (!first && c.getText().isEmpty() && ChatModifier.b.equals(modi)) {
+            if (!first && c.getText().isEmpty() && ChatModifier.a.equals(modi)) {
                 out.append(ChatColor.RESET);
                 continue;
             }
