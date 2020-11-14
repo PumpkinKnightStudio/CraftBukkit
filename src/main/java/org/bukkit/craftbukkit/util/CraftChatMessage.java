@@ -82,8 +82,10 @@ public final class CraftChatMessage {
                     char c = match.toLowerCase(java.util.Locale.ENGLISH).charAt(1);
                     EnumChatFormat format = formatMap.get(c);
 
+                    boolean addAndInherit = false;
                     if (c == 'x') {
                         hex = new StringBuilder("#");
+                        // Note: The text for partial (invalid) hex colors is not represented in the text components and lost during backwards conversions.
                     } else if (hex != null) {
                         hex.append(c);
 
@@ -91,8 +93,19 @@ public final class CraftChatMessage {
                             // Append any pending formatting, so that we can restore it when going back to plain text:
                             if (needsAdd) {
                                 appendNewComponent(index);
+                                needsAdd = false;
                             }
-                            modifier = ChatModifier.a.setColor(ChatHexColor.a(hex.toString())); // PAIL empty, parse
+                            if (!alreadyReset) {
+                                // Color implicitly resets formatting and we have not yet inserted a reset before.
+                                // We therefore need to explicitly reset the formatting here.
+                                // The following components can inherit the reset formatting.
+                                alreadyReset = true;
+                                modifier = RESET.setColor(ChatHexColor.a(hex.toString()));
+                                addAndInherit = true;
+                            } else {
+                                // We can inherit the already reset formatting:
+                                modifier = ChatModifier.a.setColor(ChatHexColor.a(hex.toString())); // PAIL empty, parse
+                            }
                             hex = null;
                         }
                     } else if (format.isFormat() && format != EnumChatFormat.RESET) {
@@ -119,13 +132,14 @@ public final class CraftChatMessage {
                         // Append any pending formatting, so that we can restore it when going back to plain text:
                         if (needsAdd) {
                             appendNewComponent(index);
+                            needsAdd = false;
                         }
                         if (!alreadyReset) {
                             alreadyReset = true;
                             // Explicitly reset all formatting:
                             modifier = RESET.setColor(format);
                             // We only explicitly reset the formatting once and then implicitly inherit those features to the following components:
-                            appendNewComponent(index, true);
+                            addAndInherit = true;
                         } else {
                             // We already inserted an explicit reset earlier, so clearing all formatting is enough.
                             // We also don't need to inherit any text features for this reset.
@@ -137,10 +151,25 @@ public final class CraftChatMessage {
                         // Append any pending formatting, so that we can restore it when going back to plain text:
                         if (needsAdd) {
                             appendNewComponent(index);
+                            needsAdd = false;
                         }
-                        modifier = ChatModifier.a.setColor(format);
+                        if (!alreadyReset) {
+                            // Color implicitly resets formatting and we have not yet inserted a reset before.
+                            // We therefore need to explicitly reset the formatting here.
+                            // The following components can inherit the reset formatting.
+                            alreadyReset = true;
+                            modifier = RESET.setColor(format);
+                            addAndInherit = true;
+                        } else {
+                            // We can inherit the already reset formatting:
+                            modifier = ChatModifier.a.setColor(format);
+                        }
                     }
-                    if (format != EnumChatFormat.RESET) {
+                    if (addAndInherit) {
+                        appendNewComponent(index, true);
+                        modifier = ChatModifier.a;
+                        needsAdd = false;
+                    } else if (format != EnumChatFormat.RESET) {
                         needsAdd = true;
                     }
                     break;
