@@ -266,19 +266,21 @@
      }
  
      public void d(Vec3D vec3d) {
-@@ -1218,6 +1389,12 @@
+@@ -1218,7 +1389,13 @@
          return false;
      }
  
+-    public void a(Entity entity, int i, DamageSource damagesource) {
 +    // CraftBukkit start - collidable API
 +    public boolean canCollideWith(Entity entity) {
 +        return isCollidable();
 +    }
 +    // CraftBukkit end
 +
-     public void a(Entity entity, int i, DamageSource damagesource) {
++    public void a(Entity entity, int i, DamageSource damagesource) { // PAIL rename runKillTrigger
          if (entity instanceof EntityPlayer) {
              CriterionTriggers.c.a((EntityPlayer) entity, this, damagesource);
+         }
 @@ -1228,7 +1405,7 @@
      public boolean a_(NBTTagCompound nbttagcompound) {
          String s = this.getSaveID();
@@ -608,6 +610,15 @@
      }
  
      public void k(boolean flag) {
+@@ -1852,7 +2213,7 @@
+         this.fallDistance = 0.0F;
+     }
+ 
+-    public void a(WorldServer worldserver, EntityLiving entityliving) {}
++    public void a(WorldServer worldserver, EntityLiving entityliving) {} // PAIL rename onKill
+ 
+     protected void l(double d0, double d1, double d2) {
+         BlockPosition blockposition = new BlockPosition(d0, d1, d2);
 @@ -1972,15 +2333,32 @@
  
      @Nullable

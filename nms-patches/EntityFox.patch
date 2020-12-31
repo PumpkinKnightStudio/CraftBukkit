@@ -21,7 +21,36 @@
              int i = itemstack.getCount();
  
              if (i > 1) {
-@@ -923,6 +924,11 @@
+@@ -576,15 +577,25 @@
+     }
+ 
+     @Override
+-    protected void d(DamageSource damagesource) {
+-        ItemStack itemstack = this.getEquipment(EnumItemSlot.MAINHAND);
++    // CraftBukkit start - death event cancellation
++    protected org.bukkit.event.entity.EntityDeathEvent d(DamageSource damagesource) {
++        ItemStack itemstack = this.getEquipment(EnumItemSlot.MAINHAND).cloneItemStack();
++
++        org.bukkit.event.entity.EntityDeathEvent deathEvent = super.d(damagesource);
++
++        // Below is code to drop
++
++        if (deathEvent == null || deathEvent.isCancelled()) {
++            return deathEvent;
++        }
++        // CraftBukkit end
+ 
+         if (!itemstack.isEmpty()) {
+             this.a(itemstack);
+             this.setSlot(EnumItemSlot.MAINHAND, ItemStack.b);
+         }
+ 
+-        super.d(damagesource);
++        return deathEvent; // CraftBukkit - death event cancellation
+     }
+ 
+     public static boolean a(EntityFox entityfox, EntityLiving entityliving) {
+@@ -923,6 +934,11 @@
                      int i = (Integer) iblockdata.get(BlockSweetBerryBush.a);
  
                      iblockdata.set(BlockSweetBerryBush.a, 1);
@@ -33,7 +62,7 @@
                      int j = 1 + EntityFox.this.world.random.nextInt(2) + (i == 3 ? 1 : 0);
                      ItemStack itemstack = EntityFox.this.getEquipment(EnumItemSlot.MAINHAND);
  
-@@ -962,7 +968,7 @@
+@@ -962,7 +978,7 @@
          private int f;
  
          public r() {
@@ -42,7 +71,7 @@
              this.a(EnumSet.of(PathfinderGoal.Type.MOVE, PathfinderGoal.Type.LOOK));
          }
  
-@@ -1014,7 +1020,7 @@
+@@ -1014,7 +1030,7 @@
          private int c;
  
          public t() {
@@ -51,7 +80,7 @@
              this.c = EntityFox.this.random.nextInt(140);
              this.a(EnumSet.of(PathfinderGoal.Type.MOVE, PathfinderGoal.Type.LOOK, PathfinderGoal.Type.JUMP));
          }
-@@ -1125,7 +1131,7 @@
+@@ -1125,7 +1141,7 @@
          private EntityLiving k;
          private int l;
  
@@ -60,7 +89,7 @@
              super(EntityFox.this, oclass, 10, flag, flag1, predicate);
          }
  
-@@ -1205,6 +1211,14 @@
+@@ -1205,6 +1221,14 @@
                  if (entityplayer1 != null && entityplayer != entityplayer1) {
                      entityfox.b(entityplayer1.getUniqueID());
                  }
@@ -75,7 +104,7 @@
  
                  if (entityplayer2 != null) {
                      entityplayer2.a(StatisticList.ANIMALS_BRED);
-@@ -1217,10 +1231,14 @@
+@@ -1217,10 +1241,14 @@
                  this.partner.resetLove();
                  entityfox.setAgeRaw(-24000);
                  entityfox.setPositionRotation(this.animal.locX(), this.animal.locY(), this.animal.locZ(), 0.0F, 0.0F);

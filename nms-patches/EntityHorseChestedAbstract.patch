@@ -1,0 +1,23 @@
+--- a/net/minecraft/server/EntityHorseChestedAbstract.java
++++ b/net/minecraft/server/EntityHorseChestedAbstract.java
+@@ -50,11 +50,19 @@
+                 this.a((IMaterial) Blocks.CHEST);
+             }
+ 
+-            this.setCarryingChest(false);
++            //this.setCarryingChest(false); // CraftBukkit - death event cancellation, moved to post death logic
+         }
+ 
+     }
+ 
++    // CraftBukkit start - death event cancellation
++    protected void postDeathDropItems(org.bukkit.event.entity.EntityDeathEvent event) {
++        if (this.isCarryingChest() && (event == null || !event.isCancelled())) {
++            this.setCarryingChest(false);
++        }
++    }
++    // CraftBukkit end
++
+     @Override
+     public void saveData(NBTTagCompound nbttagcompound) {
+         super.saveData(nbttagcompound);
