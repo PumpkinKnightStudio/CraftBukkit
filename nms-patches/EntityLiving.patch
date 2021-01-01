@@ -29,15 +29,6 @@
  public abstract class EntityLiving extends Entity {
  
      private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
-@@ -72,7 +94,7 @@
-     protected float aL;
-     protected float aM;
-     protected float aN;
--    protected int aO;
-+    protected int aO; // PAIL rename killCount
-     public float lastDamage;
-     protected boolean jumping;
-     public float aR;
 @@ -106,6 +128,22 @@
      private float bB;
      private float bC;
@@ -544,17 +535,17 @@
  
 -                this.d(damagesource);
 +                // CraftBukkit start - death event
-+                EntityDeathEvent deathEvent = this.d(damagesource);
++                EntityDeathEvent deathEvent = this.d(damagesource); // PAIL rename processDeath
 +                if (deathEvent == null || !deathEvent.isCancelled()) {
-+                    if (this.aO >= 0 && entityliving != null) {
-+                        entityliving.a(this, this.aO, damagesource);
++                    if (this.aO >= 0 && entityliving != null) { // PAIL rename killCount
++                        entityliving.a(this, this.aO, damagesource); // PAIL rename runKillTrigger
 +                    }
 +                    if (this.isSleeping()) {
 +                        this.entityWakeup();
 +                    }
-+                    this.getCombatTracker().g();
++                    this.getCombatTracker().g(); // PAIL rename reset
 +                    if (entity != null) {
-+                        entity.a((WorldServer) this.world, this);
++                        entity.a((WorldServer) this.world, this); // PAIL rename onKill
 +                    }
 +                } else {
 +                    this.killed = false;
@@ -585,7 +576,7 @@
      }
  
 -    protected void d(DamageSource damagesource) {
-+    protected EntityDeathEvent d(DamageSource damagesource) { // CraftBukkit - death event cancellation // PAIL rename processDeath
++    protected EntityDeathEvent d(DamageSource damagesource) { // CraftBukkit - death event cancellation
          Entity entity = damagesource.getEntity();
          int i;
  
@@ -904,7 +895,7 @@
      @Override
      public abstract void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack);
  
-@@ -1628,11 +2080,13 @@
+@@ -1628,10 +2080,12 @@
  
      }
  
@@ -913,12 +904,10 @@
          return 1.0F;
      }
  
--    protected float dH() {
-+    public float getSoundPitchPublic() { return dH(); } // CraftBukkit - public helper method
-+    protected float dH() { // PAIL rename getSoundPitch
++    public float getSoundPitchPublic() { return dH(); } // CraftBukkit - public helper method // PAIL rename getSoundPitch
+     protected float dH() {
          return this.isBaby() ? (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.5F : (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F;
      }
- 
 @@ -1816,6 +2270,7 @@
                  }
  
