@@ -685,25 +685,25 @@
 +                float armorDamage = (float) (event.getDamage() + event.getDamage(DamageModifier.BLOCKING) + event.getDamage(DamageModifier.HARD_HAT));
 +                this.damageArmor(damagesource, armorDamage);
 +            }
- 
--            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
--            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
--            float f2 = f1 - f;
++
 +            // Apply blocking code // PAIL: steal from above
 +            if (event.getDamage(DamageModifier.BLOCKING) < 0) {
 +                this.world.broadcastEntityEffect(this, (byte) 29); // SPIGOT-4635 - shield damage sound
 +                this.damageShield((float) -event.getDamage(DamageModifier.BLOCKING));
 +                Entity entity = damagesource.j();
- 
++
 +                if (entity instanceof EntityLiving) {
 +                    this.shieldBlock((EntityLiving) entity);
 +                }
 +            }
-+
+ 
+-            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
+-            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
+-            float f2 = f1 - f;
 +            absorptionModifier = (float) -event.getDamage(DamageModifier.ABSORPTION);
 +            this.setAbsorptionHearts(Math.max(this.getAbsorptionHearts() - absorptionModifier, 0.0F));
 +            float f2 = absorptionModifier;
-+
+ 
 +            if (f2 > 0.0F && f2 < 3.4028235E37F && this instanceof EntityHuman) {
 +                ((EntityHuman) this).a(StatisticList.DAMAGE_ABSORBED, Math.round(f2 * 10.0F));
 +            }
@@ -840,16 +840,17 @@
      @Override
      protected void velocityChanged() {
          this.velocityChanged = this.random.nextDouble() >= this.b(GenericAttributes.KNOCKBACK_RESISTANCE);
-@@ -2658,7 +3087,25 @@
+@@ -2658,13 +3087,43 @@
          } else {
              if (!this.activeItem.isEmpty() && this.isHandRaised()) {
                  this.b(this.activeItem, 16);
 -                ItemStack itemstack = this.activeItem.a(this.world, this);
 +                // CraftBukkit start - fire PlayerItemConsumeEvent
 +                ItemStack itemstack;
++                PlayerItemConsumeEvent event = null;
 +                if (this instanceof EntityPlayer) {
 +                    org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(this.activeItem);
-+                    PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) this.getBukkitEntity(), craftItem);
++                    event = new PlayerItemConsumeEvent((Player) this.getBukkitEntity(), craftItem);
 +                    world.getServer().getPluginManager().callEvent(event);
 +
 +                    if (event.isCancelled()) {
@@ -863,11 +864,28 @@
 +                } else {
 +                    itemstack = this.activeItem.a(this.world, this);
 +                }
++
++                ItemStack vanillaReplacement = itemstack;
++                if (event != null && event.getReplacement() != null) {
++                    itemstack = CraftItemStack.asNMSCopy(event.getReplacement());
++                }
 +                // CraftBukkit end
  
                  if (itemstack != this.activeItem) {
                      this.a(enumhand, itemstack);
-@@ -2750,10 +3197,18 @@
+                 }
+ 
+                 this.clearActiveItem();
++
++                // CraftBukkit start - Update player inventories if the replacement is different. Else, the client will disagree and desync
++                if (this instanceof EntityPlayer && !Objects.equal(vanillaReplacement, itemstack)) {
++                    ((EntityPlayer) this).getBukkitEntity().updateInventory();
++                }
++                // CraftBukkit end
+             }
+ 
+         }
+@@ -2750,10 +3209,18 @@
              }
  
              if (flag2) {
@@ -889,7 +907,7 @@
              }
          }
  
-@@ -2850,7 +3305,7 @@
+@@ -2850,7 +3317,7 @@
      }
  
      public void entityWakeup() {
@@ -898,7 +916,7 @@
          World world = this.world;
  
          this.world.getClass();
-@@ -2921,7 +3376,7 @@
+@@ -2921,7 +3388,7 @@
                  Pair<MobEffect, Float> pair = (Pair) iterator.next();
  
                  if (!world.isClientSide && pair.getFirst() != null && world.random.nextFloat() < (Float) pair.getSecond()) {
