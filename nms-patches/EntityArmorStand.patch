@@ -168,7 +168,7 @@
  
      }
  
-@@ -613,8 +664,17 @@
+@@ -613,8 +664,16 @@
          return this.isSmall();
      }
  
@@ -181,8 +181,7 @@
 +
      @Override
      public void killEntity() {
-+        EntityDeathEvent event = CraftEventFactory.callEntityDeathEvent(this, drops); // CraftBukkit - call event
-+        if (event.isCancelled()) return; // CraftBukkit - death event cancellation
++        if (!CraftEventFactory.callEntityDeathEvent(this, drops).isCancelled()) // CraftBukkit - call event
          this.die();
      }
  

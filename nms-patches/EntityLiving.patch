@@ -634,15 +634,20 @@
  
      }
  
-@@ -1259,6 +1543,7 @@
+@@ -1259,6 +1543,12 @@
          return SoundEffects.ENTITY_GENERIC_HURT;
      }
  
-+    @Nullable public SoundEffect getSoundDeathPublic() { return getSoundDeath(); } // CraftBukkit - public helper method for death event
++    // CraftBukkit start - public helper method for death event
++    @Nullable
++    public SoundEffect getSoundDeathPublic() {
++        return getSoundDeath();
++    }
++    // CraftBukkit end
      @Nullable
      protected SoundEffect getSoundDeath() {
          return SoundEffects.ENTITY_GENERIC_DEATH;
-@@ -1336,9 +1621,14 @@
+@@ -1336,9 +1626,14 @@
          int i = this.e(f, f1);
  
          if (i > 0) {
@@ -658,7 +663,7 @@
              return true;
          } else {
              return flag;
-@@ -1378,7 +1668,7 @@
+@@ -1378,7 +1673,7 @@
  
      protected float applyArmorModifier(DamageSource damagesource, float f) {
          if (!damagesource.ignoresArmor()) {
@@ -667,7 +672,7 @@
              f = CombatMath.a(f, (float) this.getArmorStrength(), (float) this.b(GenericAttributes.ARMOR_TOUGHNESS));
          }
  
-@@ -1391,7 +1681,8 @@
+@@ -1391,7 +1686,8 @@
          } else {
              int i;
  
@@ -677,7 +682,7 @@
                  i = (this.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
                  int j = 25 - i;
                  float f1 = f * (float) j;
-@@ -1422,28 +1713,173 @@
+@@ -1422,28 +1718,173 @@
          }
      }
  
@@ -696,10 +701,7 @@
 +                public Double apply(Double f) {
 +                    if ((damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && !EntityLiving.this.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
 +                        return -(f - (f * 0.75F));
- 
--            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
--            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
--            float f2 = f1 - f;
++
 +                    }
 +                    return -0.0;
 +                }
@@ -792,12 +794,15 @@
 +                this.damageArmor(damagesource, armorDamage);
 +            }
  
+-            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
+-            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
+-            float f2 = f1 - f;
 +            // Apply blocking code // PAIL: steal from above
 +            if (event.getDamage(DamageModifier.BLOCKING) < 0) {
 +                this.world.broadcastEntityEffect(this, (byte) 29); // SPIGOT-4635 - shield damage sound
 +                this.damageShield((float) -event.getDamage(DamageModifier.BLOCKING));
 +                Entity entity = damagesource.j();
-+
+ 
 +                if (entity instanceof EntityLiving) {
 +                    this.shieldBlock((EntityLiving) entity);
 +                }
@@ -861,28 +866,27 @@
      }
  
      public CombatTracker getCombatTracker() {
-@@ -1464,9 +1900,19 @@
+@@ -1464,8 +1905,18 @@
      }
  
      public final void setArrowCount(int i) {
 -        this.datawatcher.set(EntityLiving.ARROWS_IN_BODY, i);
 +        // CraftBukkit start
 +        setArrowCount(i, false);
-     }
- 
++    }
++
 +    public final void setArrowCount(int i, boolean flag) {
 +        ArrowBodyCountChangeEvent event = CraftEventFactory.callArrowBodyCountChangeEvent(this, getArrowCount(), i, flag);
 +        if (event.isCancelled()) {
 +            return;
 +        }
 +        this.datawatcher.set(EntityLiving.ARROWS_IN_BODY, event.getNewAmount());
-+    }
+     }
 +    // CraftBukkit end
-+
+ 
      public final int dz() {
          return (Integer) this.datawatcher.get(EntityLiving.bi);
-     }
-@@ -1594,6 +2040,12 @@
+@@ -1594,6 +2045,12 @@
  
      public abstract ItemStack getEquipment(EnumItemSlot enumitemslot);
  
@@ -895,20 +899,28 @@
      @Override
      public abstract void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack);
  
-@@ -1628,10 +2080,12 @@
+@@ -1628,10 +2085,20 @@
  
      }
  
-+    public float getSoundVolumePublic() { return getSoundVolume(); } // CraftBukkit - public helper method
++    // CraftBukkit start - public helper method
++    public float getSoundVolumePublic() {
++        return getSoundVolume();
++    }
++    // CraftBukkit end
      protected float getSoundVolume() {
          return 1.0F;
      }
  
-+    public float getSoundPitchPublic() { return dH(); } // CraftBukkit - public helper method // PAIL rename getSoundPitch
++    // CraftBukkit start - public helper method
++    public float getSoundPitchPublic() {
++        return dH(); // PAIL rename getSoundPitch
++    }
++    // CraftBukkit end
      protected float dH() {
          return this.isBaby() ? (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.5F : (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F;
      }
-@@ -1816,6 +2270,7 @@
+@@ -1816,6 +2283,7 @@
                  }
  
                  if (this.onGround && !this.world.isClientSide) {
@@ -916,7 +928,7 @@
                      this.setFlag(7, false);
                  }
              } else {
-@@ -2321,6 +2776,7 @@
+@@ -2321,6 +2789,7 @@
          }
  
          if (!this.world.isClientSide) {
@@ -924,7 +936,7 @@
              this.setFlag(7, flag);
          }
  
-@@ -2441,6 +2897,7 @@
+@@ -2441,6 +2910,7 @@
      }
  
      public boolean hasLineOfSight(Entity entity) {
@@ -932,7 +944,7 @@
          Vec3D vec3d = new Vec3D(this.locX(), this.getHeadY(), this.locZ());
          Vec3D vec3d1 = new Vec3D(entity.locX(), entity.getHeadY(), entity.locZ());
  
-@@ -2458,14 +2915,21 @@
+@@ -2458,14 +2928,21 @@
  
      @Override
      public boolean isInteractable() {
@@ -956,7 +968,7 @@
      @Override
      protected void velocityChanged() {
          this.velocityChanged = this.random.nextDouble() >= this.b(GenericAttributes.KNOCKBACK_RESISTANCE);
-@@ -2658,7 +3122,25 @@
+@@ -2658,7 +3135,25 @@
          } else {
              if (!this.activeItem.isEmpty() && this.isHandRaised()) {
                  this.b(this.activeItem, 16);
@@ -983,7 +995,7 @@
  
                  if (itemstack != this.activeItem) {
                      this.a(enumhand, itemstack);
-@@ -2750,10 +3232,18 @@
+@@ -2750,10 +3245,18 @@
              }
  
              if (flag2) {
@@ -1005,7 +1017,7 @@
              }
          }
  
-@@ -2850,7 +3340,7 @@
+@@ -2850,7 +3353,7 @@
      }
  
      public void entityWakeup() {
@@ -1014,7 +1026,7 @@
          World world = this.world;
  
          this.world.getClass();
-@@ -2921,7 +3411,7 @@
+@@ -2921,7 +3424,7 @@
                  Pair<MobEffect, Float> pair = (Pair) iterator.next();
  
                  if (!world.isClientSide && pair.getFirst() != null && world.random.nextFloat() < (Float) pair.getSecond()) {
