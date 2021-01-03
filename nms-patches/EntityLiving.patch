@@ -576,7 +576,7 @@
      }
  
 -    protected void d(DamageSource damagesource) {
-+    protected EntityDeathEvent d(DamageSource damagesource) { // CraftBukkit - death event cancellation
++    protected EntityDeathEvent d(DamageSource damagesource) { // CraftBukkit - death event cancellation // PAIL rename dropLoot
          Entity entity = damagesource.getEntity();
          int i;
  
