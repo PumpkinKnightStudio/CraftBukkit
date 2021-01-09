@@ -38,6 +38,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.server.ChatComponentText;
 import net.minecraft.server.EnumItemSlot;
+import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.ItemBlock;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTCompressedStreamTools;
@@ -263,7 +264,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     // We store the raw original JSON representation of all text data. See SPIGOT-5063, SPIGOT-5656, SPIGOT-5304
     private String displayName;
-    private String locName;
+    private String locName; // Plain String
     private List<String> lore; // null and empty are two different states internally
     private Integer customModelData;
     private NBTTagCompound blockData;
@@ -463,7 +464,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     CraftMetaItem(Map<String, Object> map) {
         displayName = CraftChatMessage.fromJSONOrStringOrNullToJSON(SerializableMeta.getString(map, NAME.BUKKIT, true));
 
-        locName = CraftChatMessage.fromJSONOrStringOrNullToJSON(SerializableMeta.getString(map, LOCNAME.BUKKIT, true));
+        locName = SerializableMeta.getString(map, LOCNAME.BUKKIT, true);
+        // We might have incorrectly serialized this as JSON text previously:
+        IChatBaseComponent locNameComponent = CraftChatMessage.fromJSONOrNull(locName);
+        if (locNameComponent != null) {
+            locName = CraftChatMessage.fromComponent(locNameComponent);
+        }
 
         Iterable<?> lore = SerializableMeta.getObject(Iterable.class, map, LORE.BUKKIT, true);
         if (lore != null) {
@@ -758,12 +764,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public String getLocalizedName() {
-        return CraftChatMessage.fromJSONComponent(locName);
+        return locName;
     }
 
     @Override
     public void setLocalizedName(String name) {
-        this.locName = CraftChatMessage.fromStringOrNullToJSON(name);
+        this.locName = name;
     }
 
     @Override
