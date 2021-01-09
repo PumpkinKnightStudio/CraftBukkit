@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.server.ChatComponentText;
+import net.minecraft.server.ChatMessage;
 import net.minecraft.server.EnumItemSlot;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.ItemBlock;
@@ -226,6 +227,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     static final ItemMetaKey NAME = new ItemMetaKey("Name", "display-name");
+    @Deprecated // Replaced in MC 1.13 by translatable display name text components
     static final ItemMetaKey LOCNAME = new ItemMetaKey("LocName", "loc-name");
     @Specific(Specific.To.NBT)
     static final ItemMetaKey DISPLAY = new ItemMetaKey("display");
@@ -264,7 +266,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     // We store the raw original JSON representation of all text data. See SPIGOT-5063, SPIGOT-5656, SPIGOT-5304
     private String displayName;
-    private String locName; // Plain String
     private List<String> lore; // null and empty are two different states internally
     private Integer customModelData;
     private NBTTagCompound blockData;
@@ -290,7 +291,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         this.displayName = meta.displayName;
-        this.locName = meta.locName;
 
         if (meta.lore != null) {
             this.lore = new ArrayList<String>(meta.lore);
@@ -328,10 +328,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
             if (display.hasKey(NAME.NBT)) {
                 displayName = display.getString(NAME.NBT);
-            }
-
-            if (display.hasKey(LOCNAME.NBT)) {
-                locName = display.getString(LOCNAME.NBT);
             }
 
             if (display.hasKey(LORE.NBT)) {
@@ -464,11 +460,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     CraftMetaItem(Map<String, Object> map) {
         displayName = CraftChatMessage.fromJSONOrStringOrNullToJSON(SerializableMeta.getString(map, NAME.BUKKIT, true));
 
-        locName = SerializableMeta.getString(map, LOCNAME.BUKKIT, true);
+        String locName = SerializableMeta.getString(map, LOCNAME.BUKKIT, true);
         // We might have incorrectly serialized this as JSON text previously:
         IChatBaseComponent locNameComponent = CraftChatMessage.fromJSONOrNull(locName);
         if (locNameComponent != null) {
             locName = CraftChatMessage.fromComponent(locNameComponent);
+        }
+        if (locName != null) {
+            setLocalizedName(locName);
         }
 
         Iterable<?> lore = SerializableMeta.getObject(Iterable.class, map, LORE.BUKKIT, true);
@@ -610,9 +609,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     void applyToItem(NBTTagCompound itemTag) {
         if (hasDisplayName()) {
             setDisplayTag(itemTag, NAME.NBT, NBTTagString.a(displayName));
-        }
-        if (hasLocalizedName()) {
-            setDisplayTag(itemTag, LOCNAME.NBT, NBTTagString.a(locName));
         }
 
         if (lore != null) {
@@ -764,17 +760,28 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public String getLocalizedName() {
-        return locName;
+        IChatBaseComponent component = CraftChatMessage.fromJSONOrNull(displayName);
+        if (component instanceof ChatMessage) {
+            ChatMessage translatable = (ChatMessage) component;
+            return translatable.getKey();
+        } else {
+            return "";
+        }
     }
 
     @Override
     public void setLocalizedName(String name) {
-        this.locName = name;
+        if (name == null || name.isEmpty()) {
+            this.displayName = null;
+        } else {
+            this.displayName = CraftChatMessage.toJSON(new ChatMessage(name));
+        }
     }
 
     @Override
     public boolean hasLocalizedName() {
-        return locName != null;
+        IChatBaseComponent component = CraftChatMessage.fromJSONOrNull(displayName);
+        return (component instanceof ChatMessage);
     }
 
     @Override
@@ -1125,7 +1132,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Overridden
     boolean equalsCommon(CraftMetaItem that) {
         return ((this.hasDisplayName() ? that.hasDisplayName() && this.displayName.equals(that.displayName) : !that.hasDisplayName()))
-                && (this.hasLocalizedName() ? that.hasLocalizedName() && this.locName.equals(that.locName) : !that.hasLocalizedName())
                 && (this.hasEnchants() ? that.hasEnchants() && this.enchantments.equals(that.enchantments) : !that.hasEnchants())
                 && (Objects.equals(this.lore, that.lore))
                 && (this.hasCustomModelData() ? that.hasCustomModelData() && this.customModelData.equals(that.customModelData) : !that.hasCustomModelData())
@@ -1159,7 +1165,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     int applyHash() {
         int hash = 3;
         hash = 61 * hash + (hasDisplayName() ? this.displayName.hashCode() : 0);
-        hash = 61 * hash + (hasLocalizedName() ? this.locName.hashCode() : 0);
         hash = 61 * hash + ((lore != null) ? this.lore.hashCode() : 0);
         hash = 61 * hash + (hasCustomModelData() ? this.customModelData.hashCode() : 0);
         hash = 61 * hash + (hasBlockData() ? this.blockData.hashCode() : 0);
@@ -1214,9 +1219,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         if (hasDisplayName()) {
             builder.put(NAME.BUKKIT, displayName);
-        }
-        if (hasLocalizedName()) {
-            builder.put(LOCNAME.BUKKIT, locName);
         }
 
         if (lore != null) {
