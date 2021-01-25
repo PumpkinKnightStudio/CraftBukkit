@@ -4,7 +4,7 @@
              this.d.setDuration(200);
              this.d.setParticle(Particles.DRAGON_BREATH);
              this.d.addEffect(new MobEffect(MobEffects.HARM));
-+            this.d.isDragonBreath = true; // CraftBukkit - MC-84595
++            this.d.isDragonBreath = true; // CraftBukkit - MC-84595, PAIL rename dragonBreath
              this.a.world.addEntity(this.d);
          }
  

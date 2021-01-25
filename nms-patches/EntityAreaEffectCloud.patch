@@ -13,8 +13,8 @@
  
 @@ -33,6 +37,7 @@
      public float radiusPerTick;
-     private EntityLiving aw;
-     private UUID ax;
+     private EntityLiving ap;
+     private UUID aq;
 +    public boolean isDragonBreath = false; // CraftBukkit - MC-84595
  
      public EntityAreaEffectCloud(EntityTypes<? extends EntityAreaEffectCloud> entitytypes, World world) {

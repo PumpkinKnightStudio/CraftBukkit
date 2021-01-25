@@ -68,11 +68,11 @@
                  } else {
 -                    entityliving.damageEntity(DamageSource.c(entity, entity1), (float) j);
 +                    // CraftBukkit start - MC-84595
-+                    if (entity.getEntityType() == EntityTypes.AREA_EFFECT_CLOUD && ((EntityAreaEffectCloud) entity).isDragonBreath) {
++                    if (entity instanceof EntityAreaEffectCloud && ((EntityAreaEffectCloud) entity).isDragonBreath) {
 +                        CraftEventFactory.entityDamage = ((EntityAreaEffectCloud) entity).getSource();
 +                        entityliving.damageEntity(DamageSource.DRAGON_BREATH, j);
 +                    } else {
-+                        entityliving.damageEntity(DamageSource.c(entity, entity1), (float) j);
++                        entityliving.damageEntity(DamageSource.c(entity, entity1), (float) j); // PAIL rename indirectMagic
 +                    }
 +                    // CraftBukkit end
                  }
