@@ -349,7 +349,7 @@ public class CraftWorld implements World {
 
     @Override
     public boolean isChunkGenerated(int x, int z) {
-        return world.getChunkProvider().playerChunkMap.h(new ChunkCoordIntPair(x, z));
+        return world.getChunkProvider().playerChunkMap.isChunkGenerated(x, z);
     }
 
     @Override
