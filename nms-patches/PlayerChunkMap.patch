@@ -98,7 +98,28 @@
                                  if (list == null) {
                                      list = Lists.newArrayList(new Entity[]{entity});
                                  } else {
-@@ -784,7 +819,8 @@
+@@ -683,7 +718,7 @@
+         }
+     }
+ 
+-    private boolean h(ChunkCoordIntPair chunkcoordintpair) {
++    public boolean h(ChunkCoordIntPair chunkcoordintpair) { // CraftBukkit - public, PAIL: isChunkGenerated
+         byte b0 = this.z.get(chunkcoordintpair.pair());
+ 
+         if (b0 != 0) {
+@@ -705,7 +740,10 @@
+ 
+             ChunkStatus.Type chunkstatus_type = ChunkRegionLoader.a(nbttagcompound);
+ 
+-            return this.a(chunkcoordintpair, chunkstatus_type) == 1;
++            // CraftBukkit start - Check the current chunk status, instead of the old one (which is always 0, since we checked the cache before).
++            this.a(chunkcoordintpair, chunkstatus_type);
++            return (chunkstatus_type == ChunkStatus.Type.LEVELCHUNK);
++            // CraftBukkit end
+         }
+     }
+ 
+@@ -784,7 +822,8 @@
                  return ichunkaccess instanceof Chunk ? Optional.of((Chunk) ichunkaccess) : Optional.empty();
              });
  
@@ -108,7 +129,7 @@
                  return Stream.of(chunk.getEntitySlices()).mapToInt(EntitySlice::size).sum();
              }).orElse(0), optional1.map((chunk) -> {
                  return chunk.getTileEntities().size();
-@@ -795,7 +831,7 @@
+@@ -795,7 +834,7 @@
  
      private static String a(CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture) {
          try {
@@ -117,7 +138,7 @@
  
              return either != null ? (String) either.map((chunk) -> {
                  return "done";
-@@ -813,7 +849,7 @@
+@@ -813,7 +852,7 @@
      private NBTTagCompound readChunkData(ChunkCoordIntPair chunkcoordintpair) throws IOException {
          NBTTagCompound nbttagcompound = this.read(chunkcoordintpair);
  
@@ -126,7 +147,7 @@
      }
  
      boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair) {
-@@ -1145,7 +1181,7 @@
+@@ -1145,7 +1184,7 @@
          public final Set<EntityPlayer> trackedPlayers = Sets.newHashSet();
  
          public EntityTracker(Entity entity, int i, int j, boolean flag) {
@@ -135,7 +156,7 @@
              this.tracker = entity;
              this.trackingDistance = i;
              this.e = SectionPosition.a(entity);
-@@ -1198,7 +1234,7 @@
+@@ -1198,7 +1237,7 @@
  
          public void updatePlayer(EntityPlayer entityplayer) {
              if (entityplayer != this.tracker) {
@@ -144,7 +165,7 @@
                  int i = Math.min(this.b(), (PlayerChunkMap.this.viewDistance - 1) * 16);
                  boolean flag = vec3d.x >= (double) (-i) && vec3d.x <= (double) i && vec3d.z >= (double) (-i) && vec3d.z <= (double) i && this.tracker.a(entityplayer);
  
-@@ -1214,6 +1250,17 @@
+@@ -1214,6 +1253,17 @@
                          }
                      }
  

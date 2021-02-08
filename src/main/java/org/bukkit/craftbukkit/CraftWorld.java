@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +30,6 @@ import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.ChunkCoordIntPair;
 import net.minecraft.server.ChunkMapDistance;
-import net.minecraft.server.ChunkStatus;
 import net.minecraft.server.EntityAreaEffectCloud;
 import net.minecraft.server.EntityArmorStand;
 import net.minecraft.server.EntityArrow;
@@ -71,7 +69,6 @@ import net.minecraft.server.Explosion;
 import net.minecraft.server.GameRules;
 import net.minecraft.server.GroupDataEntity;
 import net.minecraft.server.IBlockData;
-import net.minecraft.server.IChunkAccess;
 import net.minecraft.server.IRegistry;
 import net.minecraft.server.MinecraftKey;
 import net.minecraft.server.MovingObjectPosition;
@@ -80,7 +77,6 @@ import net.minecraft.server.PacketPlayOutUpdateTime;
 import net.minecraft.server.PacketPlayOutWorldEvent;
 import net.minecraft.server.PersistentRaid;
 import net.minecraft.server.PlayerChunk;
-import net.minecraft.server.ProtoChunkExtension;
 import net.minecraft.server.RayTrace;
 import net.minecraft.server.SavedFile;
 import net.minecraft.server.SoundCategory;
@@ -353,11 +349,7 @@ public class CraftWorld implements World {
 
     @Override
     public boolean isChunkGenerated(int x, int z) {
-        try {
-            return isChunkLoaded(x, z) || world.getChunkProvider().playerChunkMap.read(new ChunkCoordIntPair(x, z)) != null;
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        return world.getChunkProvider().playerChunkMap.h(new ChunkCoordIntPair(x, z));
     }
 
     @Override
@@ -461,20 +453,10 @@ public class CraftWorld implements World {
 
     @Override
     public boolean loadChunk(int x, int z, boolean generate) {
-        IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, generate ? ChunkStatus.FULL : ChunkStatus.EMPTY, true);
-
-        // If generate = false, but the chunk already exists, we will get this back.
-        if (chunk instanceof ProtoChunkExtension) {
-            // We then cycle through again to get the full chunk immediately, rather than after the ticket addition
-            chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, true);
-        }
-
-        if (chunk instanceof net.minecraft.server.Chunk) {
-            world.getChunkProvider().addTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
-            return true;
-        }
-
-        return false;
+        if (!generate && !this.isChunkGenerated(x, z)) return false;
+        world.getChunkProvider().addTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
+        world.getChunkProvider().getChunkAt(x, z, true);
+        return true;
     }
 
     @Override
