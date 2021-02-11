@@ -144,6 +144,7 @@ import org.bukkit.event.entity.BatToggleSleepEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.CreeperPowerEvent;
+import org.bukkit.event.entity.EntityArmorChangeEvent;
 import org.bukkit.event.entity.EntityBreakDoorEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
@@ -304,6 +305,121 @@ public class CraftEventFactory {
         TradeSelectEvent tradeSelectEvent = new TradeSelectEvent(merchant.getBukkitView(), newIndex);
         Bukkit.getPluginManager().callEvent(tradeSelectEvent);
         return tradeSelectEvent;
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack newArmor, int slot){
+        org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        if(newArmorBukkit.getType() == Material.AIR){ //Handles edgecase of non-player mob breaking and firing this event twice
+            return;
+        }
+        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
+        EquipmentSlot equipmentSlot = null;
+        if(slot == 5) {
+            equipmentSlot = EquipmentSlot.HEAD;
+        }
+        else if(slot == 6) {
+            equipmentSlot = EquipmentSlot.CHEST;
+        }
+        else if(slot == 7){
+            equipmentSlot = EquipmentSlot.LEGS;
+        }
+        else{
+            equipmentSlot = EquipmentSlot.FEET;
+        }
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, new org.bukkit.inventory.ItemStack(Material.AIR), newArmorBukkit, equipmentSlot, EntityArmorChangeEvent.ChangeReason.EQUIP);
+        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, int slot){
+        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+        org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        EntityArmorChangeEvent.ChangeReason changeReason;
+        if(newArmorBukkit.getType() == Material.AIR){
+            changeReason = EntityArmorChangeEvent.ChangeReason.UNEQUIP;
+        }
+        else if(oldArmorBukkit.getType() == Material.AIR){
+            changeReason = EntityArmorChangeEvent.ChangeReason.EQUIP;
+        }
+        else{
+            changeReason = EntityArmorChangeEvent.ChangeReason.SWITCH;
+        }
+        handleEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, slot);
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, int slot){
+        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
+        EquipmentSlot equipmentSlot = null;
+        if(slot == 5) {
+            equipmentSlot = EquipmentSlot.HEAD;
+        }
+        else if(slot == 6) {
+            equipmentSlot = EquipmentSlot.CHEST;
+        }
+        else if(slot == 7){
+            equipmentSlot = EquipmentSlot.LEGS;
+        }
+        else{
+            equipmentSlot = EquipmentSlot.FEET;
+        }
+        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+        org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, newArmorBukkit, equipmentSlot, changeReason);
+        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityArmorUnequip(EntityLiving who, ItemStack oldArmor, int slot){
+        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
+        EquipmentSlot equipmentSlot = null;
+        if(slot == 5) {
+            equipmentSlot = EquipmentSlot.HEAD;
+        }
+        else if(slot == 6) {
+            equipmentSlot = EquipmentSlot.CHEST;
+        }
+        else if(slot == 7){
+            equipmentSlot = EquipmentSlot.LEGS;
+        }
+        else{
+            equipmentSlot = EquipmentSlot.FEET;
+        }
+        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, new org.bukkit.inventory.ItemStack(Material.AIR), equipmentSlot, EntityArmorChangeEvent.ChangeReason.UNEQUIP);
+        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityArmorBreak(Entity who, ItemStack oldArmor, int slot){
+        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
+        EquipmentSlot equipmentSlot = null;
+        if(slot == 5) {
+            equipmentSlot = EquipmentSlot.HEAD;
+        }
+        else if(slot == 6) {
+            equipmentSlot = EquipmentSlot.CHEST;
+        }
+        else if(slot == 7){
+            equipmentSlot = EquipmentSlot.LEGS;
+        }
+        else{
+            equipmentSlot = EquipmentSlot.FEET;
+        }
+        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, new org.bukkit.inventory.ItemStack(Material.AIR), equipmentSlot, EntityArmorChangeEvent.ChangeReason.BREAK);
+        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
     }
 
     /**

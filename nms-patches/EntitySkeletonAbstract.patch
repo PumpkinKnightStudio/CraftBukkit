@@ -1,6 +1,24 @@
 --- a/net/minecraft/server/EntitySkeletonAbstract.java
 +++ b/net/minecraft/server/EntitySkeletonAbstract.java
-@@ -154,8 +154,19 @@
+@@ -1,5 +1,9 @@
+ package net.minecraft.server;
+ 
++//CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++//CraftBukkit end
++
+ import java.time.LocalDate;
+ import java.time.temporal.ChronoField;
+ import javax.annotation.Nullable;
+@@ -67,6 +71,7 @@
+                 if (itemstack.e()) {
+                     itemstack.setDamage(itemstack.getDamage() + this.random.nextInt(2));
+                     if (itemstack.getDamage() >= itemstack.h()) {
++                        CraftEventFactory.handleEntityArmorBreak(this, itemstack, 5); //CraftBukkit
+                         this.broadcastItemBreak(EnumItemSlot.HEAD);
+                         this.setSlot(EnumItemSlot.HEAD, ItemStack.b);
+                     }
+@@ -154,8 +159,19 @@
          double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));

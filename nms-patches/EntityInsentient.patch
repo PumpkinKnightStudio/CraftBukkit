@@ -209,7 +209,19 @@
          this.world.getMethodProfiler().enter("sensing");
          this.bo.a();
          this.world.getMethodProfiler().exit();
-@@ -1024,6 +1107,12 @@
+@@ -783,6 +866,11 @@
+                 this.bp.set(enumitemslot.b(), itemstack);
+                 break;
+             case ARMOR:
++                //CraftBukkit start
++                if(getMinecraftServer() != null && getMinecraftServer().isMainThread()){
++                    CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, 9 - enumitemslot.getSlotFlag());
++                }
++                //CraftBukkit end
+                 this.bq.set(enumitemslot.b(), itemstack);
+         }
+ 
+@@ -1024,6 +1112,12 @@
          if (!this.isAlive()) {
              return EnumInteractionResult.PASS;
          } else if (this.getLeashHolder() == entityhuman) {
@@ -222,7 +234,7 @@
              this.unleash(true, !entityhuman.abilities.canInstantlyBuild);
              return EnumInteractionResult.a(this.world.isClientSide);
          } else {
-@@ -1042,6 +1131,12 @@
+@@ -1042,6 +1136,12 @@
          ItemStack itemstack = entityhuman.b(enumhand);
  
          if (itemstack.getItem() == Items.LEAD && this.a(entityhuman)) {
@@ -235,7 +247,7 @@
              this.setLeashHolder(entityhuman, true);
              itemstack.subtract(1);
              return EnumInteractionResult.a(this.world.isClientSide);
-@@ -1057,7 +1152,7 @@
+@@ -1057,7 +1157,7 @@
              if (itemstack.getItem() instanceof ItemMonsterEgg) {
                  if (this.world instanceof WorldServer) {
                      ItemMonsterEgg itemmonsteregg = (ItemMonsterEgg) itemstack.getItem();
@@ -244,7 +256,7 @@
  
                      optional.ifPresent((entityinsentient) -> {
                          this.a(entityhuman, entityinsentient);
-@@ -1103,12 +1198,19 @@
+@@ -1103,12 +1203,19 @@
          return this.bA != -1.0F;
      }
  
@@ -265,7 +277,7 @@
  
              t0.u(this);
              t0.setBaby(this.isBaby());
-@@ -1140,7 +1242,12 @@
+@@ -1140,7 +1247,12 @@
                  }
              }
  
@@ -279,7 +291,7 @@
              if (this.isPassenger()) {
                  Entity entity = this.getVehicle();
  
-@@ -1160,6 +1267,7 @@
+@@ -1160,6 +1272,7 @@
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -287,7 +299,7 @@
                  this.unleash(true, true);
              }
  
-@@ -1176,7 +1284,9 @@
+@@ -1176,7 +1289,9 @@
              this.leashHolder = null;
              this.by = null;
              if (!this.world.isClientSide && flag1) {
@@ -297,7 +309,7 @@
              }
  
              if (!this.world.isClientSide && flag && this.world instanceof WorldServer) {
-@@ -1226,6 +1336,7 @@
+@@ -1226,6 +1341,7 @@
          boolean flag1 = super.a(entity, flag);
  
          if (flag1 && this.isLeashed()) {
@@ -305,7 +317,7 @@
              this.unleash(true, true);
          }
  
-@@ -1358,7 +1469,14 @@
+@@ -1358,7 +1474,14 @@
          int i = EnchantmentManager.getFireAspectEnchantmentLevel(this);
  
          if (i > 0) {
@@ -321,7 +333,7 @@
          }
  
          boolean flag = entity.damageEntity(DamageSource.mobAttack(this), f);
-@@ -1420,6 +1538,7 @@
+@@ -1420,6 +1543,7 @@
      @Override
      protected void bN() {
          super.bN();
