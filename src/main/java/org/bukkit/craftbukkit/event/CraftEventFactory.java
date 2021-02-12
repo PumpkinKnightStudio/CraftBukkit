@@ -38,6 +38,7 @@ import net.minecraft.server.EntityPotion;
 import net.minecraft.server.EntityRaider;
 import net.minecraft.server.EntitySlime;
 import net.minecraft.server.EntityStrider;
+import net.minecraft.server.EntityThrownTrident;
 import net.minecraft.server.EntityTypes;
 import net.minecraft.server.EntityVillager;
 import net.minecraft.server.EntityWaterAnimal;
@@ -114,6 +115,7 @@ import org.bukkit.entity.Spellcaster;
 import org.bukkit.entity.Strider;
 import org.bukkit.entity.ThrownExpBottle;
 import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Trident;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
@@ -154,10 +156,13 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
+import org.bukkit.event.entity.EntityFireTridentEvent;
+import org.bukkit.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityShootCrossbowEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.EntityTameEvent;
@@ -177,6 +182,7 @@ import org.bukkit.event.entity.LingeringPotionSplashEvent;
 import org.bukkit.event.entity.PigZapEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PlayerLeashEntityEvent;
+import org.bukkit.event.entity.PlayerLoadCrossbowEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -284,6 +290,53 @@ public class CraftEventFactory {
         EntityEnterLoveModeEvent entityEnterLoveModeEvent = new EntityEnterLoveModeEvent((Animals) entityAnimal.getBukkitEntity(), entityHuman != null ? (HumanEntity) entityHuman.getBukkitEntity() : null, loveTicks);
         Bukkit.getPluginManager().callEvent(entityEnterLoveModeEvent);
         return entityEnterLoveModeEvent;
+    }
+
+    /**
+     * Trident event
+     */
+    public static EntityFireTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force){
+
+        LivingEntity bukkitLivingEntity = (LivingEntity) entityLiving.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(trident);
+        Trident bukkitTrident = (Trident) entityThrownTrident.getBukkitEntity();
+
+        EntityFireTridentEvent entityFireTridentEvent = new EntityFireTridentEvent(bukkitLivingEntity, bukkitItem, bukkitTrident, force);
+        Bukkit.getPluginManager().callEvent(entityFireTridentEvent);
+
+        return entityFireTridentEvent;
+    }
+
+    /**
+     * Crossbow load event
+     */
+    public static EntityLoadCrossbowEvent callEntityLoadCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, int numberOfCopies){
+        LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);
+
+        EntityLoadCrossbowEvent entityLoadCrossbowEvent;
+        if(bukkitEntity instanceof Player){
+             entityLoadCrossbowEvent = new PlayerLoadCrossbowEvent((Player) bukkitEntity, bukkitItem, numberOfCopies);
+        }
+        else{
+            entityLoadCrossbowEvent = new EntityLoadCrossbowEvent(bukkitEntity, bukkitItem, numberOfCopies);
+        }
+        Bukkit.getPluginManager().callEvent(entityLoadCrossbowEvent);
+
+        return entityLoadCrossbowEvent;
+    }
+
+    public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, EnumHand hand, List<IProjectile> projectiles, float force){
+
+        LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);
+        List<org.bukkit.entity.Projectile> convertedProjectiles = projectiles.stream().map((projectile) -> (Projectile) (projectile).getBukkitEntity()).collect(Collectors.toList());
+        EquipmentSlot handSlot = (hand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+
+        EntityShootCrossbowEvent entityShootCrossbowEvent = new EntityShootCrossbowEvent(bukkitEntity, bukkitItem, handSlot, convertedProjectiles, force);
+        Bukkit.getPluginManager().callEvent(entityShootCrossbowEvent);
+
+        return entityShootCrossbowEvent;
     }
 
     /**
