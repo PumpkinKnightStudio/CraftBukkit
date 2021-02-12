@@ -30,6 +30,7 @@ import net.minecraft.server.EntityGolem;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityIllagerWizard;
 import net.minecraft.server.EntityInsentient;
+import net.minecraft.server.EntityIronGolem;
 import net.minecraft.server.EntityItem;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityMonster;
@@ -102,6 +103,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
@@ -170,6 +172,7 @@ import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.entity.FireworkExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.HorseJumpEvent;
+import org.bukkit.event.entity.IronGolemRepairEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
@@ -295,6 +298,20 @@ public class CraftEventFactory {
         PlayerHarvestBlockEvent playerHarvestBlockEvent = new PlayerHarvestBlockEvent(player, CraftBlock.at(world, blockposition), bukkitItemsToHarvest);
         Bukkit.getPluginManager().callEvent(playerHarvestBlockEvent);
         return playerHarvestBlockEvent;
+    }
+
+    /**
+     * Iron Golem Repair Event
+     */
+    public static IronGolemRepairEvent callIronGolemRepairEvent(EntityIronGolem entityIronGolem, EntityHuman who, ItemStack itemStack, float healthToRestore){
+
+        IronGolem ironGolem = (IronGolem) entityIronGolem.getBukkitEntity();
+        HumanEntity humanEntity = (HumanEntity) who.getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asBukkitCopy(itemStack);
+
+        IronGolemRepairEvent ironGolemRepairEvent = new IronGolemRepairEvent(ironGolem, humanEntity, bukkitItem, healthToRestore);
+        Bukkit.getPluginManager().callEvent(ironGolemRepairEvent);
+        return ironGolemRepairEvent;
     }
 
     /**

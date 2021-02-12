@@ -1,6 +1,27 @@
 --- a/net/minecraft/server/EntityIronGolem.java
 +++ b/net/minecraft/server/EntityIronGolem.java
-@@ -58,7 +58,7 @@
+@@ -1,6 +1,7 @@
+ package net.minecraft.server;
+ 
+ import com.google.common.collect.ImmutableList;
++
+ import java.util.Comparator;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -8,6 +9,12 @@
+ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
+ 
++//CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EntityRegainHealthEvent;
++import org.bukkit.event.entity.IronGolemRepairEvent;
++//CraftBukkit end
++
+ public class EntityIronGolem extends EntityGolem implements IEntityAngerable {
+ 
+     protected static final DataWatcherObject<Byte> b = DataWatcher.a(EntityIronGolem.class, DataWatcherRegistry.a);
+@@ -58,7 +65,7 @@
      @Override
      protected void C(Entity entity) {
          if (entity instanceof IMonster && !(entity instanceof EntityCreeper) && this.getRandom().nextInt(20) == 0) {
@@ -9,3 +30,27 @@
          }
  
          super.C(entity);
+@@ -204,7 +211,22 @@
+         } else {
+             float f = this.getHealth();
+ 
+-            this.heal(25.0F);
++            //CraftBukkit start
++            float healthToRestore = 25.0f;
++            if(this.getHealth() < this.getMaxHealth()){
++                IronGolemRepairEvent ironGolemRepairEvent = CraftEventFactory.callIronGolemRepairEvent(this, entityhuman, itemstack, healthToRestore);
++                if(ironGolemRepairEvent.isCancelled()){
++
++                    if(entityhuman instanceof EntityPlayer){
++                        ((EntityPlayer) entityhuman).updateInventory(entityhuman.activeContainer); //We need to update inventory to resync client's iron
++                        ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.getId(), datawatcher, true));
++                    }
++                    return EnumInteractionResult.PASS;
++                }
++                healthToRestore = ironGolemRepairEvent.getHealthToRestore();
++            }
++            this.heal(healthToRestore, EntityRegainHealthEvent.RegainReason.REPAIR);
++            //CraftBukkit end
+             if (this.getHealth() == f) {
+                 return EnumInteractionResult.PASS;
+             } else {
