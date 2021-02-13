@@ -89,7 +89,7 @@
          EntityHuman entityhuman = itemactioncontext.getEntity();
          BlockPosition blockposition = itemactioncontext.getClickPosition();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getWorld(), blockposition, false);
-@@ -121,12 +158,153 @@
+@@ -121,12 +158,156 @@
          if (entityhuman != null && !entityhuman.abilities.mayBuild && !this.b(itemactioncontext.getWorld().p(), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
@@ -197,10 +197,13 @@
 +                    // Special case juke boxes as they update their tile entity. Copied from ItemRecord.
 +                    // PAIL: checkme on updates.
 +                    if (this.item instanceof ItemRecord) {
-+                        ((BlockJukeBox) Blocks.JUKEBOX).a(world, blockposition, world.getType(blockposition), this);
-+                        world.a((EntityHuman) null, 1010, blockposition, Item.getId(this.item));
-+                        this.subtract(1);
-+                        entityhuman.a(StatisticList.PLAY_RECORD);
++                        //CraftBukkit start -> delegate method call to new method to pass in player object
++                        if(((BlockJukeBox) Blocks.JUKEBOX).insertRecordWithPlayer(world, blockposition, world.getType(blockposition), this, entityhuman)){
++                            world.a((EntityHuman) null, 1010, blockposition, Item.getId(this.item));
++                            this.subtract(1);
++                            entityhuman.a(StatisticList.PLAY_RECORD);
++                        }
++                        //CraftBukkit end
 +                    }
 +
 +                    if (this.item == Items.WITHER_SKELETON_SKULL) { // Special case skulls to allow wither spawns to be cancelled
@@ -244,7 +247,7 @@
  
              return enuminteractionresult;
          }
-@@ -207,6 +385,21 @@
+@@ -207,6 +388,21 @@
                  }
  
                  i -= k;
@@ -266,7 +269,7 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -228,6 +421,11 @@
+@@ -228,6 +424,11 @@
                  if (this.isDamaged(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
@@ -278,7 +281,7 @@
  
                      this.subtract(1);
                      if (t0 instanceof EntityHuman) {
-@@ -359,6 +557,17 @@
+@@ -359,6 +560,17 @@
          return this.tag;
      }
  
@@ -296,7 +299,7 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -522,6 +731,12 @@
+@@ -522,6 +734,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -309,7 +312,7 @@
          this.getOrCreateTag().setInt("RepairCost", i);
      }
  
-@@ -571,6 +786,13 @@
+@@ -571,6 +789,13 @@
          nbttaglist.add(nbttagcompound);
      }
  
