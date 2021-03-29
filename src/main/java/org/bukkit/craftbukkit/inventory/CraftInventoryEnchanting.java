@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.server.IInventory;
+import net.minecraft.world.IInventory;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -11,7 +11,7 @@ public class CraftInventoryEnchanting extends CraftInventory implements Enchanti
 
     @Override
     public void setItem(ItemStack item) {
-        setItem(0,item);
+        setItem(0, item);
     }
 
     @Override

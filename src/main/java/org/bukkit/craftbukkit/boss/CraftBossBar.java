@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.server.BossBattle;
-import net.minecraft.server.BossBattleServer;
-import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.PacketPlayOutBoss;
+import net.minecraft.network.protocol.game.PacketPlayOutBoss;
+import net.minecraft.server.level.BossBattleServer;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.BossBattle;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
@@ -215,7 +215,7 @@ public class CraftBossBar implements BossBar {
         }
     }
 
-    private class FlagContainer {
+    private final class FlagContainer {
 
         private Supplier<Boolean> get;
         private Consumer<Boolean> set;

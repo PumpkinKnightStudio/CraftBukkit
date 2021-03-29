@@ -2,10 +2,11 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaArmorStand extends CraftMetaItem {
@@ -15,6 +16,13 @@ public class CraftMetaArmorStand extends CraftMetaItem {
 
     CraftMetaArmorStand(CraftMetaItem meta) {
         super(meta);
+
+        if (!(meta instanceof CraftMetaArmorStand)) {
+            return;
+        }
+
+        CraftMetaArmorStand armorStand = (CraftMetaArmorStand) meta;
+        this.entityTag = armorStand.entityTag;
     }
 
     CraftMetaArmorStand(NBTTagCompound tag) {

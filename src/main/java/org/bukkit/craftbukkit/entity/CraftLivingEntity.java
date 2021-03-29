@@ -7,35 +7,38 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.server.DamageSource;
-import net.minecraft.server.EntityArmorStand;
-import net.minecraft.server.EntityArrow;
-import net.minecraft.server.EntityDragonFireball;
-import net.minecraft.server.EntityEgg;
-import net.minecraft.server.EntityEnderPearl;
-import net.minecraft.server.EntityFireball;
-import net.minecraft.server.EntityFishingHook;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityInsentient;
-import net.minecraft.server.EntityLargeFireball;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityLlamaSpit;
-import net.minecraft.server.EntityPotion;
-import net.minecraft.server.EntityProjectile;
-import net.minecraft.server.EntityShulkerBullet;
-import net.minecraft.server.EntitySmallFireball;
-import net.minecraft.server.EntitySnowball;
-import net.minecraft.server.EntitySpectralArrow;
-import net.minecraft.server.EntityThrownExpBottle;
-import net.minecraft.server.EntityThrownTrident;
-import net.minecraft.server.EntityTippedArrow;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.EntityWither;
-import net.minecraft.server.EntityWitherSkull;
-import net.minecraft.server.EnumHand;
-import net.minecraft.server.GenericAttributes;
-import net.minecraft.server.MobEffect;
-import net.minecraft.server.MobEffectList;
+import java.util.UUID;
+import net.minecraft.world.EnumHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectList;
+import net.minecraft.world.entity.EntityInsentient;
+import net.minecraft.world.entity.EntityLiving;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EnumMonsterType;
+import net.minecraft.world.entity.ai.attributes.GenericAttributes;
+import net.minecraft.world.entity.boss.wither.EntityWither;
+import net.minecraft.world.entity.decoration.EntityArmorStand;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.entity.projectile.EntityArrow;
+import net.minecraft.world.entity.projectile.EntityDragonFireball;
+import net.minecraft.world.entity.projectile.EntityEgg;
+import net.minecraft.world.entity.projectile.EntityEnderPearl;
+import net.minecraft.world.entity.projectile.EntityFireball;
+import net.minecraft.world.entity.projectile.EntityFireworks;
+import net.minecraft.world.entity.projectile.EntityFishingHook;
+import net.minecraft.world.entity.projectile.EntityLargeFireball;
+import net.minecraft.world.entity.projectile.EntityLlamaSpit;
+import net.minecraft.world.entity.projectile.EntityPotion;
+import net.minecraft.world.entity.projectile.EntityProjectile;
+import net.minecraft.world.entity.projectile.EntityShulkerBullet;
+import net.minecraft.world.entity.projectile.EntitySmallFireball;
+import net.minecraft.world.entity.projectile.EntitySnowball;
+import net.minecraft.world.entity.projectile.EntitySpectralArrow;
+import net.minecraft.world.entity.projectile.EntityThrownExpBottle;
+import net.minecraft.world.entity.projectile.EntityThrownTrident;
+import net.minecraft.world.entity.projectile.EntityTippedArrow;
+import net.minecraft.world.entity.projectile.EntityWitherSkull;
 import org.apache.commons.lang.Validate;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -45,18 +48,20 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LingeringPotion;
@@ -242,6 +247,27 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public int getArrowCooldown() {
+        return getHandle().arrowCooldown;
+    }
+
+    @Override
+    public void setArrowCooldown(int ticks) {
+        getHandle().arrowCooldown = ticks;
+    }
+
+    @Override
+    public int getArrowsInBody() {
+        return getHandle().getArrowCount();
+    }
+
+    @Override
+    public void setArrowsInBody(int count) {
+        Preconditions.checkArgument(count >= 0, "New arrow amount must be >= 0");
+        getHandle().getDataWatcher().set(EntityLiving.ARROWS_IN_BODY, count);
+    }
+
+    @Override
     public void damage(double amount) {
         damage(amount, null);
     }
@@ -368,8 +394,8 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
-        net.minecraft.server.World world = ((CraftWorld) getWorld()).getHandle();
-        net.minecraft.server.Entity launch = null;
+        net.minecraft.world.level.World world = ((CraftWorld) getWorld()).getHandle();
+        net.minecraft.world.entity.Entity launch = null;
 
         if (Snowball.class.isAssignableFrom(projectile)) {
             launch = new EntitySnowball(world, getHandle());
@@ -387,7 +413,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntitySpectralArrow(world, getHandle());
             } else if (Trident.class.isAssignableFrom(projectile)) {
-                launch = new EntityThrownTrident(world, getHandle(), new net.minecraft.server.ItemStack(net.minecraft.server.Items.TRIDENT));
+                launch = new EntityThrownTrident(world, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TRIDENT));
             } else {
                 launch = new EntityTippedArrow(world, getHandle());
             }
@@ -428,13 +454,18 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
             launch = EntityTypes.LLAMA_SPIT.a(world);
 
-            ((EntityLlamaSpit) launch).shooter = getHandle();
+            ((EntityLlamaSpit) launch).setShooter(getHandle());
             ((EntityLlamaSpit) launch).shoot(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
             launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
 
             launch = new EntityShulkerBullet(world, getHandle(), null, null);
+            launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        } else if (Firework.class.isAssignableFrom(projectile)) {
+            Location location = getEyeLocation();
+
+            launch = new EntityFireworks(world, net.minecraft.world.item.ItemStack.b, getHandle());
             launch.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         }
 
@@ -588,17 +619,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public void attack(Entity target) {
         Preconditions.checkArgument(target != null, "target == null");
 
-        getHandle().B(((CraftEntity) target).getHandle()); // PAIL rename attack
+        getHandle().attackEntity(((CraftEntity) target).getHandle());
     }
 
     @Override
     public void swingMainHand() {
-        getHandle().a(EnumHand.MAIN_HAND); // PAIL rename swingHand
+        getHandle().swingHand(EnumHand.MAIN_HAND, true);
     }
 
     @Override
     public void swingOffHand() {
-        getHandle().a(EnumHand.OFF_HAND); // PAIL rename swingHand
+        getHandle().swingHand(EnumHand.OFF_HAND, true);
     }
 
     @Override
@@ -612,6 +643,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public Set<UUID> getCollidableExemptions() {
+        return getHandle().collidableExemptions;
+    }
+
+    @Override
     public <T> T getMemory(MemoryKey<T> memoryKey) {
         return (T) getHandle().getBehaviorController().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
     }
@@ -619,5 +655,35 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
         getHandle().getBehaviorController().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), CraftMemoryMapper.toNms(t));
+    }
+
+    @Override
+    public EntityCategory getCategory() {
+        EnumMonsterType type = getHandle().getMonsterType(); // Not actually an enum?
+
+        if (type == EnumMonsterType.UNDEFINED) {
+            return EntityCategory.NONE;
+        } else if (type == EnumMonsterType.UNDEAD) {
+            return EntityCategory.UNDEAD;
+        } else if (type == EnumMonsterType.ARTHROPOD) {
+            return EntityCategory.ARTHROPOD;
+        } else if (type == EnumMonsterType.ILLAGER) {
+            return EntityCategory.ILLAGER;
+        } else if (type == EnumMonsterType.WATER_MOB) {
+            return EntityCategory.WATER;
+        }
+
+        throw new UnsupportedOperationException("Unsupported monster type: " + type + ". This is a bug, report this to Spigot.");
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return getHandle().isInvisible();
+    }
+
+    @Override
+    public void setInvisible(boolean invisible) {
+        getHandle().persistentInvisibility = invisible;
+        getHandle().setFlag(5, invisible);
     }
 }

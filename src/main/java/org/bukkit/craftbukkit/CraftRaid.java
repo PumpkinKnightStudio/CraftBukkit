@@ -1,24 +1,25 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityRaider;
-import net.minecraft.server.World;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.raid.EntityRaider;
+import net.minecraft.world.level.World;
 import org.bukkit.Location;
 import org.bukkit.Raid;
+import org.bukkit.Raid.RaidStatus;
 import org.bukkit.entity.Raider;
 
 public final class CraftRaid implements Raid {
 
-    private final net.minecraft.server.Raid handle;
+    private final net.minecraft.world.entity.raid.Raid handle;
 
-    public CraftRaid(net.minecraft.server.Raid handle) {
+    public CraftRaid(net.minecraft.world.entity.raid.Raid handle) {
         this.handle = handle;
     }
 

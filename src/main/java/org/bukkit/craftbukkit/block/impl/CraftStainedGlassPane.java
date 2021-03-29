@@ -9,24 +9,32 @@ public final class CraftStainedGlassPane extends org.bukkit.craftbukkit.block.da
         super();
     }
 
-    public CraftStainedGlassPane(net.minecraft.server.IBlockData state) {
+    public CraftStainedGlassPane(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftMultipleFacing
 
-    private static final net.minecraft.server.BlockStateBoolean[] FACES = new net.minecraft.server.BlockStateBoolean[]{
-        getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "north", true), getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "east", true), getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "south", true), getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "west", true), getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "up", true), getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "down", true)
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean[] FACES = new net.minecraft.world.level.block.state.properties.BlockStateBoolean[]{
+        getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "north", true), getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "east", true), getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "south", true), getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "west", true), getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "up", true), getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "down", true)
     };
 
     @Override
     public boolean hasFace(org.bukkit.block.BlockFace face) {
-        return get(FACES[face.ordinal()]);
+        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        if (state == null) {
+            throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
+        }
+        return get(state);
     }
 
     @Override
     public void setFace(org.bukkit.block.BlockFace face, boolean has) {
-        set(FACES[face.ordinal()], has);
+        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        if (state == null) {
+            throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
+        }
+        set(state, has);
     }
 
     @Override
@@ -57,7 +65,7 @@ public final class CraftStainedGlassPane extends org.bukkit.craftbukkit.block.da
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.server.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.server.BlockStainedGlassPane.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockStainedGlassPane.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

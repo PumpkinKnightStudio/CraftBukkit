@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import net.minecraft.server.MinecraftServer;
 import org.fusesource.jansi.AnsiConsole;
 
 public class Main {
@@ -45,6 +44,7 @@ public class Main {
                 acceptsAll(asList("W", "world-dir", "universe", "world-container"), "World container")
                         .withRequiredArg()
                         .ofType(File.class)
+                        .defaultsTo(new File("."))
                         .describedAs("Directory containing worlds");
 
                 acceptsAll(asList("w", "world", "level-name"), "World name")
@@ -149,15 +149,15 @@ public class Main {
             }
 
             float javaVersion = Float.parseFloat(System.getProperty("java.class.version"));
-            if (javaVersion > 58.0) {
-                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 14 is supported.");
+            if (javaVersion > 60.0) {
+                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 16 is supported.");
                 return;
             }
 
             try {
                 // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
-                String jline_UnsupportedTerminal = new String(new char[] {'j','l','i','n','e','.','U','n','s','u','p','p','o','r','t','e','d','T','e','r','m','i','n','a','l'});
-                String jline_terminal = new String(new char[] {'j','l','i','n','e','.','t','e','r','m','i','n','a','l'});
+                String jline_UnsupportedTerminal = new String(new char[]{'j', 'l', 'i', 'n', 'e', '.', 'U', 'n', 's', 'u', 'p', 'p', 'o', 'r', 't', 'e', 'd', 'T', 'e', 'r', 'm', 'i', 'n', 'a', 'l'});
+                String jline_terminal = new String(new char[]{'j', 'l', 'i', 'n', 'e', '.', 't', 'e', 'r', 'm', 'i', 'n', 'a', 'l'});
 
                 useJline = !(jline_UnsupportedTerminal).equals(System.getProperty(jline_terminal));
 
@@ -173,16 +173,15 @@ public class Main {
                     System.setProperty(jline.TerminalFactory.JLINE_TERMINAL, jline.UnsupportedTerminal.class.getName());
                 }
 
-
                 if (options.has("noconsole")) {
                     useConsole = false;
                 }
 
                 if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
-                    Date buildDate = new SimpleDateFormat("yyyyMMdd-HHmm").parse(Main.class.getPackage().getImplementationVendor());
+                    Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
 
                     Calendar deadline = Calendar.getInstance();
-                    deadline.add(Calendar.DAY_OF_YEAR, -14);
+                    deadline.add(Calendar.DAY_OF_YEAR, -28);
                     if (buildDate.before(deadline.getTime())) {
                         System.err.println("*** Error, this build is outdated ***");
                         System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");
@@ -192,7 +191,7 @@ public class Main {
                 }
 
                 System.out.println("Loading libraries, please wait...");
-                MinecraftServer.main(options);
+                net.minecraft.server.Main.main(options);
             } catch (Throwable t) {
                 t.printStackTrace();
             }

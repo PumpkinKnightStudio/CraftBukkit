@@ -1,9 +1,10 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.server.BlockChest;
-import net.minecraft.server.Blocks;
-import net.minecraft.server.ITileInventory;
-import net.minecraft.server.TileEntityChest;
+import net.minecraft.sounds.SoundEffects;
+import net.minecraft.world.ITileInventory;
+import net.minecraft.world.level.block.BlockChest;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TileEntityChest;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -53,5 +54,27 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
             inventory = new CraftInventoryDoubleChest((BlockChest.DoubleInventory) nms);
         }
         return inventory;
+    }
+
+    @Override
+    public void open() {
+        requirePlaced();
+        if (!getTileEntity().opened) {
+            net.minecraft.world.level.block.Block block = getTileEntity().getBlock().getBlock();
+            getTileEntity().getWorld().playBlockAction(getTileEntity().getPosition(), block, 1, getTileEntity().viewingCount + 1);
+            getTileEntity().playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
+        }
+        getTileEntity().opened = true;
+    }
+
+    @Override
+    public void close() {
+        requirePlaced();
+        if (getTileEntity().opened) {
+            net.minecraft.world.level.block.Block block = getTileEntity().getBlock().getBlock();
+            getTileEntity().getWorld().playBlockAction(getTileEntity().getPosition(), block, 1, 0);
+            getTileEntity().playOpenSound(SoundEffects.BLOCK_CHEST_CLOSE);
+        }
+        getTileEntity().opened = false;
     }
 }

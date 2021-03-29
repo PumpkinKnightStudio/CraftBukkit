@@ -1,8 +1,9 @@
 package org.bukkit.craftbukkit;
 
-import net.minecraft.server.Block;
-import net.minecraft.server.Item;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -12,46 +13,45 @@ import org.bukkit.potion.Potion;
 public class CraftEffect {
     public static <T> int getDataValue(Effect effect, T data) {
         int datavalue;
-        switch(effect) {
+        switch (effect) {
         case VILLAGER_PLANT_GROW:
             datavalue = (Integer) data;
             break;
         case POTION_BREAK:
             datavalue = ((Potion) data).toDamageValue() & 0x3F;
             break;
+        case INSTANT_POTION_BREAK:
+            datavalue = ((Color) data).asRGB();
+            break;
         case RECORD_PLAY:
             Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
             datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
             break;
         case SMOKE:
-            switch((BlockFace) data) { // TODO: Verify (Where did these values come from...?)
+            switch ((BlockFace) data) {
+            case DOWN:
+            // SPIGOT-6318: Fallback value for the old directions
+            case NORTH_EAST:
+            case NORTH_WEST:
             case SOUTH_EAST:
+            case SOUTH_WEST:
+            case SELF:
                 datavalue = 0;
                 break;
-            case SOUTH:
+            case UP:
                 datavalue = 1;
                 break;
-            case SOUTH_WEST:
+            case NORTH:
                 datavalue = 2;
                 break;
-            case EAST:
+            case SOUTH:
                 datavalue = 3;
                 break;
-            case UP:
-            case SELF:
+            case WEST:
                 datavalue = 4;
                 break;
-            case WEST:
+            case EAST:
                 datavalue = 5;
-                break;
-            case NORTH_EAST:
-                datavalue = 6;
-                break;
-            case NORTH:
-                datavalue = 7;
-                break;
-            case NORTH_WEST:
-                datavalue = 8;
                 break;
             default:
                 throw new IllegalArgumentException("Bad smoke direction!");

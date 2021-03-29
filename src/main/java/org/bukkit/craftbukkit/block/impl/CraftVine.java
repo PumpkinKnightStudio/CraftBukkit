@@ -9,24 +9,32 @@ public final class CraftVine extends org.bukkit.craftbukkit.block.data.CraftBloc
         super();
     }
 
-    public CraftVine(net.minecraft.server.IBlockData state) {
+    public CraftVine(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftMultipleFacing
 
-    private static final net.minecraft.server.BlockStateBoolean[] FACES = new net.minecraft.server.BlockStateBoolean[]{
-        getBoolean(net.minecraft.server.BlockVine.class, "north", true), getBoolean(net.minecraft.server.BlockVine.class, "east", true), getBoolean(net.minecraft.server.BlockVine.class, "south", true), getBoolean(net.minecraft.server.BlockVine.class, "west", true), getBoolean(net.minecraft.server.BlockVine.class, "up", true), getBoolean(net.minecraft.server.BlockVine.class, "down", true)
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean[] FACES = new net.minecraft.world.level.block.state.properties.BlockStateBoolean[]{
+        getBoolean(net.minecraft.world.level.block.BlockVine.class, "north", true), getBoolean(net.minecraft.world.level.block.BlockVine.class, "east", true), getBoolean(net.minecraft.world.level.block.BlockVine.class, "south", true), getBoolean(net.minecraft.world.level.block.BlockVine.class, "west", true), getBoolean(net.minecraft.world.level.block.BlockVine.class, "up", true), getBoolean(net.minecraft.world.level.block.BlockVine.class, "down", true)
     };
 
     @Override
     public boolean hasFace(org.bukkit.block.BlockFace face) {
-        return get(FACES[face.ordinal()]);
+        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        if (state == null) {
+            throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
+        }
+        return get(state);
     }
 
     @Override
     public void setFace(org.bukkit.block.BlockFace face, boolean has) {
-        set(FACES[face.ordinal()], has);
+        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        if (state == null) {
+            throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
+        }
+        set(state, has);
     }
 
     @Override

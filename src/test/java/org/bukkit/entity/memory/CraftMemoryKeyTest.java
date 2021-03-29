@@ -1,8 +1,8 @@
 package org.bukkit.entity.memory;
 
-import net.minecraft.server.GlobalPos;
-import net.minecraft.server.IRegistry;
-import net.minecraft.server.MemoryModuleType;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.IRegistry;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.support.AbstractTestingBase;
@@ -68,7 +68,7 @@ public class CraftMemoryKeyTest extends AbstractTestingBase {
         for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
             if (memoryModuleType.getSerializer().isPresent()) {
                 MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(memoryModuleType);
-                Assert.assertNotNull("MemoryModuleType should not be null", bukkitNoKey);
+                Assert.assertNotNull("MemoryModuleType should not be null " + IRegistry.MEMORY_MODULE_TYPE.getKey(memoryModuleType), bukkitNoKey);
             }
         }
     }

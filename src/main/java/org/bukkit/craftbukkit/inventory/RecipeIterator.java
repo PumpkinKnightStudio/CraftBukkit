@@ -3,10 +3,10 @@ package org.bukkit.craftbukkit.inventory;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.Iterator;
 import java.util.Map;
-import net.minecraft.server.IRecipe;
-import net.minecraft.server.MinecraftKey;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.Recipes;
+import net.minecraft.world.item.crafting.IRecipe;
+import net.minecraft.world.item.crafting.Recipes;
 import org.bukkit.inventory.Recipe;
 
 public class RecipeIterator implements Iterator<Recipe> {
@@ -19,13 +19,23 @@ public class RecipeIterator implements Iterator<Recipe> {
 
     @Override
     public boolean hasNext() {
-        return (current != null && current.hasNext()) || recipes.hasNext();
+        if (current != null && current.hasNext()) {
+            return true;
+        }
+
+        if (recipes.hasNext()) {
+            current = recipes.next().getValue().values().iterator();
+            return hasNext();
+        }
+
+        return false;
     }
 
     @Override
     public Recipe next() {
         if (current == null || !current.hasNext()) {
             current = recipes.next().getValue().values().iterator();
+            return next();
         }
 
         return current.next().toBukkitRecipe();

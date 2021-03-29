@@ -6,16 +6,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import net.minecraft.server.DimensionManager;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.WorldMap;
-import net.minecraft.server.WorldServer;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.world.level.saveddata.maps.WorldMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import org.bukkit.map.MapView.Scale;
 
 public final class CraftMapView implements MapView {
 
@@ -35,8 +36,7 @@ public final class CraftMapView implements MapView {
         if (text.startsWith("map_")) {
             try {
                 return Integer.parseInt(text.substring("map_".length()));
-            }
-            catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 throw new IllegalStateException("Map has non-numeric ID");
             }
         } else {
@@ -61,7 +61,7 @@ public final class CraftMapView implements MapView {
 
     @Override
     public World getWorld() {
-        DimensionManager dimension = worldMap.map;
+        ResourceKey<net.minecraft.world.level.World> dimension = worldMap.map;
         WorldServer world = MinecraftServer.getServer().getWorldServer(dimension);
 
         return (world == null) ? null : world.getWorld();
@@ -69,7 +69,7 @@ public final class CraftMapView implements MapView {
 
     @Override
     public void setWorld(World world) {
-        worldMap.map = ((CraftWorld) world).getHandle().getWorldProvider().getDimensionManager();
+        worldMap.map = ((CraftWorld) world).getHandle().getDimensionKey();
     }
 
     @Override
@@ -165,7 +165,7 @@ public final class CraftMapView implements MapView {
             for (int i = 0; i < buf.length; ++i) {
                 byte color = buf[i];
                 // There are 208 valid color id's, 0 -> 127 and -128 -> -49
-                if (color >= 0 || color <= -49) render.buffer[i] = color;
+                if (color >= 0 || color <= -21) render.buffer[i] = color;
             }
 
             for (int i = 0; i < canvas.getCursors().size(); ++i) {

@@ -1,11 +1,13 @@
 package org.bukkit.craftbukkit.persistence;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
+import java.util.Set;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
@@ -68,6 +70,20 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
         Z z = get(key, type);
         return z != null ? z : defaultValue;
+    }
+
+    @Override
+    public Set<NamespacedKey> getKeys() {
+        Set<NamespacedKey> keys = new HashSet<>();
+
+        this.customDataTags.keySet().forEach(key -> {
+            String[] keyData = key.split(":", 2);
+            if (keyData.length == 2) {
+                keys.add(new NamespacedKey(keyData[0], keyData[1]));
+            }
+        });
+
+        return keys;
     }
 
     @Override

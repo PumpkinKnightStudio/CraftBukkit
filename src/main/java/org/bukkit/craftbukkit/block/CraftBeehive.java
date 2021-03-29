@@ -3,14 +3,14 @@ package org.bukkit.craftbukkit.block;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.Entity;
-import net.minecraft.server.TileEntityBeehive;
-import net.minecraft.server.TileEntityBeehive.ReleaseStatus;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.TileEntityBeehive;
+import net.minecraft.world.level.block.entity.TileEntityBeehive.ReleaseStatus;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.Beehive;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftBee;
 import org.bukkit.entity.Bee;
 
@@ -43,12 +43,12 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
 
     @Override
     public boolean isSedated() {
-        return isPlaced() && getSnapshot().k(); // PAIL rename isSedated
+        return isPlaced() && getTileEntity().isSedated();
     }
 
     @Override
     public int getEntityCount() {
-        return getSnapshot().j(); // PAIL rename beeCount
+        return getSnapshot().getBeeCount();
     }
 
     @Override
@@ -81,6 +81,6 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
     public void addEntity(Bee entity) {
         Preconditions.checkArgument(entity != null, "Entity must not be null");
 
-        getSnapshot().a(((CraftBee) entity).getHandle(), false); // PAIL rename addBee
+        getSnapshot().addBee(((CraftBee) entity).getHandle(), false);
     }
 }

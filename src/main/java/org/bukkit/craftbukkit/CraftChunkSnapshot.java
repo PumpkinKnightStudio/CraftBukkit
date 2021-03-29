@@ -1,11 +1,15 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BiomeStorage;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.DataPaletteBlock;
-import net.minecraft.server.HeightMap;
-import net.minecraft.server.IBlockData;
+import com.google.common.base.Predicates;
+import java.util.function.Predicate;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.core.IRegistry;
+import net.minecraft.world.level.biome.BiomeBase;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.chunk.BiomeStorage;
+import net.minecraft.world.level.chunk.DataPaletteBlock;
+import net.minecraft.world.level.levelgen.HeightMap;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -61,7 +65,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     public boolean contains(BlockData block) {
         Preconditions.checkArgument(block != null, "Block cannot be null");
 
-        IBlockData nms = ((CraftBlockData) block).getState();
+        Predicate<IBlockData> nms = Predicates.equalTo(((CraftBlockData) block).getState());
         for (DataPaletteBlock<IBlockData> palette : blockids) {
             if (palette.contains(nms)) {
                 return true;
@@ -126,7 +130,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         Preconditions.checkState(biome != null, "ChunkSnapshot created without biome. Please call getSnapshot with includeBiome=true");
         CraftChunk.validateChunkCoordinates(x, y, z);
 
-        return CraftBlock.biomeBaseToBiome(biome.getBiome(x >> 2, y >> 2, z >> 2));
+        return CraftBlock.biomeBaseToBiome((IRegistry<BiomeBase>) biome.registry, biome.getBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override

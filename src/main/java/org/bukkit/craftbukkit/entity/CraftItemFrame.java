@@ -1,11 +1,12 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityHanging;
-import net.minecraft.server.EntityItemFrame;
-import net.minecraft.server.EnumDirection;
-import net.minecraft.server.ItemStack;
-import net.minecraft.server.WorldServer;
+import com.google.common.base.Preconditions;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.core.EnumDirection;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.world.entity.decoration.EntityHanging;
+import net.minecraft.world.entity.decoration.EntityItemFrame;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Rotation;
 import org.bukkit.block.BlockFace;
@@ -48,7 +49,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
         old.die();
 
-        EntityItemFrame frame = new EntityItemFrame(world,position,direction);
+        EntityItemFrame frame = new EntityItemFrame(world, position, direction);
         frame.setItem(item);
         world.addEntity(frame);
         this.entity = frame;
@@ -67,6 +68,17 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
     @Override
     public org.bukkit.inventory.ItemStack getItem() {
         return CraftItemStack.asBukkitCopy(getHandle().getItem());
+    }
+
+    @Override
+    public float getItemDropChance() {
+        return getHandle().itemDropChance;
+    }
+
+    @Override
+    public void setItemDropChance(float chance) {
+        Preconditions.checkArgument(0.0 <= chance && chance <= 1.0, "Chance outside range [0, 1]");
+        getHandle().itemDropChance = chance;
     }
 
     @Override
@@ -126,6 +138,26 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         default:
             throw new IllegalArgumentException(rotation + " is not applicable to an ItemFrame");
         }
+    }
+
+    @Override
+    public boolean isVisible() {
+        return !getHandle().isInvisible();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        getHandle().setInvisible(!visible);
+    }
+
+    @Override
+    public boolean isFixed() {
+        return getHandle().fixed;
+    }
+
+    @Override
+    public void setFixed(boolean fixed) {
+        getHandle().fixed = fixed;
     }
 
     @Override

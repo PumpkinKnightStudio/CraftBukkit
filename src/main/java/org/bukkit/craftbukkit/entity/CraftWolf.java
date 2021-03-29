@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityWolf;
-import net.minecraft.server.EnumColor;
+import net.minecraft.world.entity.animal.EntityWolf;
+import net.minecraft.world.item.EnumColor;
 import org.bukkit.DyeColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -19,7 +19,11 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
 
     @Override
     public void setAngry(boolean angry) {
-        getHandle().setAngry(angry);
+        if (angry) {
+            getHandle().anger();
+        } else {
+            getHandle().pacify();
+        }
     }
 
     @Override

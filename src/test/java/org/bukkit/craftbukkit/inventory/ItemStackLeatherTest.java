@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.inventory.ItemStackTest.CompoundOperator;
+import org.bukkit.craftbukkit.inventory.ItemStackTest.Operator;
+import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.junit.runner.RunWith;
@@ -14,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class ItemStackLeatherTest extends ItemStackTest {
 
-    @Parameters(name="[{index}]:{" + NAME_PARAMETER + "}")
+    @Parameters(name = "[{index}]:{" + NAME_PARAMETER + "}")
     public static List<Object[]> data() {
         return StackProvider.compound(operators(), "%s %s", NAME_PARAMETER, Material.LEATHER_BOOTS, Material.LEATHER_CHESTPLATE, Material.LEATHER_HELMET, Material.LEATHER_LEGGINGS);
     }

@@ -1,19 +1,19 @@
 package org.bukkit.craftbukkit.inventory.util;
 
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.DimensionManager;
-import net.minecraft.server.IInventory;
+import net.minecraft.core.BlockPosition;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TileEntityBlastFurnace;
-import net.minecraft.server.TileEntityBrewingStand;
-import net.minecraft.server.TileEntityDispenser;
-import net.minecraft.server.TileEntityDropper;
-import net.minecraft.server.TileEntityFurnace;
-import net.minecraft.server.TileEntityFurnaceFurnace;
-import net.minecraft.server.TileEntityHopper;
-import net.minecraft.server.TileEntityLectern;
-import net.minecraft.server.TileEntityLootable;
-import net.minecraft.server.TileEntitySmoker;
+import net.minecraft.world.IInventory;
+import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
+import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
+import net.minecraft.world.level.block.entity.TileEntityDispenser;
+import net.minecraft.world.level.block.entity.TileEntityDropper;
+import net.minecraft.world.level.block.entity.TileEntityFurnace;
+import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
+import net.minecraft.world.level.block.entity.TileEntityHopper;
+import net.minecraft.world.level.block.entity.TileEntityLectern;
+import net.minecraft.world.level.block.entity.TileEntityLootable;
+import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
@@ -50,7 +50,7 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
         @Override
         public IInventory getTileEntity() {
             TileEntityFurnace furnace = new TileEntityFurnaceFurnace();
-            furnace.setLocation(MinecraftServer.getServer().getWorldServer(DimensionManager.OVERWORLD), BlockPosition.ZERO); // TODO: customize this if required
+            furnace.setLocation(MinecraftServer.getServer().getWorldServer(World.OVERWORLD), BlockPosition.ZERO); // TODO: customize this if required
             return furnace;
         }
 

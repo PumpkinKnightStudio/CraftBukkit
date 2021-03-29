@@ -1,45 +1,42 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.server.BlockBed;
-import net.minecraft.server.BlockEnchantmentTable;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.BlockWorkbench;
-import net.minecraft.server.Blocks;
-import net.minecraft.server.ChatComponentText;
-import net.minecraft.server.Container;
-import net.minecraft.server.Containers;
-import net.minecraft.server.CraftingManager;
-import net.minecraft.server.Entity;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.EnumMainHand;
-import net.minecraft.server.IBlockData;
-import net.minecraft.server.IChatBaseComponent;
-import net.minecraft.server.IMerchant;
-import net.minecraft.server.IRecipe;
-import net.minecraft.server.ITileInventory;
-import net.minecraft.server.ItemCooldown;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.PacketPlayInCloseWindow;
-import net.minecraft.server.PacketPlayOutOpenWindow;
-import net.minecraft.server.TileEntity;
-import net.minecraft.server.TileEntityContainer;
-import net.minecraft.server.Vec3D;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
+import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.ITileInventory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EnumMainHand;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.inventory.Container;
+import net.minecraft.world.inventory.Containers;
+import net.minecraft.world.item.ItemCooldown;
+import net.minecraft.world.item.crafting.CraftingManager;
+import net.minecraft.world.item.crafting.IRecipe;
+import net.minecraft.world.item.trading.IMerchant;
+import net.minecraft.world.level.block.BlockBed;
+import net.minecraft.world.level.block.BlockEnchantmentTable;
+import net.minecraft.world.level.block.BlockWorkbench;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TileEntity;
+import net.minecraft.world.level.block.entity.TileEntityContainer;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -48,6 +45,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.HumanEntity;
@@ -116,7 +114,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Override
     public void setItemOnCursor(ItemStack item) {
-        net.minecraft.server.ItemStack stack = CraftItemStack.asNMSCopy(item);
+        net.minecraft.world.item.ItemStack stack = CraftItemStack.asNMSCopy(item);
         getHandle().inventory.setCarried(stack);
         if (this instanceof CraftPlayer) {
             ((EntityPlayer) getHandle()).broadcastCarriedItem(); // Send set slot for cursor
@@ -126,36 +124,6 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     @Override
     public int getSleepTicks() {
         return getHandle().sleepTicks;
-    }
-
-    @Override
-    public Location getBedSpawnLocation() {
-        World world = getServer().getWorld(getHandle().spawnWorld);
-        BlockPosition bed = getHandle().getBed();
-
-        if (world != null && bed != null) {
-            Optional<Vec3D> spawnLoc = EntityHuman.getBed(((CraftWorld) world).getHandle(), bed, getHandle().isRespawnForced());
-            if (spawnLoc.isPresent()) {
-                Vec3D vec = spawnLoc.get();
-                return new Location(world, vec.x, vec.y, vec.z);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void setBedSpawnLocation(Location location) {
-        setBedSpawnLocation(location, false);
-    }
-
-    @Override
-    public void setBedSpawnLocation(Location location, boolean override) {
-        if (location == null) {
-            getHandle().setRespawnPosition(null, override, false);
-        } else {
-            getHandle().setRespawnPosition(new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()), override, false);
-            getHandle().spawnWorld = location.getWorld().getName();
-        }
     }
 
     @Override
@@ -192,7 +160,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public Location getBedLocation() {
         Preconditions.checkState(isSleeping(), "Not sleeping");
 
-        BlockPosition bed = getHandle().getBed();
+        BlockPosition bed = getHandle().getBedPosition().get();
         return new Location(getWorld(), bed.getX(), bed.getY(), bed.getZ());
     }
 
@@ -350,21 +318,21 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
         String title = container.getBukkitView().getTitle();
 
-        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, new ChatComponentText(title)));
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0]));
         getHandle().activeContainer = container;
         getHandle().activeContainer.addSlotListener(player);
     }
 
     @Override
     public InventoryView openWorkbench(Location location, boolean force) {
+        if (location == null) {
+            location = getLocation();
+        }
         if (!force) {
             Block block = location.getBlock();
             if (block.getType() != Material.CRAFTING_TABLE) {
                 return null;
             }
-        }
-        if (location == null) {
-            location = getLocation();
         }
         getHandle().openContainer(((BlockWorkbench) Blocks.CRAFTING_TABLE).getInventory(null, getHandle().world, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ())));
         if (force) {
@@ -375,14 +343,14 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Override
     public InventoryView openEnchanting(Location location, boolean force) {
+        if (location == null) {
+            location = getLocation();
+        }
         if (!force) {
             Block block = location.getBlock();
             if (block.getType() != Material.ENCHANTING_TABLE) {
                 return null;
             }
-        }
-        if (location == null) {
-            location = getLocation();
         }
 
         // If there isn't an enchant table we can force create one, won't be very useful though.
@@ -420,7 +388,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         // Now open the window
         Containers<?> windowType = CraftContainer.getNotchInventoryType(inventory.getTopInventory());
         String title = inventory.getTitle();
-        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, new ChatComponentText(title)));
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0]));
         player.activeContainer = container;
         player.activeContainer.addSlotListener(player);
     }
@@ -491,6 +459,11 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
+    public float getAttackCooldown() {
+        return getHandle().getAttackCooldown(0.5f);
+    }
+
+    @Override
     public boolean hasCooldown(Material material) {
         Preconditions.checkArgument(material != null, "material");
 
@@ -533,12 +506,22 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         return getHandle().undiscoverRecipes(bukkitKeysToMinecraftRecipes(recipes));
     }
 
+    @Override
+    public boolean hasDiscoveredRecipe(NamespacedKey recipe) {
+        return false;
+    }
+
+    @Override
+    public Set<NamespacedKey> getDiscoveredRecipes() {
+        return ImmutableSet.of();
+    }
+
     private Collection<IRecipe<?>> bukkitKeysToMinecraftRecipes(Collection<NamespacedKey> recipeKeys) {
         Collection<IRecipe<?>> recipes = new ArrayList<>();
         CraftingManager manager = getHandle().world.getMinecraftServer().getCraftingManager();
 
         for (NamespacedKey recipeKey : recipeKeys) {
-            Optional<? extends IRecipe<?>> recipe = manager.a(CraftNamespacedKey.toMinecraft(recipeKey));
+            Optional<? extends IRecipe<?>> recipe = manager.getRecipe(CraftNamespacedKey.toMinecraft(recipeKey));
             if (!recipe.isPresent()) {
                 continue;
             }
@@ -585,5 +568,70 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (entity != null) {
             entity.remove();
         }
+    }
+
+    @Override
+    public boolean dropItem(boolean dropAll) {
+        return getHandle().dropItem(dropAll);
+    }
+
+    @Override
+    public float getExhaustion() {
+        return getHandle().getFoodData().exhaustionLevel;
+    }
+
+    @Override
+    public void setExhaustion(float value) {
+        getHandle().getFoodData().exhaustionLevel = value;
+    }
+
+    @Override
+    public float getSaturation() {
+        return getHandle().getFoodData().saturationLevel;
+    }
+
+    @Override
+    public void setSaturation(float value) {
+        getHandle().getFoodData().saturationLevel = value;
+    }
+
+    @Override
+    public int getFoodLevel() {
+        return getHandle().getFoodData().foodLevel;
+    }
+
+    @Override
+    public void setFoodLevel(int value) {
+        getHandle().getFoodData().foodLevel = value;
+    }
+
+    @Override
+    public int getSaturatedRegenRate() {
+        return getHandle().getFoodData().saturatedRegenRate;
+    }
+
+    @Override
+    public void setSaturatedRegenRate(int i) {
+        getHandle().getFoodData().saturatedRegenRate = i;
+    }
+
+    @Override
+    public int getUnsaturatedRegenRate() {
+        return getHandle().getFoodData().unsaturatedRegenRate;
+    }
+
+    @Override
+    public void setUnsaturatedRegenRate(int i) {
+        getHandle().getFoodData().unsaturatedRegenRate = i;
+    }
+
+    @Override
+    public int getStarvationRate() {
+        return getHandle().getFoodData().starvationRate;
+    }
+
+    @Override
+    public void setStarvationRate(int i) {
+        getHandle().getFoodData().starvationRate = i;
     }
 }

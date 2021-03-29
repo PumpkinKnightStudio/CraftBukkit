@@ -3,39 +3,38 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.server.EnumColor;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.TileEntity;
-import net.minecraft.server.TileEntityBanner;
-import net.minecraft.server.TileEntityBarrel;
-import net.minecraft.server.TileEntityBeacon;
-import net.minecraft.server.TileEntityBeehive;
-import net.minecraft.server.TileEntityBell;
-import net.minecraft.server.TileEntityBlastFurnace;
-import net.minecraft.server.TileEntityBrewingStand;
-import net.minecraft.server.TileEntityCampfire;
-import net.minecraft.server.TileEntityChest;
-import net.minecraft.server.TileEntityCommand;
-import net.minecraft.server.TileEntityComparator;
-import net.minecraft.server.TileEntityDispenser;
-import net.minecraft.server.TileEntityDropper;
-import net.minecraft.server.TileEntityEnchantTable;
-import net.minecraft.server.TileEntityEndGateway;
-import net.minecraft.server.TileEntityEnderChest;
-import net.minecraft.server.TileEntityFurnace;
-import net.minecraft.server.TileEntityFurnaceFurnace;
-import net.minecraft.server.TileEntityHopper;
-import net.minecraft.server.TileEntityJigsaw;
-import net.minecraft.server.TileEntityJukeBox;
-import net.minecraft.server.TileEntityLectern;
-import net.minecraft.server.TileEntityLightDetector;
-import net.minecraft.server.TileEntityMobSpawner;
-import net.minecraft.server.TileEntityShulkerBox;
-import net.minecraft.server.TileEntitySign;
-import net.minecraft.server.TileEntitySkull;
-import net.minecraft.server.TileEntitySmoker;
-import net.minecraft.server.TileEntityStructure;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.EnumColor;
+import net.minecraft.world.level.block.entity.TileEntity;
+import net.minecraft.world.level.block.entity.TileEntityBanner;
+import net.minecraft.world.level.block.entity.TileEntityBarrel;
+import net.minecraft.world.level.block.entity.TileEntityBeacon;
+import net.minecraft.world.level.block.entity.TileEntityBeehive;
+import net.minecraft.world.level.block.entity.TileEntityBell;
+import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
+import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
+import net.minecraft.world.level.block.entity.TileEntityCampfire;
+import net.minecraft.world.level.block.entity.TileEntityChest;
+import net.minecraft.world.level.block.entity.TileEntityCommand;
+import net.minecraft.world.level.block.entity.TileEntityComparator;
+import net.minecraft.world.level.block.entity.TileEntityDispenser;
+import net.minecraft.world.level.block.entity.TileEntityDropper;
+import net.minecraft.world.level.block.entity.TileEntityEnchantTable;
+import net.minecraft.world.level.block.entity.TileEntityEndGateway;
+import net.minecraft.world.level.block.entity.TileEntityEnderChest;
+import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
+import net.minecraft.world.level.block.entity.TileEntityHopper;
+import net.minecraft.world.level.block.entity.TileEntityJigsaw;
+import net.minecraft.world.level.block.entity.TileEntityJukeBox;
+import net.minecraft.world.level.block.entity.TileEntityLectern;
+import net.minecraft.world.level.block.entity.TileEntityLightDetector;
+import net.minecraft.world.level.block.entity.TileEntityMobSpawner;
+import net.minecraft.world.level.block.entity.TileEntityShulkerBox;
+import net.minecraft.world.level.block.entity.TileEntitySign;
+import net.minecraft.world.level.block.entity.TileEntitySkull;
+import net.minecraft.world.level.block.entity.TileEntitySmoker;
+import net.minecraft.world.level.block.entity.TileEntityStructure;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -59,7 +58,7 @@ import org.bukkit.craftbukkit.block.CraftDropper;
 import org.bukkit.craftbukkit.block.CraftEnchantingTable;
 import org.bukkit.craftbukkit.block.CraftEndGateway;
 import org.bukkit.craftbukkit.block.CraftEnderChest;
-import org.bukkit.craftbukkit.block.CraftFurnace;
+import org.bukkit.craftbukkit.block.CraftFurnaceFurnace;
 import org.bukkit.craftbukkit.block.CraftHopper;
 import org.bukkit.craftbukkit.block.CraftJigsaw;
 import org.bukkit.craftbukkit.block.CraftJukebox;
@@ -69,6 +68,8 @@ import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.CraftSkull;
 import org.bukkit.craftbukkit.block.CraftSmoker;
 import org.bukkit.craftbukkit.block.CraftStructureBlock;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
@@ -184,7 +185,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean applicableTo(Material type) {
-        switch(type){
+        switch (type) {
             case FURNACE:
             case CHEST:
             case TRAPPED_CHEST:
@@ -195,6 +196,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case ACACIA_WALL_SIGN:
             case BIRCH_SIGN:
             case BIRCH_WALL_SIGN:
+            case CRIMSON_SIGN:
+            case CRIMSON_WALL_SIGN:
             case DARK_OAK_SIGN:
             case DARK_OAK_WALL_SIGN:
             case JUNGLE_SIGN:
@@ -203,6 +206,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case OAK_WALL_SIGN:
             case SPRUCE_SIGN:
             case SPRUCE_WALL_SIGN:
+            case WARPED_SIGN:
+            case WARPED_WALL_SIGN:
             case SPAWNER:
             case BREWING_STAND:
             case ENCHANTING_TABLE:
@@ -237,6 +242,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case BELL:
             case BLAST_FURNACE:
             case CAMPFIRE:
+            case SOUL_CAMPFIRE:
             case JIGSAW:
             case LECTERN:
             case SMOKER:
@@ -263,10 +269,12 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     public BlockState getBlockState() {
+        Material stateMaterial = material; // Only actually used for jigsaws
         if (blockEntityTag != null) {
             switch (material) {
                 case SHIELD:
                     blockEntityTag.setString("id", "banner");
+                    stateMaterial = shieldToBannerHack(blockEntityTag);
                     break;
                 case SHULKER_BOX:
                 case WHITE_SHULKER_BOX:
@@ -293,13 +301,15 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                     break;
             }
         }
-        TileEntity te = (blockEntityTag == null) ? null : TileEntity.create(blockEntityTag);
+        TileEntity te = (blockEntityTag == null) ? null : TileEntity.create(CraftMagicNumbers.getBlock(stateMaterial).getBlockData(), blockEntityTag);
 
         switch (material) {
         case ACACIA_SIGN:
         case ACACIA_WALL_SIGN:
         case BIRCH_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_SIGN:
+        case CRIMSON_WALL_SIGN:
         case DARK_OAK_SIGN:
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
@@ -308,6 +318,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_SIGN:
+        case WARPED_WALL_SIGN:
             if (te == null) {
                 te = new TileEntitySign();
             }
@@ -322,7 +334,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             if (te == null) {
                 te = new TileEntityFurnaceFurnace();
             }
-            return new CraftFurnace(material, (TileEntityFurnace) te);
+            return new CraftFurnaceFurnace(material, (TileEntityFurnaceFurnace) te);
         case DISPENSER:
             if (te == null) {
                 te = new TileEntityDispenser();
@@ -459,58 +471,59 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             }
             return new CraftEnchantingTable(material, (TileEntityEnchantTable) te);
         case ENDER_CHEST:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityEnderChest();
             }
             return new CraftEnderChest(material, (TileEntityEnderChest) te);
         case DAYLIGHT_DETECTOR:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityLightDetector();
             }
             return new CraftDaylightDetector(material, (TileEntityLightDetector) te);
         case COMPARATOR:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityComparator();
             }
             return new CraftComparator(material, (TileEntityComparator) te);
         case BARREL:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBarrel();
             }
             return new CraftBarrel(material, (TileEntityBarrel) te);
         case BELL:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBell();
             }
             return new CraftBell(material, (TileEntityBell) te);
         case BLAST_FURNACE:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBlastFurnace();
             }
             return new CraftBlastFurnace(material, (TileEntityBlastFurnace) te);
         case CAMPFIRE:
-            if (te == null){
+        case SOUL_CAMPFIRE:
+            if (te == null) {
                 te = new TileEntityCampfire();
             }
             return new CraftCampfire(material, (TileEntityCampfire) te);
         case JIGSAW:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityJigsaw();
             }
             return new CraftJigsaw(material, (TileEntityJigsaw) te);
         case LECTERN:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityLectern();
             }
             return new CraftLectern(material, (TileEntityLectern) te);
         case SMOKER:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntitySmoker();
             }
             return new CraftSmoker(material, (TileEntitySmoker) te);
         case BEE_NEST:
         case BEEHIVE:
-            if (te == null){
+            if (te == null) {
                 te = new TileEntityBeehive();
             }
             return new CraftBeehive(material, (TileEntityBeehive) te);
@@ -529,6 +542,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case ACACIA_WALL_SIGN:
         case BIRCH_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_SIGN:
+        case CRIMSON_WALL_SIGN:
         case DARK_OAK_SIGN:
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
@@ -537,6 +552,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_SIGN:
+        case WARPED_WALL_SIGN:
             valid = blockState instanceof CraftSign;
             break;
         case CHEST:
@@ -544,7 +561,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             valid = blockState instanceof CraftChest;
             break;
         case FURNACE:
-            valid = blockState instanceof CraftFurnace;
+            valid = blockState instanceof CraftFurnaceFurnace;
             break;
         case DISPENSER:
             valid = blockState instanceof CraftDispenser;
@@ -668,6 +685,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             valid = blockState instanceof CraftBlastFurnace;
             break;
         case CAMPFIRE:
+        case SOUL_CAMPFIRE:
             valid = blockState instanceof CraftCampfire;
             break;
         case JIGSAW:

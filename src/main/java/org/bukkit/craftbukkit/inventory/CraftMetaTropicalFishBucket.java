@@ -2,11 +2,13 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.server.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftTropicalFish;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.TropicalFish;
@@ -15,8 +17,10 @@ import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishBucketMeta {
     static final ItemMetaKey VARIANT = new ItemMetaKey("BucketVariantTag", "fish-variant");
+    static final ItemMetaKey ENTITY_TAG = new ItemMetaKey("EntityTag", "entity-tag");
 
     private Integer variant;
+    private NBTTagCompound entityTag;
 
     CraftMetaTropicalFishBucket(CraftMetaItem meta) {
         super(meta);
@@ -27,6 +31,7 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
 
         CraftMetaTropicalFishBucket bucket = (CraftMetaTropicalFishBucket) meta;
         this.variant = bucket.variant;
+        this.entityTag = bucket.entityTag;
     }
 
     CraftMetaTropicalFishBucket(NBTTagCompound tag) {
@@ -34,6 +39,10 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
 
         if (tag.hasKeyOfType(VARIANT.NBT, CraftMagicNumbers.NBT.TAG_INT)) {
             this.variant = tag.getInt(VARIANT.NBT);
+        }
+
+        if (tag.hasKey(ENTITY_TAG.NBT)) {
+            entityTag = tag.getCompound(ENTITY_TAG.NBT);
         }
     }
 
@@ -47,11 +56,31 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     }
 
     @Override
+    void deserializeInternal(NBTTagCompound tag, Object context) {
+        super.deserializeInternal(tag, context);
+
+        if (tag.hasKey(ENTITY_TAG.NBT)) {
+            entityTag = tag.getCompound(ENTITY_TAG.NBT);
+        }
+    }
+
+    @Override
+    void serializeInternal(Map<String, NBTBase> internalTags) {
+        if (entityTag != null && !entityTag.isEmpty()) {
+            internalTags.put(ENTITY_TAG.NBT, entityTag);
+        }
+    }
+
+    @Override
     void applyToItem(NBTTagCompound tag) {
         super.applyToItem(tag);
 
         if (hasVariant()) {
             tag.setInt(VARIANT.NBT, variant);
+        }
+
+        if (entityTag != null) {
+            tag.set(ENTITY_TAG.NBT, entityTag);
         }
     }
 
@@ -71,7 +100,7 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     }
 
     boolean isBucketEmpty() {
-        return !(hasVariant());
+        return !(hasVariant() || entityTag != null);
     }
 
     @Override
@@ -126,7 +155,8 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (meta instanceof CraftMetaTropicalFishBucket) {
             CraftMetaTropicalFishBucket that = (CraftMetaTropicalFishBucket) meta;
 
-            return (hasVariant() ? that.hasVariant() && this.variant.equals(that.variant) : !that.hasVariant());
+            return (hasVariant() ? that.hasVariant() && this.variant.equals(that.variant) : !that.hasVariant())
+                    && (entityTag != null ? that.entityTag != null && this.entityTag.equals(that.entityTag) : that.entityTag == null);
         }
         return true;
     }
@@ -144,6 +174,9 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (hasVariant()) {
             hash = 61 * hash + variant;
         }
+        if (entityTag != null) {
+            hash = 61 * hash + entityTag.hashCode();
+        }
 
         return original != hash ? CraftMetaTropicalFishBucket.class.hashCode() ^ hash : hash;
     }
@@ -151,7 +184,13 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
 
     @Override
     public CraftMetaTropicalFishBucket clone() {
-        return (CraftMetaTropicalFishBucket) super.clone();
+        CraftMetaTropicalFishBucket clone = (CraftMetaTropicalFishBucket) super.clone();
+
+        if (entityTag != null) {
+            clone.entityTag = entityTag.clone();
+        }
+
+        return clone;
     }
 
     @Override

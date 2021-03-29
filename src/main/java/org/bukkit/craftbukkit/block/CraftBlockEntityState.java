@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.TileEntity;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.entity.TileEntity;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
@@ -24,7 +24,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         // get tile entity from block:
         CraftWorld world = (CraftWorld) this.getWorld();
         this.tileEntity = tileEntityClass.cast(world.getHandle().getTileEntity(this.getPosition()));
-        Preconditions.checkState(this.tileEntity != null, "Tile is null, asynchronous access? " + block);
+        Preconditions.checkState(this.tileEntity != null, "Tile is null, asynchronous access? %s", block);
 
         // copy tile entity data:
         this.snapshot = this.createSnapshot(tileEntity);
@@ -48,7 +48,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         }
 
         NBTTagCompound nbtTagCompound = tileEntity.save(new NBTTagCompound());
-        T snapshot = (T) TileEntity.create(nbtTagCompound);
+        T snapshot = (T) TileEntity.create(getHandle(), nbtTagCompound);
 
         return snapshot;
     }
@@ -57,7 +57,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
     private void copyData(T from, T to) {
         BlockPosition pos = to.getPosition();
         NBTTagCompound nbtTagCompound = from.save(new NBTTagCompound());
-        to.load(nbtTagCompound);
+        to.load(getHandle(), nbtTagCompound);
 
         // reset the original position:
         to.setPosition(pos);

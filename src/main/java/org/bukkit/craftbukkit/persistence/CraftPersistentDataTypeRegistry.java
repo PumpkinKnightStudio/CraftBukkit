@@ -1,23 +1,24 @@
 package org.bukkit.craftbukkit.persistence;
 
+import com.google.common.primitives.Primitives;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import com.google.common.primitives.Primitives;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagByte;
-import net.minecraft.server.NBTTagByteArray;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagDouble;
-import net.minecraft.server.NBTTagFloat;
-import net.minecraft.server.NBTTagInt;
-import net.minecraft.server.NBTTagIntArray;
-import net.minecraft.server.NBTTagLong;
-import net.minecraft.server.NBTTagLongArray;
-import net.minecraft.server.NBTTagShort;
-import net.minecraft.server.NBTTagString;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagByteArray;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagLongArray;
+import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.persistence.PersistentDataContainer;
 
@@ -146,6 +147,32 @@ public final class CraftPersistentDataTypeRegistry {
         }
         if (Objects.equals(long[].class, type)) {
             return createAdapter(long[].class, NBTTagLongArray.class, array -> new NBTTagLongArray(Arrays.copyOf(array, array.length)), n -> Arrays.copyOf(n.getLongs(), n.size()));
+        }
+
+        /*
+            Complex Arrays
+         */
+        if (Objects.equals(PersistentDataContainer[].class, type)) {
+            return createAdapter(PersistentDataContainer[].class, NBTTagList.class,
+                    (containerArray) -> {
+                        NBTTagList list = new NBTTagList();
+                        for (int i = 0; i < containerArray.length; i++) {
+                            list.add(((CraftPersistentDataContainer) containerArray[i]).toTagCompound());
+                        }
+                        return list;
+                    },
+                    (tag) -> {
+                        PersistentDataContainer[] containerArray = new CraftPersistentDataContainer[tag.size()];
+                        for (int i = 0; i < tag.size(); i++) {
+                            CraftPersistentDataContainer container = new CraftPersistentDataContainer(this);
+                            NBTTagCompound compound = tag.getCompound(i);
+                            for (String key : compound.getKeys()) {
+                                container.put(key, compound.get(key));
+                            }
+                            containerArray[i] = container;
+                        }
+                        return containerArray;
+                    });
         }
 
         /*

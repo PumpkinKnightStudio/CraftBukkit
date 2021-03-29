@@ -9,27 +9,27 @@ public final class CraftStoneButton extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftStoneButton(net.minecraft.server.IBlockData state) {
+    public CraftStoneButton(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftSwitch
 
-    private static final net.minecraft.server.BlockStateEnum<?> FACE = getEnum(net.minecraft.server.BlockStoneButton.class, "face");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> FACE = getEnum(net.minecraft.world.level.block.BlockStoneButton.class, "face");
 
     @Override
-    public Face getFace() {
-        return get(FACE, Face.class);
+    public org.bukkit.block.data.type.Switch.Face getFace() {
+        return get(FACE, org.bukkit.block.data.type.Switch.Face.class);
     }
 
     @Override
-    public void setFace(Face face) {
+    public void setFace(org.bukkit.block.data.type.Switch.Face face) {
         set(FACE, face);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.server.BlockStateEnum<?> FACING = getEnum(net.minecraft.server.BlockStoneButton.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> FACING = getEnum(net.minecraft.world.level.block.BlockStoneButton.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -48,21 +48,21 @@ public final class CraftStoneButton extends org.bukkit.craftbukkit.block.data.Cr
 
     // org.bukkit.craftbukkit.block.data.CraftFaceAttachable
 
-    private static final net.minecraft.server.BlockStateEnum<?> ATTACH_FACE = getEnum(net.minecraft.server.BlockStoneButton.class, "face");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> ATTACH_FACE = getEnum(net.minecraft.world.level.block.BlockStoneButton.class, "face");
 
     @Override
-    public AttachedFace getAttachedFace() {
-        return get(ATTACH_FACE, AttachedFace.class);
+    public org.bukkit.block.data.FaceAttachable.AttachedFace getAttachedFace() {
+        return get(ATTACH_FACE, org.bukkit.block.data.FaceAttachable.AttachedFace.class);
     }
 
     @Override
-    public void setAttachedFace(AttachedFace face) {
+    public void setAttachedFace(org.bukkit.block.data.FaceAttachable.AttachedFace face) {
         set(ATTACH_FACE, face);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.server.BlockStateBoolean POWERED = getBoolean(net.minecraft.server.BlockStoneButton.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.BlockStoneButton.class, "powered");
 
     @Override
     public boolean isPowered() {

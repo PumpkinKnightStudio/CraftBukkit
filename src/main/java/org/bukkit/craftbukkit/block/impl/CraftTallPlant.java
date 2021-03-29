@@ -9,21 +9,21 @@ public final class CraftTallPlant extends org.bukkit.craftbukkit.block.data.Craf
         super();
     }
 
-    public CraftTallPlant(net.minecraft.server.IBlockData state) {
+    public CraftTallPlant(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftBisected
 
-    private static final net.minecraft.server.BlockStateEnum<?> HALF = getEnum(net.minecraft.server.BlockTallPlant.class, "half");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> HALF = getEnum(net.minecraft.world.level.block.BlockTallPlant.class, "half");
 
     @Override
-    public Half getHalf() {
-        return get(HALF, Half.class);
+    public org.bukkit.block.data.Bisected.Half getHalf() {
+        return get(HALF, org.bukkit.block.data.Bisected.Half.class);
     }
 
     @Override
-    public void setHalf(Half half) {
+    public void setHalf(org.bukkit.block.data.Bisected.Half half) {
         set(HALF, half);
     }
 }

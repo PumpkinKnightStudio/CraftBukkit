@@ -4,7 +4,7 @@
     <groupId>org.bukkit</groupId>
     <artifactId>craftbukkit</artifactId>
     <packaging>jar</packaging>
-    <version>1.15.2-R0.1-SNAPSHOT</version>
+    <version>1.16.5-R0.1-SNAPSHOT</version>
     <name>CraftBukkit</name>
     <url>https://www.spigotmc.org/</url>
 
@@ -12,11 +12,9 @@
         <skipTests>true</skipTests>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <api.version>unknown</api.version>
-        <minecraft.version>1.15.2</minecraft.version>
-        <minecraft_version>1_15_R1</minecraft_version>
-        <buildtag.prefix>git-Bukkit-</buildtag.prefix>
-        <buildtag.suffix></buildtag.suffix>
-        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <bt.name>git</bt.name>
+        <minecraft.version>1.16.5</minecraft.version>
+        <minecraft_version>1_16_R3</minecraft_version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -41,9 +39,22 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-iostreams</artifactId>
+            <version>2.8.1</version>
+            <scope>compile</scope>
+            <exclusions>
+                <!-- included in minecraft-server -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>7.3.1</version>
+            <version>9.1</version>
             <scope>compile</scope>
         </dependency>
         <!-- deprecated API depend -->
@@ -56,20 +67,20 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.30.1</version>
+            <version>3.34.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.48</version>
+            <version>5.1.49</version>
             <scope>runtime</scope>
         </dependency>
         <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -80,35 +91,15 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <!--
-            If you are a plugin developer, please use https://hub.spigotmc.org/nexus/content/repositories/snapshots/
-            as your repository URL. This will ensure only Bukkit / Spigot-API are pulled from our Maven repository.
-
-            Please see https://www.spigotmc.org/go/maven for more information.
-        -->
-        <repository>
-            <id>spigotmc-public</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spigotmc-public</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
     <build>
         <plugins>
             <plugin>
                 <groupId>net.md-5</groupId>
                 <artifactId>scriptus</artifactId>
-                <version>0.3.2</version>
+                <version>0.4.1</version>
                 <configuration>
-                    <format>git-Bukkit-%s</format>
+                    <format>${bt.name}-Bukkit-%s</format>
                 </configuration>
                 <executions>
                     <execution>
@@ -122,14 +113,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                        </manifest>
                         <manifestEntries>
                             <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
                             <Implementation-Title>CraftBukkit</Implementation-Title>
                             <Implementation-Version>${describe}</Implementation-Version>
-                            <Implementation-Vendor>${maven.build.timestamp}</Implementation-Vendor>
+                            <Implementation-Vendor>${project.build.outputTimestamp}</Implementation-Vendor>
                             <Specification-Title>Bukkit</Specification-Title>
                             <Specification-Version>${api.version}</Specification-Version>
                             <Specification-Vendor>Bukkit Team</Specification-Vendor>
@@ -160,7 +154,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -169,6 +163,16 @@
                         </goals>
                         <configuration>
                             <createSourcesJar>${shadeSourcesJar}</createSourcesJar>
+                            <filters>
+                                <filter>
+                                    <artifact>org.spigotmc:minecraft-server</artifact>
+                                    <excludes>
+                                        <exclude>com/google/common/**</exclude>
+                                        <exclude>com/google/gson/**</exclude>
+                                        <exclude>com/google/thirdparty/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <relocations>
                                 <!-- Cannot be relocated as it breaks translation property keys -->
                                 <!--
@@ -209,8 +213,14 @@
                                     </excludes>
                                 </relocation>
                                 <relocation>
-                                    <pattern>net.minecraft.server</pattern>
-                                    <shadedPattern>net.minecraft.server.v${minecraft_version}</shadedPattern>
+                                    <pattern>com/mojang/math/(.+/)*(.*)</pattern>
+                                    <shadedPattern>net/minecraft/server/v${minecraft_version}/$2</shadedPattern>
+                                    <rawString>true</rawString>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net/minecraft/(.+/)*(.*)</pattern>
+                                    <shadedPattern>net/minecraft/server/v${minecraft_version}/$2</shadedPattern>
+                                    <rawString>true</rawString>
                                 </relocation>
                             </relocations>
                             <transformers>
@@ -231,11 +241,15 @@
                     <compilerId>eclipse</compilerId>
                 </configuration>
                 <dependencies>
-                    <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
                     <dependency>
                         <groupId>org.codehaus.plexus</groupId>
                         <artifactId>plexus-compiler-eclipse</artifactId>
-                        <version>2.8.5-spigotmc</version>
+                        <version>2.8.8</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.eclipse.jdt</groupId>
+                        <artifactId>ecj</artifactId>
+                        <version>3.24.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -271,7 +285,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.1.1</version>
                         <executions>
                             <execution>
                                 <phase>process-classes</phase>
@@ -288,14 +302,14 @@
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
                                 <artifactId>checkstyle</artifactId>
-                                <version>8.29</version>
+                                <version>8.39</version>
                             </dependency>
                         </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>animal-sniffer-maven-plugin</artifactId>
-                        <version>1.18</version>
+                        <version>1.19</version>
                         <executions>
                             <execution>
                                 <phase>process-classes</phase>

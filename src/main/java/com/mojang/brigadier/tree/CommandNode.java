@@ -1,5 +1,6 @@
 package com.mojang.brigadier.tree;
 
+// CHECKSTYLE:OFF
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -23,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import net.minecraft.server.CommandListenerWrapper; // CraftBukkit
+import net.minecraft.commands.CommandListenerWrapper; // CraftBukkit
 
 public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
     private Map<String, CommandNode<S>> children = Maps.newLinkedHashMap();
@@ -70,8 +71,8 @@ public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
         return modifier;
     }
 
-    public boolean canUse(final S source) {
-        // CraftBukkit start
+    // CraftBukkit start
+    public synchronized boolean canUse(final S source) {
         if (source instanceof CommandListenerWrapper) {
             try {
                 ((CommandListenerWrapper) source).currentCommand = this;

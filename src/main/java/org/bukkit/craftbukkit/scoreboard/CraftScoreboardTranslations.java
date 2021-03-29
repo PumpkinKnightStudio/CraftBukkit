@@ -1,12 +1,12 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import com.google.common.collect.ImmutableBiMap;
-import net.minecraft.server.IScoreboardCriteria;
-import net.minecraft.server.Scoreboard;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 
-class CraftScoreboardTranslations {
+final class CraftScoreboardTranslations {
     static final int MAX_DISPLAY_SLOT = 3;
     static ImmutableBiMap<DisplaySlot, String> SLOTS = ImmutableBiMap.of(
             DisplaySlot.BELOW_NAME, "belowName",

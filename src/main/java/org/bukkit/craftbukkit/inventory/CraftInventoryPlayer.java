@@ -1,18 +1,19 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.PacketPlayOutHeldItemSlot;
-import net.minecraft.server.PacketPlayOutSetSlot;
-import net.minecraft.server.PlayerInventory;
+import net.minecraft.network.protocol.game.PacketPlayOutHeldItemSlot;
+import net.minecraft.network.protocol.game.PacketPlayOutSetSlot;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.entity.player.PlayerInventory;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.inventory.PlayerInventory, EntityEquipment {
-    public CraftInventoryPlayer(net.minecraft.server.PlayerInventory inventory) {
+    public CraftInventoryPlayer(net.minecraft.world.entity.player.PlayerInventory inventory) {
         super(inventory);
     }
 
@@ -37,6 +38,11 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
+    public void setItemInMainHand(ItemStack item, boolean silent) {
+        setItemInMainHand(item); // Silence doesn't apply to players
+    }
+
+    @Override
     public ItemStack getItemInOffHand() {
         return CraftItemStack.asCraftMirror(getInventory().extraSlots.get(0));
     }
@@ -46,6 +52,11 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
         ItemStack[] extra = getExtraContents();
         extra[0] = item;
         setExtraContents(extra);
+    }
+
+    @Override
+    public void setItemInOffHand(ItemStack item, boolean silent) {
+        setItemInOffHand(item); // Silence doesn't apply to players
     }
 
     @Override
@@ -103,6 +114,61 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
+    public void setItem(EquipmentSlot slot, ItemStack item) {
+        Preconditions.checkArgument(slot != null, "slot must not be null");
+
+        switch (slot) {
+            case HAND:
+                this.setItemInMainHand(item);
+                break;
+            case OFF_HAND:
+                this.setItemInOffHand(item);
+                break;
+            case FEET:
+                this.setBoots(item);
+                break;
+            case LEGS:
+                this.setLeggings(item);
+                break;
+            case CHEST:
+                this.setChestplate(item);
+                break;
+            case HEAD:
+                this.setHelmet(item);
+                break;
+            default:
+                throw new IllegalArgumentException("Not implemented. This is a bug");
+        }
+    }
+
+    @Override
+    public void setItem(EquipmentSlot slot, ItemStack item, boolean silent) {
+        setItem(slot, item); // Silence doesn't apply to players
+    }
+
+    @Override
+    public ItemStack getItem(EquipmentSlot slot) {
+        Preconditions.checkArgument(slot != null, "slot must not be null");
+
+        switch (slot) {
+            case HAND:
+                return getItemInMainHand();
+            case OFF_HAND:
+                return getItemInOffHand();
+            case FEET:
+                return getBoots();
+            case LEGS:
+                return getLeggings();
+            case CHEST:
+                return getChestplate();
+            case HEAD:
+                return getHelmet();
+            default:
+                throw new IllegalArgumentException("Not implemented. This is a bug");
+        }
+    }
+
+    @Override
     public int getHeldItemSlot() {
         return getInventory().itemInHandIndex;
     }
@@ -140,8 +206,18 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
+    public void setHelmet(ItemStack helmet, boolean silent) {
+        setHelmet(helmet); // Silence doesn't apply to players
+    }
+
+    @Override
     public void setChestplate(ItemStack chestplate) {
         setItem(getSize() - 3, chestplate);
+    }
+
+    @Override
+    public void setChestplate(ItemStack chestplate, boolean silent) {
+        setChestplate(chestplate); // Silence doesn't apply to players
     }
 
     @Override
@@ -150,8 +226,18 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
+    public void setLeggings(ItemStack leggings, boolean silent) {
+        setLeggings(leggings); // Silence doesn't apply to players
+    }
+
+    @Override
     public void setBoots(ItemStack boots) {
         setItem(getSize() - 5, boots);
+    }
+
+    @Override
+    public void setBoots(ItemStack boots, boolean silent) {
+        setBoots(boots); // Silence doesn't apply to players
     }
 
     @Override

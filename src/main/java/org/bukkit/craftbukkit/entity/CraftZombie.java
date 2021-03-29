@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityZombie;
-import net.minecraft.server.EntityZombieVillager;
+import net.minecraft.world.entity.monster.EntityZombie;
+import net.minecraft.world.entity.monster.EntityZombieVillager;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
@@ -79,5 +79,48 @@ public class CraftZombie extends CraftMonster implements Zombie {
         } else {
             getHandle().startDrownedConversion(time);
         }
+    }
+
+    @Override
+    public int getAge() {
+        return getHandle().isBaby() ? -1 : 0;
+    }
+
+    @Override
+    public void setAge(int i) {
+        getHandle().setBaby(i < 0);
+    }
+
+    @Override
+    public void setAgeLock(boolean b) {
+    }
+
+    @Override
+    public boolean getAgeLock() {
+        return false;
+    }
+
+    @Override
+    public void setBaby() {
+        getHandle().setBaby(true);
+    }
+
+    @Override
+    public void setAdult() {
+        getHandle().setBaby(false);
+    }
+
+    @Override
+    public boolean isAdult() {
+        return !getHandle().isBaby();
+    }
+
+    @Override
+    public boolean canBreed() {
+        return false;
+    }
+
+    @Override
+    public void setBreed(boolean b) {
     }
 }

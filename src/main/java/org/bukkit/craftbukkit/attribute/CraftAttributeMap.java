@@ -1,13 +1,14 @@
 package org.bukkit.craftbukkit.attribute;
 
-import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;
-import java.util.Locale;
-import net.minecraft.server.AttributeMapBase;
-import org.apache.commons.lang3.EnumUtils;
+import net.minecraft.core.IRegistry;
+import net.minecraft.world.entity.ai.attributes.AttributeBase;
+import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftAttributeMap implements Attributable {
 
@@ -20,36 +21,16 @@ public class CraftAttributeMap implements Attributable {
     @Override
     public AttributeInstance getAttribute(Attribute attribute) {
         Preconditions.checkArgument(attribute != null, "attribute");
-        net.minecraft.server.AttributeInstance nms = handle.a(toMinecraft(attribute.name()));
+        net.minecraft.world.entity.ai.attributes.AttributeModifiable nms = handle.a(toMinecraft(attribute));
 
         return (nms == null) ? null : new CraftAttributeInstance(nms, attribute);
     }
 
-    public static String toMinecraft(String bukkit) {
-        int first = bukkit.indexOf('_');
-        int second = bukkit.indexOf('_', first + 1);
-
-        StringBuilder sb = new StringBuilder(bukkit.toLowerCase(java.util.Locale.ENGLISH));
-
-        sb.setCharAt(first, '.');
-        if (second != -1) {
-            sb.deleteCharAt(second);
-            sb.setCharAt(second, bukkit.charAt(second + 1));
-        }
-
-        return sb.toString();
-    }
-
-    public static String toMinecraft(Attribute attribute) {
-        return toMinecraft(attribute.name());
+    public static AttributeBase toMinecraft(Attribute attribute) {
+        return IRegistry.ATTRIBUTE.get(CraftNamespacedKey.toMinecraft(attribute.getKey()));
     }
 
     public static Attribute fromMinecraft(String nms) {
-        String[] split = nms.split("\\.", 2);
-
-        String generic = split[0];
-        String descriptor = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, split[1]); // movementSpeed -> MOVEMENT_SPEED
-        String fin = generic + "_" + descriptor;
-        return EnumUtils.getEnum(Attribute.class, fin.toUpperCase(Locale.ROOT)); // so we can return null without throwing exceptions
+        return Registry.ATTRIBUTE.get(CraftNamespacedKey.fromString(nms));
     }
 }

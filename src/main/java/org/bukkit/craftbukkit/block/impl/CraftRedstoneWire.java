@@ -9,35 +9,35 @@ public final class CraftRedstoneWire extends org.bukkit.craftbukkit.block.data.C
         super();
     }
 
-    public CraftRedstoneWire(net.minecraft.server.IBlockData state) {
+    public CraftRedstoneWire(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftRedstoneWire
 
-    private static final net.minecraft.server.BlockStateEnum<?> NORTH = getEnum(net.minecraft.server.BlockRedstoneWire.class, "north");
-    private static final net.minecraft.server.BlockStateEnum<?> EAST = getEnum(net.minecraft.server.BlockRedstoneWire.class, "east");
-    private static final net.minecraft.server.BlockStateEnum<?> SOUTH = getEnum(net.minecraft.server.BlockRedstoneWire.class, "south");
-    private static final net.minecraft.server.BlockStateEnum<?> WEST = getEnum(net.minecraft.server.BlockRedstoneWire.class, "west");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> NORTH = getEnum(net.minecraft.world.level.block.BlockRedstoneWire.class, "north");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> EAST = getEnum(net.minecraft.world.level.block.BlockRedstoneWire.class, "east");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> SOUTH = getEnum(net.minecraft.world.level.block.BlockRedstoneWire.class, "south");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> WEST = getEnum(net.minecraft.world.level.block.BlockRedstoneWire.class, "west");
 
     @Override
-    public Connection getFace(org.bukkit.block.BlockFace face) {
+    public org.bukkit.block.data.type.RedstoneWire.Connection getFace(org.bukkit.block.BlockFace face) {
         switch (face) {
             case NORTH:
-                return get(NORTH, Connection.class);
+                return get(NORTH, org.bukkit.block.data.type.RedstoneWire.Connection.class);
             case EAST:
-                return get(EAST, Connection.class);
+                return get(EAST, org.bukkit.block.data.type.RedstoneWire.Connection.class);
             case SOUTH:
-                return get(SOUTH, Connection.class);
+                return get(SOUTH, org.bukkit.block.data.type.RedstoneWire.Connection.class);
             case WEST:
-                return get(WEST, Connection.class);
+                return get(WEST, org.bukkit.block.data.type.RedstoneWire.Connection.class);
             default:
                 throw new IllegalArgumentException("Cannot have face " + face);
         }
     }
 
     @Override
-    public void setFace(org.bukkit.block.BlockFace face, Connection connection) {
+    public void setFace(org.bukkit.block.BlockFace face, org.bukkit.block.data.type.RedstoneWire.Connection connection) {
         switch (face) {
             case NORTH:
                 set(NORTH, connection);
@@ -63,7 +63,7 @@ public final class CraftRedstoneWire extends org.bukkit.craftbukkit.block.data.C
 
     // org.bukkit.craftbukkit.block.data.CraftAnaloguePowerable
 
-    private static final net.minecraft.server.BlockStateInteger POWER = getInteger(net.minecraft.server.BlockRedstoneWire.class, "power");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger POWER = getInteger(net.minecraft.world.level.block.BlockRedstoneWire.class, "power");
 
     @Override
     public int getPower() {

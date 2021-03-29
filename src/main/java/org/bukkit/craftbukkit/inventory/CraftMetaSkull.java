@@ -3,15 +3,17 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.authlib.GameProfile;
 import java.util.Map;
-import net.minecraft.server.GameProfileSerializer;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.TileEntitySkull;
+import java.util.UUID;
+import net.minecraft.nbt.GameProfileSerializer;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -59,7 +61,14 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         super.deserializeInternal(tag, context);
 
         if (tag.hasKeyOfType(SKULL_PROFILE.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            this.setProfile(GameProfileSerializer.deserialize(tag.getCompound(SKULL_PROFILE.NBT)));
+            NBTTagCompound skullTag = tag.getCompound(SKULL_PROFILE.NBT);
+            // convert type of stored Id from String to UUID for backwards compatibility
+            if (skullTag.hasKeyOfType("Id", CraftMagicNumbers.NBT.TAG_STRING)) {
+                UUID uuid = UUID.fromString(skullTag.getString("Id"));
+                skullTag.a("Id", uuid);
+            }
+
+            this.setProfile(GameProfileSerializer.deserialize(skullTag));
         }
     }
 

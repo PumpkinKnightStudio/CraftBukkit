@@ -1,0 +1,29 @@
+--- a/net/minecraft/world/entity/projectile/IProjectile.java
++++ b/net/minecraft/world/entity/projectile/IProjectile.java
+@@ -15,6 +15,10 @@
+ import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
+ 
++// CraftBukkit start
++import org.bukkit.projectiles.ProjectileSource;
++// CraftBukkit end
++
+ public abstract class IProjectile extends Entity {
+ 
+     private UUID shooter;
+@@ -30,6 +34,7 @@
+             this.shooter = entity.getUniqueID();
+             this.c = entity.getId();
+         }
++        this.projectileSource = (entity != null && entity.getBukkitEntity() instanceof ProjectileSource) ? (ProjectileSource) entity.getBukkitEntity() : null; // CraftBukkit
+ 
+     }
+ 
+@@ -112,6 +117,7 @@
+     }
+ 
+     protected void a(MovingObjectPosition movingobjectposition) {
++        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event
+         MovingObjectPosition.EnumMovingObjectType movingobjectposition_enummovingobjecttype = movingobjectposition.getType();
+ 
+         if (movingobjectposition_enummovingobjecttype == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
