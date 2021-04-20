@@ -5,15 +5,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-/*******************************************************
- * Copyright (C) Gestankbratwurst suotokka@gmail.com
- *
- * This file is part of craftbukkit and was created at the 20.04.2021
- *
- * craftbukkit can not be copied and/or distributed without the express
- * permission of the owner.
- *
- */
 public class LimitedSet<T> implements Set<T> {
 
   private final Set<T> wrappedSet;
