@@ -63,10 +63,11 @@ public class LimitedSet<T> implements Set<T> {
 
   @Override
   public boolean add(T t) {
-    if (isMaxCapacityReached()) {
+    boolean wasAdded = wrappedSet.add(t);
+    if (isMaxCapacityReached() && wasAdded) {
       throw new MaxCapacityReachedException("The maximum capacity of this set is already reached.");
     }
-    return wrappedSet.add(t);
+    return wasAdded;
   }
 
   @Override
@@ -81,11 +82,15 @@ public class LimitedSet<T> implements Set<T> {
 
   @Override
   public boolean addAll(Collection<? extends T> c) {
-    int amountToAdd = c.size();
-    if (getCapacityLeft() - amountToAdd < 0) {
-      throw new MaxCapacityReachedException("Adding " + amountToAdd + " elements would surpass this sets capacity.");
+    boolean changedContent = wrappedSet.addAll(c);
+    if (!changedContent) {
+      return false;
     }
-    return wrappedSet.addAll(c);
+    if (getCapacityLeft() < 0) {
+      wrappedSet.removeAll(c);
+      throw new MaxCapacityReachedException("Adding this collection would surpass the max capacity.");
+    }
+    return true;
   }
 
   @Override
@@ -104,6 +109,7 @@ public class LimitedSet<T> implements Set<T> {
   }
 
   private static class MaxCapacityReachedException extends IllegalStateException {
+
     public MaxCapacityReachedException(String message) {
       super(message);
     }
