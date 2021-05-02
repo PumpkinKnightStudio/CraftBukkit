@@ -431,7 +431,7 @@
  
          entityplayer1.playerConnection = entityplayer.playerConnection;
          entityplayer1.copyFrom(entityplayer, flag);
-@@ -513,52 +694,113 @@
+@@ -513,52 +694,124 @@
              entityplayer1.addScoreboardTag(s);
          }
  
@@ -456,7 +456,7 @@
 -            } else {
 -                Vec3D vec3d1 = Vec3D.c((BaseBlockPosition) blockposition).d(vec3d).d();
 +                if (blockposition != null) {
-+                    optional = EntityHuman.getBed(worldserver1, blockposition, f, flag1, flag);
++                    optional = EntityHuman.getBed(worldserver1, blockposition, f, flag1, true); // SPIGOT - 5989 - don't deplete respawn anchor yet
 +                } else {
 +                    optional = Optional.empty();
 +                }
@@ -497,10 +497,21 @@
 +            }
 +
 +            Player respawnPlayer = cserver.getPlayer(entityplayer1);
-+            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn && !flag2, flag2);
++            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, location.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), isBedSpawn && !flag2, flag2);
 +            cserver.getPluginManager().callEvent(respawnEvent);
 +
 +            location = respawnEvent.getRespawnLocation();
++            // SPIGOT - 5989 - deplete spawn anchor at respawn block location
++            if (respawnEvent.getRespawnBlock() != null) {
++                org.bukkit.block.Block respawnBlock = respawnEvent.getRespawnBlock();
++                worldserver1 = ((org.bukkit.craftbukkit.CraftWorld) respawnEvent.getRespawnBlock().getWorld()).getHandle();
++                BlockPosition spawnPosition = new BlockPosition(respawnBlock.getX(), respawnBlock.getY(), respawnBlock.getZ());
++                EntityHuman.getBed(worldserver1, spawnPosition, f, flag1, flag);
++                flag2 = !flag && worldserver1.getType(spawnPosition).a(Blocks.RESPAWN_ANCHOR) && location.getWorld() == respawnBlock.getWorld();
++            } else {
++                flag2 = false;
++            }
++
 +            if (!flag) entityplayer.reset(); // SPIGOT-4785
 +        } else {
 +            location.setWorld(worldserver.getWorld());
@@ -570,7 +581,7 @@
          return entityplayer1;
      }
  
-@@ -571,7 +813,18 @@
+@@ -571,7 +824,18 @@
  
      public void tick() {
          if (++this.w > 600) {
@@ -590,7 +601,7 @@
              this.w = 0;
          }
  
-@@ -584,6 +837,25 @@
+@@ -584,6 +848,25 @@
  
      }
  
@@ -616,7 +627,7 @@
      public void a(Packet<?> packet, ResourceKey<World> resourcekey) {
          for (int i = 0; i < this.players.size(); ++i) {
              EntityPlayer entityplayer = (EntityPlayer) this.players.get(i);
-@@ -684,6 +956,7 @@
+@@ -684,6 +967,7 @@
              entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, b0));
          }
  
@@ -624,7 +635,7 @@
          this.server.getCommandDispatcher().a(entityplayer);
      }
  
-@@ -716,6 +989,12 @@
+@@ -716,6 +1000,12 @@
          for (int i = 0; i < this.players.size(); ++i) {
              EntityPlayer entityplayer = (EntityPlayer) this.players.get(i);
  
@@ -637,7 +648,7 @@
              if (entityplayer != entityhuman && entityplayer.world.getDimensionKey() == resourcekey) {
                  double d4 = d0 - entityplayer.locX();
                  double d5 = d1 - entityplayer.locY();
-@@ -755,23 +1034,34 @@
+@@ -755,23 +1045,34 @@
      public void reloadWhitelist() {}
  
      public void a(EntityPlayer entityplayer, WorldServer worldserver) {
@@ -677,7 +688,7 @@
      }
  
      public int getPlayerCount() {
-@@ -824,31 +1114,54 @@
+@@ -824,31 +1125,54 @@
              entityplayer.playerInteractManager.a(this.u, EnumGamemode.NOT_SET);
          }
  
@@ -740,7 +751,7 @@
  
                  if (file2.exists() && file2.isFile()) {
                      file2.renameTo(file1);
-@@ -856,7 +1169,7 @@
+@@ -856,7 +1180,7 @@
              }
  
              serverstatisticmanager = new ServerStatisticManager(this.server, file1);
@@ -749,7 +760,7 @@
          }
  
          return serverstatisticmanager;
-@@ -864,14 +1177,14 @@
+@@ -864,14 +1188,14 @@
  
      public AdvancementDataPlayer f(EntityPlayer entityplayer) {
          UUID uuid = entityplayer.getUniqueID();
@@ -766,7 +777,7 @@
          }
  
          advancementdataplayer.a(entityplayer);
-@@ -907,13 +1220,20 @@
+@@ -907,13 +1231,20 @@
      }
  
      public void reload() {
