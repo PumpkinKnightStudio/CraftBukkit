@@ -505,9 +505,9 @@
 +            if (respawnEvent.getRespawnBlock() != null) {
 +                org.bukkit.block.Block respawnBlock = respawnEvent.getRespawnBlock();
 +                worldserver1 = ((org.bukkit.craftbukkit.CraftWorld) respawnBlock.getWorld()).getHandle();
-+                BlockPosition spawnPosition = new BlockPosition(respawnBlock.getX(), respawnBlock.getY(), respawnBlock.getZ());
-+                EntityHuman.getBed(worldserver1, spawnPosition, f, flag1, flag);
-+                flag2 = !flag && worldserver1.getType(spawnPosition).a(Blocks.RESPAWN_ANCHOR) && location.getWorld() == respawnBlock.getWorld();
++                blockposition = new BlockPosition(respawnBlock.getX(), respawnBlock.getY(), respawnBlock.getZ());
++                EntityHuman.getBed(worldserver1, blockposition, f, flag1, flag);
++                flag2 = !flag && worldserver1.getType(blockposition).a(Blocks.RESPAWN_ANCHOR) && location.getWorld() == respawnBlock.getWorld();
 +            } else {
 +                flag2 = false;
 +            }
