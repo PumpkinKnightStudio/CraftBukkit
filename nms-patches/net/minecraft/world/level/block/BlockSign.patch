@@ -1,0 +1,64 @@
+--- a/net/minecraft/world/level/block/BlockSign.java
++++ b/net/minecraft/world/level/block/BlockSign.java
+@@ -2,6 +2,7 @@
+ 
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.entity.player.EntityHuman;
+@@ -24,6 +25,12 @@
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.block.CraftBlock;
++import org.bukkit.craftbukkit.block.CraftSign;
++import org.bukkit.event.block.SignChangeEvent;
++// CraftBukkit end
++
+ public abstract class BlockSign extends BlockTileEntity implements IBlockWaterlogged {
+ 
+     public static final BlockStateBoolean a = BlockProperties.C;
+@@ -73,7 +80,39 @@
+                 TileEntitySign tileentitysign = (TileEntitySign) tileentity;
+ 
+                 if (flag) {
+-                    boolean flag1 = tileentitysign.setColor(((ItemDye) itemstack.getItem()).d());
++                    // CraftBukkit start - call SignChangeEvent
++                    net.minecraft.world.item.EnumColor color = ((ItemDye) itemstack.getItem()).d();
++
++                    if (entityhuman instanceof EntityPlayer) {
++                        String[] lines = new String[4];
++
++                        for (int i = 0; i < tileentitysign.lines.length; i++) {
++                            lines[i] = net.minecraft.EnumChatFormat.a(tileentitysign.lines[i].getString());
++                        }
++
++                        CraftSign newState = new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition()));
++                        newState.setColor(org.bukkit.DyeColor.getByWoolData((byte) color.getColorIndex()));
++                        SignChangeEvent event = new SignChangeEvent(CraftBlock.at(world, blockposition), (org.bukkit.craftbukkit.entity.CraftPlayer) entityhuman.getBukkitEntity(), lines, new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition())), newState);
++                        world.getServer().getPluginManager().callEvent(event);
++
++                        if (event.isCancelled()) {
++                            return EnumInteractionResult.PASS;
++                        }
++
++                        tileentitysign.load(newState.getHandle(), newState.getSnapshotNBT());
++                        color = net.minecraft.world.item.EnumColor.fromColorIndex(newState.getColor().getWoolData());
++                        System.arraycopy(CraftSign.sanitizeLines(event.getLines()), 0, tileentitysign.lines, 0, 4);
++                    }
++                    // CraftBukkit end - call SignChangeEvent
++
++                    boolean flag1 = tileentitysign.setColor(color);
++
++                    // CraftBukkit start - something else might've changed in the new state, thus requiring an update regardless of whether the color changed or not
++                    if (!flag1) {
++                        tileentitysign.update();
++                        world.notify(blockposition, iblockdata, iblockdata, 3);
++                    }
++                    // CraftBukkit end
+ 
+                     if (flag1 && !entityhuman.isCreative()) {
+                         itemstack.subtract(1);
