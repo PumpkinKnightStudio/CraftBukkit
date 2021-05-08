@@ -21,7 +21,7 @@
  public abstract class BlockSign extends BlockTileEntity implements IBlockWaterlogged {
  
      public static final BlockStateBoolean a = BlockProperties.C;
-@@ -73,7 +80,39 @@
+@@ -73,7 +80,33 @@
                  TileEntitySign tileentitysign = (TileEntitySign) tileentity;
  
                  if (flag) {
@@ -30,15 +30,9 @@
 +                    net.minecraft.world.item.EnumColor color = ((ItemDye) itemstack.getItem()).d();
 +
 +                    if (entityhuman instanceof EntityPlayer) {
-+                        String[] lines = new String[4];
-+
-+                        for (int i = 0; i < tileentitysign.lines.length; i++) {
-+                            lines[i] = net.minecraft.EnumChatFormat.a(tileentitysign.lines[i].getString());
-+                        }
-+
 +                        CraftSign newState = new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition()));
 +                        newState.setColor(org.bukkit.DyeColor.getByWoolData((byte) color.getColorIndex()));
-+                        SignChangeEvent event = new SignChangeEvent(CraftBlock.at(world, blockposition), (org.bukkit.craftbukkit.entity.CraftPlayer) entityhuman.getBukkitEntity(), lines, new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition())), newState);
++                        SignChangeEvent event = new SignChangeEvent(CraftBlock.at(world, blockposition), (org.bukkit.craftbukkit.entity.CraftPlayer) entityhuman.getBukkitEntity(), new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition())), newState);
 +                        world.getServer().getPluginManager().callEvent(event);
 +
 +                        if (event.isCancelled()) {

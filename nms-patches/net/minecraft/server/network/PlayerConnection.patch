@@ -1644,7 +1644,7 @@
 +                newState.setLine(i, EnumChatFormat.a(new ChatComponentText(EnumChatFormat.a((String) list.get(i))).getString()));
 +            }
 +
-+            SignChangeEvent event = new SignChangeEvent(player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), newState.getLines(), new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition())), newState);
++            SignChangeEvent event = new SignChangeEvent(player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), new CraftSign(CraftBlock.at(tileentitysign.getWorld(), tileentitysign.getPosition())), newState);
 +            this.server.getPluginManager().callEvent(event);
 +
 +            if (!event.isCancelled()) {
