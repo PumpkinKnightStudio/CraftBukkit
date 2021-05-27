@@ -1,20 +1,21 @@
 --- a/net/minecraft/server/EntitySkeletonAbstract.java
 +++ b/net/minecraft/server/EntitySkeletonAbstract.java
-@@ -1,5 +1,9 @@
- package net.minecraft.server;
+@@ -4,6 +4,10 @@
+ import java.time.temporal.ChronoField;
+ import javax.annotation.Nullable;
  
 +//CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +//CraftBukkit end
 +
- import java.time.LocalDate;
- import java.time.temporal.ChronoField;
- import javax.annotation.Nullable;
+ public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
+ 
+     private final PathfinderGoalBowShoot<EntitySkeletonAbstract> b = new PathfinderGoalBowShoot<>(this, 1.0D, 20, 15.0F);
 @@ -67,6 +71,7 @@
                  if (itemstack.e()) {
                      itemstack.setDamage(itemstack.getDamage() + this.random.nextInt(2));
                      if (itemstack.getDamage() >= itemstack.h()) {
-+                        CraftEventFactory.handleEntityArmorBreak(this, itemstack, 5); //CraftBukkit
++                        CraftEventFactory.handleEntityArmorBreak(this, itemstack, EnumItemSlot.HEAD); //CraftBukkit
                          this.broadcastItemBreak(EnumItemSlot.HEAD);
                          this.setSlot(EnumItemSlot.HEAD, ItemStack.b);
                      }

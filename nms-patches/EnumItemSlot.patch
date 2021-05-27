@@ -1,0 +1,29 @@
+--- a/net/minecraft/server/EnumItemSlot.java
++++ b/net/minecraft/server/EnumItemSlot.java
+@@ -1,5 +1,7 @@
+ package net.minecraft.server;
+ 
++import org.bukkit.inventory.EquipmentSlot; //CraftBukkit
++
+ public enum EnumItemSlot {
+ 
+     MAINHAND(EnumItemSlot.Function.HAND, 0, 0, "mainhand"), OFFHAND(EnumItemSlot.Function.HAND, 1, 5, "offhand"), FEET(EnumItemSlot.Function.ARMOR, 0, 1, "feet"), LEGS(EnumItemSlot.Function.ARMOR, 1, 2, "legs"), CHEST(EnumItemSlot.Function.ARMOR, 2, 3, "chest"), HEAD(EnumItemSlot.Function.ARMOR, 3, 4, "head");
+@@ -62,10 +64,16 @@
+         throw new IllegalArgumentException("Invalid slot '" + enumitemslot_function + "': " + i);
+     }
+ 
++    //CraftBukkit start
++    public EquipmentSlot getBukkitSlot() {
++        return EquipmentSlot.fromName(getSlotName());
++    }
++    //CraftBukkit end
++
+     public static enum Function {
+ 
+         HAND, ARMOR;
+ 
+         private Function() {}
+     }
+-}
++}
+\ No newline at end of file

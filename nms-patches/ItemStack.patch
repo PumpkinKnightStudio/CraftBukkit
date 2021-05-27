@@ -276,7 +276,7 @@
 +                        org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                    }
 +                    if(item instanceof ItemArmor){
-+                        CraftEventFactory.handleEntityArmorBreak(t0, this, 9 - ((ItemArmor) item).b.getSlotFlag());
++                        CraftEventFactory.handleEntityArmorBreak(t0, this, ((ItemArmor) item).b);
 +                    }
 +                    // CraftBukkit end
  

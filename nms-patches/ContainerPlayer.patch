@@ -56,14 +56,14 @@
                      return ItemStack.b;
                  }
              } else if (i >= 5 && i < 9) {
-+                CraftEventFactory.handleEntityArmorUnequip(this.owner, itemstack1, i); //CraftBukkit
++                CraftEventFactory.handleEntityArmorUnequip(this.owner, itemstack1, enumitemslot); //CraftBukkit
                  if (!this.a(itemstack1, 9, 45, false)) {
                      return ItemStack.b;
                  }
              } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR && !((Slot) this.slots.get(8 - enumitemslot.b())).hasItem()) {
                  int j = 8 - enumitemslot.b();
 -
-+                CraftEventFactory.handleEntityEquipArmorEvent(this.owner, itemstack, j); //CraftBukkit
++                CraftEventFactory.handleEntityEquipArmorEvent(this.owner, itemstack, enumitemslot); //CraftBukkit
                  if (!this.a(itemstack1, j, j + 1, false)) {
                      return ItemStack.b;
                  }

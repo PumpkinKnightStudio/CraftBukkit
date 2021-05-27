@@ -215,7 +215,7 @@
              case ARMOR:
 +                //CraftBukkit start
 +                if(getMinecraftServer() != null && getMinecraftServer().isMainThread()){
-+                    CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, 9 - enumitemslot.getSlotFlag());
++                    CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, enumitemslot);
 +                }
 +                //CraftBukkit end
                  this.bq.set(enumitemslot.b(), itemstack);

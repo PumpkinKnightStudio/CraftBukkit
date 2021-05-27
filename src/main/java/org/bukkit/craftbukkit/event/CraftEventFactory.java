@@ -12,59 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.BlockPropertyInstrument;
-import net.minecraft.server.Container;
-import net.minecraft.server.ContainerMerchant;
-import net.minecraft.server.DamageSource;
-import net.minecraft.server.Entity;
-import net.minecraft.server.EntityAnimal;
-import net.minecraft.server.EntityAreaEffectCloud;
-import net.minecraft.server.EntityDamageSource;
-import net.minecraft.server.EntityDamageSourceIndirect;
-import net.minecraft.server.EntityEnderDragon;
-import net.minecraft.server.EntityExperienceOrb;
-import net.minecraft.server.EntityFireworks;
-import net.minecraft.server.EntityGhast;
-import net.minecraft.server.EntityGolem;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityIllagerWizard;
-import net.minecraft.server.EntityInsentient;
-import net.minecraft.server.EntityItem;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityMonster;
-import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.EntityPotion;
-import net.minecraft.server.EntityRaider;
-import net.minecraft.server.EntitySlime;
-import net.minecraft.server.EntityStrider;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.EntityWaterAnimal;
-import net.minecraft.server.EnumDirection;
-import net.minecraft.server.EnumHand;
-import net.minecraft.server.Explosion;
-import net.minecraft.server.GeneratorAccess;
-import net.minecraft.server.IBlockData;
-import net.minecraft.server.IInventory;
-import net.minecraft.server.IProjectile;
-import net.minecraft.server.ItemActionContext;
-import net.minecraft.server.ItemStack;
-import net.minecraft.server.Items;
-import net.minecraft.server.LootContextParameters;
-import net.minecraft.server.LootTable;
-import net.minecraft.server.LootTableInfo;
-import net.minecraft.server.MinecraftKey;
-import net.minecraft.server.MobEffect;
-import net.minecraft.server.MovingObjectPosition;
-import net.minecraft.server.MovingObjectPositionBlock;
-import net.minecraft.server.MovingObjectPositionEntity;
-import net.minecraft.server.NPC;
-import net.minecraft.server.PacketPlayInCloseWindow;
-import net.minecraft.server.Raid;
-import net.minecraft.server.Unit;
-import net.minecraft.server.World;
-import net.minecraft.server.WorldServer;
+
+import net.minecraft.server.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -310,13 +259,31 @@ public class CraftEventFactory {
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack newArmor, int slot){
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack newArmor, EnumItemSlot slot){
+
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
-        if(newArmorBukkit.getType() == Material.AIR){ //Handles edgecase of non-player mob breaking and firing this event twice
+        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
+        EquipmentSlot equipmentSlot = slot.getBukkitSlot();
+
+        if(newArmorBukkit.getType() == Material.AIR || slot.a() == EnumItemSlot.Function.HAND){ //Handles edgecase of non-player mob breaking and firing this event twice
             return;
         }
-        LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
-        EquipmentSlot equipmentSlot = null;
+
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, new org.bukkit.inventory.ItemStack(Material.AIR), newArmorBukkit, equipmentSlot, EntityArmorChangeEvent.ChangeReason.EQUIP);
+        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
+    }
+
+    /**
+     * Entity Equip Armor Event
+     */
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, int slot){
+
+        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+        org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        EntityArmorChangeEvent.ChangeReason changeReason;
+
+        //There's no easy code in EnumItemSlot to convert from the number 7 for example to LEGS, so we are keeping this the only instance of hard coded checks
+        EquipmentSlot equipmentSlot;
         if(slot == 5) {
             equipmentSlot = EquipmentSlot.HEAD;
         }
@@ -329,17 +296,8 @@ public class CraftEventFactory {
         else{
             equipmentSlot = EquipmentSlot.FEET;
         }
-        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, new org.bukkit.inventory.ItemStack(Material.AIR), newArmorBukkit, equipmentSlot, EntityArmorChangeEvent.ChangeReason.EQUIP);
-        Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
-    }
 
-    /**
-     * Entity Equip Armor Event
-     */
-    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, int slot){
-        org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
-        org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
-        EntityArmorChangeEvent.ChangeReason changeReason;
+        //Get the change reason
         if(newArmorBukkit.getType() == Material.AIR){
             changeReason = EntityArmorChangeEvent.ChangeReason.UNEQUIP;
         }
@@ -349,52 +307,42 @@ public class CraftEventFactory {
         else{
             changeReason = EntityArmorChangeEvent.ChangeReason.SWITCH;
         }
-        handleEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, slot);
+
+        handleEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, equipmentSlot);
     }
 
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, int slot){
+    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, EquipmentSlot slot){
+
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
-        EquipmentSlot equipmentSlot = null;
-        if(slot == 5) {
-            equipmentSlot = EquipmentSlot.HEAD;
-        }
-        else if(slot == 6) {
-            equipmentSlot = EquipmentSlot.CHEST;
-        }
-        else if(slot == 7){
-            equipmentSlot = EquipmentSlot.LEGS;
-        }
-        else{
-            equipmentSlot = EquipmentSlot.FEET;
-        }
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
-        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, newArmorBukkit, equipmentSlot, changeReason);
+
+        //Don't call for air
+        if(oldArmorBukkit.getType() == Material.AIR && newArmorBukkit.getType() == Material.AIR){
+            return;
+        }
+
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, newArmorBukkit, slot, changeReason);
         Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
     }
 
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityArmorUnequip(EntityLiving who, ItemStack oldArmor, int slot){
+    public static void handleEntityArmorUnequip(EntityLiving who, ItemStack oldArmor, EnumItemSlot slot){
+
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
-        EquipmentSlot equipmentSlot = null;
-        if(slot == 5) {
-            equipmentSlot = EquipmentSlot.HEAD;
-        }
-        else if(slot == 6) {
-            equipmentSlot = EquipmentSlot.CHEST;
-        }
-        else if(slot == 7){
-            equipmentSlot = EquipmentSlot.LEGS;
-        }
-        else{
-            equipmentSlot = EquipmentSlot.FEET;
-        }
+        EquipmentSlot equipmentSlot = slot.getBukkitSlot();
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+
+        //Don't call for air
+        if(oldArmorBukkit.getType() == Material.AIR){
+            return;
+        }
+
         EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, new org.bukkit.inventory.ItemStack(Material.AIR), equipmentSlot, EntityArmorChangeEvent.ChangeReason.UNEQUIP);
         Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
     }
@@ -402,22 +350,18 @@ public class CraftEventFactory {
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityArmorBreak(Entity who, ItemStack oldArmor, int slot){
+    public static void handleEntityArmorBreak(Entity who, ItemStack oldArmor, EnumItemSlot slot){
+
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
-        EquipmentSlot equipmentSlot = null;
-        if(slot == 5) {
-            equipmentSlot = EquipmentSlot.HEAD;
-        }
-        else if(slot == 6) {
-            equipmentSlot = EquipmentSlot.CHEST;
-        }
-        else if(slot == 7){
-            equipmentSlot = EquipmentSlot.LEGS;
-        }
-        else{
-            equipmentSlot = EquipmentSlot.FEET;
-        }
+        EquipmentSlot equipmentSlot = slot.getBukkitSlot();
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
+
+        //Don't call for air
+        if(oldArmorBukkit.getType() == Material.AIR){
+            return;
+        }
+
+
         EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, new org.bukkit.inventory.ItemStack(Material.AIR), equipmentSlot, EntityArmorChangeEvent.ChangeReason.BREAK);
         Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
     }
