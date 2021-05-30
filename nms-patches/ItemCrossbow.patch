@@ -36,7 +36,7 @@
  
 +        //CraftBukkit start
 +        EntityLoadCrossbowEvent entityLoadCrossbowEvent = CraftEventFactory.callEntityLoadCrossbowEvent(entityliving, itemstack, j);
-+        if(entityLoadCrossbowEvent instanceof PlayerLoadCrossbowEvent && ((PlayerLoadCrossbowEvent) entityLoadCrossbowEvent).isCancelled()){
++        if (entityLoadCrossbowEvent instanceof PlayerLoadCrossbowEvent && ((PlayerLoadCrossbowEvent) entityLoadCrossbowEvent).isCancelled()) {
 +           return false;
 +        }
 +        j = Math.min(entityLoadCrossbowEvent.getNumberOfCopies(), 3);
@@ -115,8 +115,8 @@
 +            projectileList.add(createProjectile(world, entityliving, itemstack, list.get(i), flag, i));
 +        }
 +        EntityShootCrossbowEvent event = CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, enumhand, projectileList, f);
-+        if(event.isCancelled()){
-+            if(entityliving instanceof EntityPlayer){
++        if (event.isCancelled()) {
++            if (entityliving instanceof EntityPlayer) {
 +                ((EntityPlayer) entityliving).getBukkitEntity().updateInventory();
 +            }
 +            return;

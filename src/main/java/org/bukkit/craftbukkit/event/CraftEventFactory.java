@@ -295,7 +295,7 @@ public class CraftEventFactory {
     /**
      * Trident event
      */
-    public static EntityFireTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force){
+    public static EntityFireTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force) {
 
         LivingEntity bukkitLivingEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(trident);
@@ -310,15 +310,14 @@ public class CraftEventFactory {
     /**
      * Crossbow load event
      */
-    public static EntityLoadCrossbowEvent callEntityLoadCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, int numberOfCopies){
+    public static EntityLoadCrossbowEvent callEntityLoadCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, int numberOfCopies) {
         LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);
 
         EntityLoadCrossbowEvent entityLoadCrossbowEvent;
-        if(bukkitEntity instanceof Player){
+        if (bukkitEntity instanceof Player) {
              entityLoadCrossbowEvent = new PlayerLoadCrossbowEvent((Player) bukkitEntity, bukkitItem, numberOfCopies);
-        }
-        else{
+        } else {
             entityLoadCrossbowEvent = new EntityLoadCrossbowEvent(bukkitEntity, bukkitItem, numberOfCopies);
         }
         Bukkit.getPluginManager().callEvent(entityLoadCrossbowEvent);
@@ -326,7 +325,7 @@ public class CraftEventFactory {
         return entityLoadCrossbowEvent;
     }
 
-    public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, EnumHand hand, List<IProjectile> projectiles, float force){
+    public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, EnumHand hand, List<IProjectile> projectiles, float force) {
 
         LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);

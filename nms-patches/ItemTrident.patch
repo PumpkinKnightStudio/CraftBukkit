@@ -27,7 +27,7 @@
  
 +                            //CraftBukkit start
 +                            EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(entityhuman, itemstack, entitythrowntrident, 0.8f);
-+                            if(entityFireTridentEvent.isCancelled()){
++                            if (entityFireTridentEvent.isCancelled()) {
 +                                entityFireTridentEvent.getProjectile().remove();;
 +                                return;
 +                            }
