@@ -6,16 +6,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ResourceKey;
-import net.minecraft.server.WorldMap;
-import net.minecraft.server.WorldServer;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.world.level.saveddata.maps.WorldMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import org.bukkit.map.MapView.Scale;
 
 public final class CraftMapView implements MapView {
 
@@ -60,7 +61,7 @@ public final class CraftMapView implements MapView {
 
     @Override
     public World getWorld() {
-        ResourceKey<net.minecraft.server.World> dimension = worldMap.map;
+        ResourceKey<net.minecraft.world.level.World> dimension = worldMap.map;
         WorldServer world = MinecraftServer.getServer().getWorldServer(dimension);
 
         return (world == null) ? null : world.getWorld();

@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityCreeper;
+import net.minecraft.world.entity.monster.EntityCreeper;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
@@ -50,6 +50,19 @@ public class CraftCreeper extends CraftMonster implements Creeper {
     @Override
     public int getMaxFuseTicks() {
         return getHandle().maxFuseTicks;
+    }
+
+    @Override
+    public void setFuseTicks(int ticks) {
+        Preconditions.checkArgument(ticks >= 0, "ticks < 0");
+        Preconditions.checkArgument(ticks <= getMaxFuseTicks(), "ticks > maxFuseTicks");
+
+        getHandle().fuseTicks = ticks;
+    }
+
+    @Override
+    public int getFuseTicks() {
+        return getHandle().fuseTicks;
     }
 
     @Override

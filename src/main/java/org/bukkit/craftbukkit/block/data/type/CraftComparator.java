@@ -5,15 +5,15 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftComparator extends CraftBlockData implements Comparator {
 
-    private static final net.minecraft.server.BlockStateEnum<?> MODE = getEnum("mode");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> MODE = getEnum("mode");
 
     @Override
-    public Mode getMode() {
-        return get(MODE, Mode.class);
+    public org.bukkit.block.data.type.Comparator.Mode getMode() {
+        return get(MODE, org.bukkit.block.data.type.Comparator.Mode.class);
     }
 
     @Override
-    public void setMode(Mode mode) {
+    public void setMode(org.bukkit.block.data.type.Comparator.Mode mode) {
         set(MODE, mode);
     }
 }

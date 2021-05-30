@@ -6,20 +6,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagByte;
-import net.minecraft.server.NBTTagByteArray;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagDouble;
-import net.minecraft.server.NBTTagFloat;
-import net.minecraft.server.NBTTagInt;
-import net.minecraft.server.NBTTagIntArray;
-import net.minecraft.server.NBTTagList;
-import net.minecraft.server.NBTTagLong;
-import net.minecraft.server.NBTTagLongArray;
-import net.minecraft.server.NBTTagShort;
-import net.minecraft.server.NBTTagString;
-import org.apache.commons.lang3.Validate;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagByteArray;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagLongArray;
+import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
 import org.bukkit.persistence.PersistentDataContainer;
 
 /**
@@ -57,7 +56,9 @@ public final class CraftPersistentDataTypeRegistry {
          * extractor function
          */
         T extract(NBTBase base) {
-            Validate.isInstanceOf(nbtBaseType, base, "The provided NBTBase was of the type %s. Expected type %s", base.getClass().getSimpleName(), nbtBaseType.getSimpleName());
+            if (!nbtBaseType.isInstance(base)) {
+                throw new IllegalArgumentException(String.format("The provided NBTBase was of the type %s. Expected type %s", base.getClass().getSimpleName(), nbtBaseType.getSimpleName()));
+            }
             return this.extractor.apply(nbtBaseType.cast(base));
         }
 
@@ -73,7 +74,9 @@ public final class CraftPersistentDataTypeRegistry {
          * function
          */
         Z build(Object value) {
-            Validate.isInstanceOf(primitiveType, value, "The provided value was of the type %s. Expected type %s", value.getClass().getSimpleName(), primitiveType.getSimpleName());
+            if (!primitiveType.isInstance(value)) {
+                throw new IllegalArgumentException(String.format("The provided value was of the type %s. Expected type %s", value.getClass().getSimpleName(), primitiveType.getSimpleName()));
+            }
             return this.builder.apply(primitiveType.cast(value));
         }
 
@@ -247,10 +250,14 @@ public final class CraftPersistentDataTypeRegistry {
      */
     public <T> T extract(Class<T> type, NBTBase tag) throws ClassCastException, IllegalArgumentException {
         TagAdapter adapter = this.adapters.computeIfAbsent(type, CREATE_ADAPTER);
-        Validate.isTrue(adapter.isInstance(tag), "`The found tag instance cannot store %s as it is a %s", type.getSimpleName(), tag.getClass().getSimpleName());
+        if (!adapter.isInstance(tag)) {
+            throw new IllegalArgumentException(String.format("`The found tag instance cannot store %s as it is a %s", type.getSimpleName(), tag.getClass().getSimpleName()));
+        }
 
         Object foundValue = adapter.extract(tag);
-        Validate.isInstanceOf(type, foundValue, "The found object is of the type %s. Expected type %s", foundValue.getClass().getSimpleName(), type.getSimpleName());
+        if (!type.isInstance(foundValue)) {
+            throw new IllegalArgumentException(String.format("The found object is of the type %s. Expected type %s", foundValue.getClass().getSimpleName(), type.getSimpleName()));
+        }
         return type.cast(foundValue);
     }
 }

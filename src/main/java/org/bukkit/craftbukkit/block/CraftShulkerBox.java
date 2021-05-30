@@ -1,10 +1,11 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.server.BlockShulkerBox;
-import net.minecraft.server.SoundCategory;
-import net.minecraft.server.SoundEffects;
-import net.minecraft.server.TileEntityShulkerBox;
-import net.minecraft.server.World;
+import net.minecraft.sounds.SoundCategory;
+import net.minecraft.sounds.SoundEffects;
+import net.minecraft.world.item.EnumColor;
+import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.BlockShulkerBox;
+import net.minecraft.world.level.block.entity.TileEntityShulkerBox;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -39,9 +40,9 @@ public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> impleme
 
     @Override
     public DyeColor getColor() {
-        net.minecraft.server.Block block = CraftMagicNumbers.getBlock(this.getType());
+        EnumColor color = ((BlockShulkerBox) CraftMagicNumbers.getBlock(this.getType())).color;
 
-        return DyeColor.getByWoolData((byte) ((BlockShulkerBox) block).color.getColorIndex());
+        return (color == null) ? null : DyeColor.getByWoolData((byte) color.getColorIndex());
     }
 
     @Override

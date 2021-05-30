@@ -1,10 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityArmorStand;
-import net.minecraft.server.Vector3f;
+import net.minecraft.core.Vector3f;
+import net.minecraft.world.entity.decoration.EntityArmorStand;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;

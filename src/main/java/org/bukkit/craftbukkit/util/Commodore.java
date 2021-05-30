@@ -128,7 +128,7 @@ public class Commodore
         ClassReader cr = new ClassReader( b );
         ClassWriter cw = new ClassWriter( cr, 0 );
 
-        cr.accept( new ClassVisitor( Opcodes.ASM8, cw )
+        cr.accept( new ClassVisitor( Opcodes.ASM9, cw )
         {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions)
@@ -154,6 +154,16 @@ public class Commodore
                             switch ( name )
                             {
                                 case "PIG_ZOMBIE":
+                                    super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
+                                    return;
+                            }
+                        }
+
+                        if ( owner.equals( "org/bukkit/loot/LootTables" ) )
+                        {
+                            switch ( name )
+                            {
+                                case "ZOMBIE_PIGMAN":
                                     super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
                                     return;
                             }
