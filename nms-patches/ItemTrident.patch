@@ -4,10 +4,10 @@
  import com.google.common.collect.ImmutableMultimap.Builder;
  import com.google.common.collect.Multimap;
  
-+//CraftBukkit start
++// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.EntityFireTridentEvent;
-+//CraftBukkit end
++// CraftBukkit end
 +
  public class ItemTrident extends Item implements ItemVanishable {
  
@@ -25,13 +25,13 @@
                          if (k == 0) {
                              EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
  
-+                            //CraftBukkit start
++                            // CraftBukkit start
 +                            EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(entityhuman, itemstack, entitythrowntrident, 0.8f);
 +                            if (entityFireTridentEvent.isCancelled()) {
 +                                entityFireTridentEvent.getProjectile().remove();;
 +                                return;
 +                            }
-+                            //CraftBukkit end
++                            // CraftBukkit end
 +
                              entitythrowntrident.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 2.5F + (float) k * 0.5F, 1.0F);
                              if (entityhuman.abilities.canInstantlyBuild) {

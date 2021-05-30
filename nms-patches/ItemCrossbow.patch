@@ -4,7 +4,7 @@
  import java.util.Random;
  import java.util.function.Predicate;
  
-+//CraftBukkit start
++// CraftBukkit start
 +import java.util.ArrayList;
 +import java.util.stream.Collectors;
 +
@@ -12,7 +12,7 @@
 +import org.bukkit.event.entity.EntityLoadCrossbowEvent;
 +import org.bukkit.event.entity.EntityShootCrossbowEvent;
 +import org.bukkit.event.entity.PlayerLoadCrossbowEvent;
-+//CraftBukkit end
++// CraftBukkit end
 +
  public class ItemCrossbow extends ItemProjectileWeapon implements ItemVanishable {
  
@@ -22,11 +22,11 @@
              world.playSound((EntityHuman) null, entityliving.locX(), entityliving.locY(), entityliving.locZ(), SoundEffects.ITEM_CROSSBOW_LOADING_END, soundcategory, 1.0F, 1.0F / (ItemCrossbow.RANDOM.nextFloat() * 0.5F + 1.0F) + 0.2F);
          }
 -
-+        //CraftBukkit start -> resync client's inventory in case that the load event was cancelled
-+        if(entityliving instanceof EntityPlayer){
++        // CraftBukkit start -> resync client's inventory in case that the load event was cancelled
++        if (entityliving instanceof EntityPlayer) {
 +            ((EntityPlayer) entityliving).getBukkitEntity().updateInventory();
 +        }
-+        //CraftBukkit end
++        // CraftBukkit end
      }
  
      private static boolean a(EntityLiving entityliving, ItemStack itemstack) {
@@ -34,13 +34,13 @@
          ItemStack itemstack1 = entityliving.f(itemstack);
          ItemStack itemstack2 = itemstack1.cloneItemStack();
  
-+        //CraftBukkit start
++        // CraftBukkit start
 +        EntityLoadCrossbowEvent entityLoadCrossbowEvent = CraftEventFactory.callEntityLoadCrossbowEvent(entityliving, itemstack, j);
 +        if (entityLoadCrossbowEvent instanceof PlayerLoadCrossbowEvent && ((PlayerLoadCrossbowEvent) entityLoadCrossbowEvent).isCancelled()) {
 +           return false;
 +        }
 +        j = Math.min(entityLoadCrossbowEvent.getNumberOfCopies(), 3);
-+        //CraftBukkit end
++        // CraftBukkit end
 +
          for (int k = 0; k < j; ++k) {
              if (k > 0) {
@@ -63,7 +63,7 @@
 -    private static void a(World world, EntityLiving entityliving, EnumHand enumhand, ItemStack itemstack, ItemStack itemstack1, float f, boolean flag, float f1, float f2, float f3) {
 -        if (!world.isClientSide) {
 +    // CraftBukkit start - split projectile creation into its own method
-+    private static IProjectile createProjectile(World world, EntityLiving entityliving, ItemStack itemstack, ItemStack itemstack1, boolean flag, float f3){
++    private static IProjectile createProjectile(World world, EntityLiving entityliving, ItemStack itemstack, ItemStack itemstack1, boolean flag, float f3) {
 +        {
              boolean flag1 = itemstack1.getItem() == Items.FIREWORK_ROCKET;
              Object object;
@@ -80,7 +80,7 @@
 +            return (IProjectile) object;
 +        }
 +    }
-+    //CraftBukkit end
++    // CraftBukkit end
  
 +    private static void a(World world, EntityLiving entityliving, EnumHand enumhand, ItemStack itemstack, IProjectile object, float f, boolean flag1, float f1, float f2, float f3) { // CraftBukkit
 +        if (!world.isClientSide) {
@@ -92,12 +92,12 @@
              }
  
 -            itemstack.damage(flag1 ? 3 : 1, entityliving, (entityliving1) -> {
-+            //CraftBukkit start -> Delegate the flag1 boolean to mean if the projectile from the event was the same and needs to be added so we are changing the projectile check to here
-+            if(flag1){
++            // CraftBukkit start -> Delegate the flag1 boolean to mean if the projectile from the event was the same and needs to be added so we are changing the projectile check to here
++            if (flag1) {
 +                world.addEntity((Entity) object);
 +            }
 +            itemstack.damage((object instanceof EntityFireworks) ? 3 : 1, entityliving, (entityliving1) -> {
-+                //CraftBukkit end
++                // CraftBukkit end
                  entityliving1.broadcastItemBreak(enumhand);
              });
 -            world.addEntity((Entity) object);
@@ -108,7 +108,7 @@
  
      public static void a(World world, EntityLiving entityliving, EnumHand enumhand, ItemStack itemstack, float f, float f1) {
          List<ItemStack> list = k(itemstack);
-+        //CraftBukkit start
++        // CraftBukkit start
 +        boolean flag = entityliving instanceof EntityHuman && ((EntityHuman) entityliving).abilities.canInstantlyBuild;
 +        List<IProjectile> projectileList = new ArrayList<>(list.size());
 +        for (int i = 0; i < list.size(); i ++) {
@@ -123,19 +123,19 @@
 +        }
 +        List<IProjectile> originals = (List<IProjectile>) ((ArrayList<IProjectile>) projectileList).clone();
 +        projectileList = event.getProjectiles().stream().map(p -> ((IProjectile) ((org.bukkit.craftbukkit.entity.AbstractProjectile) p).getHandle())).collect(Collectors.toList());
-+        //CraftBukkit end
++        // CraftBukkit end
          float[] afloat = a(entityliving.getRandom());
  
 -        for (int i = 0; i < list.size(); ++i) {
 -            ItemStack itemstack1 = (ItemStack) list.get(i);
 -            boolean flag = entityliving instanceof EntityHuman && ((EntityHuman) entityliving).abilities.canInstantlyBuild;
-+        //CraftBukkit start
++        // CraftBukkit start
 +        for (int i = 0; i < projectileList.size(); ++i) {
 +            IProjectile projectile = projectileList.get(i);
 +            boolean needsSpawned = originals.size() > i && projectile.getBukkitEntity() == originals.get(i).getBukkitEntity();
  
 -            if (!itemstack1.isEmpty()) {
-+            //if (!itemstack1.isEmpty()) {
++            // if (!itemstack1.isEmpty()) {
                  if (i == 0) {
 -                    a(world, entityliving, enumhand, itemstack, itemstack1, afloat[i], flag, f, f1, 0.0F);
 +                    a(world, entityliving, enumhand, itemstack, projectile, afloat[i], needsSpawned, f, f1, 0.0F);
@@ -147,8 +147,8 @@
 +                    a(world, entityliving, enumhand, itemstack, projectile, afloat[i], needsSpawned, f, f1, 10.0F);
                  }
 -            }
-+            //}
-+            //CraftBukkit end
++            // }
++            // CraftBukkit end
          }
  
          a(world, entityliving, itemstack);
