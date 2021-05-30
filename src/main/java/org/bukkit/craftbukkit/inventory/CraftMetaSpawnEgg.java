@@ -2,11 +2,13 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
-import net.minecraft.server.MinecraftKey;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.resources.MinecraftKey;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.meta.SpawnEggMeta;

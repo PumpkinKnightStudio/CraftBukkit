@@ -3,28 +3,28 @@ package org.bukkit.craftbukkit.generator;
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
 import java.util.Random;
-import net.minecraft.server.BiomeBase;
-import net.minecraft.server.BiomeManager;
-import net.minecraft.server.BiomeStorage;
-import net.minecraft.server.Block;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.ChunkSection;
-import net.minecraft.server.DefinedStructureManager;
-import net.minecraft.server.GeneratorAccess;
-import net.minecraft.server.GeneratorAccessSeed;
-import net.minecraft.server.HeightMap;
-import net.minecraft.server.IBlockAccess;
-import net.minecraft.server.IChunkAccess;
-import net.minecraft.server.IRegistry;
-import net.minecraft.server.IRegistryCustom;
-import net.minecraft.server.ITileEntity;
-import net.minecraft.server.ProtoChunk;
-import net.minecraft.server.RegionLimitedWorldAccess;
-import net.minecraft.server.StructureManager;
-import net.minecraft.server.TileEntity;
-import net.minecraft.server.WorldChunkManager;
-import net.minecraft.server.WorldGenStage;
-import net.minecraft.server.WorldServer;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.IRegistryCustom;
+import net.minecraft.server.level.RegionLimitedWorldAccess;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.world.level.GeneratorAccess;
+import net.minecraft.world.level.GeneratorAccessSeed;
+import net.minecraft.world.level.IBlockAccess;
+import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.biome.BiomeBase;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.WorldChunkManager;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ITileEntity;
+import net.minecraft.world.level.block.entity.TileEntity;
+import net.minecraft.world.level.chunk.BiomeStorage;
+import net.minecraft.world.level.chunk.ChunkSection;
+import net.minecraft.world.level.chunk.IChunkAccess;
+import net.minecraft.world.level.chunk.ProtoChunk;
+import net.minecraft.world.level.levelgen.HeightMap;
+import net.minecraft.world.level.levelgen.WorldGenStage;
+import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStructureManager;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.generator.ChunkGenerator;
@@ -33,7 +33,7 @@ import org.bukkit.generator.ChunkGenerator.ChunkData;
 
 public class CustomChunkGenerator extends InternalChunkGenerator {
 
-    private final net.minecraft.server.ChunkGenerator delegate;
+    private final net.minecraft.world.level.chunk.ChunkGenerator delegate;
     private final ChunkGenerator generator;
     private final WorldServer world;
     private final Random random = new Random();
@@ -65,11 +65,12 @@ public class CustomChunkGenerator extends InternalChunkGenerator {
 
         @Override
         public void setBiome(int x, int y, int z, Biome bio) {
+            Preconditions.checkArgument(bio != Biome.CUSTOM, "Cannot set the biome to %s", bio);
             biome.setBiome(x >> 2, y >> 2, z >> 2, CraftBlock.biomeToBiomeBase((IRegistry<BiomeBase>) biome.registry, bio));
         }
     }
 
-    public CustomChunkGenerator(WorldServer world, net.minecraft.server.ChunkGenerator delegate, ChunkGenerator generator) {
+    public CustomChunkGenerator(WorldServer world, net.minecraft.world.level.chunk.ChunkGenerator delegate, ChunkGenerator generator) {
         super(delegate.getWorldChunkManager(), delegate.getSettings());
 
         this.world = world;
@@ -208,7 +209,7 @@ public class CustomChunkGenerator extends InternalChunkGenerator {
     }
 
     @Override
-    protected Codec<? extends net.minecraft.server.ChunkGenerator> a() {
+    protected Codec<? extends net.minecraft.world.level.chunk.ChunkGenerator> a() {
         throw new UnsupportedOperationException("Cannot serialize CustomChunkGenerator");
     }
 }

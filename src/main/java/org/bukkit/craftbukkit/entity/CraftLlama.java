@@ -1,12 +1,13 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityLlama;
+import net.minecraft.world.entity.animal.horse.EntityLlama;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLlama;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Llama;
+import org.bukkit.entity.Llama.Color;
 import org.bukkit.inventory.LlamaInventory;
 
 public class CraftLlama extends CraftChestedHorse implements Llama {

@@ -5,15 +5,15 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftBell extends CraftBlockData implements Bell {
 
-    private static final net.minecraft.server.BlockStateEnum<?> ATTACHMENT = getEnum("attachment");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> ATTACHMENT = getEnum("attachment");
 
     @Override
-    public Attachment getAttachment() {
-        return get(ATTACHMENT, Attachment.class);
+    public org.bukkit.block.data.type.Bell.Attachment getAttachment() {
+        return get(ATTACHMENT, org.bukkit.block.data.type.Bell.Attachment.class);
     }
 
     @Override
-    public void setAttachment(Attachment leaves) {
+    public void setAttachment(org.bukkit.block.data.type.Bell.Attachment leaves) {
         set(ATTACHMENT, leaves);
     }
 }

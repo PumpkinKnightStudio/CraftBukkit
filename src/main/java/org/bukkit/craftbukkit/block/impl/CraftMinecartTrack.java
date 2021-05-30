@@ -9,26 +9,26 @@ public final class CraftMinecartTrack extends org.bukkit.craftbukkit.block.data.
         super();
     }
 
-    public CraftMinecartTrack(net.minecraft.server.IBlockData state) {
+    public CraftMinecartTrack(net.minecraft.world.level.block.state.IBlockData state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftRail
 
-    private static final net.minecraft.server.BlockStateEnum<?> SHAPE = getEnum(net.minecraft.server.BlockMinecartTrack.class, "shape");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> SHAPE = getEnum(net.minecraft.world.level.block.BlockMinecartTrack.class, "shape");
 
     @Override
-    public Shape getShape() {
-        return get(SHAPE, Shape.class);
+    public org.bukkit.block.data.Rail.Shape getShape() {
+        return get(SHAPE, org.bukkit.block.data.Rail.Shape.class);
     }
 
     @Override
-    public void setShape(Shape shape) {
+    public void setShape(org.bukkit.block.data.Rail.Shape shape) {
         set(SHAPE, shape);
     }
 
     @Override
-    public java.util.Set<Shape> getShapes() {
-        return getValues(SHAPE, Shape.class);
+    public java.util.Set<org.bukkit.block.data.Rail.Shape> getShapes() {
+        return getValues(SHAPE, org.bukkit.block.data.Rail.Shape.class);
     }
 }

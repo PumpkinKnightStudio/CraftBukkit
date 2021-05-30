@@ -1,10 +1,9 @@
-
 package org.bukkit.map;
 
 import java.awt.Color;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.minecraft.server.MaterialMapColor;
+import net.minecraft.world.level.material.MaterialMapColor;
 import org.junit.Assert;
 import org.junit.Test;
 

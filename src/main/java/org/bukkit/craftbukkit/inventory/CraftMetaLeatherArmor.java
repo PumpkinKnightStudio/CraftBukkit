@@ -3,11 +3,12 @@ package org.bukkit.craftbukkit.inventory;
 import static org.bukkit.craftbukkit.inventory.CraftItemFactory.*;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagInt;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
