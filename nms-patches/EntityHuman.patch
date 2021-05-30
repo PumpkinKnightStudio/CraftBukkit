@@ -366,10 +366,10 @@
              this.inventory.extraSlots.set(0, itemstack);
          } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR) {
 -            this.playEquipSound(itemstack);
-+            //CraftBukkit start
-+            if(this.valid) {
++            // CraftBukkit start
++            if (this.valid) {
 +                CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot));
-+            }//CraftBukkit end
++            }// CraftBukkit end
 +            this.playEquipSound(itemstack, silent); // CraftBukkit
              this.inventory.armor.set(enumitemslot.b(), itemstack);
          }

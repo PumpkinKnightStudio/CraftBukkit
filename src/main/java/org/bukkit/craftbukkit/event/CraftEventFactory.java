@@ -316,7 +316,7 @@ public class CraftEventFactory {
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
         EntityArmorChangeEvent.ChangeReason changeReason;
 
-        //Get the change reason
+        // Get the change reason
         if (newArmorBukkit.getType() == Material.AIR) {
             changeReason = EntityArmorChangeEvent.ChangeReason.UNEQUIP;
         } else if (oldArmorBukkit.getType() == Material.AIR) {
@@ -337,7 +337,7 @@ public class CraftEventFactory {
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
 
-        //Don't call for air
+        // Don't call for air
         if (oldArmorBukkit.getType() == Material.AIR && newArmorBukkit.getType() == Material.AIR) {
             return;
         }

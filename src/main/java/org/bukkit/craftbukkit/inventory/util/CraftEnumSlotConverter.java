@@ -6,7 +6,7 @@ import org.bukkit.inventory.EquipmentSlot;
 public class CraftEnumSlotConverter {
 
     public static EquipmentSlot getAsBucketSlot(EnumItemSlot enumItemSlot) {
-        return EquipmentSlot.fromName(enumItemSlot.getSlotName());
+        return EquipmentSlot.values()[enumItemSlot.ordinal()];
     }
 
     public static boolean isEnumArmorSlot(int slot) {
@@ -15,7 +15,7 @@ public class CraftEnumSlotConverter {
 
     public static EquipmentSlot getFromEnumArmorSlot(int slot) {
 
-        //There's no easy code in EnumItemSlot to convert from the number 7 for example to LEGS, so we are keeping this the only instance of hard coded checks
+        // There's no easy code in EnumItemSlot to convert from the number 7 for example to LEGS, so we are keeping this the only instance of hard coded checks
         EquipmentSlot equipmentSlot;
         if (slot == 5) {
             equipmentSlot = EquipmentSlot.HEAD;

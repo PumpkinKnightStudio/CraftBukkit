@@ -1531,11 +1531,11 @@
                  if (ItemStack.matches(packetplayinwindowclick.f(), itemstack)) {
                      this.player.playerConnection.sendPacket(new PacketPlayOutTransaction(packetplayinwindowclick.b(), packetplayinwindowclick.e(), true));
                      this.player.e = true;
-+                    //CraftBukkit start
-+                    if(CraftEnumSlotConverter.isEnumArmorSlot(packetplayinwindowclick.c()) && this.player.activeContainer instanceof ContainerPlayer && click != ClickType.SHIFT_LEFT && click != ClickType.SHIFT_RIGHT) {
++                    // CraftBukkit start
++                    if (CraftEnumSlotConverter.isEnumArmorSlot(packetplayinwindowclick.c()) && this.player.activeContainer instanceof ContainerPlayer && click != ClickType.SHIFT_LEFT && click != ClickType.SHIFT_RIGHT) {
 +                        CraftEventFactory.handleEntityEquipArmorEvent(player, packetplayinwindowclick.f(), this.player.activeContainer.slots.get(packetplayinwindowclick.c()).getItem(), CraftEnumSlotConverter.getFromEnumArmorSlot(packetplayinwindowclick.c()));
 +                    }
-+                    //CraftBukkit end
++                    // CraftBukkit end
                      this.player.activeContainer.c();
                      this.player.broadcastCarriedItem();
                      this.player.e = false;

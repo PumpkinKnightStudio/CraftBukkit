@@ -215,7 +215,7 @@
                  this.bp.set(enumitemslot.b(), itemstack);
                  break;
              case ARMOR:
-+                CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot)); //CraftBukkit
++                CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot)); // CraftBukkit
                  this.bq.set(enumitemslot.b(), itemstack);
          }
  

@@ -50,7 +50,7 @@
                      if (itemstack.e()) {
                          itemstack.setDamage(itemstack.getDamage() + this.random.nextInt(2));
                          if (itemstack.getDamage() >= itemstack.h()) {
-+                            CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, CraftEnumSlotConverter.getAsBucketSlot(EnumItemSlot.HEAD)); //CraftBukkit
++                            CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, CraftEnumSlotConverter.getAsBucketSlot(EnumItemSlot.HEAD)); // CraftBukkit
                              this.broadcastItemBreak(EnumItemSlot.HEAD);
                              this.setSlot(EnumItemSlot.HEAD, ItemStack.b);
                          }

@@ -277,7 +277,7 @@
 +                    if (this.count == 1 && t0 instanceof EntityHuman) {
 +                        org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                    }
-+                    if(item instanceof ItemArmor) {
++                    if (item instanceof ItemArmor) {
 +                        CraftEventFactory.handleEntityEquipArmorEvent(t0, this, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, CraftEnumSlotConverter.getAsBucketSlot(((ItemArmor) item).b));
 +                    }
 +                    // CraftBukkit end
