@@ -1,20 +1,50 @@
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -58,6 +58,39 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
- 
-+// CraftBukkit start
+@@ -6,10 +6,13 @@
+ import com.mojang.brigadier.StringReader;
+ import com.mojang.brigadier.exceptions.CommandSyntaxException;
+ import com.mojang.serialization.Codec;
 +import com.mojang.serialization.Dynamic;
+ import com.mojang.serialization.codecs.RecordCodecBuilder;
+ import java.text.DecimalFormat;
+ import java.text.DecimalFormatSymbols;
 +import java.util.List;
+ import java.util.Locale;
 +import java.util.Map;
+ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.Random;
+@@ -21,7 +24,9 @@
+ import net.minecraft.advancements.CriterionTriggers;
+ import net.minecraft.commands.arguments.blocks.ArgumentBlockPredicate;
+ import net.minecraft.core.BlockPosition;
 +import net.minecraft.core.EnumDirection;
+ import net.minecraft.core.IRegistry;
 +import net.minecraft.nbt.DynamicOpsNBT;
+ import net.minecraft.nbt.NBTBase;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.nbt.NBTTagList;
+@@ -31,11 +36,16 @@
+ import net.minecraft.network.chat.ChatModifier;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.chat.IChatMutableComponent;
 +import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
+ import net.minecraft.resources.MinecraftKey;
 +import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.EntityPlayer;
 +import net.minecraft.server.level.WorldServer;
 +import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffect;
+ import net.minecraft.stats.StatisticList;
+ import net.minecraft.tags.ITagRegistry;
 +import net.minecraft.util.datafix.fixes.DataConverterTypes;
+ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
+@@ -53,11 +63,37 @@
+ import net.minecraft.world.item.enchantment.Enchantments;
+ import net.minecraft.world.level.IMaterial;
+ import net.minecraft.world.level.World;
 +import net.minecraft.world.level.block.BlockJukeBox;
 +import net.minecraft.world.level.block.BlockSapling;
 +import net.minecraft.world.level.block.BlockTileEntity;
@@ -24,15 +54,24 @@
 +import net.minecraft.world.level.block.entity.TileEntity;
 +import net.minecraft.world.level.block.entity.TileEntitySign;
 +import net.minecraft.world.level.block.entity.TileEntitySkull;
+ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.block.state.pattern.ShapeDetectorBlock;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
++// CraftBukkit start
 +import org.bukkit.Location;
 +import org.bukkit.TreeType;
 +import org.bukkit.block.BlockState;
 +import org.bukkit.craftbukkit.block.CraftBlock;
 +import org.bukkit.craftbukkit.block.CraftBlockState;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.block.BlockFertilizeEvent;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.player.PlayerItemDamageEvent;
 +import org.bukkit.event.world.StructureGrowEvent;
 +// CraftBukkit end
@@ -40,7 +79,7 @@
  public final class ItemStack {
  
      public static final Codec<ItemStack> a = RecordCodecBuilder.create((instance) -> {
-@@ -71,7 +104,7 @@
+@@ -71,7 +107,7 @@
      });
      private static final Logger LOGGER = LogManager.getLogger();
      public static final ItemStack b = new ItemStack((Item) null);
@@ -49,7 +88,7 @@
          decimalformat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
      });
      private static final ChatModifier e = ChatModifier.a.setColor(EnumChatFormat.DARK_PURPLE).setItalic(true);
-@@ -106,23 +139,42 @@
+@@ -106,23 +142,42 @@
          this.checkEmpty();
      }
  
@@ -95,7 +134,7 @@
          this.checkEmpty();
      }
  
-@@ -152,7 +204,7 @@
+@@ -152,7 +207,7 @@
          return this.j ? Items.AIR : this.item;
      }
  
@@ -104,7 +143,7 @@
          EntityHuman entityhuman = itemactioncontext.getEntity();
          BlockPosition blockposition = itemactioncontext.getClickPosition();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getWorld(), blockposition, false);
-@@ -160,12 +212,153 @@
+@@ -160,12 +215,153 @@
          if (entityhuman != null && !entityhuman.abilities.mayBuild && !this.b(itemactioncontext.getWorld().p(), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
@@ -259,7 +298,7 @@
  
              return enuminteractionresult;
          }
-@@ -246,6 +439,21 @@
+@@ -246,6 +442,21 @@
                  }
  
                  i -= k;
@@ -281,7 +320,7 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -267,6 +475,11 @@
+@@ -267,6 +478,14 @@
                  if (this.isDamaged(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
@@ -289,11 +328,14 @@
 +                    if (this.count == 1 && t0 instanceof EntityHuman) {
 +                        org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                    }
++                    if (item instanceof ItemArmor) {
++                        CraftEventFactory.callEntityEquipArmorEvent(t0, this, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, CraftEnumSlotConverter.getAsBucketSlot(((ItemArmor) item).b));
++                    }
 +                    // CraftBukkit end
  
                      this.subtract(1);
                      if (t0 instanceof EntityHuman) {
-@@ -398,6 +611,17 @@
+@@ -398,6 +617,17 @@
          return this.tag;
      }
  
@@ -311,7 +353,7 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -561,6 +785,12 @@
+@@ -561,6 +791,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -324,7 +366,7 @@
          this.getOrCreateTag().setInt("RepairCost", i);
      }
  
-@@ -610,6 +840,13 @@
+@@ -610,6 +846,13 @@
          nbttaglist.add(nbttagcompound);
      }
  

@@ -326,7 +326,7 @@ public class CraftEventFactory {
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EquipmentSlot equipmentSlot) {
+    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EquipmentSlot equipmentSlot) {
 
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
@@ -341,13 +341,13 @@ public class CraftEventFactory {
             changeReason = EntityArmorChangeEvent.ChangeReason.SWITCH;
         }
 
-        handleEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, equipmentSlot);
+        callEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, equipmentSlot);
     }
 
     /**
      * Entity Equip Armor Event
      */
-    public static void handleEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, EquipmentSlot slot) {
+    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, EquipmentSlot slot) {
 
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
