@@ -345,7 +345,7 @@
      }
  
      @Override
-@@ -1555,14 +1698,25 @@
+@@ -1555,14 +1698,24 @@
  
      @Override
      public void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack) {
@@ -367,14 +367,13 @@
          } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR) {
 -            this.playEquipSound(itemstack);
 +            // CraftBukkit start
-+            if (this.valid) {
-+                CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot));
-+            }// CraftBukkit end
-+            this.playEquipSound(itemstack, silent); // CraftBukkit
++            CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot));
++            this.playEquipSound(itemstack, silent);
++            // CraftBukkit
              this.inventory.armor.set(enumitemslot.b(), itemstack);
          }
  
-@@ -1603,26 +1757,31 @@
+@@ -1603,26 +1756,31 @@
  
      protected void releaseShoulderEntities() {
          if (this.e + 20L < this.world.getTime()) {
