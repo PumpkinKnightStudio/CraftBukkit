@@ -1,18 +1,20 @@
 --- a/net/minecraft/server/ContainerPlayer.java
 +++ b/net/minecraft/server/ContainerPlayer.java
-@@ -1,5 +1,11 @@
+@@ -1,5 +1,13 @@
  package net.minecraft.server;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +// CraftBukkit end
 +
  public class ContainerPlayer extends ContainerRecipeBook<InventoryCrafting> {
  
      public static final MinecraftKey c = new MinecraftKey("textures/atlas/blocks.png");
-@@ -10,15 +16,28 @@
+@@ -10,15 +18,28 @@
      public static final MinecraftKey h = new MinecraftKey("item/empty_armor_slot_shield");
      private static final MinecraftKey[] j = new MinecraftKey[]{ContainerPlayer.g, ContainerPlayer.f, ContainerPlayer.e, ContainerPlayer.d};
      private static final EnumItemSlot[] k = new EnumItemSlot[]{EnumItemSlot.HEAD, EnumItemSlot.CHEST, EnumItemSlot.LEGS, EnumItemSlot.FEET};
@@ -43,7 +45,7 @@
          this.a((Slot) (new SlotResult(playerinventory.player, this.craftInventory, this.resultInventory, 0, 154, 28)));
  
          int i;
-@@ -85,7 +104,7 @@
+@@ -85,7 +106,7 @@
  
      @Override
      public void a(IInventory iinventory) {
@@ -52,22 +54,22 @@
      }
  
      @Override
-@@ -124,12 +143,13 @@
+@@ -124,12 +145,13 @@
                      return ItemStack.b;
                  }
              } else if (i >= 5 && i < 9) {
-+                CraftEventFactory.handleEntityArmorUnequip(this.owner, itemstack1, enumitemslot); //CraftBukkit
++                CraftEventFactory.handleEntityEquipArmorEvent(this.owner, itemstack1, ItemStack.b, EntityArmorChangeEvent.ChangeReason.UNEQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot)); //CraftBukkit
                  if (!this.a(itemstack1, 9, 45, false)) {
                      return ItemStack.b;
                  }
              } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR && !((Slot) this.slots.get(8 - enumitemslot.b())).hasItem()) {
                  int j = 8 - enumitemslot.b();
 -
-+                CraftEventFactory.handleEntityEquipArmorEvent(this.owner, itemstack, enumitemslot); //CraftBukkit
++                CraftEventFactory.handleEntityEquipArmorEvent(this.owner, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot)); //CraftBukkit
                  if (!this.a(itemstack1, j, j + 1, false)) {
                      return ItemStack.b;
                  }
-@@ -192,4 +212,17 @@
+@@ -192,4 +214,17 @@
      public InventoryCrafting j() {
          return this.craftInventory;
      }

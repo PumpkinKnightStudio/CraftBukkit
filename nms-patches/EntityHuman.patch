@@ -1,16 +1,18 @@
 --- a/net/minecraft/server/EntityHuman.java
 +++ b/net/minecraft/server/EntityHuman.java
-@@ -16,10 +16,23 @@
+@@ -16,10 +16,25 @@
  import java.util.function.Predicate;
  import javax.annotation.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftVector;
 +import org.bukkit.entity.Item;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.entity.CreatureSpawnEvent;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.entity.EntityCombustByEntityEvent;
 +import org.bukkit.event.player.PlayerDropItemEvent;
 +import org.bukkit.event.player.PlayerVelocityEvent;
@@ -25,7 +27,7 @@
      private static final DataWatcherObject<Float> c = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.c);
      private static final DataWatcherObject<Integer> d = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.b);
      protected static final DataWatcherObject<Byte> bi = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.a);
-@@ -28,10 +41,10 @@
+@@ -28,10 +43,10 @@
      protected static final DataWatcherObject<NBTTagCompound> bl = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.p);
      private long e;
      public final PlayerInventory inventory = new PlayerInventory(this);
@@ -38,7 +40,7 @@
      protected int br;
      public float bs;
      public float bt;
-@@ -57,6 +70,16 @@
+@@ -57,6 +72,16 @@
      @Nullable
      public EntityFishingHook hookedFish;
  
@@ -55,7 +57,7 @@
      public EntityHuman(World world, BlockPosition blockposition, float f, GameProfile gameprofile) {
          super(EntityTypes.PLAYER, world);
          this.bL = ItemStack.b;
-@@ -194,7 +217,7 @@
+@@ -194,7 +219,7 @@
          ItemStack itemstack = this.getEquipment(EnumItemSlot.HEAD);
  
          if (itemstack.getItem() == Items.TURTLE_HELMET && !this.a((Tag) TagsFluid.WATER)) {
@@ -64,7 +66,7 @@
          }
  
      }
-@@ -359,7 +382,8 @@
+@@ -359,7 +384,8 @@
  
          if (this.world.getDifficulty() == EnumDifficulty.PEACEFUL && this.world.getGameRules().getBoolean(GameRules.NATURAL_REGENERATION)) {
              if (this.getHealth() < this.getMaxHealth() && this.ticksLived % 20 == 0) {
@@ -74,7 +76,7 @@
              }
  
              if (this.foodData.c() && this.ticksLived % 10 == 0) {
-@@ -544,6 +568,30 @@
+@@ -544,6 +570,30 @@
                  entityitem.setMot((double) (-f3 * f2 * 0.3F) + Math.cos((double) f5) * (double) f6, (double) (-f1 * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double) (f4 * f2 * 0.3F) + Math.sin((double) f5) * (double) f6);
              }
  
@@ -105,7 +107,7 @@
              return entityitem;
          }
      }
-@@ -670,16 +718,17 @@
+@@ -670,16 +720,17 @@
          if (this.isInvulnerable(damagesource)) {
              return false;
          } else if (this.abilities.isInvulnerable && !damagesource.ignoresInvulnerability()) {
@@ -125,7 +127,7 @@
                      }
  
                      if (this.world.getDifficulty() == EnumDifficulty.EASY) {
-@@ -691,7 +740,13 @@
+@@ -691,7 +742,13 @@
                      }
                  }
  
@@ -140,7 +142,7 @@
              }
          }
      }
-@@ -706,10 +761,29 @@
+@@ -706,10 +763,29 @@
      }
  
      public boolean a(EntityHuman entityhuman) {
@@ -173,7 +175,7 @@
      }
  
      @Override
-@@ -746,8 +820,13 @@
+@@ -746,8 +822,13 @@
          }
      }
  
@@ -188,7 +190,7 @@
          if (!this.isInvulnerable(damagesource)) {
              f = this.applyArmorModifier(damagesource, f);
              f = this.applyMagicModifier(damagesource, f);
-@@ -773,6 +852,7 @@
+@@ -773,6 +854,7 @@
  
              }
          }
@@ -196,7 +198,7 @@
      }
  
      @Override
-@@ -932,7 +1012,7 @@
+@@ -932,7 +1014,7 @@
  
                  f *= 0.2F + f2 * f2 * 0.8F;
                  f1 *= f2;
@@ -205,7 +207,7 @@
                  if (f > 0.0F || f1 > 0.0F) {
                      boolean flag = f2 > 0.9F;
                      boolean flag1 = false;
-@@ -971,8 +1051,15 @@
+@@ -971,8 +1053,15 @@
                      if (entity instanceof EntityLiving) {
                          f3 = ((EntityLiving) entity).getHealth();
                          if (j > 0 && !entity.isBurning()) {
@@ -223,7 +225,7 @@
                          }
                      }
  
-@@ -1000,8 +1087,11 @@
+@@ -1000,8 +1089,11 @@
                                  EntityLiving entityliving = (EntityLiving) iterator.next();
  
                                  if (entityliving != this && entityliving != entity && !this.r(entityliving) && (!(entityliving instanceof EntityArmorStand) || !((EntityArmorStand) entityliving).isMarker()) && this.h((Entity) entityliving) < 9.0D) {
@@ -236,7 +238,7 @@
                                  }
                              }
  
-@@ -1010,9 +1100,26 @@
+@@ -1010,9 +1102,26 @@
                          }
  
                          if (entity instanceof EntityPlayer && entity.velocityChanged) {
@@ -263,7 +265,7 @@
                          }
  
                          if (flag2) {
-@@ -1057,7 +1164,14 @@
+@@ -1057,7 +1166,14 @@
  
                              this.a(StatisticList.DAMAGE_DEALT, Math.round(f5 * 10.0F));
                              if (j > 0) {
@@ -279,7 +281,7 @@
                              }
  
                              if (this.world instanceof WorldServer && f5 > 2.0F) {
-@@ -1073,6 +1187,11 @@
+@@ -1073,6 +1189,11 @@
                          if (flag4) {
                              entity.extinguish();
                          }
@@ -291,7 +293,7 @@
                      }
                  }
  
-@@ -1133,6 +1252,12 @@
+@@ -1133,6 +1254,12 @@
      }
  
      public Either<EntityHuman.EnumBedResult, Unit> sleep(BlockPosition blockposition) {
@@ -304,7 +306,7 @@
          this.entitySleep(blockposition);
          this.sleepTicks = 0;
          return Either.right(Unit.INSTANCE);
-@@ -1253,7 +1378,11 @@
+@@ -1253,7 +1380,11 @@
              this.setMot(vec3d2.x, d3 * 0.6D, vec3d2.z);
              this.aE = f;
              this.fallDistance = 0.0F;
@@ -317,7 +319,7 @@
          } else {
              super.g(vec3d);
          }
-@@ -1383,12 +1512,24 @@
+@@ -1383,12 +1514,24 @@
      }
  
      public void startGliding() {
@@ -343,7 +345,7 @@
      }
  
      @Override
-@@ -1555,14 +1696,25 @@
+@@ -1555,14 +1698,25 @@
  
      @Override
      public void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack) {
@@ -365,14 +367,14 @@
          } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR) {
 -            this.playEquipSound(itemstack);
 +            //CraftBukkit start
-+            if(getMinecraftServer() != null && getMinecraftServer().isMainThread()){
-+                CraftEventFactory.handleEntityEquipArmorEvent(this, itemstack, enumitemslot);
++            if(this.valid) {
++                CraftEventFactory.handleEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot));
 +            }//CraftBukkit end
 +            this.playEquipSound(itemstack, silent); // CraftBukkit
              this.inventory.armor.set(enumitemslot.b(), itemstack);
          }
  
-@@ -1603,26 +1755,31 @@
+@@ -1603,26 +1757,31 @@
  
      protected void releaseShoulderEntities() {
          if (this.e + 20L < this.world.getTime()) {

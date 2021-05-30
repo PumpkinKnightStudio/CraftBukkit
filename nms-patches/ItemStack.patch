@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/ItemStack.java
 +++ b/net/minecraft/server/ItemStack.java
-@@ -19,6 +19,25 @@
+@@ -19,6 +19,27 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
@@ -16,9 +16,11 @@
 +import org.bukkit.craftbukkit.block.CraftBlockState;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.block.BlockFertilizeEvent;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.player.PlayerItemDamageEvent;
 +import org.bukkit.event.world.StructureGrowEvent;
 +// CraftBukkit end
@@ -26,7 +28,7 @@
  public final class ItemStack {
  
      public static final Codec<ItemStack> a = RecordCodecBuilder.create((instance) -> {
-@@ -32,7 +51,7 @@
+@@ -32,7 +53,7 @@
      });
      private static final Logger LOGGER = LogManager.getLogger();
      public static final ItemStack b = new ItemStack((Item) null);
@@ -35,7 +37,7 @@
          decimalformat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
      });
      private static final ChatModifier e = ChatModifier.a.setColor(EnumChatFormat.DARK_PURPLE).setItalic(true);
-@@ -67,23 +86,42 @@
+@@ -67,23 +88,42 @@
          this.checkEmpty();
      }
  
@@ -81,7 +83,7 @@
          this.checkEmpty();
      }
  
-@@ -113,7 +151,7 @@
+@@ -113,7 +153,7 @@
          return this.j ? Items.AIR : this.item;
      }
  
@@ -90,7 +92,7 @@
          EntityHuman entityhuman = itemactioncontext.getEntity();
          BlockPosition blockposition = itemactioncontext.getClickPosition();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getWorld(), blockposition, false);
-@@ -121,12 +159,153 @@
+@@ -121,12 +161,153 @@
          if (entityhuman != null && !entityhuman.abilities.mayBuild && !this.b(itemactioncontext.getWorld().p(), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
@@ -245,7 +247,7 @@
  
              return enuminteractionresult;
          }
-@@ -207,6 +386,21 @@
+@@ -207,6 +388,21 @@
                  }
  
                  i -= k;
@@ -267,7 +269,7 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -228,6 +422,14 @@
+@@ -228,6 +424,14 @@
                  if (this.isDamaged(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
@@ -275,14 +277,14 @@
 +                    if (this.count == 1 && t0 instanceof EntityHuman) {
 +                        org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                    }
-+                    if(item instanceof ItemArmor){
-+                        CraftEventFactory.handleEntityArmorBreak(t0, this, ((ItemArmor) item).b);
++                    if(item instanceof ItemArmor) {
++                        CraftEventFactory.handleEntityEquipArmorEvent(t0, this, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, CraftEnumSlotConverter.getAsBucketSlot(((ItemArmor) item).b));
 +                    }
 +                    // CraftBukkit end
  
                      this.subtract(1);
                      if (t0 instanceof EntityHuman) {
-@@ -359,6 +561,17 @@
+@@ -359,6 +563,17 @@
          return this.tag;
      }
  
@@ -300,7 +302,7 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -522,6 +735,12 @@
+@@ -522,6 +737,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -313,7 +315,7 @@
          this.getOrCreateTag().setInt("RepairCost", i);
      }
  
-@@ -571,6 +790,13 @@
+@@ -571,6 +792,13 @@
          nbttaglist.add(nbttagcompound);
      }
  
