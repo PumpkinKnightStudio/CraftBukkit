@@ -19,7 +19,6 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagLongArray;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.persistence.PersistentDataContainer;
 
 /**
@@ -57,7 +56,7 @@ public final class CraftPersistentDataTypeRegistry {
          * extractor function
          */
         T extract(NBTBase base) {
-            if(!nbtBaseType.isInstance(base)) {
+            if (!nbtBaseType.isInstance(base)) {
                 throw new IllegalArgumentException(String.format("The provided NBTBase was of the type %s. Expected type %s", base.getClass().getSimpleName(), nbtBaseType.getSimpleName()));
             }
             return this.extractor.apply(nbtBaseType.cast(base));
@@ -75,7 +74,7 @@ public final class CraftPersistentDataTypeRegistry {
          * function
          */
         Z build(Object value) {
-            if(!primitiveType.isInstance(value)) {
+            if (!primitiveType.isInstance(value)) {
                 throw new IllegalArgumentException(String.format("The provided value was of the type %s. Expected type %s", value.getClass().getSimpleName(), primitiveType.getSimpleName()));
             }
             return this.builder.apply(primitiveType.cast(value));
@@ -251,12 +250,12 @@ public final class CraftPersistentDataTypeRegistry {
      */
     public <T> T extract(Class<T> type, NBTBase tag) throws ClassCastException, IllegalArgumentException {
         TagAdapter adapter = this.adapters.computeIfAbsent(type, CREATE_ADAPTER);
-        if(!adapter.isInstance(tag)) {
+        if (!adapter.isInstance(tag)) {
             throw new IllegalArgumentException(String.format("`The found tag instance cannot store %s as it is a %s", type.getSimpleName(), tag.getClass().getSimpleName()));
         }
 
         Object foundValue = adapter.extract(tag);
-        if(!type.isInstance(foundValue)) {
+        if (!type.isInstance(foundValue)) {
             throw new IllegalArgumentException(String.format("The found object is of the type %s. Expected type %s", foundValue.getClass().getSimpleName(), type.getSimpleName()));
         }
         return type.cast(foundValue);

@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.BlockEnchantmentTable;
 import net.minecraft.world.level.block.BlockWorkbench;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntity;
-import net.minecraft.world.level.block.entity.TileEntityContainer;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -41,6 +40,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
+import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -278,6 +278,8 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         ITileInventory iinventory = null;
         if (inventory instanceof CraftInventoryDoubleChest) {
             iinventory = ((CraftInventoryDoubleChest) inventory).tile;
+        } else if (inventory instanceof CraftInventoryLectern) {
+            iinventory = ((CraftInventoryLectern) inventory).tile;
         } else if (inventory instanceof CraftInventory) {
             CraftInventory craft = (CraftInventory) inventory;
             if (craft.getInventory() instanceof ITileInventory) {
@@ -295,7 +297,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
 
         Containers<?> container = CraftContainer.getNotchInventoryType(inventory);
-        if (iinventory instanceof TileEntityContainer) {
+        if (iinventory instanceof ITileInventory) {
             getHandle().openContainer(iinventory);
         } else {
             openCustomInventory(inventory, player, container);
