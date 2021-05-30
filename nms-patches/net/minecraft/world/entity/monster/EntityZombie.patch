@@ -1,18 +1,11 @@
 --- a/net/minecraft/world/entity/monster/EntityZombie.java
 +++ b/net/minecraft/world/entity/monster/EntityZombie.java
-@@ -15,6 +15,7 @@
- import net.minecraft.network.syncher.DataWatcher;
- import net.minecraft.network.syncher.DataWatcherObject;
- import net.minecraft.network.syncher.DataWatcherRegistry;
-+import net.minecraft.server.MinecraftServer;
- import net.minecraft.server.level.WorldServer;
- import net.minecraft.sounds.SoundCategory;
- import net.minecraft.sounds.SoundEffect;
-@@ -70,6 +71,17 @@
+@@ -70,6 +70,18 @@
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
  
 +// CraftBukkit start
++import net.minecraft.server.MinecraftServer;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.entity.Zombie;
