@@ -13,21 +13,19 @@ public class CraftEnumSlotConverter {
         return slot >= 5 && slot <= 8;
     }
 
-    public static EquipmentSlot getFromEnumArmorSlot(int slot) {
-
+    public static EnumItemSlot getFromEnumArmorSlot(int slot) {
         // There's no easy code in EnumItemSlot to convert from the number 7 for example to LEGS, so we are keeping this the only instance of hard coded checks
-        EquipmentSlot equipmentSlot;
+        EnumItemSlot enumItemSlot;
         if (slot == 5) {
-            equipmentSlot = EquipmentSlot.HEAD;
+            enumItemSlot = EnumItemSlot.HEAD;
         } else if (slot == 6) {
-            equipmentSlot = EquipmentSlot.CHEST;
+            enumItemSlot = EnumItemSlot.CHEST;
         } else if (slot == 7) {
-            equipmentSlot = EquipmentSlot.LEGS;
+            enumItemSlot = EnumItemSlot.LEGS;
         } else {
-            equipmentSlot = EquipmentSlot.FEET;
+            enumItemSlot = EnumItemSlot.FEET;
         }
 
-        return equipmentSlot;
+        return enumItemSlot;
     }
-
 }

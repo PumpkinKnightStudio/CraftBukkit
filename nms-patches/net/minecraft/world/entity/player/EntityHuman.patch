@@ -1,15 +1,12 @@
 --- a/net/minecraft/world/entity/player/EntityHuman.java
 +++ b/net/minecraft/world/entity/player/EntityHuman.java
-@@ -108,12 +108,27 @@
- import net.minecraft.world.phys.Vec3D;
- import net.minecraft.world.scores.Scoreboard;
+@@ -110,10 +110,25 @@
  import net.minecraft.world.scores.ScoreboardTeam;
--import net.minecraft.world.scores.ScoreboardTeamBase;
-+
+ import net.minecraft.world.scores.ScoreboardTeamBase;
+ 
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftVector;
 +import org.bukkit.entity.Item;
 +import org.bukkit.entity.Player;
@@ -20,7 +17,7 @@
 +import org.bukkit.event.player.PlayerDropItemEvent;
 +import org.bukkit.event.player.PlayerVelocityEvent;
 +// CraftBukkit end
- 
++
  public abstract class EntityHuman extends EntityLiving {
  
      public static final EntitySize bh = EntitySize.b(0.6F, 1.8F);
@@ -461,7 +458,7 @@
          } else if (enumitemslot.a() == EnumItemSlot.Function.ARMOR) {
 -            this.playEquipSound(itemstack);
 +            // CraftBukkit start
-+            CraftEventFactory.callEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, CraftEnumSlotConverter.getAsBucketSlot(enumitemslot));
++            CraftEventFactory.callEntityEquipArmorEvent(this, ItemStack.b, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, enumitemslot);
 +            this.playEquipSound(itemstack, silent);
 +            // CraftBukkit end
              this.inventory.armor.set(enumitemslot.b(), itemstack);

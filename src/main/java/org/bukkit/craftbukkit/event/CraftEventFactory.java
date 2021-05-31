@@ -31,6 +31,7 @@ import net.minecraft.world.entity.EntityExperienceOrb;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.entity.animal.EntityAnimal;
 import net.minecraft.world.entity.animal.EntityFish;
 import net.minecraft.world.entity.animal.EntityGolem;
@@ -91,6 +92,7 @@ import org.bukkit.craftbukkit.entity.CraftSpellcaster;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
+import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftDamageSource;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -329,10 +331,10 @@ public class CraftEventFactory {
     /**
      * Entity Equip Armor Event
      */
-    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EquipmentSlot equipmentSlot) {
-
+    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, int equipmentSlot) {
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        EnumItemSlot enumItemSlot = CraftEnumSlotConverter.getFromEnumArmorSlot(equipmentSlot);
         EntityArmorChangeEvent.ChangeReason changeReason;
 
         // Get the change reason
@@ -344,24 +346,24 @@ public class CraftEventFactory {
             changeReason = EntityArmorChangeEvent.ChangeReason.SWITCH;
         }
 
-        callEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, equipmentSlot);
+        callEntityEquipArmorEvent(who, oldArmor, newArmor, changeReason, enumItemSlot);
     }
 
     /**
      * Entity Equip Armor Event
      */
-    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, EquipmentSlot slot) {
-
+    public static void callEntityEquipArmorEvent(EntityLiving who, ItemStack oldArmor, ItemStack newArmor, EntityArmorChangeEvent.ChangeReason changeReason, EnumItemSlot slot) {
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
+        EquipmentSlot equipmentSlot = CraftEnumSlotConverter.getAsBucketSlot(slot);
 
         // Don't call for air
         if (oldArmorBukkit.getType() == Material.AIR && newArmorBukkit.getType() == Material.AIR) {
             return;
         }
 
-        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, newArmorBukkit, slot, changeReason);
+        EntityArmorChangeEvent entityEquipArmorEvent = new EntityArmorChangeEvent(livingEntity, oldArmorBukkit, newArmorBukkit, equipmentSlot, changeReason);
         Bukkit.getPluginManager().callEvent(entityEquipArmorEvent);
     }
 
