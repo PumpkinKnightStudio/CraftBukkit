@@ -304,7 +304,6 @@ public class CraftEventFactory {
      * Trident event
      */
     public static EntityFireTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force) {
-
         LivingEntity bukkitLivingEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(trident);
         Trident bukkitTrident = (Trident) entityThrownTrident.getBukkitEntity();
@@ -334,7 +333,6 @@ public class CraftEventFactory {
     }
 
     public static EntityShootCrossbowEvent callEntityShootCrossbowEvent(EntityLiving entityLiving, ItemStack crossbow, EnumHand hand, List<IProjectile> projectiles, float force) {
-
         LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);
         List<org.bukkit.entity.Projectile> convertedProjectiles = projectiles.stream().map((projectile) -> (Projectile) (projectile).getBukkitEntity()).collect(Collectors.toList());
