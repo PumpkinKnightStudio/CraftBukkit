@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.ITileInventory;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EnumMainHand;
@@ -51,6 +52,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -642,4 +644,12 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public void setStarvationRate(int i) {
         getHandle().getFoodData().starvationRate = i;
     }
+
+    public void damageArmor(boolean fire, float amount, EquipmentSlot... toDamage) {
+        Preconditions.checkArgument(amount > 0f, "Amount must be greater than 0!");
+        Preconditions.checkArgument(Arrays.stream(toDamage).noneMatch(equipmentSlot -> equipmentSlot == EquipmentSlot.HAND || equipmentSlot == EquipmentSlot.OFF_HAND), "Cannot damage non-armor equipment slots!");
+        // subtract 2 because 0 is feet, 1 is legs, 2 is chest, 3 is helmet.
+        getHandle().getInventory().a(fire ? DamageSource.IN_FIRE : DamageSource.GENERIC, amount, Arrays.stream(toDamage).mapToInt(value -> value.ordinal() - 2).toArray());
+    }
+
 }
