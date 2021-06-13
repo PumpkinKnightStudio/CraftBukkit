@@ -649,7 +649,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         Preconditions.checkArgument(amount > 0f, "Amount must be greater than 0!");
         Preconditions.checkArgument(Arrays.stream(toDamage).noneMatch(equipmentSlot -> equipmentSlot == EquipmentSlot.HAND || equipmentSlot == EquipmentSlot.OFF_HAND), "Cannot damage non-armor equipment slots!");
         // subtract 2 because 0 is feet, 1 is legs, 2 is chest, 3 is helmet.
-        getHandle().getInventory().a(fire ? DamageSource.IN_FIRE : DamageSource.GENERIC, amount, Arrays.stream(toDamage).mapToInt(value -> value.ordinal() - 2).toArray());
+        getHandle().getInventory().a(fire ? DamageSource.IN_FIRE : DamageSource.GENERIC, amount, Arrays.stream(toDamage).mapToInt(value -> value.ordinal() - 2).toArray()); // PAIL rename damageArmor
     }
 
 }
