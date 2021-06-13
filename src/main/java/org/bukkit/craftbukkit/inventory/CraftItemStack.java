@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemArmor;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
@@ -15,6 +16,7 @@ import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemNutrition;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
@@ -301,6 +303,21 @@ public final class CraftItemStack extends ItemStack {
 
     static NBTTagList getEnchantmentList(net.minecraft.world.item.ItemStack item) {
         return (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
+    }
+
+    @Override
+    public ItemNutrition getNutrition() {
+        return CraftItemNutrition.getNutrition(handle.getItem());
+    }
+
+    @Override
+    public int getArmorDefense() {
+        return handle.getItem() instanceof ItemArmor ? ((ItemArmor) handle.getItem()).e() : 0; // PAIL rename getDefense
+    }
+
+    @Override
+    public float getArmorToughness() {
+        return handle.getItem() instanceof ItemArmor ? ((ItemArmor) handle.getItem()).f() : 0; // PAIL rename getToughness
     }
 
     @Override
