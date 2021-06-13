@@ -60,7 +60,7 @@
          IBlockData iblockdata;
  
          if (this.hasDelayedDestroy) {
-@@ -143,9 +171,31 @@
+@@ -143,10 +171,32 @@
  
              if (packetplayinblockdig_enumplayerdigtype == PacketPlayInBlockDig.EnumPlayerDigType.START_DESTROY_BLOCK) {
                  if (!this.level.a((EntityHuman) this.player, blockposition)) {
@@ -73,9 +73,9 @@
 +                        this.player.connection.sendPacket(tileentity.getUpdatePacket());
 +                    }
 +                    // CraftBukkit end
-+                    return;
-+                }
-+
+                     return;
+                 }
+ 
 +                // CraftBukkit start
 +                PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, blockposition, enumdirection, this.player.getInventory().getItemInHand(), EnumHand.MAIN_HAND);
 +                if (event.isCancelled()) {
@@ -86,12 +86,13 @@
 +                    if (tileentity != null) {
 +                        this.player.connection.sendPacket(tileentity.getUpdatePacket());
 +                    }
-                     return;
-                 }
++                    return;
++                }
 +                // CraftBukkit end
- 
++
                  if (this.isCreative()) {
                      this.a(blockposition, packetplayinblockdig_enumplayerdigtype, "creative destroy");
+                     return;
 @@ -161,11 +211,43 @@
                  float f = 1.0F;
  
@@ -173,7 +174,7 @@
 +                this.player.connection.sendPacket(packet);
 +            }
 +
-+            event = new BlockBreakEvent(bblock, this.player.getBukkitEntity());
++            event = new BlockBreakEvent(bblock, this.player.getBukkitEntity(), !this.isCreative());
 +
 +            // Sword + Creative mode pre-cancel
 +            event.setCancelled(isSwordNoBreak);
@@ -187,7 +188,8 @@
 +            if (nmsBlock != null && !event.isCancelled() && !this.isCreative() && this.player.hasBlock(nmsBlock.getBlockData())) {
 +                event.setExpToDrop(nmsBlock.getExpDrop(nmsData, this.level, blockposition, itemstack));
 +            }
-+
+ 
+-        if (!this.player.getItemInMainHand().getItem().a(iblockdata, (World) this.level, blockposition, (EntityHuman) this.player)) {
 +            this.level.getCraftServer().getPluginManager().callEvent(event);
 +
 +            if (event.isCancelled()) {
@@ -201,8 +203,7 @@
 +                for (EnumDirection dir : EnumDirection.values()) {
 +                    this.player.connection.sendPacket(new PacketPlayOutBlockChange(level, blockposition.shift(dir)));
 +                }
- 
--        if (!this.player.getItemInMainHand().getItem().a(iblockdata, (World) this.level, blockposition, (EntityHuman) this.player)) {
++
 +                // Update any tile entity data for this block
 +                TileEntity tileentity = this.level.getTileEntity(blockposition);
 +                if (tileentity != null) {
@@ -232,11 +233,13 @@
                  block.a((World) this.level, blockposition, iblockdata, (EntityHuman) this.player);
                  boolean flag = this.level.a(blockposition, false);
  
-@@ -253,19 +394,32 @@
+@@ -252,20 +393,33 @@
+                     block.postBreak(this.level, blockposition, iblockdata);
                  }
  
-                 if (this.isCreative()) {
+-                if (this.isCreative()) {
 -                    return true;
++                if (this.isCreative() && !event.isForceDropItems()) { // CraftBukkit - handle isForceDropItems
 +                    // return true; // CraftBukkit
                  } else {
                      ItemStack itemstack = this.player.getItemInMainHand();
@@ -245,7 +248,7 @@
  
                      itemstack.a(this.level, iblockdata, blockposition, this.player);
 -                    if (flag && flag1) {
-+                    if (flag && flag1 && event.isDropItems()) { // CraftBukkit - Check if block should drop items
++                    if (flag && ((flag1 && event.isDropItems()) || event.isForceDropItems())) { // CraftBukkit - Check if block should drop items or event forces dropping items
                          block.a(this.level, this.player, blockposition, iblockdata, tileentity, itemstack1);
                      }
  
@@ -253,7 +256,7 @@
 +                    // return true; // CraftBukkit
 +                }
 +                // CraftBukkit start
-+                if (event.isDropItems()) {
++                if (event.isDropItems() || event.isForceDropItems()) {
 +                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, level.captureDrops);
 +                }
 +                level.captureDrops = null;
