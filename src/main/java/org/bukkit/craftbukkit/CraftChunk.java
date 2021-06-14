@@ -109,6 +109,24 @@ public class CraftChunk implements Chunk {
             getWorld().getChunkAt(x, z); // Transient load for this tick
         }
 
+        // SPIGOT-6547 - Move and load entities to tracking
+        WorldServer world = ((CraftWorld) getWorld()).getHandle();
+        ChunkCoordIntPair coord = new ChunkCoordIntPair(getX(), getZ());
+        // First move every loaded entity to tracked (This are mostly new generated entities and from the old format)
+        // This also starts a task which loads the entities from the new format (which is on another Thread)
+        world.entityManager.a(coord, net.minecraft.world.level.entity.Visibility.TRACKED);
+
+        long pair = coord.pair();
+        // Now we wait until the entities are loaded,
+        // the converting from NBT to entity object is done on the main Thread
+        world.getMinecraftServer().awaitTasks(() -> {
+            // execute loading inbox, which loads the created entities to the world
+            // (if present)
+            world.entityManager.a();
+            // check if our entities are loaded
+            return world.entityManager.a(pair);
+        });
+
         Location location = new Location(null, 0, 0, 0);
         return getWorld().getEntities().stream().filter((entity) -> {
             entity.getLocation(location);
