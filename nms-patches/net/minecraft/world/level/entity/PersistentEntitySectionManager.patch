@@ -1,0 +1,85 @@
+--- a/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
++++ b/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
+@@ -55,6 +55,12 @@
+         this.entityGetter = new LevelEntityGetterAdapter<>(this.visibleEntityStorage, this.sectionStorage);
+     }
+ 
++    // CraftBukkit start - add methode to recive chunk visibility
++    public Visibility getChunkVisibility(ChunkCoordIntPair chunkCoordIntPair) {
++        return this.chunkVisibility.get(chunkCoordIntPair.pair());
++    }
++    // CraftBukkit end
++
+     void a(long i, EntitySection<T> entitysection) {
+         if (entitysection.a()) {
+             this.sectionStorage.e(i);
+@@ -82,7 +88,7 @@
+             long i = SectionPosition.c(t0.getChunkCoordinates());
+             EntitySection<T> entitysection = this.sectionStorage.c(i);
+ 
+-            entitysection.a((Object) t0);
++            entitysection.a(t0); // CraftBukkit - decompile error
+             t0.a(new PersistentEntitySectionManager.a(t0, i, entitysection));
+             if (!flag) {
+                 this.callbacks.f(t0);
+@@ -254,13 +260,13 @@
+     }
+ 
+     private void f() {
+-        this.chunksToUnload.removeIf((i) -> {
++        this.chunksToUnload.removeIf((java.util.function.LongPredicate) (i) -> { // CraftBukkit - decompile error
+             return this.chunkVisibility.get(i) != Visibility.HIDDEN ? true : this.d(i);
+         });
+     }
+ 
+     private void g() {
+-        ChunkEntities chunkentities;
++        ChunkEntities<T> chunkentities; // CraftBukkit - decompile error
+ 
+         while ((chunkentities = (ChunkEntities) this.loadingInbox.poll()) != null) {
+             chunkentities.b().forEach((entityaccess) -> {
+@@ -292,7 +298,7 @@
+     }
+ 
+     public void b() {
+-        this.h().forEach((i) -> {
++        this.h().forEach((java.util.function.LongConsumer) (i) -> { // CraftBukkit - decompile error
+             boolean flag = this.chunkVisibility.get(i) == Visibility.HIDDEN;
+ 
+             if (flag) {
+@@ -311,7 +317,7 @@
+         while (!longset.isEmpty()) {
+             this.permanentStorage.a();
+             this.g();
+-            longset.removeIf((i) -> {
++            longset.removeIf((java.util.function.LongPredicate) (i) -> { // CraftBukkit - decompile error
+                 boolean flag = this.chunkVisibility.get(i) == Visibility.HIDDEN;
+ 
+                 return flag ? this.d(i) : this.a(i, (entityaccess) -> {
+@@ -349,7 +355,7 @@
+     public void a(Writer writer) throws IOException {
+         CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("visibility").a("load_status").a("entity_count").a(writer);
+ 
+-        this.sectionStorage.a().forEach((i) -> {
++        this.sectionStorage.a().forEach((java.util.function.LongConsumer) (i) -> { // CraftBukkit - decompile error
+             PersistentEntitySectionManager.b persistententitysectionmanager_b = (PersistentEntitySectionManager.b) this.chunkLoadStatuses.get(i);
+ 
+             this.sectionStorage.a(i).forEach((j) -> {
+@@ -388,7 +394,7 @@
+         private EntitySection<T> currentSection;
+ 
+         a(EntityAccess entityaccess, long i, EntitySection entitysection) {
+-            this.entity = entityaccess;
++            this.entity = (T) entityaccess; // CraftBukkit - decompile error
+             this.currentSectionKey = i;
+             this.currentSection = entitysection;
+         }
+@@ -408,7 +414,7 @@
+                 PersistentEntitySectionManager.this.a(this.currentSectionKey, this.currentSection);
+                 EntitySection<T> entitysection = PersistentEntitySectionManager.this.sectionStorage.c(i);
+ 
+-                entitysection.a((Object) this.entity);
++                entitysection.a(this.entity); // CraftBukkit - decompile error
+                 this.currentSection = entitysection;
+                 this.currentSectionKey = i;
+                 this.a(visibility, entitysection.c());

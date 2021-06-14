@@ -23,6 +23,7 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.DataPaletteBlock;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.NibbleArray;
+import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.level.levelgen.HeightMap;
 import net.minecraft.world.level.levelgen.SeededRandom;
 import net.minecraft.world.level.lighting.LightEngine;
@@ -109,23 +110,37 @@ public class CraftChunk implements Chunk {
             getWorld().getChunkAt(x, z); // Transient load for this tick
         }
 
-        // SPIGOT-6547 - Move and load entities to tracking
+        // SPIGOT-6547 - load entities if needed
         WorldServer world = ((CraftWorld) getWorld()).getHandle();
         ChunkCoordIntPair coord = new ChunkCoordIntPair(getX(), getZ());
-        // First move every loaded entity to tracked (This are mostly new generated entities and from the old format)
-        // This also starts a task which loads the entities from the new format (which is on another Thread)
-        world.entityManager.a(coord, net.minecraft.world.level.entity.Visibility.TRACKED);
-
         long pair = coord.pair();
-        // Now we wait until the entities are loaded,
-        // the converting from NBT to entity object is done on the main Thread
-        world.getMinecraftServer().awaitTasks(() -> {
-            // execute loading inbox, which loads the created entities to the world
-            // (if present)
-            world.entityManager.a();
-            // check if our entities are loaded
-            return world.entityManager.a(pair);
-        });
+        Visibility visibility = world.entityManager.getChunkVisibility(coord);
+
+        // When visibility is hidden or chunk status is not loaded, call methode
+        if (visibility == Visibility.HIDDEN || !world.entityManager.a(pair)) {
+            // Move every loaded entity to tracked if hidden (This are mostly new generated entities and from the old format)
+            // If it is not hidden but not loaded call with same visibility to start loading entities from the new format (This happens on a different thread)
+            world.entityManager.a(coord, visibility == Visibility.HIDDEN ? Visibility.TRACKED : visibility);
+        }
+
+        // only run if our entities are not present yet
+        if (!world.entityManager.a(pair)) {
+            // Now we wait until the entities are loaded,
+            // the converting from NBT to entity object is done on the main Thread which is way we wait
+            world.getMinecraftServer().awaitTasks(() -> {
+                boolean status = world.entityManager.a(pair);
+                // only execute inbox if our entities are not present
+                if (status) {
+                    return true;
+                }
+
+                // execute loading inbox, which loads the created entities to the world
+                // (if present)
+                world.entityManager.a();
+                // check if our entities are loaded
+                return world.entityManager.a(pair);
+            });
+        }
 
         Location location = new Location(null, 0, 0, 0);
         return getWorld().getEntities().stream().filter((entity) -> {
