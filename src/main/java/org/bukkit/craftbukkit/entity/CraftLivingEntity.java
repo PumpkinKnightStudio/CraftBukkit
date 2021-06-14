@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import jline.internal.Nullable;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -43,10 +45,12 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
@@ -694,4 +698,40 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         getHandle().persistentInvisibility = invisible;
         getHandle().setFlag(5, invisible);
     }
+
+    @Override
+    public Sound getHurtSound() {
+        return CraftSound.getBukkit(getHandle().getHurtSound());
+    }
+
+    @Override
+    public Sound getDeathSound() {
+        return CraftSound.getBukkit(getHandle().getDeathSound());
+    }
+
+    @Override
+    public Sound getFallSound(int distance) {
+        return CraftSound.getBukkit(getHandle().getFallSound(distance));
+    }
+
+    @Override
+    public Sound getDrinkSound(ItemStack itemStack) {
+        return CraftSound.getBukkit(getHandle().getDrinkSound(CraftItemStack.asNMSCopy(itemStack)));
+    }
+
+    @Override
+    public Sound getEatSound(ItemStack itemStack) {
+        return CraftSound.getBukkit(getHandle().getEatSound(CraftItemStack.asNMSCopy(itemStack)));
+    }
+
+    @Override
+    public float getSoundVolume() {
+        return getHandle().getVolume();
+    }
+
+    @Override
+    public float getSoundPitch() {
+        return getHandle().ep();
+    }
+
 }

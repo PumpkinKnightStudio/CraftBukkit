@@ -541,7 +541,7 @@
 +            return i;
 +        } else {
 +            return 0;
-+        }
+         }
 +    }
 +    // CraftBukkit end
 +
@@ -550,12 +550,45 @@
 +        if (true) {
 +            EntityExperienceOrb.a((WorldServer) this.level, this.getPositionVector(), this.expToDrop);
 +            this.expToDrop = 0;
-         }
++        }
 +        // CraftBukkit end
  
      }
  
-@@ -1523,9 +1790,14 @@
+@@ -1468,6 +1735,32 @@
+         return itemstack.L();
+     }
+ 
++    // CraftBukkit Start - sound API
++    public SoundEffect getHurtSound() {
++        return getSoundHurt(DamageSource.GENERIC);
++    }
++
++    public SoundEffect getDeathSound() {
++        return getSoundDeath();
++    }
++
++    public SoundEffect getFallSound(int i) {
++        return getSoundFall(i);
++    }
++
++    public SoundEffect getDrinkSound(ItemStack itemStack) {
++        return d(itemStack); // PAIL rename getSoundDrink
++    }
++
++    public SoundEffect getEatSound(ItemStack itemStack) {
++        return e(itemStack); // PAIL rename getSoundDrink
++    }
++
++    public float getVolume() {
++        return getSoundVolume();
++    }
++    // CraftBukkit end
++
+     @Override
+     public void setOnGround(boolean flag) {
+         super.setOnGround(flag);
+@@ -1523,9 +1816,14 @@
          int i = this.d(f, f1);
  
          if (i > 0) {
@@ -571,7 +604,7 @@
              return true;
          } else {
              return flag;
-@@ -1574,7 +1846,7 @@
+@@ -1574,7 +1872,7 @@
  
      protected float applyArmorModifier(DamageSource damagesource, float f) {
          if (!damagesource.ignoresArmor()) {
@@ -580,7 +613,7 @@
              f = CombatMath.a(f, (float) this.getArmorStrength(), (float) this.b(GenericAttributes.ARMOR_TOUGHNESS));
          }
  
-@@ -1587,7 +1859,8 @@
+@@ -1587,7 +1885,8 @@
          } else {
              int i;
  
@@ -590,7 +623,7 @@
                  i = (this.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
                  int j = 25 - i;
                  float f1 = f * (float) j;
-@@ -1618,29 +1891,172 @@
+@@ -1618,29 +1917,172 @@
          }
      }
  
@@ -674,12 +707,9 @@
 +            if (event.isCancelled()) {
 +                return false;
 +            }
- 
--            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
--            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
--            float f2 = f1 - f;
++
 +            f = (float) event.getFinalDamage();
- 
++
 +            // Resistance
 +            if (event.getDamage(DamageModifier.RESISTANCE) < 0) {
 +                float f3 = (float) -event.getDamage(DamageModifier.RESISTANCE);
@@ -713,11 +743,14 @@
 +                    this.shieldBlock((EntityLiving) entity);
 +                }
 +            }
-+
+ 
+-            f = Math.max(f - this.getAbsorptionHearts(), 0.0F);
+-            this.setAbsorptionHearts(this.getAbsorptionHearts() - (f1 - f));
+-            float f2 = f1 - f;
 +            absorptionModifier = (float) -event.getDamage(DamageModifier.ABSORPTION);
 +            this.setAbsorptionHearts(Math.max(this.getAbsorptionHearts() - absorptionModifier, 0.0F));
 +            float f2 = absorptionModifier;
-+
+ 
 +            if (f2 > 0.0F && f2 < 3.4028235E37F && this instanceof EntityHuman) {
 +                ((EntityHuman) this).a(StatisticList.DAMAGE_ABSORBED, Math.round(f2 * 10.0F));
 +            }
@@ -773,27 +806,28 @@
      }
  
      public CombatTracker getCombatTracker() {
-@@ -1661,8 +2077,18 @@
+@@ -1661,9 +2103,19 @@
      }
  
      public final void setArrowCount(int i) {
 -        this.entityData.set(EntityLiving.DATA_ARROW_COUNT_ID, i);
 +        // CraftBukkit start
 +        setArrowCount(i, false);
-+    }
-+
+     }
+ 
 +    public final void setArrowCount(int i, boolean flag) {
 +        ArrowBodyCountChangeEvent event = CraftEventFactory.callArrowBodyCountChangeEvent(this, getArrowCount(), i, flag);
 +        if (event.isCancelled()) {
 +            return;
 +        }
 +        this.entityData.set(EntityLiving.DATA_ARROW_COUNT_ID, event.getNewAmount());
-     }
++    }
 +    // CraftBukkit end
- 
++
      public final int eh() {
          return (Integer) this.entityData.get(EntityLiving.DATA_STINGER_COUNT_ID);
-@@ -1958,6 +2384,12 @@
+     }
+@@ -1958,6 +2410,12 @@
  
      public abstract ItemStack getEquipment(EnumItemSlot enumitemslot);
  
@@ -806,7 +840,7 @@
      @Override
      public abstract void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack);
  
-@@ -2202,6 +2634,7 @@
+@@ -2202,6 +2660,7 @@
                  }
  
                  if (this.onGround && !this.level.isClientSide) {
@@ -814,7 +848,7 @@
                      this.setFlag(7, false);
                  }
              } else {
-@@ -2732,6 +3165,7 @@
+@@ -2732,6 +3191,7 @@
          }
  
          if (!this.level.isClientSide) {
@@ -822,7 +856,7 @@
              this.setFlag(7, flag);
          }
  
-@@ -2899,14 +3333,21 @@
+@@ -2899,13 +3359,20 @@
  
      @Override
      public boolean isInteractable() {
@@ -834,19 +868,18 @@
      public boolean isCollidable() {
 -        return this.isAlive() && !this.isSpectator() && !this.isClimbing();
 +        return this.isAlive() && !this.isSpectator() && !this.isClimbing() && this.collides; // CraftBukkit
-     }
- 
++    }
++
 +    // CraftBukkit start - collidable API
 +    @Override
 +    public boolean canCollideWithBukkit(Entity entity) {
 +        return isCollidable() && this.collides != this.collidableExemptions.contains(entity.getUniqueID());
-+    }
+     }
 +    // CraftBukkit end
-+
+ 
      @Override
      protected void velocityChanged() {
-         this.hurtMarked = this.random.nextDouble() >= this.b(GenericAttributes.KNOCKBACK_RESISTANCE);
-@@ -3104,7 +3545,25 @@
+@@ -3104,7 +3571,25 @@
          } else {
              if (!this.useItem.isEmpty() && this.isHandRaised()) {
                  this.b(this.useItem, 16);
@@ -873,7 +906,7 @@
  
                  if (itemstack != this.useItem) {
                      this.a(enumhand, itemstack);
-@@ -3176,6 +3635,12 @@
+@@ -3176,6 +3661,12 @@
      }
  
      public boolean a(double d0, double d1, double d2, boolean flag) {
@@ -886,7 +919,7 @@
          double d3 = this.locX();
          double d4 = this.locY();
          double d5 = this.locZ();
-@@ -3200,16 +3665,41 @@
+@@ -3200,16 +3691,41 @@
              }
  
              if (flag2) {
@@ -931,7 +964,7 @@
          } else {
              if (flag) {
                  world.broadcastEntityEffect(this, (byte) 46);
-@@ -3219,7 +3709,7 @@
+@@ -3219,7 +3735,7 @@
                  ((EntityCreature) this).getNavigation().o();
              }
  
@@ -940,7 +973,7 @@
          }
      }
  
-@@ -3302,7 +3792,7 @@
+@@ -3302,7 +3818,7 @@
      }
  
      public void entityWakeup() {
@@ -949,7 +982,7 @@
          World world = this.level;
  
          java.util.Objects.requireNonNull(this.level);
-@@ -3334,7 +3824,7 @@
+@@ -3334,7 +3850,7 @@
  
      @Nullable
      public EnumDirection eW() {
@@ -958,7 +991,7 @@
  
          return blockposition != null ? BlockBed.a((IBlockAccess) this.level, blockposition) : null;
      }
-@@ -3383,7 +3873,7 @@
+@@ -3383,7 +3899,7 @@
                  Pair<MobEffect, Float> pair = (Pair) iterator.next();
  
                  if (!world.isClientSide && pair.getFirst() != null && world.random.nextFloat() < (Float) pair.getSecond()) {

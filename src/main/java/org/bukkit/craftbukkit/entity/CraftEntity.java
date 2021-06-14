@@ -153,10 +153,12 @@ import net.minecraft.world.phys.AxisAlignedBB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
@@ -1050,5 +1052,20 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             });
         }
         return perm;
+    }
+
+    @Override
+    public Sound getSwimSound() {
+        return CraftSound.getBukkit(getHandle().getSwimSound());
+    }
+
+    @Override
+    public Sound getSplashSound() {
+        return CraftSound.getBukkit(getHandle().getSplashSound());
+    }
+
+    @Override
+    public Sound getSplashHighSpeedSound() {
+        return CraftSound.getBukkit(getHandle().getSplashHighSpeedSound());
     }
 }
