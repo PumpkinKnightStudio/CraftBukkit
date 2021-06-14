@@ -40,34 +40,42 @@ public class CraftBlockInfo implements BlockInfo {
         this.jumpFactor = nmsInfo.jumpFactor;
     }
 
+    @Override
     public boolean isHasCollision() {
         return hasCollision;
     }
 
+    @Override
     public SoundGroup getSoundGroup() {
         return soundGroup;
     }
 
+    @Override
     public float getExplosionResistance() {
         return explosionResistance;
     }
 
+    @Override
     public float getDestroyTime() {
         return destroyTime;
     }
 
+    @Override
     public float getFriction() {
         return friction;
     }
 
+    @Override
     public float getSpeedFactor() {
         return speedFactor;
     }
 
+    @Override
     public float getJumpFactor() {
         return jumpFactor;
     }
 
+    @Override
     public boolean isRandomlyTicking() {
         return isRandomlyTicking;
     }
