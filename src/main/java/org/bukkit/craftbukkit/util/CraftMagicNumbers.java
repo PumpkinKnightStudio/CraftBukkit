@@ -44,7 +44,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
+import org.bukkit.block.BlockInfo;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBlockInfo;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
@@ -206,6 +208,13 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return Material.matchMaterial(converted.asString(""));
+    }
+
+    @Override
+    public BlockInfo getBlockInfo(Material material) {
+        Preconditions.checkNotNull(material);
+        Preconditions.checkArgument(material.isBlock(), "Material must be a block!");
+        return CraftBlockInfo.getBlockInfo(getBlock(material));
     }
 
     /**

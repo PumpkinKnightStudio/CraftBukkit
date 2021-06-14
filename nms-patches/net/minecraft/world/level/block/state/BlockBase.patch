@@ -5,3 +5,24 @@
  package net.minecraft.world.level.block.state;
  
  import com.google.common.collect.ImmutableMap;
+@@ -69,13 +70,13 @@
+ 
+     protected static final EnumDirection[] UPDATE_SHAPE_ORDER = new EnumDirection[]{EnumDirection.WEST, EnumDirection.EAST, EnumDirection.NORTH, EnumDirection.SOUTH, EnumDirection.DOWN, EnumDirection.UP};
+     protected final Material material;
+-    protected final boolean hasCollision;
+-    protected final float explosionResistance;
+-    protected final boolean isRandomlyTicking;
+-    protected final SoundEffectType soundType;
+-    protected final float friction;
+-    protected final float speedFactor;
+-    protected final float jumpFactor;
++    public final boolean hasCollision; // PAIL private -> public
++    public final float explosionResistance; // PAIL private -> public
++    public final boolean isRandomlyTicking; // PAIL private -> public
++    public final SoundEffectType soundType; // PAIL private -> public
++    public final float friction; // PAIL private -> public
++    public final float speedFactor; // PAIL private -> public
++    public final float jumpFactor; // PAIL private -> public
+     protected final boolean dynamicShape;
+     protected final BlockBase.Info properties;
+     @Nullable
