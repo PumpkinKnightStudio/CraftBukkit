@@ -39,7 +39,7 @@ public class CraftItemNutrition implements ItemNutrition {
         this.canAlwaysEat = foodInfo.d(); // PAIL rename canAlwaysEat
         this.fastFood = foodInfo.e(); // PAIL rename isFastFood
         List<Map.Entry<PotionEffect, Float>> effects = new ArrayList<>();
-        for (Pair<MobEffect, Float> pair : foodInfo.f()) {
+        for (Pair<MobEffect, Float> pair : foodInfo.f()) { // PAIL rename getEffects
             effects.add(new AbstractMap.SimpleImmutableEntry<>(CraftPotionUtil.toBukkit(pair.getFirst()), pair.getSecond()));
         }
 
