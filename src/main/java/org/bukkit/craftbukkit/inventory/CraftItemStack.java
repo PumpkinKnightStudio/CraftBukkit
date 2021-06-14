@@ -306,21 +306,6 @@ public final class CraftItemStack extends ItemStack {
     }
 
     @Override
-    public ItemNutrition getNutrition() {
-        return CraftItemNutrition.getNutrition(handle.getItem());
-    }
-
-    @Override
-    public int getArmorDefense() {
-        return handle.getItem() instanceof ItemArmor ? ((ItemArmor) handle.getItem()).e() : 0; // PAIL rename getDefense
-    }
-
-    @Override
-    public float getArmorToughness() {
-        return handle.getItem() instanceof ItemArmor ? ((ItemArmor) handle.getItem()).f() : 0; // PAIL rename getToughness
-    }
-
-    @Override
     public CraftItemStack clone() {
         CraftItemStack itemStack = (CraftItemStack) super.clone();
         if (this.handle != null) {

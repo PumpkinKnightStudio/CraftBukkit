@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class CraftItemNutrition implements ItemNutrition {
+public class CraftItemNutrition implements ItemNutrition {
     private final static HashMap<Item, ItemNutrition> nutritions = new HashMap<>();
     private final int nutrition;
     private final float saturationModifier;
@@ -24,7 +24,7 @@ class CraftItemNutrition implements ItemNutrition {
     private final boolean fastFood;
     private final List<Map.Entry<PotionEffect, Float>> effects;
 
-    static ItemNutrition getNutrition(Item item) {
+    public static ItemNutrition getNutrition(Item item) {
         if (!nutritions.containsKey(item) && item.getFoodInfo() != null) {
             nutritions.put(item, new CraftItemNutrition(item.getFoodInfo()));
         }
@@ -40,7 +40,7 @@ class CraftItemNutrition implements ItemNutrition {
         this.fastFood = foodInfo.e(); // PAIL rename isFastFood
         List<Map.Entry<PotionEffect, Float>> effects = new ArrayList<>();
         for (Pair<MobEffect, Float> pair : foodInfo.f()) {
-            effects.add(new AbstractMap.SimpleEntry<>(CraftPotionUtil.toBukkit(pair.getFirst()), pair.getSecond()));
+            effects.add(new AbstractMap.SimpleImmutableEntry<>(CraftPotionUtil.toBukkit(pair.getFirst()), pair.getSecond()));
         }
 
         this.effects = ImmutableList.copyOf(effects);

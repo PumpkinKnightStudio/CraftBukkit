@@ -33,6 +33,7 @@ import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.datafix.fixes.DataConverterTypes;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemArmor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.material.FluidType;
@@ -46,8 +47,10 @@ import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.inventory.CraftItemNutrition;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.inventory.ItemNutrition;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
@@ -206,6 +209,26 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return Material.matchMaterial(converted.asString(""));
+    }
+
+    @Override
+    public ItemNutrition getNutrition(Material material) {
+        Preconditions.checkNotNull(material);
+        return CraftItemNutrition.getNutrition(getItem(material));
+    }
+
+    @Override
+    public int getArmorDefense(Material material) {
+        Preconditions.checkNotNull(material);
+        net.minecraft.world.item.Item handle = getItem(material);
+        return handle instanceof ItemArmor ? ((ItemArmor) handle).e() : 0; // PAIL rename getDefense
+    }
+
+    @Override
+    public float getArmorToughness(Material material) {
+        Preconditions.checkNotNull(material);
+        net.minecraft.world.item.Item handle = getItem(material);
+        return handle instanceof ItemArmor ? ((ItemArmor) handle).f() : 0; // PAIL rename getToughness
     }
 
     /**
