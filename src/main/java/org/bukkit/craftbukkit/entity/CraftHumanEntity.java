@@ -645,6 +645,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         getHandle().getFoodData().starvationRate = i;
     }
 
+    @Override
     public void damageArmor(boolean fire, float amount, EquipmentSlot... toDamage) {
         Preconditions.checkArgument(amount > 0f, "Amount must be greater than 0!");
         Preconditions.checkArgument(Arrays.stream(toDamage).noneMatch(equipmentSlot -> equipmentSlot == EquipmentSlot.HAND || equipmentSlot == EquipmentSlot.OFF_HAND), "Cannot damage non-armor equipment slots!");
