@@ -16,13 +16,13 @@
 -    protected final float friction;
 -    protected final float speedFactor;
 -    protected final float jumpFactor;
-+    public final boolean hasCollision; // PAIL private -> public
-+    public final float explosionResistance; // PAIL private -> public
-+    public final boolean isRandomlyTicking; // PAIL private -> public
-+    public final SoundEffectType soundType; // PAIL private -> public
-+    public final float friction; // PAIL private -> public
-+    public final float speedFactor; // PAIL private -> public
-+    public final float jumpFactor; // PAIL private -> public
++    public final boolean hasCollision; // PAIL protected -> public
++    public final float explosionResistance; // PAIL protected -> public
++    public final boolean isRandomlyTicking; // PAIL protected -> public
++    public final SoundEffectType soundType; // PAIL protected -> public
++    public final float friction; // PAIL protected -> public
++    public final float speedFactor; // PAIL protected -> public
++    public final float jumpFactor; // PAIL protected -> public
      protected final boolean dynamicShape;
      protected final BlockBase.Info properties;
      @Nullable
