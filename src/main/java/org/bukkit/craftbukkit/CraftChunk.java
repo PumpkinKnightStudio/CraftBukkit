@@ -5,6 +5,8 @@ import com.google.common.base.Predicates;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
@@ -23,13 +25,11 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.DataPaletteBlock;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.NibbleArray;
-import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.level.levelgen.HeightMap;
 import net.minecraft.world.level.levelgen.SeededRandom;
 import net.minecraft.world.level.lighting.LightEngine;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -55,6 +55,13 @@ public class CraftChunk implements Chunk {
         worldServer = (WorldServer) getHandle().level;
         x = getHandle().getPos().x;
         z = getHandle().getPos().z;
+    }
+
+    public CraftChunk(WorldServer worldServer, int x, int z) {
+        this.weakChunk = new WeakReference<>(null);
+        this.worldServer = worldServer;
+        this.x = x;
+        this.z = z;
     }
 
     @Override
@@ -106,47 +113,47 @@ public class CraftChunk implements Chunk {
 
     @Override
     public Entity[] getEntities() {
-        if (!isLoaded()) {
-            getWorld().getChunkAt(x, z); // Transient load for this tick
-        }
+        return getEntities(true);
+    }
 
-        // SPIGOT-6547 - load entities if needed
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        ChunkCoordIntPair coord = new ChunkCoordIntPair(getX(), getZ());
-        long pair = coord.pair();
-        Visibility visibility = world.entityManager.getChunkVisibility(coord);
+    @Override
+    public Entity[] getEntities(boolean generate) {
+        return getWorld().getEntities(getX(), getZ(), generate);
+    }
 
-        // When visibility is hidden or chunk status is not loaded, call methode
-        if (visibility == Visibility.HIDDEN || !world.entityManager.a(pair)) {
-            // Move every loaded entity to tracked if hidden (This are mostly new generated entities and from the old format)
-            // If it is not hidden but not loaded call with same visibility to start loading entities from the new format (This happens on a different thread)
-            world.entityManager.a(coord, visibility == Visibility.HIDDEN ? Visibility.TRACKED : visibility);
-        }
+    @Override
+    public boolean isEntitiesLoaded() {
+        return getWorld().isEntitiesLoaded(getX(), getZ());
+    }
 
-        // only run if our entities are not present yet
-        if (!world.entityManager.a(pair)) {
-            // Now we wait until the entities are loaded,
-            // the converting from NBT to entity object is done on the main Thread which is way we wait
-            world.getMinecraftServer().awaitTasks(() -> {
-                boolean status = world.entityManager.a(pair);
-                // only execute inbox if our entities are not present
-                if (status) {
-                    return true;
-                }
+    @Override
+    public void loadEntities() {
+        loadEntities(true);
+    }
 
-                // execute loading inbox, which loads the created entities to the world
-                // (if present)
-                world.entityManager.a();
-                // check if our entities are loaded
-                return world.entityManager.a(pair);
-            });
-        }
+    @Override
+    public void loadEntities(boolean generate) {
+        getWorld().loadEntities(getX(), getZ(), generate);
+    }
 
-        Location location = new Location(null, 0, 0, 0);
-        return getWorld().getEntities().stream().filter((entity) -> {
-            entity.getLocation(location);
-            return location.getBlockX() >> 4 == this.x && location.getBlockZ() >> 4 == this.z;
-        }).toArray(Entity[]::new);
+    @Override
+    public boolean loadEntitiesAsync() {
+        return loadEntitiesAsync(true, null);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(boolean generate) {
+        return loadEntitiesAsync(generate, null);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(Consumer<List<Entity>> callback) {
+        return loadEntitiesAsync(true, callback);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(boolean generate, Consumer<List<Entity>> callback) {
+        return getWorld().loadEntitiesAsync(getX(), getZ(), generate, callback);
     }
 
     @Override

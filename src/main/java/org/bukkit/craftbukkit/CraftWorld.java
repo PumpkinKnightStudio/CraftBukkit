@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -86,6 +87,7 @@ import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
+import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.StructureGenerator;
 import net.minecraft.world.level.storage.SavedFile;
@@ -1078,6 +1080,114 @@ public class CraftWorld implements World {
         });
 
         return list;
+    }
+
+    @Override
+    public Entity[] getEntities(int x, int z) {
+        return getEntities(x, z, true);
+    }
+
+    @Override
+    public Entity[] getEntities(int x, int z, boolean generate) {
+        loadEntities(x, z, generate);
+
+        Location location = new Location(null, 0, 0, 0);
+        return getEntities().stream().filter((entity) -> {
+            entity.getLocation(location);
+            return location.getBlockX() >> 4 == x && location.getBlockZ() >> 4 == z;
+        }).toArray(Entity[]::new);
+    }
+
+    @Override
+    public boolean isEntitiesLoaded(int x, int z) {
+        return getHandle().entityManager.a(ChunkCoordIntPair.pair(x, z)); // PAIL rename isEntitiesLoaded
+    }
+
+    @Override
+    public void loadEntities(int x, int z) {
+        loadEntities(x, z, true);
+    }
+
+    @Override
+    public void loadEntities(int x, int z, boolean generate) {
+        if (generate && !isChunkLoaded(x, z)) {
+            getChunkAt(x, z);
+        }
+
+        if (isEntitiesLoaded(x, z)) {
+            return;
+        }
+
+        WorldServer world = getHandle();
+        ChunkCoordIntPair coord = new ChunkCoordIntPair(x, z);
+        long pair = coord.pair();
+        Visibility visibility = world.entityManager.getChunkVisibility(coord);
+
+        // When visibility is hidden or chunk status is not loaded, call methode
+        if (visibility == Visibility.HIDDEN || !world.entityManager.a(pair)) { // PAIL rename isEntitiesLoaded
+            // Move every loaded entity to tracked if hidden (This are mostly new generated entities and from the old format)
+            // If it is not hidden but not loaded call with same visibility to start loading entities from the new format (This happens on a different thread)
+            world.entityManager.a(coord, visibility == Visibility.HIDDEN ? Visibility.TRACKED : visibility); // PAIL rename setEntityVisibility
+        }
+
+        // only run if our entities are not present yet
+        if (!world.entityManager.a(pair)) { // PAIL rename isEntitiesLoaded
+            // Now we wait until the entities are loaded,
+            // the converting from NBT to entity object is done on the main Thread which is way we wait
+            world.getMinecraftServer().awaitTasks(() -> {
+                boolean status = world.entityManager.a(pair); // PAIL rename isEntitiesLoaded
+                // only execute inbox if our entities are not present
+                if (status) {
+                    return true;
+                }
+
+                // execute loading inbox, which loads the created entities to the world
+                // (if present)
+                world.entityManager.a(); // PAIL rename executeInbox
+                // check if our entities are loaded
+                return world.entityManager.a(pair); // PAIL rename isEntitiesLoaded
+            });
+        }
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(int x, int z) {
+        return loadEntitiesAsync(x, z, true, null);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(int x, int z, boolean generate) {
+        return loadEntitiesAsync(x, z, generate, null);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(int x, int z, java.util.function.Consumer<List<Entity>> callback) {
+        return loadEntitiesAsync(x, z, true, callback);
+    }
+
+    @Override
+    public boolean loadEntitiesAsync(int x, int z, boolean generate, java.util.function.Consumer<List<Entity>> callback) {
+        if (isEntitiesLoaded(x, z) && (!generate || isChunkLoaded(x, z))) {
+            if (callback != null) {
+                callback.accept(Arrays.asList(getEntities(x, z)));
+            }
+            return false;
+        }
+
+        if (generate) {
+            getChunkAt(x, z);
+        }
+
+        if (isEntitiesLoaded(x, z)) {
+            if (callback != null) {
+                callback.accept(Arrays.asList(getEntities(x, z)));
+            }
+            return false;
+        }
+
+        getHandle().entityManager.scheduleEntityLoading(x, z, callback);
+
+        return true;
     }
 
     @Override

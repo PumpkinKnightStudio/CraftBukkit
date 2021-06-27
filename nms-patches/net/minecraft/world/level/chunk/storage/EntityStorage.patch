@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/chunk/storage/EntityStorage.java
++++ b/net/minecraft/world/level/chunk/storage/EntityStorage.java
+@@ -31,7 +31,7 @@
+     private static final Logger LOGGER = LogManager.getLogger();
+     private static final String ENTITIES_TAG = "Entities";
+     private static final String POSITION_TAG = "Position";
+-    private final WorldServer level;
++    public final WorldServer level; // PAIL private -> public
+     private final IOWorker worker;
+     private final LongSet emptyChunks = new LongOpenHashSet();
+     private final Executor mainThreadExecutor;
