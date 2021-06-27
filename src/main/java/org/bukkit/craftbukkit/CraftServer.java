@@ -555,10 +555,6 @@ public final class CraftServer implements Server {
         return broadcast(message, BROADCAST_CHANNEL_USERS);
     }
 
-    public Player getPlayer(final EntityPlayer entity) {
-        return entity.getBukkitEntity();
-    }
-
     @Override
     @Deprecated
     public List<Player> matchPlayer(String partialName) {
@@ -613,7 +609,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean getGenerateStructures() {
-        return this.getProperties().worldGenSettings.shouldGenerateMapFeatures();
+        return this.getProperties().a(this.getServer().getCustomRegistry()).shouldGenerateMapFeatures();
     }
 
     @Override
@@ -824,7 +820,6 @@ public final class CraftServer implements Server {
 
         pluginManager.clearPlugins();
         commandMap.clearCommands();
-        resetRecipes();
         reloadData();
         overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
         ignoreVanillaPermissions = commandsConfiguration.getBoolean("ignore-vanilla-permissions");
@@ -1521,6 +1516,16 @@ public final class CraftServer implements Server {
     public void setWhitelist(boolean value) {
         playerList.setHasWhitelist(value);
         console.setHasWhitelist(value);
+    }
+
+    @Override
+    public boolean isWhitelistEnforced() {
+        return console.aN();
+    }
+
+    @Override
+    public void setWhitelistEnforced(boolean value) {
+        console.h(value);
     }
 
     @Override
