@@ -87,7 +87,6 @@ import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
-import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.StructureGenerator;
 import net.minecraft.world.level.storage.SavedFile;
@@ -1091,11 +1090,9 @@ public class CraftWorld implements World {
     public Entity[] getEntities(int x, int z, boolean generate) {
         loadEntities(x, z, generate);
 
-        Location location = new Location(null, 0, 0, 0);
-        return getEntities().stream().filter((entity) -> {
-            entity.getLocation(location);
-            return location.getBlockX() >> 4 == x && location.getBlockZ() >> 4 == z;
-        }).toArray(Entity[]::new);
+        return getHandle().entityManager.getEntities(new ChunkCoordIntPair(x, z)).stream().
+                map(net.minecraft.world.entity.Entity::getBukkitEntity).
+                filter(Objects::nonNull).toArray(Entity[]::new);
     }
 
     @Override
@@ -1118,24 +1115,14 @@ public class CraftWorld implements World {
             return;
         }
 
-        WorldServer world = getHandle();
-        ChunkCoordIntPair coord = new ChunkCoordIntPair(x, z);
-        long pair = coord.pair();
-        Visibility visibility = world.entityManager.getChunkVisibility(coord);
-
-        // When visibility is hidden or chunk status is not loaded, call methode
-        if (visibility == Visibility.HIDDEN || !world.entityManager.a(pair)) { // PAIL rename isEntitiesLoaded
-            // Move every loaded entity to tracked if hidden (This are mostly new generated entities and from the old format)
-            // If it is not hidden but not loaded call with same visibility to start loading entities from the new format (This happens on a different thread)
-            world.entityManager.a(coord, visibility == Visibility.HIDDEN ? Visibility.TRACKED : visibility); // PAIL rename setEntityVisibility
-        }
+        getHandle().entityManager.scheduleEntityLoading(x, z, null);
 
         // only run if our entities are not present yet
-        if (!world.entityManager.a(pair)) { // PAIL rename isEntitiesLoaded
+        if (!isEntitiesLoaded(x, z)) {
             // Now we wait until the entities are loaded,
             // the converting from NBT to entity object is done on the main Thread which is way we wait
-            world.getMinecraftServer().awaitTasks(() -> {
-                boolean status = world.entityManager.a(pair); // PAIL rename isEntitiesLoaded
+            getHandle().getMinecraftServer().awaitTasks(() -> {
+                boolean status = isEntitiesLoaded(x, z);
                 // only execute inbox if our entities are not present
                 if (status) {
                     return true;
@@ -1143,9 +1130,9 @@ public class CraftWorld implements World {
 
                 // execute loading inbox, which loads the created entities to the world
                 // (if present)
-                world.entityManager.a(); // PAIL rename executeInbox
+                getHandle().entityManager.a(); // PAIL rename executeInbox
                 // check if our entities are loaded
-                return world.entityManager.a(pair); // PAIL rename isEntitiesLoaded
+                return isEntitiesLoaded(x, z);
             });
         }
     }
