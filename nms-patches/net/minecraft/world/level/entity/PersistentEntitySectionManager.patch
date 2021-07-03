@@ -54,23 +54,71 @@
              t0.a(new PersistentEntitySectionManager.a(t0, i, entitysection));
              if (!flag) {
                  this.callbacks.f(t0);
-@@ -207,6 +231,7 @@
+@@ -145,15 +169,23 @@
+     public void a(ChunkCoordIntPair chunkcoordintpair, Visibility visibility) {
+         long i = chunkcoordintpair.pair();
+ 
++        // CraftBukkit start - check if the new and old visibility are the same and if so skip it
++        // This happens because we change the visibility manually a bit earlier for the ChunkLoadEvent
++        Visibility oldVisibility;
+         if (visibility == Visibility.HIDDEN) {
+-            this.chunkVisibility.remove(i);
++            oldVisibility = this.chunkVisibility.remove(i);
+             this.chunksToUnload.add(i);
+         } else {
+-            this.chunkVisibility.put(i, visibility);
++            oldVisibility = this.chunkVisibility.put(i, visibility);
+             this.chunksToUnload.remove(i);
+             this.b(i);
+         }
+ 
++        if (oldVisibility == visibility) {
++            return;
++        }
++        // CraftBukkit end
++
+         this.sectionStorage.b(i).forEach((entitysection) -> {
+             Visibility visibility1 = entitysection.a(visibility);
+             boolean flag = visibility1.b();
+@@ -196,6 +228,12 @@
+     }
+ 
+     private boolean a(long i, Consumer<T> consumer) {
++        // CraftBukkit start - add boolean for event call
++        return a(i, consumer, false);
++    }
++
++    private boolean a(long i, Consumer<T> consumer, boolean callEvent) {
++        // CraftBukkit end - add boolean for event call
+         PersistentEntitySectionManager.b persistententitysectionmanager_b = (PersistentEntitySectionManager.b) this.chunkLoadStatuses.get(i);
+ 
+         if (persistententitysectionmanager_b == PersistentEntitySectionManager.b.PENDING) {
+@@ -207,6 +245,7 @@
  
              if (list.isEmpty()) {
                  if (persistententitysectionmanager_b == PersistentEntitySectionManager.b.LOADED) {
-+                    CraftEventFactory.callEntitiesUnloadEvent(((EntityStorage) permanentStorage).level, new ChunkCoordIntPair(i), ImmutableList.of()); // CraftBukkit
++                    if (callEvent) CraftEventFactory.callEntitiesUnloadEvent(((EntityStorage) permanentStorage).level, new ChunkCoordIntPair(i), ImmutableList.of()); // CraftBukkit
                      this.permanentStorage.a(new ChunkEntities<>(new ChunkCoordIntPair(i), ImmutableList.of()));
                  }
  
-@@ -215,6 +240,7 @@
+@@ -215,6 +254,7 @@
                  this.c(i);
                  return false;
              } else {
-+                CraftEventFactory.callEntitiesUnloadEvent(((EntityStorage) permanentStorage).level, new ChunkCoordIntPair(i), list.stream().map(entity -> (Entity) entity).collect(Collectors.toList())); // CraftBukkit
++                if (callEvent) CraftEventFactory.callEntitiesUnloadEvent(((EntityStorage) permanentStorage).level, new ChunkCoordIntPair(i), list.stream().map(entity -> (Entity) entity).collect(Collectors.toList())); // CraftBukkit
                  this.permanentStorage.a(new ChunkEntities<>(new ChunkCoordIntPair(i), list));
                  list.forEach(consumer);
                  return true;
-@@ -254,19 +280,28 @@
+@@ -238,7 +278,7 @@
+     private boolean d(long i) {
+         boolean flag = this.a(i, (entityaccess) -> {
+             entityaccess.cD().forEach(this::g);
+-        });
++        }, true); // CraftBukkit - add boolean for event call
+ 
+         if (!flag) {
+             return false;
+@@ -254,19 +294,28 @@
      }
  
      private void f() {
@@ -101,7 +149,7 @@
          }
  
      }
-@@ -292,7 +327,7 @@
+@@ -292,7 +341,7 @@
      }
  
      public void b() {
@@ -110,7 +158,7 @@
              boolean flag = this.chunkVisibility.get(i) == Visibility.HIDDEN;
  
              if (flag) {
-@@ -311,7 +346,7 @@
+@@ -311,7 +360,7 @@
          while (!longset.isEmpty()) {
              this.permanentStorage.a();
              this.g();
@@ -119,7 +167,7 @@
                  boolean flag = this.chunkVisibility.get(i) == Visibility.HIDDEN;
  
                  return flag ? this.d(i) : this.a(i, (entityaccess) -> {
-@@ -349,7 +384,7 @@
+@@ -349,7 +398,7 @@
      public void a(Writer writer) throws IOException {
          CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("visibility").a("load_status").a("entity_count").a(writer);
  
@@ -128,7 +176,7 @@
              PersistentEntitySectionManager.b persistententitysectionmanager_b = (PersistentEntitySectionManager.b) this.chunkLoadStatuses.get(i);
  
              this.sectionStorage.a(i).forEach((j) -> {
-@@ -388,7 +423,7 @@
+@@ -388,7 +437,7 @@
          private EntitySection<T> currentSection;
  
          a(EntityAccess entityaccess, long i, EntitySection entitysection) {
@@ -137,7 +185,7 @@
              this.currentSectionKey = i;
              this.currentSection = entitysection;
          }
-@@ -408,7 +443,7 @@
+@@ -408,7 +457,7 @@
                  PersistentEntitySectionManager.this.a(this.currentSectionKey, this.currentSection);
                  EntitySection<T> entitysection = PersistentEntitySectionManager.this.sectionStorage.c(i);
  

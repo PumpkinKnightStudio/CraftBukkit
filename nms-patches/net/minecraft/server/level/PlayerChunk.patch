@@ -123,7 +123,7 @@
                  Objects.requireNonNull(playerchunkmap);
                  return either1.ifLeft(playerchunkmap::a);
              }), "unfull");
-@@ -432,6 +474,26 @@
+@@ -432,6 +474,31 @@
  
          this.onLevelChange.a(this.pos, this::k, this.ticketLevel, this::d);
          this.oldTicketLevel = this.ticketLevel;
@@ -134,6 +134,11 @@
 +                Chunk chunk = (Chunk)either.left().orElse(null);
 +                if (chunk != null) {
 +                    playerchunkmap.callbackExecutor.execute(() -> {
++                        // CraftBukkit start - Change entity visibility before the ChunkLoadEvent to ensure spawned entities are valid
++                        if (chunk.level.entityManager.getChunkVisibility(chunk.getPos()) == net.minecraft.world.level.entity.Visibility.HIDDEN) {
++                            chunk.level.entityManager.a(chunk.getPos(), net.minecraft.world.level.entity.Visibility.TRACKED); // PAIL rename setEntityVisibility
++                        }
++                        // CraftBukkit end
 +                        chunk.loadCallback();
 +                    });
 +                }
