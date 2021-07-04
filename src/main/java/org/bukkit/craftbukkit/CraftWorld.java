@@ -1932,6 +1932,7 @@ public class CraftWorld implements World {
             function.accept((T) entity.getBukkitEntity());
         }
 
+        loadEntitiesAsync(entity.cW(), entity.cY(), false);
         world.addEntity(entity, reason);
         return (T) entity.getBukkitEntity();
     }
