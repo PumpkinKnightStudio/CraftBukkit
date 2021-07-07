@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/chunk/storage/EntityStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/EntityStorage.java
-@@ -31,7 +31,7 @@
+@@ -33,7 +33,7 @@
      private static final Logger LOGGER = LogManager.getLogger();
      private static final String ENTITIES_TAG = "Entities";
      private static final String POSITION_TAG = "Position";
@@ -8,70 +8,69 @@
 +    public final WorldServer level; // PAIL private -> public
      private final IOWorker worker;
      private final LongSet emptyChunks = new LongOpenHashSet();
-     private final Executor mainThreadExecutor;
-@@ -46,6 +46,56 @@
- 
-     @Override
-     public CompletableFuture<ChunkEntities<Entity>> a(ChunkCoordIntPair chunkcoordintpair) {
-+        // CraftBukkit start - Add a chunk load to load legacy entities. Since entities are normally only loaded when a chunk is loaded, it will only have a negative impact if a plugin manually loads entities
-+        if (this.emptyChunks.contains(chunkcoordintpair.pair())) {
-+            return CompletableFuture.completedFuture(b(chunkcoordintpair));
-+        }
-+
-+        CompletableFuture<ChunkEntities<Entity>> future = new CompletableFuture<>();
-+        this.worker.b(chunkcoordintpair).thenApply(nbttagcompound -> {
-+            CompletableFuture<?> chunkFuture;
-+            if (nbttagcompound == null) {
-+                chunkFuture = level.getChunkProvider().b(chunkcoordintpair.x, chunkcoordintpair.z, net.minecraft.world.level.chunk.ChunkStatus.EMPTY, true).thenApplyAsync(either -> {
-+                    net.minecraft.world.level.chunk.IChunkAccess chunkAccess = either.left().get();
-+                    if (chunkAccess instanceof net.minecraft.world.level.chunk.Chunk) {
-+                        ((net.minecraft.world.level.chunk.Chunk) chunkAccess).addEntities();
-+                    } else if (chunkAccess instanceof net.minecraft.world.level.chunk.ProtoChunkExtension) {
-+                        ((net.minecraft.world.level.chunk.ProtoChunkExtension) chunkAccess).v().addEntities();
-+                    }
-+                    return null;
-+                }, this.mainThreadExecutor);
-+            } else {
-+                chunkFuture = CompletableFuture.completedFuture(null);
-+            }
-+
-+            chunkFuture.thenApplyAsync(o -> {
+     private final ThreadedMailbox<Runnable> entityDeserializerQueue;
+@@ -51,8 +51,53 @@
+         if (this.emptyChunks.contains(chunkcoordintpair.pair())) {
+             return CompletableFuture.completedFuture(b(chunkcoordintpair));
+         } else {
+-            CompletableFuture completablefuture = this.worker.b(chunkcoordintpair);
+-            Function function = (nbttagcompound) -> {
++            // CraftBukkit start - Add a chunk load to load legacy entities. Since entities are normally only loaded when a chunk is loaded, it will only have a negative impact if a plugin manually loads entities
++            CompletableFuture<ChunkEntities<Entity>> future = new CompletableFuture<>();
++            this.worker.b(chunkcoordintpair).thenApply(nbttagcompound -> {
++                CompletableFuture<?> chunkFuture;
 +                if (nbttagcompound == null) {
-+                    this.emptyChunks.add(chunkcoordintpair.pair());
-+                    return b(chunkcoordintpair);
-+                } else {
-+                    try {
-+                        ChunkCoordIntPair chunkcoordintpair1 = b(nbttagcompound);
-+
-+                        if (!Objects.equals(chunkcoordintpair, chunkcoordintpair1)) {
-+                            EntityStorage.LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", chunkcoordintpair, chunkcoordintpair, chunkcoordintpair1);
++                    chunkFuture = level.getChunkProvider().b(chunkcoordintpair.x, chunkcoordintpair.z, net.minecraft.world.level.chunk.ChunkStatus.EMPTY, true).thenApplyAsync(either -> {
++                        net.minecraft.world.level.chunk.IChunkAccess chunkAccess = either.left().get();
++                        if (chunkAccess instanceof net.minecraft.world.level.chunk.Chunk) {
++                            ((net.minecraft.world.level.chunk.Chunk) chunkAccess).addEntities();
++                        } else if (chunkAccess instanceof net.minecraft.world.level.chunk.ProtoChunkExtension) {
++                            ((net.minecraft.world.level.chunk.ProtoChunkExtension) chunkAccess).v().addEntities();
 +                        }
-+                    } catch (Exception exception) {
-+                        EntityStorage.LOGGER.warn("Failed to parse chunk {} position info", chunkcoordintpair, exception);
-+                    }
-+
-+                    NBTTagCompound nbttagcompound1 = this.c(nbttagcompound);
-+                    NBTTagList nbttaglist = nbttagcompound1.getList("Entities", 10);
-+                    List<Entity> list = (List) EntityTypes.a((List) nbttaglist, (World) this.level).collect(ImmutableList.toImmutableList());
-+
-+                    return new ChunkEntities<>(chunkcoordintpair, list);
++                        return null;
++                    }, level.getMinecraftServer());
++                } else {
++                    chunkFuture = CompletableFuture.completedFuture(null);
 +                }
-+            }, this.mainThreadExecutor).thenApply(future::complete);
++                chunkFuture.thenApplyAsync(o -> {
++                    if (nbttagcompound == null) {
++                        this.emptyChunks.add(chunkcoordintpair.pair());
++                        return b(chunkcoordintpair);
++                    } else {
++                        try {
++                            ChunkCoordIntPair chunkcoordintpair1 = b(nbttagcompound);
 +
-+            return null;
-+        });
++                            if (!Objects.equals(chunkcoordintpair, chunkcoordintpair1)) {
++                                EntityStorage.LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", chunkcoordintpair, chunkcoordintpair, chunkcoordintpair1);
++                            }
++                        } catch (Exception exception) {
++                            EntityStorage.LOGGER.warn("Failed to parse chunk {} position info", chunkcoordintpair, exception);
++                        }
 +
-+        return future;
-+        /*
-         return this.emptyChunks.contains(chunkcoordintpair.pair()) ? CompletableFuture.completedFuture(b(chunkcoordintpair)) : this.worker.b(chunkcoordintpair).thenApplyAsync((nbttagcompound) -> {
-             if (nbttagcompound == null) {
-                 this.emptyChunks.add(chunkcoordintpair.pair());
-@@ -68,6 +118,8 @@
-                 return new ChunkEntities<>(chunkcoordintpair, list);
-             }
-         }, this.mainThreadExecutor);
-+        */
-+        // CraftBukkit end
++                        NBTTagCompound nbttagcompound1 = this.c(nbttagcompound);
++                        NBTTagList nbttaglist = nbttagcompound1.getList("Entities", 10);
++                        List<Entity> list = (List) EntityTypes.a((List) nbttaglist, (World) this.level).collect(ImmutableList.toImmutableList());
++
++                        return new ChunkEntities<>(chunkcoordintpair, list);
++                    }
++                }, entityDeserializerQueue::a).thenApply(future::complete);
++
++                return null;
++            });
++
++            return future;
++            /*
++            CompletableFuture<NBTTagCompound> completablefuture = this.worker.b(chunkcoordintpair); // CraftBukkit - decompile error
++            Function<NBTTagCompound, ChunkEntities<Entity>> function = (nbttagcompound) -> { // CraftBukkit - decompile error
+                 if (nbttagcompound == null) {
+                     this.emptyChunks.add(chunkcoordintpair.pair());
+                     return b(chunkcoordintpair);
+@@ -78,6 +123,8 @@
+ 
+             Objects.requireNonNull(this.entityDeserializerQueue);
+             return completablefuture.thenApplyAsync(function, threadedmailbox::a);
++            */
++            // CraftBukkit end
+         }
      }
  
-     private static ChunkCoordIntPair b(NBTTagCompound nbttagcompound) {

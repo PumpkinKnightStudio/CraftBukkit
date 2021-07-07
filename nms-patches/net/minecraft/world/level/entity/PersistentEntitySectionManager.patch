@@ -160,14 +160,14 @@
              if (flag) {
 @@ -311,7 +360,7 @@
          while (!longset.isEmpty()) {
-             this.permanentStorage.a();
+             this.permanentStorage.a(false);
              this.g();
 -            longset.removeIf((i) -> {
 +            longset.removeIf((java.util.function.LongPredicate) (i) -> { // CraftBukkit - decompile error
                  boolean flag = this.chunkVisibility.get(i) == Visibility.HIDDEN;
  
                  return flag ? this.d(i) : this.a(i, (entityaccess) -> {
-@@ -349,7 +398,7 @@
+@@ -350,7 +399,7 @@
      public void a(Writer writer) throws IOException {
          CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("visibility").a("load_status").a("entity_count").a(writer);
  
@@ -176,7 +176,7 @@
              PersistentEntitySectionManager.b persistententitysectionmanager_b = (PersistentEntitySectionManager.b) this.chunkLoadStatuses.get(i);
  
              this.sectionStorage.a(i).forEach((j) -> {
-@@ -388,7 +437,7 @@
+@@ -389,7 +438,7 @@
          private EntitySection<T> currentSection;
  
          a(EntityAccess entityaccess, long i, EntitySection entitysection) {
@@ -185,7 +185,7 @@
              this.currentSectionKey = i;
              this.currentSection = entitysection;
          }
-@@ -408,7 +457,7 @@
+@@ -409,7 +458,7 @@
                  PersistentEntitySectionManager.this.a(this.currentSectionKey, this.currentSection);
                  EntitySection<T> entitysection = PersistentEntitySectionManager.this.sectionStorage.c(i);
  

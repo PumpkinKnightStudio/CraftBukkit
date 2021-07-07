@@ -1130,7 +1130,7 @@ public class CraftWorld implements World {
 
                 // execute loading inbox, which loads the created entities to the world
                 // (if present)
-                getHandle().entityManager.a(); // PAIL rename executeInbox
+                getHandle().entityManager.tick();
                 // check if our entities are loaded
                 return isEntitiesLoaded(x, z);
             });
