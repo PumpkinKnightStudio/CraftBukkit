@@ -525,6 +525,8 @@ public final class CraftItemStack extends ItemStack {
                 return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
             case TROPICAL_FISH_BUCKET:
                 return new CraftMetaTropicalFishBucket(item.getTag());
+            case AXOLOTL_BUCKET:
+                return new CraftMetaAxolotlBucket(item.getTag());
             case CROSSBOW:
                 return new CraftMetaCrossbow(item.getTag());
             case SUSPICIOUS_STEW:
@@ -533,6 +535,7 @@ public final class CraftItemStack extends ItemStack {
             case PUFFERFISH_BUCKET:
             case SALMON_BUCKET:
             case ITEM_FRAME:
+            case GLOW_ITEM_FRAME:
             case PAINTING:
                 return new CraftMetaEntityTag(item.getTag());
             case COMPASS:
