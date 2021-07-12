@@ -62,59 +62,73 @@
                          double d14 = d13;
  
                          if (entity instanceof EntityLiving) {
-@@ -260,6 +283,51 @@
+@@ -254,12 +277,65 @@
+                 this.level.addParticle(Particles.EXPLOSION, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
+             }
+         }
++        // CraftBukkit start - Make ExplodeEvent run ignoring the flag1
++        ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist = new ObjectArrayList();
++
++        Collections.shuffle(this.toBlow, this.level.random);
++        Iterator iterator = this.toBlow.iterator();
++        org.bukkit.World bworld = this.level.getWorld();
++        org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
++        Location location = new Location(bworld, this.x, this.y, this.z);
++
++        List<org.bukkit.block.Block> blockList = Lists.newArrayList();
++        for (int i1 = this.toBlow.size() - 1; i1 >= 0; i1--) {
++            BlockPosition cpos = (BlockPosition) this.toBlow.get(i1);
++            org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
++            if (!bblock.getType().isAir()) {
++                blockList.add(bblock);
++            }
++        }
++
++        boolean cancelled;
++        List<org.bukkit.block.Block> bukkitBlocks;
++        float yield;
++
++        if (explode != null) {
++            EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
++            this.level.getCraftServer().getPluginManager().callEvent(event);
++            cancelled = event.isCancelled();
++            bukkitBlocks = event.blockList();
++            yield = event.getYield();
++        } else {
++            BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
++            this.level.getCraftServer().getPluginManager().callEvent(event);
++            cancelled = event.isCancelled();
++            bukkitBlocks = event.blockList();
++            yield = event.getYield();
++        }
++
++        this.toBlow.clear();
++
++        if (cancelled) {
++            this.wasCanceled = true;
++            return;
++        }
++        // CraftBukkit end
++
+ 
+         if (flag1) {
++            /* CraftBukkit start - move this to above.
+             ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist = new ObjectArrayList();
  
              Collections.shuffle(this.toBlow, this.level.random);
              Iterator iterator = this.toBlow.iterator();
-+            // CraftBukkit start
-+            org.bukkit.World bworld = this.level.getWorld();
-+            org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
-+            Location location = new Location(bworld, this.x, this.y, this.z);
-+
-+            List<org.bukkit.block.Block> blockList = Lists.newArrayList();
-+            for (int i1 = this.toBlow.size() - 1; i1 >= 0; i1--) {
-+                BlockPosition cpos = (BlockPosition) this.toBlow.get(i1);
-+                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
-+                if (!bblock.getType().isAir()) {
-+                    blockList.add(bblock);
-+                }
-+            }
-+
-+            boolean cancelled;
-+            List<org.bukkit.block.Block> bukkitBlocks;
-+            float yield;
-+
-+            if (explode != null) {
-+                EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
-+                this.level.getCraftServer().getPluginManager().callEvent(event);
-+                cancelled = event.isCancelled();
-+                bukkitBlocks = event.blockList();
-+                yield = event.getYield();
-+            } else {
-+                BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
-+                this.level.getCraftServer().getPluginManager().callEvent(event);
-+                cancelled = event.isCancelled();
-+                bukkitBlocks = event.blockList();
-+                yield = event.getYield();
-+            }
-+
-+            this.toBlow.clear();
-+
++            // CraftBukkit end */
++            // CraftBukkit start - Only if flag1 is True then set the blocks to destroy
 +            for (org.bukkit.block.Block bblock : bukkitBlocks) {
 +                BlockPosition coords = new BlockPosition(bblock.getX(), bblock.getY(), bblock.getZ());
 +                toBlow.add(coords);
-+            }
-+
-+            if (cancelled) {
-+                this.wasCanceled = true;
-+                return;
 +            }
 +            // CraftBukkit end
 +            iterator = this.toBlow.iterator();
  
              while (iterator.hasNext()) {
                  BlockPosition blockposition = (BlockPosition) iterator.next();
-@@ -274,8 +342,8 @@
+@@ -274,8 +350,8 @@
                          TileEntity tileentity = iblockdata.isTileEntity() ? this.level.getTileEntity(blockposition) : null;
                          LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.level)).a(this.level.random).set(LootContextParameters.ORIGIN, Vec3D.a((BaseBlockPosition) blockposition)).set(LootContextParameters.TOOL, ItemStack.EMPTY).setOptional(LootContextParameters.BLOCK_ENTITY, tileentity).setOptional(LootContextParameters.THIS_ENTITY, this.source);
  
@@ -125,7 +139,7 @@
                          }
  
                          iblockdata.a(loottableinfo_builder).forEach((itemstack) -> {
-@@ -305,7 +373,11 @@
+@@ -305,7 +381,11 @@
                  BlockPosition blockposition2 = (BlockPosition) iterator1.next();
  
                  if (this.random.nextInt(3) == 0 && this.level.getType(blockposition2).isAir() && this.level.getType(blockposition2.down()).i(this.level, blockposition2.down())) {
@@ -138,7 +152,7 @@
                  }
              }
          }
-@@ -313,6 +385,7 @@
+@@ -313,6 +393,7 @@
      }
  
      private static void a(ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist, ItemStack itemstack, BlockPosition blockposition) {
