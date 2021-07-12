@@ -1,29 +1,9 @@
 --- a/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
 +++ b/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
-@@ -46,6 +46,11 @@
- import net.minecraft.world.level.block.Blocks;
- import net.minecraft.world.level.block.state.IBlockData;
+@@ -195,8 +195,19 @@
+         double d3 = Math.sqrt(d0 * d0 + d2 * d2);
  
-+// CraftBukkit start
-+import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.entity.EntityArmorChangeEvent;
-+// CraftBukkit end
-+
- public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
- 
-     private final PathfinderGoalBowShoot<EntitySkeletonAbstract> b = new PathfinderGoalBowShoot<>(this, 1.0D, 20, 15.0F);
-@@ -109,6 +114,7 @@
-                 if (itemstack.e()) {
-                     itemstack.setDamage(itemstack.getDamage() + this.random.nextInt(2));
-                     if (itemstack.getDamage() >= itemstack.h()) {
-+                        CraftEventFactory.callEntityEquipArmorEvent(this, itemstack, ItemStack.b, EntityArmorChangeEvent.ChangeReason.BREAK, EnumItemSlot.HEAD); // CraftBukkit
-                         this.broadcastItemBreak(EnumItemSlot.HEAD);
-                         this.setSlot(EnumItemSlot.HEAD, ItemStack.b);
-                     }
-@@ -196,8 +202,19 @@
-         double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
- 
-         entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
+         entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.level.getDifficulty().a() * 4));
 +        // CraftBukkit start
 +        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), null, entityarrow, net.minecraft.world.EnumHand.MAIN_HAND, 0.8F, true);
 +        if (event.isCancelled()) {
@@ -32,11 +12,11 @@
 +        }
 +
 +        if (event.getProjectile() == entityarrow.getBukkitEntity()) {
-+            world.addEntity(entityarrow);
++            level.addEntity(entityarrow);
 +        }
 +        // CraftBukkit end
-         this.playSound(SoundEffects.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
--        this.world.addEntity(entityarrow);
+         this.playSound(SoundEffects.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+-        this.level.addEntity(entityarrow);
 +        // this.world.addEntity(entityarrow); // CraftBukkit - moved up
      }
  

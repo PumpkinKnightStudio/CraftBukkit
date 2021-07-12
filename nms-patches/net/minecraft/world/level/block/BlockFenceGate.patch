@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockFenceGate.java
 +++ b/net/minecraft/world/level/block/BlockFenceGate.java
-@@ -125,6 +125,17 @@
+@@ -130,6 +130,17 @@
      public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
          if (!world.isClientSide) {
              boolean flag1 = world.isBlockIndirectlyPowered(blockposition);
@@ -11,7 +11,7 @@
 +                int oldPower = oldPowered ? 15 : 0;
 +                org.bukkit.block.Block bukkitBlock = org.bukkit.craftbukkit.block.CraftBlock.at(world, blockposition);
 +                org.bukkit.event.block.BlockRedstoneEvent eventRedstone = new org.bukkit.event.block.BlockRedstoneEvent(bukkitBlock, oldPower, newPower);
-+                world.getServer().getPluginManager().callEvent(eventRedstone);
++                world.getCraftServer().getPluginManager().callEvent(eventRedstone);
 +                flag1 = eventRedstone.getNewCurrent() > 0;
 +            }
 +            // CraftBukkit end

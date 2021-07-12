@@ -3,8 +3,11 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import java.util.UUID;
 import net.minecraft.world.entity.animal.EntityAnimal;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Animals;
+import org.bukkit.inventory.ItemStack;
 
 public class CraftAnimals extends CraftAgeable implements Animals {
 
@@ -24,12 +27,12 @@ public class CraftAnimals extends CraftAgeable implements Animals {
 
     @Override
     public UUID getBreedCause() {
-        return getHandle().breedCause;
+        return getHandle().loveCause;
     }
 
     @Override
     public void setBreedCause(UUID uuid) {
-        getHandle().breedCause = uuid;
+        getHandle().loveCause = uuid;
     }
 
     @Override
@@ -45,6 +48,16 @@ public class CraftAnimals extends CraftAgeable implements Animals {
 
     @Override
     public int getLoveModeTicks() {
-        return getHandle().loveTicks;
+        return getHandle().inLove;
+    }
+
+    @Override
+    public boolean isBreedItem(ItemStack itemStack) {
+        return getHandle().isBreedItem(CraftItemStack.asNMSCopy(itemStack));
+    }
+
+    @Override
+    public boolean isBreedItem(Material material) {
+        return isBreedItem(new ItemStack(material));
     }
 }

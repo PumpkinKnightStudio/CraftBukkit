@@ -45,11 +45,14 @@ import org.bukkit.craftbukkit.CraftFluidCollisionMode;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
+import org.bukkit.craftbukkit.util.CraftVoxelShape;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -472,6 +475,8 @@ public class CraftBlock implements Block {
             case BEEHIVE:
             case BEE_NEST:
                 return new CraftBeehive(this);
+            case SCULK_SENSOR:
+                return new CraftSculkSensor(this);
             default:
                 TileEntity tileEntity = world.getTileEntity(position);
                 if (tileEntity != null) {
@@ -583,7 +588,7 @@ public class CraftBlock implements Block {
     }
 
     private static int getPower(int i, IBlockData iblockdata) {
-        if (!iblockdata.getBlock().a(Blocks.REDSTONE_WIRE)) {
+        if (!iblockdata.a(Blocks.REDSTONE_WIRE)) {
             return i;
         } else {
             int j = iblockdata.get(BlockRedstoneWire.POWER);
@@ -637,7 +642,7 @@ public class CraftBlock implements Block {
     @Override
     public boolean applyBoneMeal(BlockFace face) {
         EnumDirection direction = blockFaceToNotch(face);
-        ItemActionContext context = new ItemActionContext(getCraftWorld().getHandle(), null, EnumHand.MAIN_HAND, Items.BONE_MEAL.createItemStack(), new MovingObjectPositionBlock(Vec3D.ORIGIN, direction, getPosition(), false));
+        ItemActionContext context = new ItemActionContext(getCraftWorld().getHandle(), null, EnumHand.MAIN_HAND, Items.BONE_MEAL.createItemStack(), new MovingObjectPositionBlock(Vec3D.ZERO, direction, getPosition(), false));
 
         return ItemBoneMeal.applyBonemeal(context) == EnumInteractionResult.SUCCESS;
     }
@@ -671,6 +676,12 @@ public class CraftBlock implements Block {
         IBlockData iblockdata = getNMS();
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
         return isPreferredTool(iblockdata, nms);
+    }
+
+    @Override
+    public float getBreakSpeed(Player player) {
+        Preconditions.checkArgument(player != null, "player cannot be null");
+        return getNMS().getDamage(((CraftPlayer) player).getHandle(), world, position);
     }
 
     private boolean isPreferredTool(IBlockData iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
@@ -735,5 +746,11 @@ public class CraftBlock implements Block {
 
         AxisAlignedBB aabb = shape.getBoundingBox();
         return new BoundingBox(getX() + aabb.minX, getY() + aabb.minY, getZ() + aabb.minZ, getX() + aabb.maxX, getY() + aabb.maxY, getZ() + aabb.maxZ);
+    }
+
+    @Override
+    public org.bukkit.util.VoxelShape getCollisionShape() {
+        VoxelShape shape = getNMS().getCollisionShape(world, position);
+        return new CraftVoxelShape(shape);
     }
 }

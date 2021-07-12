@@ -33,7 +33,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     public void load(TileEntitySkull skull) {
         super.load(skull);
 
-        profile = skull.gameProfile;
+        profile = skull.owner;
     }
 
     static int getSkullType(SkullType type) {
@@ -70,7 +70,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             return false;
         }
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name).orElse(null);
         if (profile == null) {
             return false;
         }

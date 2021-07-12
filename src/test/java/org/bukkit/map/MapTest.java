@@ -15,7 +15,7 @@ public class MapTest {
 
     @Test
     public void testColors() {
-        MaterialMapColor[] nmsColors = MaterialMapColor.a;
+        MaterialMapColor[] nmsColors = MaterialMapColor.MATERIAL_COLORS;
         Color[] bukkitColors = MapPalette.colors;
 
         boolean fail = false;
@@ -23,7 +23,7 @@ public class MapTest {
             if (nmsColors[i] == null) {
                 break;
             }
-            int rgb = nmsColors[i].rgb;
+            int rgb = nmsColors[i].col;
 
             int r = (rgb >> 16) & 0xFF;
             int g = (rgb >> 8) & 0xFF;
@@ -34,7 +34,7 @@ public class MapTest {
                     int mr = (r * modi) / 255;
                     int mg = (g * modi) / 255;
                     int mb = (b * modi) / 255;
-                    logger.log(Level.WARNING, "Missing color: c({0}, {1}, {2})", new Object[]{mr, mg, mb});
+                    logger.log(Level.WARNING, "Missing color (check CraftMapView#render): c({0}, {1}, {2})", new Object[]{mr, mg, mb});
                 }
                 fail = true;
             } else {
