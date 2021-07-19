@@ -1107,6 +1107,8 @@ public class CraftWorld implements World {
 
     @Override
     public void loadEntities(int x, int z, boolean generate) {
+        Preconditions.checkState(server.isPrimaryThread(), "Cannot schedule entity loading from a different Thread");
+
         if (generate && !isChunkLoaded(x, z)) {
             getChunkAt(x, z);
         }
@@ -1154,6 +1156,8 @@ public class CraftWorld implements World {
 
     @Override
     public boolean loadEntitiesAsync(int x, int z, boolean generate, java.util.function.Consumer<List<Entity>> callback) {
+        Preconditions.checkState(server.isPrimaryThread(), "Cannot schedule entity loading from a different Thread");
+
         if (isEntitiesLoaded(x, z) && (!generate || isChunkLoaded(x, z))) {
             if (callback != null) {
                 callback.accept(Arrays.asList(getEntities(x, z)));
