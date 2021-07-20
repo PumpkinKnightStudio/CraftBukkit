@@ -9,25 +9,25 @@
      private final IOWorker worker;
      private final LongSet emptyChunks = new LongOpenHashSet();
      private final ThreadedMailbox<Runnable> entityDeserializerQueue;
-@@ -51,8 +51,9 @@
+@@ -51,8 +51,8 @@
          if (this.emptyChunks.contains(chunkcoordintpair.pair())) {
              return CompletableFuture.completedFuture(b(chunkcoordintpair));
          } else {
 -            CompletableFuture completablefuture = this.worker.b(chunkcoordintpair);
 -            Function function = (nbttagcompound) -> {
-+            CompletableFuture<ChunkEntities<Entity>> future = new CompletableFuture<>(); // CraftBukkit - custom future
 +            CompletableFuture<NBTTagCompound> completablefuture = this.worker.b(chunkcoordintpair); // CraftBukkit - decompile error
 +            Function<NBTTagCompound, ChunkEntities<Entity>> function = (nbttagcompound) -> { // CraftBukkit - decompile error
                  if (nbttagcompound == null) {
                      this.emptyChunks.add(chunkcoordintpair.pair());
                      return b(chunkcoordintpair);
-@@ -77,7 +78,31 @@
+@@ -77,7 +77,32 @@
              ThreadedMailbox threadedmailbox = this.entityDeserializerQueue;
  
              Objects.requireNonNull(this.entityDeserializerQueue);
 -            return completablefuture.thenApplyAsync(function, threadedmailbox::a);
 +            // CraftBukkit start - Add a chunk load to load legacy entities. Since entities are normally only loaded when a chunk is loaded, it will only have a negative impact if a plugin manually loads entities
 +            // return completablefuture.thenApplyAsync(function, threadedmailbox::a);
++            CompletableFuture<ChunkEntities<Entity>> future = new CompletableFuture<>();
 +            completablefuture.thenApply(nbttagcompound -> {
 +                        CompletableFuture<NBTTagCompound> chunkFuture;
 +                        if (nbttagcompound == null) {
