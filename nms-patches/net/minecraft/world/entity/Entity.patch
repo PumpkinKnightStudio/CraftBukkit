@@ -669,11 +669,12 @@
                  return null;
              } else {
                  WorldBorder worldborder = worldserver.getWorldBorder();
-@@ -2412,8 +2794,16 @@
+@@ -2412,8 +2794,17 @@
                  double d3 = Math.min(2.9999872E7D, worldborder.h() - 16.0D);
                  double d4 = DimensionManager.a(this.level.getDimensionManager(), worldserver.getDimensionManager());
                  BlockPosition blockposition = new BlockPosition(MathHelper.a(this.locX() * d4, d0, d2), this.locY(), MathHelper.a(this.locZ() * d4, d1, d3));
 +                // CraftBukkit start
++                if (!worldserver.getMinecraftServer().getAllowNether()) return null;
 +                CraftPortalEvent event = callPortalEvent(this, worldserver, blockposition, PlayerTeleportEvent.TeleportCause.NETHER_PORTAL, flag2 ? 16 : 128, 16);
 +                if (event == null) {
 +                    return null;
@@ -687,7 +688,7 @@
                      IBlockData iblockdata = this.level.getType(this.portalEntrancePos);
                      EnumDirection.EnumAxis enumdirection_enumaxis;
                      Vec3D vec3d;
-@@ -2430,8 +2820,8 @@
+@@ -2430,8 +2821,8 @@
                          vec3d = new Vec3D(0.5D, 0.0D, 0.0D);
                      }
  
@@ -698,11 +699,12 @@
              }
          } else {
              BlockPosition blockposition1;
-@@ -2441,8 +2831,15 @@
+@@ -2441,8 +2832,16 @@
              } else {
                  blockposition1 = worldserver.getHighestBlockYAt(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, worldserver.getSpawn());
              }
 +            // CraftBukkit start
++            if (!worldserver.getCraftServer().getAllowEnd()) return null;
 +            CraftPortalEvent event = callPortalEvent(this, worldserver, blockposition1, PlayerTeleportEvent.TeleportCause.END_PORTAL, 0, 0);
 +            if (event == null) {
 +                return null;
@@ -715,7 +717,7 @@
          }
      }
  
-@@ -2450,8 +2847,23 @@
+@@ -2450,8 +2849,23 @@
          return BlockPortalShape.a(blockutil_rectangle, enumdirection_enumaxis, this.getPositionVector(), this.a(this.getPose()));
      }
  
@@ -741,7 +743,7 @@
      }
  
      public boolean canPortal() {
-@@ -2660,7 +3072,26 @@
+@@ -2660,7 +3074,26 @@
      }
  
      public final void a(AxisAlignedBB axisalignedbb) {
