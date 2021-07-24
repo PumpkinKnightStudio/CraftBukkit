@@ -399,6 +399,15 @@
                      }
                  }
              } else if (this.isGliding()) {
+@@ -1495,7 +1625,7 @@
+         }
+     }
+ 
+-    private void r(double d0, double d1, double d2) {
++    public void r(double d0, double d1, double d2) { // PAIL private -> public, rename increaseRidingStatistic
+         if (this.isPassenger()) {
+             int i = Math.round((float) Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2) * 100.0F);
+ 
 @@ -1545,12 +1675,24 @@
      }
  
