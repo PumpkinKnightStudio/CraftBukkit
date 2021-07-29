@@ -75,7 +75,7 @@
                          } else {
                              flag = true;
                          }
-@@ -471,6 +498,51 @@
+@@ -471,6 +498,54 @@
              }
          }
  
@@ -86,8 +86,11 @@
 +        }
 +
 +        org.bukkit.entity.Entity bukkitEntity = this.getBukkitEntity();
-+        EntityExplodeEvent event = new EntityExplodeEvent(bukkitEntity, bukkitEntity.getLocation(), destroyedBlocks, 0F);
++        EntityExplodeEvent event = new EntityExplodeEvent(bukkitEntity, bukkitEntity.getLocation(), destroyedBlocks, flag1, 0F);
 +        bukkitEntity.getServer().getPluginManager().callEvent(event);
++        if (!event.canDestroyBlocks()) { // Remove all blocks for destroy if the event can't destroy blocks
++            event.blockList().clear();
++        }
 +        if (event.isCancelled()) {
 +            // This flag literally means 'Dragon hit something hard' (Obsidian, White Stone or Bedrock) and will cause the dragon to slow down.
 +            // We should consider adding an event extension for it, or perhaps returning true if the event is cancelled.
