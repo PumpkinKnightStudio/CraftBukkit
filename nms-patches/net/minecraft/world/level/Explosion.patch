@@ -1,13 +1,12 @@
 --- a/net/minecraft/world/level/Explosion.java
 +++ b/net/minecraft/world/level/Explosion.java
-@@ -43,6 +43,15 @@
+@@ -43,6 +43,14 @@
  import net.minecraft.world.phys.MovingObjectPosition;
  import net.minecraft.world.phys.Vec3D;
  
 +// CraftBukkit start
 +import net.minecraft.world.entity.item.EntityFallingBlock;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.entity.EntityType;
 +import org.bukkit.event.entity.EntityExplodeEvent;
 +import org.bukkit.Location;
 +import org.bukkit.event.block.BlockExplodeEvent;
@@ -16,7 +15,7 @@
  public class Explosion {
  
      private static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new ExplosionDamageCalculator();
-@@ -61,6 +70,7 @@
+@@ -61,6 +69,7 @@
      private final ExplosionDamageCalculator damageCalculator;
      private final List<BlockPosition> toBlow;
      private final Map<EntityHuman, Vec3D> hitPlayers;
@@ -24,7 +23,7 @@
  
      public Explosion(World world, @Nullable Entity entity, double d0, double d1, double d2, float f) {
          this(world, entity, d0, d1, d2, f, false, Explosion.Effect.DESTROY);
-@@ -85,7 +95,7 @@
+@@ -85,7 +94,7 @@
          this.hitPlayers = Maps.newHashMap();
          this.level = world;
          this.source = entity;
@@ -33,7 +32,7 @@
          this.x = d0;
          this.y = d1;
          this.z = d2;
-@@ -135,6 +145,11 @@
+@@ -135,6 +144,11 @@
      }
  
      public void a() {
@@ -45,7 +44,7 @@
          this.level.a(this.source, GameEvent.EXPLODE, new BlockPosition(this.x, this.y, this.z));
          Set<BlockPosition> set = Sets.newHashSet();
          boolean flag = true;
-@@ -218,7 +233,16 @@
+@@ -218,7 +232,16 @@
                          double d12 = (double) a(vec3d, entity);
                          double d13 = (1.0D - d7) * d12;
  
@@ -63,7 +62,7 @@
                          double d14 = d13;
  
                          if (entity instanceof EntityLiving) {
-@@ -254,12 +278,67 @@
+@@ -254,12 +277,67 @@
                  this.level.addParticle(Particles.EXPLOSION, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
              }
          }
@@ -131,7 +130,7 @@
  
              while (iterator.hasNext()) {
                  BlockPosition blockposition = (BlockPosition) iterator.next();
-@@ -274,8 +353,8 @@
+@@ -274,8 +352,8 @@
                          TileEntity tileentity = iblockdata.isTileEntity() ? this.level.getTileEntity(blockposition) : null;
                          LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.level)).a(this.level.random).set(LootContextParameters.ORIGIN, Vec3D.a((BaseBlockPosition) blockposition)).set(LootContextParameters.TOOL, ItemStack.EMPTY).setOptional(LootContextParameters.BLOCK_ENTITY, tileentity).setOptional(LootContextParameters.THIS_ENTITY, this.source);
  
@@ -142,7 +141,7 @@
                          }
  
                          iblockdata.a(loottableinfo_builder).forEach((itemstack) -> {
-@@ -305,7 +384,11 @@
+@@ -305,7 +383,11 @@
                  BlockPosition blockposition2 = (BlockPosition) iterator1.next();
  
                  if (this.random.nextInt(3) == 0 && this.level.getType(blockposition2).isAir() && this.level.getType(blockposition2.down()).i(this.level, blockposition2.down())) {
@@ -155,7 +154,7 @@
                  }
              }
          }
-@@ -313,6 +396,7 @@
+@@ -313,6 +395,7 @@
      }
  
      private static void a(ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist, ItemStack itemstack, BlockPosition blockposition) {
