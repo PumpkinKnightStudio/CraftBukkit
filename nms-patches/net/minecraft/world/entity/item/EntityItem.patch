@@ -21,7 +21,20 @@
  
      public EntityItem(EntityTypes<? extends EntityItem> entitytypes, World world) {
          super(entitytypes, world);
-@@ -94,9 +101,12 @@
+@@ -73,6 +80,12 @@
+         this.bobOffs = entityitem.bobOffs;
+     }
+ 
++    // CraftBukkit start - Add methode
++    public boolean isPickupAble() {
++        return pickupDelay != INFINITE_PICKUP_DELAY;
++    }
++    // CraftBukkit end
++
+     @Override
+     public boolean aJ() {
+         return TagsItem.OCCLUDES_VIBRATION_SIGNALS.isTagged(this.getItemStack().getItem());
+@@ -94,9 +107,12 @@
              this.die();
          } else {
              super.tick();
@@ -37,7 +50,7 @@
  
              this.xo = this.locX();
              this.yo = this.locY();
-@@ -148,9 +158,11 @@
+@@ -148,9 +164,11 @@
                  this.mergeNearby();
              }
  
@@ -49,7 +62,7 @@
  
              this.hasImpulse |= this.aR();
              if (!this.level.isClientSide) {
-@@ -162,6 +174,12 @@
+@@ -162,6 +180,12 @@
              }
  
              if (!this.level.isClientSide && this.age >= 6000) {
@@ -62,7 +75,7 @@
                  this.die();
              }
  
-@@ -237,10 +255,11 @@
+@@ -237,10 +261,11 @@
      private static void a(EntityItem entityitem, ItemStack itemstack, ItemStack itemstack1) {
          ItemStack itemstack2 = a(itemstack, itemstack1, 64);
  
@@ -75,7 +88,7 @@
          a(entityitem, itemstack, itemstack1);
          entityitem.pickupDelay = Math.max(entityitem.pickupDelay, entityitem1.pickupDelay);
          entityitem.age = Math.min(entityitem.age, entityitem1.age);
-@@ -264,6 +283,11 @@
+@@ -264,6 +289,11 @@
          } else if (!this.getItemStack().getItem().a(damagesource)) {
              return false;
          } else {
@@ -87,7 +100,7 @@
              this.velocityChanged();
              this.health = (int) ((float) this.health - f);
              this.a(GameEvent.ENTITY_DAMAGED, damagesource.getEntity());
-@@ -327,6 +351,46 @@
+@@ -327,6 +357,46 @@
              Item item = itemstack.getItem();
              int i = itemstack.getCount();
  
@@ -134,7 +147,7 @@
              if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(entityhuman.getUniqueID())) && entityhuman.getInventory().pickup(itemstack)) {
                  entityhuman.receive(this, i);
                  if (itemstack.isEmpty()) {
-@@ -370,7 +434,9 @@
+@@ -370,7 +440,9 @@
      }
  
      public void setItemStack(ItemStack itemstack) {

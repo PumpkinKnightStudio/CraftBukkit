@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/vehicle/EntityMinecartHopper.java
++++ b/net/minecraft/world/entity/vehicle/EntityMinecartHopper.java
+@@ -116,7 +116,7 @@
+         if (TileEntityHopper.a(this.level, (IHopper) this)) {
+             return true;
+         } else {
+-            List<EntityItem> list = this.level.a(EntityItem.class, this.getBoundingBox().grow(0.25D, 0.0D, 0.25D), IEntitySelector.ENTITY_STILL_ALIVE);
++            List<EntityItem> list = this.level.a(EntityItem.class, this.getBoundingBox().grow(0.25D, 0.0D, 0.25D), entity -> entity.isAlive() && entity.isPickupAble()); // CraftBukkit - SPIGOT-6689: Use custom entity selector
+ 
+             if (!list.isEmpty()) {
+                 TileEntityHopper.a((IInventory) this, (EntityItem) list.get(0));
