@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPosition;
@@ -1626,13 +1627,18 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static void callEntitiesLoadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
-        EntitiesLoadEvent event = new EntitiesLoadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
+    public static void callEntitiesLoadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities, List<Consumer<List<org.bukkit.entity.Entity>>> callbacks) {
+        List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
+        EntitiesLoadEvent event = new EntitiesLoadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
         Bukkit.getPluginManager().callEvent(event);
+
+        if (callbacks != null) {
+            callbacks.forEach(callback -> callback.accept(bukkitEntities));
+        }
     }
 
     public static void callEntitiesUnloadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
-        EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
+        EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList())));
         Bukkit.getPluginManager().callEvent(event);
     }
 }
