@@ -397,25 +397,31 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public void remove(Material material) {
+    public boolean remove(Material material) {
         Validate.notNull(material, "Material cannot be null");
+        boolean removedItem = false;
         material = CraftLegacy.fromLegacy(material);
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
             if (items[i] != null && items[i].getType() == material) {
                 clear(i);
+                removedItem = true;
             }
         }
+        return removedItem;
     }
 
     @Override
-    public void remove(ItemStack item) {
+    public boolean remove(ItemStack item) {
+        boolean removedItem = false;
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
             if (items[i] != null && items[i].equals(item)) {
                 clear(i);
+                removedItem = true;
             }
         }
+        return removedItem;
     }
 
     @Override
