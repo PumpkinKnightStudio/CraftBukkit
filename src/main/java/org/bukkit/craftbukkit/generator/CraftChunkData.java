@@ -14,7 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -65,7 +65,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     @Override
     public Biome getBiome(int x, int y, int z) {
         BiomeStorage biomeStorage = getHandle().getBiomeIndex();
-        return CraftBlock.biomeBaseToBiome((IRegistry<BiomeBase>) biomeStorage.biomeRegistry, biomeStorage.getBiome(x >> 2, y >> 2, z >> 2));
+        return CraftBiome.biomeBaseToBiome((IRegistry<BiomeBase>) biomeStorage.biomeRegistry, biomeStorage.getBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override

@@ -498,23 +498,6 @@ public class CraftBlock implements Block {
         getWorld().setBiome(getX(), getY(), getZ(), bio);
     }
 
-    public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, BiomeBase base) {
-        if (base == null) {
-            return null;
-        }
-
-        Biome biome = Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(base)));
-        return (biome == null) ? Biome.CUSTOM : biome;
-    }
-
-    public static BiomeBase biomeToBiomeBase(IRegistry<BiomeBase> registry, Biome bio) {
-        if (bio == null || bio == Biome.CUSTOM) {
-            return null;
-        }
-
-        return registry.get(CraftNamespacedKey.toMinecraft(bio.getKey()));
-    }
-
     @Override
     public double getTemperature() {
         return world.getBiome(position).getAdjustedTemperature(position);

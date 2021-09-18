@@ -4,12 +4,16 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.craftbukkit.CraftLootTable;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -97,6 +101,16 @@ public final class DummyServer implements InvocationHandler {
                         }
                     }
                 );
+            methods.put(Server.class.getMethod("getRegistry", Class.class),
+                    new MethodHandler() {
+                        private final Map<Class<?>, Registry<?>> registers = new HashMap<>();
+                        @Override
+                        public Object handle(DummyServer server, Object[] args) {
+                            Class<? extends Keyed> aClass = (Class<? extends Keyed>) args[0];
+                            return registers.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, AbstractTestingBase.REGISTRY_CUSTOM));
+                        }
+                    }
+            );
             Bukkit.setServer(Proxy.getProxyClass(Server.class.getClassLoader(), Server.class).asSubclass(Server.class).getConstructor(InvocationHandler.class).newInstance(new DummyServer()));
         } catch (Throwable t) {
             throw new Error(t);

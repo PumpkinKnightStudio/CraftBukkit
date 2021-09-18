@@ -8,7 +8,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.biome.WorldChunkManager;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.WorldInfo;
 
@@ -23,7 +23,7 @@ public class CustomWorldChunkManager extends WorldChunkManager {
 
         for (Biome biome : biomes) {
             Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot use the biome %s", biome);
-            biomeBases.add(CraftBlock.biomeToBiomeBase(registry, biome));
+            biomeBases.add(CraftBiome.biomeToBiomeBase(registry, biome));
         }
 
         return biomeBases;
@@ -53,6 +53,6 @@ public class CustomWorldChunkManager extends WorldChunkManager {
         Biome biome = biomeProvider.getBiome(worldInfo, x << 2, y << 2, z << 2);
         Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
 
-        return CraftBlock.biomeToBiomeBase(registry, biome);
+        return CraftBiome.biomeToBiomeBase(registry, biome);
     }
 }

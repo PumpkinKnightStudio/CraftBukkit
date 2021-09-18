@@ -1,14 +1,52 @@
 package org.bukkit;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import net.minecraft.data.RegistryGeneration;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBiome;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class BiomeTest extends AbstractTestingBase {
+
+    @Test
+    public void testBukkitToMinecraftFieldName() {
+        for (Field field : Biome.class.getFields()) {
+            if (field.getType() != Biome.class) {
+                continue;
+            }
+            if (!Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
+            String name = field.getName();
+            Assert.assertNotNull("No Biome for field name " + name, Registry.BIOME.get(NamespacedKey.fromString(name.toLowerCase())));
+        }
+    }
+
+    @Test
+    public void testMinecraftToBukkitFieldName() {
+        for (BiomeBase biomeBase : RegistryGeneration.BIOME) {
+            MinecraftKey minecraftKey = RegistryGeneration.BIOME.getKey(biomeBase);
+
+            try {
+                Biome biome = (Biome) Biome.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+
+                Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(biome.getKey()));
+            } catch (NoSuchFieldException e) {
+                Assert.fail("No Bukkit default biome for " + minecraftKey);
+            } catch (IllegalAccessException e) {
+                Assert.fail("Bukkit field is not access able for " + minecraftKey);
+            } catch (ClassCastException e) {
+                Assert.fail("Bukkit field is not of type Biome for" + minecraftKey);
+            }
+        }
+    }
 
     @Test
     public void testBukkitToMinecraft() {
@@ -17,14 +55,15 @@ public class BiomeTest extends AbstractTestingBase {
                 continue;
             }
 
-            Assert.assertNotNull("No NMS mapping for " + biome, CraftBlock.biomeToBiomeBase(RegistryGeneration.BIOME, biome));
+            Assert.assertNotNull("No NMS mapping for " + biome, CraftBiome.biomeToBiomeBase(RegistryGeneration.BIOME, biome));
         }
     }
 
     @Test
     public void testMinecraftToBukkit() {
         for (BiomeBase biomeBase : RegistryGeneration.BIOME) {
-            Biome biome = CraftBlock.biomeBaseToBiome(RegistryGeneration.BIOME, biomeBase);
+            // Should always return a biome, since we create the biome from the biome base
+            Biome biome = CraftBiome.biomeBaseToBiome(RegistryGeneration.BIOME, biomeBase);
             Assert.assertTrue("No Bukkit mapping for " + biomeBase, biome != null && biome != Biome.CUSTOM);
         }
     }

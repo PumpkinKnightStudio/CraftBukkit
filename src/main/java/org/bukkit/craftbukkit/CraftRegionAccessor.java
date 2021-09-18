@@ -57,6 +57,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -213,7 +214,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
     @Override
     public Biome getBiome(int x, int y, int z) {
-        return CraftBlock.biomeBaseToBiome(getHandle().t().d(IRegistry.BIOME_REGISTRY), getHandle().getBiome(x >> 2, y >> 2, z >> 2));
+        return CraftBiome.biomeBaseToBiome(getHandle().t().d(IRegistry.BIOME_REGISTRY), getHandle().getBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override
@@ -224,7 +225,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     @Override
     public void setBiome(int x, int y, int z, Biome biome) {
         Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
-        BiomeBase biomeBase = CraftBlock.biomeToBiomeBase(getHandle().t().d(IRegistry.BIOME_REGISTRY), biome);
+        BiomeBase biomeBase = CraftBiome.biomeToBiomeBase(getHandle().t().d(IRegistry.BIOME_REGISTRY), biome);
         setBiome(x, y, z, biomeBase);
     }
 

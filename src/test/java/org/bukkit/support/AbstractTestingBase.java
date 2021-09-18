@@ -34,10 +34,12 @@ public abstract class AbstractTestingBase {
 
     public static final LootTableRegistry LOOT_TABLE_REGISTRY;
     public static final TagRegistry TAG_REGISTRY;
+    public static final IRegistryCustom REGISTRY_CUSTOM;
 
     static {
         SharedConstants.a();
         DispenserRegistry.init();
+        REGISTRY_CUSTOM = IRegistryCustom.a();
         // Set up resource manager
         ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA);
         // add tags and loot tables for unit tests
