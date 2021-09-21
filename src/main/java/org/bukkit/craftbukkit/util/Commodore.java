@@ -273,6 +273,13 @@ public class Commodore
                             return;
                         }
 
+                        // Enums to class
+                        if ( (owner.equals( "org/bukkit/block/Biome" ) ) && name.equals( "compareTo" ) && desc.equals( "(Ljava/lang/Enum;)I" ) )
+                        {
+                            super.visitMethodInsn( opcode, owner, name, "(Ljava/lang/Object;)I", itf );
+                            return;
+                        }
+
                         if ( modern )
                         {
                             if ( owner.equals( "org/bukkit/Material" ) )

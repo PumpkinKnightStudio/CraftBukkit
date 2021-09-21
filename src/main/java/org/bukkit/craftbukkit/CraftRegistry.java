@@ -14,64 +14,57 @@ import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftRegistry<BUKKIT extends Keyed, MINECRAFT> implements Registry<BUKKIT> {
+public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
-    public static <BUKKIT extends Keyed> Registry<?> createRegistry(Class<BUKKIT> bukkitClass, IRegistryCustom registryHolder) {
+    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == Biome.class) {
-            return new CraftRegistry<>(registryHolder.b(IRegistry.BIOME_REGISTRY), CraftBiome::new, true);
+            return new CraftBiome.CraftBiomeRegistry(registryHolder.b(IRegistry.BIOME_REGISTRY), CraftBiome::new);
         }
 
         return null;
     }
 
-    private static final NamespacedKey CUSTOM = NamespacedKey.minecraft("custom");
+    private final Map<NamespacedKey, B> cache = new HashMap<>();
+    private final IRegistry<M> minecraftRegistry;
+    private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
 
-    private final Map<NamespacedKey, BUKKIT> cache = new HashMap<>();
-    private final IRegistry<MINECRAFT> minecraftRegistry;
-    private final BiFunction<NamespacedKey, MINECRAFT, BUKKIT> minecraftToBukkit;
-    private final boolean hasCustom;
-
-    public CraftRegistry(IRegistry<MINECRAFT> minecraftRegistry, BiFunction<NamespacedKey, MINECRAFT, BUKKIT> minecraftToBukkit) {
-        this(minecraftRegistry, minecraftToBukkit, false);
-    }
-
-    public CraftRegistry(IRegistry<MINECRAFT> minecraftRegistry, BiFunction<NamespacedKey, MINECRAFT, BUKKIT> minecraftToBukkit, boolean hasCustom) {
+    public CraftRegistry(IRegistry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
         this.minecraftRegistry = minecraftRegistry;
         this.minecraftToBukkit = minecraftToBukkit;
-        this.hasCustom = hasCustom;
+
     }
 
     @Override
-    public BUKKIT get(NamespacedKey namespacedKey) {
-        BUKKIT cached = cache.get(namespacedKey);
+    public B get(NamespacedKey namespacedKey) {
+        B cached = cache.get(namespacedKey);
         if (cached != null) {
             return cached;
         }
 
-        MINECRAFT minecraft;
-        // special case for custom biome field
-        if (hasCustom && CUSTOM.equals(namespacedKey)) {
-            minecraft = null;
-        } else {
-            minecraft = minecraftRegistry.get(CraftNamespacedKey.toMinecraft(namespacedKey));
-
-            if (minecraft == null) {
-                return null;
-            }
+        B bukkit = createBukkit(namespacedKey, minecraftRegistry.get(CraftNamespacedKey.toMinecraft(namespacedKey)));
+        if (bukkit == null) {
+            return null;
         }
 
-        BUKKIT bukkit = minecraftToBukkit.apply(namespacedKey, minecraft);
         cache.put(namespacedKey, bukkit);
 
         return bukkit;
     }
 
     @Override
-    public Iterator<BUKKIT> iterator() {
-        if (hasCustom) {
-            return Stream.concat(minecraftRegistry.keySet().stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey))), Stream.of(get(CUSTOM))).iterator();
-        } else {
-            return minecraftRegistry.keySet().stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey))).iterator();
+    public Iterator<B> iterator() {
+        return values().iterator();
+    }
+
+    public B createBukkit(NamespacedKey namespacedKey, M minecraft) {
+        if (minecraft == null) {
+            return null;
         }
+
+        return minecraftToBukkit.apply(namespacedKey, minecraft);
+    }
+
+    public Stream<B> values() {
+        return minecraftRegistry.keySet().stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
     }
 }
