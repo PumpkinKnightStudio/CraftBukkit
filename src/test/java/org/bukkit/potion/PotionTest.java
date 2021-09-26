@@ -1,6 +1,8 @@
 package org.bukkit.potion;
 
 import static org.junit.Assert.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -9,10 +11,49 @@ import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.item.alchemy.PotionRegistry;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.support.AbstractTestingBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class PotionTest extends AbstractTestingBase {
+
+    @Test
+    public void testBukkitToMinecraftFieldName() {
+        for (Field field : PotionEffectType.class.getFields()) {
+            if (field.getType() != PotionEffectType.class) {
+                continue;
+            }
+            if (!Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
+            String name = field.getName();
+            Assert.assertNotNull("No potionEffectType for field name " + name, Registry.POTION_EFFECT_TYPE.get(NamespacedKey.fromString(name.toLowerCase())));
+        }
+    }
+
+    @Test
+    public void testMinecraftToBukkitFieldName() {
+        for (MobEffectList mobEffectList : IRegistry.MOB_EFFECT) {
+            MinecraftKey minecraftKey = IRegistry.MOB_EFFECT.getKey(mobEffectList);
+
+            try {
+                PotionEffectType potionEffectType = (PotionEffectType) PotionEffectType.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+
+                Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(potionEffectType.getKey()));
+            } catch (NoSuchFieldException e) {
+                Assert.fail("No Bukkit default potionEffectType for " + minecraftKey);
+            } catch (IllegalAccessException e) {
+                Assert.fail("Bukkit field is not access able for " + minecraftKey);
+            } catch (ClassCastException e) {
+                Assert.fail("Bukkit field is not of type potionEffectType for" + minecraftKey);
+            }
+        }
+    }
+
     @Test
     public void testEffectCompleteness() throws Throwable {
         Map<PotionType, String> effects = new EnumMap(PotionType.class);

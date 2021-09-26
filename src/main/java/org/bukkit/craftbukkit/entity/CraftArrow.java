@@ -133,6 +133,6 @@ public class CraftArrow extends AbstractProjectile implements AbstractArrow {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 }

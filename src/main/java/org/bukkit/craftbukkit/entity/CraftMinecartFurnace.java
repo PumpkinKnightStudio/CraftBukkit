@@ -35,6 +35,6 @@ public class CraftMinecartFurnace extends CraftMinecart implements PoweredMineca
 
     @Override
     public EntityType getType() {
-        return EntityType.MINECART_FURNACE;
+        return EntityType.FURNACE_MINECART;
     }
 }

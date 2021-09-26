@@ -72,6 +72,6 @@ public class CraftFireball extends AbstractProjectile implements Fireball {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 }

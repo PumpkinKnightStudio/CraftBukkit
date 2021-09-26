@@ -1,21 +1,36 @@
 package org.bukkit.craftbukkit.enchantments;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.item.enchantment.EnchantmentBinding;
 import net.minecraft.world.item.enchantment.EnchantmentVanishing;
+import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftEnchantment extends Enchantment {
+    private final NamespacedKey key;
     private final net.minecraft.world.item.enchantment.Enchantment target;
+    private final String name;
 
-    public CraftEnchantment(net.minecraft.world.item.enchantment.Enchantment target) {
-        super(CraftNamespacedKey.fromMinecraft(IRegistry.ENCHANTMENT.getKey(target)));
+    public CraftEnchantment(NamespacedKey key, net.minecraft.world.item.enchantment.Enchantment target) {
+        this.key = key;
         this.target = target;
+        // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+        // in case plugins use for example the name as key in a config file to receive enchantment specific values.
+        // Custom enchantments will return the key with namespace. For a plugin this should look than like a new enchantment
+        // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+            this.name = key.getKey().toUpperCase();
+        } else {
+            this.name = key.toString();
+        }
     }
 
     @Override
@@ -81,87 +96,7 @@ public class CraftEnchantment extends Enchantment {
 
     @Override
     public String getName() {
-        // PAIL: migration paths
-        switch (IRegistry.ENCHANTMENT.getId(target)) {
-        case 0:
-            return "PROTECTION_ENVIRONMENTAL";
-        case 1:
-            return "PROTECTION_FIRE";
-        case 2:
-            return "PROTECTION_FALL";
-        case 3:
-            return "PROTECTION_EXPLOSIONS";
-        case 4:
-            return "PROTECTION_PROJECTILE";
-        case 5:
-            return "OXYGEN";
-        case 6:
-            return "WATER_WORKER";
-        case 7:
-            return "THORNS";
-        case 8:
-            return "DEPTH_STRIDER";
-        case 9:
-            return "FROST_WALKER";
-        case 10:
-            return "BINDING_CURSE";
-        case 11:
-            return "SOUL_SPEED";
-        case 12:
-            return "DAMAGE_ALL";
-        case 13:
-            return "DAMAGE_UNDEAD";
-        case 14:
-            return "DAMAGE_ARTHROPODS";
-        case 15:
-            return "KNOCKBACK";
-        case 16:
-            return "FIRE_ASPECT";
-        case 17:
-            return "LOOT_BONUS_MOBS";
-        case 18:
-            return "SWEEPING_EDGE";
-        case 19:
-            return "DIG_SPEED";
-        case 20:
-            return "SILK_TOUCH";
-        case 21:
-            return "DURABILITY";
-        case 22:
-            return "LOOT_BONUS_BLOCKS";
-        case 23:
-            return "ARROW_DAMAGE";
-        case 24:
-            return "ARROW_KNOCKBACK";
-        case 25:
-            return "ARROW_FIRE";
-        case 26:
-            return "ARROW_INFINITE";
-        case 27:
-            return "LUCK";
-        case 28:
-            return "LURE";
-        case 29:
-            return "LOYALTY";
-        case 30:
-            return "IMPALING";
-        case 31:
-            return "RIPTIDE";
-        case 32:
-            return "CHANNELING";
-        case 33:
-            return "MULTISHOT";
-        case 34:
-            return "QUICK_CHARGE";
-        case 35:
-            return "PIERCING";
-        case 36:
-            return "MENDING";
-        case 37:
-            return "VANISHING_CURSE";
-        default:
-            return "UNKNOWN_ENCHANT_" + IRegistry.ENCHANTMENT.getId(target);
-        }
+        return name;
     }
 
     public static net.minecraft.world.item.enchantment.Enchantment getRaw(Enchantment enchantment) {
@@ -190,5 +125,82 @@ public class CraftEnchantment extends Enchantment {
 
     public net.minecraft.world.item.enchantment.Enchantment getHandle() {
         return target;
+    }
+
+    @Override
+    public NamespacedKey getKey() {
+        return key;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof CraftEnchantment)) {
+            return false;
+        }
+
+        return getKey().equals(((Enchantment) other).getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CraftEnchantment[" + getKey() + "]";
+    }
+
+    public static class CraftEnchantmentRegistry extends CraftRegistry<Enchantment, net.minecraft.world.item.enchantment.Enchantment> {
+        private static final Map<NamespacedKey, NamespacedKey> NAME_MAP = new HashMap<>();
+
+        private static void add(String oldName, String newName) {
+            NAME_MAP.put(NamespacedKey.fromString(oldName), NamespacedKey.fromString(newName));
+        }
+        static {
+            // Add legacy names
+            add("protection_environmental", "protection");
+            add("protection_fire", "fire_protection");
+            add("protection_fall", "feather_falling");
+            add("protection_explosions", "blast_protection");
+            add("protection_projectile", "projectile_protection");
+            add("oxygen", "respiration");
+            add("water_worker", "aqua_affinity");
+            add("damage_all", "sharpness");
+            add("damage_undead", "smite");
+            add("damage_arthropods", "bane_of_arthropods");
+            add("loot_bonus_mobs", "looting");
+            add("sweeping_edge", "sweeping");
+            add("dig_speed", "efficiency");
+            add("durability", "unbreaking");
+            add("loot_bonus_blocks", "fortune");
+            add("arrow_damage", "power");
+            add("arrow_knockback", "punch");
+            add("arrow_fire", "flame");
+            add("arrow_infinite", "infinity");
+            add("luck", "luck_of_the_sea");
+        }
+
+        public CraftEnchantmentRegistry(IRegistry<net.minecraft.world.item.enchantment.Enchantment> minecraftRegistry, BiFunction<NamespacedKey, net.minecraft.world.item.enchantment.Enchantment, Enchantment> minecraftToBukkit) {
+            super(minecraftRegistry, minecraftToBukkit);
+        }
+
+        @Override
+        public Enchantment createBukkit(NamespacedKey namespacedKey, net.minecraft.world.item.enchantment.Enchantment enchantment) {
+            if (enchantment == null) {
+                return null;
+            }
+
+            // convert legacy names to new one
+            if (NAME_MAP.containsKey(namespacedKey)) {
+                return get(NAME_MAP.get(namespacedKey));
+            }
+
+            return super.createBukkit(namespacedKey, enchantment);
+        }
     }
 }

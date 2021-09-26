@@ -45,6 +45,6 @@ public class CraftComplexPart extends CraftEntity implements ComplexEntityPart {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 }

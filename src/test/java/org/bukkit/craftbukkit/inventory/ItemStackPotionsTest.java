@@ -35,7 +35,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.CONFUSION.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.NAUSEA.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -53,7 +53,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.HARM.createEffect(2, 1), false);
+                            meta.addCustomEffect(PotionEffectType.INSTANT_DAMAGE.createEffect(2, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -73,7 +73,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.SLOW_DIGGING.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.MINING_FATIGUE.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -82,7 +82,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.FAST_DIGGING.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.HASTE.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -94,7 +94,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.JUMP.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.JUMP_BOOST.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -103,7 +103,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.JUMP.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.JUMP_BOOST.createEffect(1, 1), false);
                             meta.addCustomEffect(PotionEffectType.REGENERATION.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
@@ -137,7 +137,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.INCREASE_DAMAGE.createEffect(1, 1), false);
+                            meta.addCustomEffect(PotionEffectType.STRENGTH.createEffect(1, 1), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }
@@ -146,7 +146,7 @@ public class ItemStackPotionsTest extends ItemStackTest {
                         @Override
                         public ItemStack operate(ItemStack cleanStack) {
                             final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                            meta.addCustomEffect(PotionEffectType.INCREASE_DAMAGE.createEffect(1, 2), false);
+                            meta.addCustomEffect(PotionEffectType.STRENGTH.createEffect(1, 2), false);
                             cleanStack.setItemMeta(meta);
                             return cleanStack;
                         }

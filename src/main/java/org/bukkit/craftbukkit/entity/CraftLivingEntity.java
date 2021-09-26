@@ -52,6 +52,7 @@ import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.DragonFireball;
@@ -381,7 +382,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public PotionEffect getPotionEffect(PotionEffectType type) {
         MobEffect handle = getHandle().getEffect(MobEffectList.fromId(type.getId()));
-        return (handle == null) ? null : new PotionEffect(PotionEffectType.getById(MobEffectList.getId(handle.getMobEffect())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isShowParticles());
+        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getMobEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isShowParticles());
     }
 
     @Override
@@ -393,7 +394,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
         for (MobEffect handle : getHandle().activeEffects.values()) {
-            effects.add(new PotionEffect(PotionEffectType.getById(MobEffectList.getId(handle.getMobEffect())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isShowParticles()));
+            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getMobEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isShowParticles()));
         }
         return effects;
     }
@@ -495,7 +496,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 
     @Override

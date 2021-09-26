@@ -48,6 +48,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
@@ -591,7 +593,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     continue;
                 }
                 AttributeModifier modifier = (AttributeModifier) o;
-                Attribute attribute = EnumUtils.getEnum(Attribute.class, attributeName.toUpperCase(Locale.ROOT));
+                Attribute attribute = Registry.ATTRIBUTE.get(NamespacedKey.fromString(attributeName.toLowerCase(Locale.ROOT)));
                 if (attribute == null) {
                     continue;
                 }

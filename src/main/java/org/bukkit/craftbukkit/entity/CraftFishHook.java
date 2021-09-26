@@ -29,7 +29,7 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
 
     @Override
     public EntityType getType() {
-        return EntityType.FISHING_HOOK;
+        return EntityType.FISHING_BOBBER;
     }
 
     @Override

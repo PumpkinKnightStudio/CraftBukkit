@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.ambient.EntityAmbient;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Ambient;
 import org.bukkit.entity.EntityType;
@@ -22,6 +23,6 @@ public class CraftAmbient extends CraftMob implements Ambient {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 }

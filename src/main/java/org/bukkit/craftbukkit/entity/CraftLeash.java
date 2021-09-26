@@ -37,6 +37,6 @@ public class CraftLeash extends CraftHanging implements LeashHitch {
 
     @Override
     public EntityType getType() {
-        return EntityType.LEASH_HITCH;
+        return EntityType.LEASH_KNOT;
     }
 }

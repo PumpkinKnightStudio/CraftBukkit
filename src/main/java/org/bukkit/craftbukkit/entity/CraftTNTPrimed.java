@@ -56,7 +56,7 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
     @Override
     public EntityType getType() {
-        return EntityType.PRIMED_TNT;
+        return EntityType.TNT;
     }
 
     @Override

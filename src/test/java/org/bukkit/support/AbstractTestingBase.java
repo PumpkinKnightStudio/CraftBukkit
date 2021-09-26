@@ -51,7 +51,6 @@ public abstract class AbstractTestingBase {
         TAG_REGISTRY.a().bind();
 
         DummyServer.setup();
-        DummyEnchantments.setup();
 
         ImmutableList.Builder<Material> builder = ImmutableList.builder();
         for (Material m : Material.values()) {

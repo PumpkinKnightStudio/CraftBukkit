@@ -46,7 +46,7 @@ public class CraftFirework extends CraftProjectile implements Firework {
 
     @Override
     public EntityType getType() {
-        return EntityType.FIREWORK;
+        return EntityType.FIREWORK_ROCKET;
     }
 
     @Override

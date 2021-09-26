@@ -1277,22 +1277,16 @@ public class CraftEventFactory {
         org.bukkit.World bukkitWorld = world.getWorld();
         org.bukkit.entity.Entity bukkitIgniter = igniter.getBukkitEntity();
         IgniteCause cause;
-        switch (bukkitIgniter.getType()) {
-            case ENDER_CRYSTAL:
-                cause = IgniteCause.ENDER_CRYSTAL;
-                break;
-            case LIGHTNING:
-                cause = IgniteCause.LIGHTNING;
-                break;
-            case SMALL_FIREBALL:
-            case FIREBALL:
-                cause = IgniteCause.FIREBALL;
-                break;
-            case ARROW:
-                cause = IgniteCause.ARROW;
-                break;
-            default:
-                cause = IgniteCause.FLINT_AND_STEEL;
+        if (bukkitIgniter.getType() == EntityType.END_CRYSTAL) {
+            cause = IgniteCause.ENDER_CRYSTAL;
+        } else if (bukkitIgniter.getType() == EntityType.LIGHTNING_BOLT) {
+            cause = IgniteCause.LIGHTNING;
+        } else if (bukkitIgniter.getType() == EntityType.SMALL_FIREBALL || bukkitIgniter.getType() == EntityType.FIREBALL) {
+            cause = IgniteCause.FIREBALL;
+        } else if (bukkitIgniter.getType() == EntityType.ARROW) {
+            cause = IgniteCause.ARROW;
+        } else {
+            cause = IgniteCause.FLINT_AND_STEEL;
         }
 
         if (igniter instanceof IProjectile) {

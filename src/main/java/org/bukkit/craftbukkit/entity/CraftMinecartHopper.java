@@ -22,7 +22,7 @@ public final class CraftMinecartHopper extends CraftMinecartContainer implements
 
     @Override
     public EntityType getType() {
-        return EntityType.MINECART_HOPPER;
+        return EntityType.HOPPER_MINECART;
     }
 
     @Override

@@ -18,7 +18,7 @@ public class CraftPainting extends CraftHanging implements Painting {
     @Override
     public Art getArt() {
         Paintings art = getHandle().motive;
-        return CraftArt.NotchToBukkit(art);
+        return CraftArt.minecraftToBukkit(art);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class CraftPainting extends CraftHanging implements Painting {
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
         Paintings oldArt = painting.motive;
-        painting.motive = CraftArt.BukkitToNotch(art);
+        painting.motive = CraftArt.bukkitToMinecraft(art);
         painting.setDirection(painting.getDirection());
         if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit

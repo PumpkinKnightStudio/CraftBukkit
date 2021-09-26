@@ -6,10 +6,16 @@ import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.entity.npc.EntityVillager;
 import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.block.BlockBed;
 import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.material.FluidType;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Fluid;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
@@ -112,6 +118,150 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     @Override
     public void shakeHead() {
         getHandle().fT(); // PAIL rename shakeHead
+    }
+
+    public static class CraftType extends Type {
+        private static int count = 0;
+
+        private final NamespacedKey key;
+        private final VillagerType villagerType;
+        private final String name;
+        private final int ordinal;
+
+        public CraftType(NamespacedKey key, VillagerType villagerType) {
+            this.key = key;
+            this.villagerType = villagerType;
+            // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+            // in case plugins use for example the name as key in a config file to receive type specific values.
+            // Custom types will return the key with namespace. For a plugin this should look than like a new type
+            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                this.name = key.getKey().toUpperCase();
+            } else {
+                this.name = key.toString();
+            }
+            this.ordinal = count++;
+        }
+
+        public VillagerType getHandle() {
+            return villagerType;
+        }
+
+        @Override
+        public NamespacedKey getKey() {
+            return key;
+        }
+
+        @Override
+        public int compareTo(Type type) {
+            return ordinal - type.ordinal();
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public int ordinal() {
+            return ordinal;
+        }
+
+        @Override
+        public String toString() {
+            // For backwards compatibility
+            return name();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+
+            if (!(other instanceof CraftType)) {
+                return false;
+            }
+
+            return getKey().equals(((Type) other).getKey());
+        }
+
+        @Override
+        public int hashCode() {
+            return getKey().hashCode();
+        }
+    }
+
+    public static class CraftProfession extends Profession {
+        private static int count = 0;
+
+        private final NamespacedKey key;
+        private final VillagerProfession villagerProfession;
+        private final String name;
+        private final int ordinal;
+
+        public CraftProfession(NamespacedKey key, VillagerProfession villagerProfession) {
+            this.key = key;
+            this.villagerProfession = villagerProfession;
+            // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+            // in case plugins use for example the name as key in a config file to receive profession specific values.
+            // Custom professions will return the key with namespace. For a plugin this should look than like a new profession
+            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                this.name = key.getKey().toUpperCase();
+            } else {
+                this.name = key.toString();
+            }
+            this.ordinal = count++;
+        }
+
+        public VillagerProfession getHandle() {
+            return villagerProfession;
+        }
+
+        @Override
+        public NamespacedKey getKey() {
+            return key;
+        }
+
+        @Override
+        public int compareTo(Profession profession) {
+            return ordinal - profession.ordinal();
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public int ordinal() {
+            return ordinal;
+        }
+
+        @Override
+        public String toString() {
+            // For backwards compatibility
+            return name();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+
+            if (!(other instanceof CraftProfession)) {
+                return false;
+            }
+
+            return getKey().equals(((Profession) other).getKey());
+        }
+
+        @Override
+        public int hashCode() {
+            return getKey().hashCode();
+        }
     }
 
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {

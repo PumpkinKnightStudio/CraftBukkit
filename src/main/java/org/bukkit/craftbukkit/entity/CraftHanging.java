@@ -70,6 +70,6 @@ public class CraftHanging extends CraftEntity implements Hanging {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNKNOWN;
+        return CraftEntityType.minecraftToBukkit(getHandle().getEntityType());
     }
 }

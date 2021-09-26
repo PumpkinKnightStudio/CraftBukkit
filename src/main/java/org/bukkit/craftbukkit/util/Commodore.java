@@ -156,6 +156,60 @@ public class Commodore
                                 case "PIG_ZOMBIE":
                                     super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
                                     return;
+                                case "DROPPED_ITEM":
+                                    super.visitFieldInsn( opcode, owner, "ITEM", desc );
+                                    return;
+                                case "LEASH_HITCH":
+                                    super.visitFieldInsn( opcode, owner, "LEASH_KNOT", desc );
+                                    return;
+                                case "ENDER_SIGNAL":
+                                    super.visitFieldInsn( opcode, owner, "EYE_OF_ENDER", desc );
+                                    return;
+                                case "SPLASH_POTION":
+                                    super.visitFieldInsn( opcode, owner, "POTION", desc );
+                                    return;
+                                case "THROWN_EXP_BOTTLE":
+                                    super.visitFieldInsn( opcode, owner, "EXPERIENCE_BOTTLE", desc );
+                                    return;
+                                case "PRIMED_TNT":
+                                    super.visitFieldInsn( opcode, owner, "TNT", desc );
+                                    return;
+                                case "FIREWORK":
+                                    super.visitFieldInsn( opcode, owner, "FIREWORK_ROCKET", desc );
+                                    return;
+                                case "MINECART_COMMAND":
+                                    super.visitFieldInsn( opcode, owner, "COMMAND_BLOCK_MINECART", desc );
+                                    return;
+                                case "MINECART_CHEST":
+                                    super.visitFieldInsn( opcode, owner, "CHEST_MINECART", desc );
+                                    return;
+                                case "MINECART_FURNACE":
+                                    super.visitFieldInsn( opcode, owner, "FURNACE_MINECART", desc );
+                                    return;
+                                case "MINECART_TNT":
+                                    super.visitFieldInsn( opcode, owner, "TNT_MINECART", desc );
+                                    return;
+                                case "MINECART_HOPPER":
+                                    super.visitFieldInsn( opcode, owner, "HOPPER_MINECART", desc );
+                                    return;
+                                case "MINECART_MOB_SPAWNER":
+                                    super.visitFieldInsn( opcode, owner, "SPAWNER_MINECART", desc );
+                                    return;
+                                case "MUSHROOM_COW":
+                                    super.visitFieldInsn( opcode, owner, "MOOSHROOM", desc );
+                                    return;
+                                case "SNOWMAN":
+                                    super.visitFieldInsn( opcode, owner, "SNOW_GOLEM", desc );
+                                    return;
+                                case "ENDER_CRYSTAL":
+                                    super.visitFieldInsn( opcode, owner, "END_CRYSTAL", desc );
+                                    return;
+                                case "FISHING_HOOK":
+                                    super.visitFieldInsn( opcode, owner, "FISHING_BOBBER", desc );
+                                    return;
+                                case "LIGHTNING":
+                                    super.visitFieldInsn( opcode, owner, "LIGHTNING_BOLT", desc );
+                                    return;
                             }
                         }
 
@@ -165,6 +219,107 @@ public class Commodore
                             {
                                 case "ZOMBIE_PIGMAN":
                                     super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
+                                    return;
+                            }
+                        }
+
+                        if ( owner.equals( "org/bukkit/potion/PotionEffectType" ) )
+                        {
+                            switch ( name )
+                            {
+                                case "SLOW":
+                                    super.visitFieldInsn( opcode, owner, "SLOWNESS", desc );
+                                    return;
+                                case "FAST_DIGGING":
+                                    super.visitFieldInsn( opcode, owner, "HASTE", desc );
+                                    return;
+                                case "SLOW_DIGGING":
+                                    super.visitFieldInsn( opcode, owner, "MINING_FATIGUE", desc );
+                                    return;
+                                case "INCREASE_DAMAGE":
+                                    super.visitFieldInsn( opcode, owner, "STRENGTH", desc );
+                                    return;
+                                case "HEAL":
+                                    super.visitFieldInsn( opcode, owner, "INSTANT_HEALTH", desc );
+                                    return;
+                                case "HARM":
+                                    super.visitFieldInsn( opcode, owner, "INSTANT_DAMAGE", desc );
+                                    return;
+                                case "JUMP":
+                                    super.visitFieldInsn( opcode, owner, "JUMP_BOOST", desc );
+                                    return;
+                                case "CONFUSION":
+                                    super.visitFieldInsn( opcode, owner, "NAUSEA", desc );
+                                    return;
+                                case "DAMAGE_RESISTANCE":
+                                    super.visitFieldInsn( opcode, owner, "RESISTANCE", desc );
+                                    return;
+                            }
+                        }
+
+                        if ( owner.equals( "org/bukkit/enchantments/Enchantment" ) )
+                        {
+                            switch ( name )
+                            {
+                                case "PROTECTION_ENVIRONMENTAL":
+                                    super.visitFieldInsn( opcode, owner, "PROTECTION", desc );
+                                    return;
+                                case "PROTECTION_FIRE":
+                                    super.visitFieldInsn( opcode, owner, "FIRE_PROTECTION", desc );
+                                    return;
+                                case "PROTECTION_FALL":
+                                    super.visitFieldInsn( opcode, owner, "FEATHER_FALLING", desc );
+                                    return;
+                                case "PROTECTION_EXPLOSIONS":
+                                    super.visitFieldInsn( opcode, owner, "BLAST_PROTECTION", desc );
+                                    return;
+                                case "PROTECTION_PROJECTILE":
+                                    super.visitFieldInsn( opcode, owner, "PROJECTILE_PROTECTION", desc );
+                                    return;
+                                case "OXYGEN":
+                                    super.visitFieldInsn( opcode, owner, "RESPIRATION", desc );
+                                    return;
+                                case "WATER_WORKER":
+                                    super.visitFieldInsn( opcode, owner, "AQUA_AFFINITY", desc );
+                                    return;
+                                case "DAMAGE_ALL":
+                                    super.visitFieldInsn( opcode, owner, "SHARPNESS", desc );
+                                    return;
+                                case "DAMAGE_UNDEAD":
+                                    super.visitFieldInsn( opcode, owner, "SMITE", desc );
+                                    return;
+                                case "DAMAGE_ARTHROPODS":
+                                    super.visitFieldInsn( opcode, owner, "BANE_OF_ARTHROPODS", desc );
+                                    return;
+                                case "LOOT_BONUS_MOBS":
+                                    super.visitFieldInsn( opcode, owner, "LOOTING", desc );
+                                    return;
+                                case "SWEEPING_EDGE":
+                                    super.visitFieldInsn( opcode, owner, "SWEEPING", desc );
+                                    return;
+                                case "DIG_SPEED":
+                                    super.visitFieldInsn( opcode, owner, "EFFICIENCY", desc );
+                                    return;
+                                case "DURABILITY":
+                                    super.visitFieldInsn( opcode, owner, "UNBREAKING", desc );
+                                    return;
+                                case "LOOT_BONUS_BLOCKS":
+                                    super.visitFieldInsn( opcode, owner, "FORTUNE", desc );
+                                    return;
+                                case "ARROW_DAMAGE":
+                                    super.visitFieldInsn( opcode, owner, "POWER", desc );
+                                    return;
+                                case "ARROW_KNOCKBACK":
+                                    super.visitFieldInsn( opcode, owner, "PUNCH", desc );
+                                    return;
+                                case "ARROW_FIRE":
+                                    super.visitFieldInsn( opcode, owner, "FLAME", desc );
+                                    return;
+                                case "ARROW_INFINITE":
+                                    super.visitFieldInsn( opcode, owner, "INFINITY", desc );
+                                    return;
+                                case "LUCK":
+                                    super.visitFieldInsn( opcode, owner, "LUCK_OF_THE_SEA", desc );
                                     return;
                             }
                         }
@@ -274,7 +429,14 @@ public class Commodore
                         }
 
                         // Enums to class
-                        if ( (owner.equals( "org/bukkit/block/Biome" ) ) && name.equals( "compareTo" ) && desc.equals( "(Ljava/lang/Enum;)I" ) )
+                        if ( (owner.equals( "org/bukkit/block/Biome" )
+                                || owner.equals( "org/bukkit/Art" )
+                                || owner.equals( "org/bukkit/Fluid" )
+                                || owner.equals( "org/bukkit/entity/EntityType" )
+                                || owner.equals( "org/bukkit/Sound" )
+                                || owner.equals( "org/bukkit/attribute/Attribute" )
+                                || owner.equals( "org/bukkit/entity/Villager$Type" )
+                                || owner.equals( "org/bukkit/entity/Villager$Profession" ) ) && name.equals( "compareTo" ) && desc.equals( "(Ljava/lang/Enum;)I" ) )
                         {
                             super.visitMethodInsn( opcode, owner, name, "(Ljava/lang/Object;)I", itf );
                             return;
