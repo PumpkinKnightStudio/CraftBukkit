@@ -229,14 +229,15 @@ public class CraftEntityType extends EntityType {
                 return new CraftEntityType(namespacedKey, null, null, false);
             }
 
-            if (entityType == null) {
-                return null;
-            }
-
             // convert legacy names to new one
             if (NAME_MAP.containsKey(namespacedKey)) {
                 return get(NAME_MAP.get(namespacedKey));
             }
+
+            if (entityType == null) {
+                return null;
+            }
+
             Class<? extends Entity> clazz = getEntityClass(namespacedKey);
 
             return new CraftEntityType(namespacedKey, entityType, clazz, SPAWNABLE.getOrDefault(namespacedKey, clazz != null));

@@ -191,13 +191,13 @@ public class CraftEnchantment extends Enchantment {
 
         @Override
         public Enchantment createBukkit(NamespacedKey namespacedKey, net.minecraft.world.item.enchantment.Enchantment enchantment) {
-            if (enchantment == null) {
-                return null;
-            }
-
             // convert legacy names to new one
             if (NAME_MAP.containsKey(namespacedKey)) {
                 return get(NAME_MAP.get(namespacedKey));
+            }
+
+            if (enchantment == null) {
+                return null;
             }
 
             return super.createBukkit(namespacedKey, enchantment);

@@ -133,13 +133,13 @@ public class CraftPotionEffectType extends PotionEffectType {
 
         @Override
         public PotionEffectType createBukkit(NamespacedKey namespacedKey, MobEffectList mobEffectList) {
-            if (mobEffectList == null) {
-                return null;
-            }
-
             // convert legacy names to new one
             if (NAME_MAP.containsKey(namespacedKey)) {
                 return get(NAME_MAP.get(namespacedKey));
+            }
+
+            if (mobEffectList == null) {
+                return null;
             }
 
             return super.createBukkit(namespacedKey, mobEffectList);
