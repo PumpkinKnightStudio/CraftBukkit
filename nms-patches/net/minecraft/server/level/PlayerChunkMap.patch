@@ -78,7 +78,79 @@
              CompletableFuture<IChunkAccess> completablefuture1 = playerchunk.getChunkSave();
  
              if (completablefuture1 != completablefuture) {
-@@ -616,7 +641,21 @@
+@@ -473,6 +498,15 @@
+                 PlayerChunkMap.LOGGER.error("Failed to save chunk {}", playerchunk.i(), throwable);
+             }
+ 
++            // CraftBukkit start - Call AsyncChunkUnmapEvent
++            boolean async = Thread.currentThread() != this.level.getChunkProvider().mainThread;
++            ChunkCoordIntPair chunkcoordintpair = playerchunk.i();
++            java.util.UUID worldUid = level.uuid;
++            int chunkX = chunkcoordintpair.x;
++            int chunkZ = chunkcoordintpair.z;
++            org.bukkit.event.world.AsyncChunkUnmapEvent unmapEvent = new org.bukkit.event.world.AsyncChunkUnmapEvent(async, worldUid, chunkX, chunkZ);
++            org.bukkit.Bukkit.getPluginManager().callEvent(unmapEvent);
++            // CraftBukkit end
+         });
+     }
+ 
+@@ -490,6 +524,14 @@
+         ChunkCoordIntPair chunkcoordintpair = playerchunk.i();
+ 
+         if (chunkstatus == ChunkStatus.EMPTY) {
++            // CraftBukkit start - Call AsyncChunkMapEvent
++            java.util.UUID worldUid = level.uuid;
++            int chunkX = chunkcoordintpair.x;
++            int chunkZ = chunkcoordintpair.z;
++            boolean async = Thread.currentThread() != this.level.getChunkProvider().mainThread;
++            org.bukkit.event.world.AsyncChunkMapEvent mapEvent = new org.bukkit.event.world.AsyncChunkMapEvent(async, worldUid, chunkX, chunkZ, playerchunk.preLoadTasks);
++            org.bukkit.Bukkit.getPluginManager().callEvent(mapEvent);
++            // CraftBukkit end
+             return this.f(chunkcoordintpair);
+         } else {
+             if (chunkstatus == ChunkStatus.LIGHT) {
+@@ -498,16 +540,37 @@
+ 
+             Optional<IChunkAccess> optional = ((Either) playerchunk.a(chunkstatus.e(), this).getNow(PlayerChunk.UNLOADED_CHUNK)).left();
+ 
++            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture; // CraftBukkit - common return variable for if below
+             if (optional.isPresent() && ((IChunkAccess) optional.get()).getChunkStatus().b(chunkstatus)) {
+-                CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = chunkstatus.a(this.level, this.structureManager, this.lightEngine, (ichunkaccess) -> {
++                completablefuture = chunkstatus.a(this.level, this.structureManager, this.lightEngine, (ichunkaccess) -> { // CraftBukkit
+                     return this.c(playerchunk);
+                 }, (IChunkAccess) optional.get());
+ 
+                 this.progressListener.a(chunkcoordintpair, chunkstatus);
+-                return completablefuture;
++                //return completablefuture; // CraftBukkit
+             } else {
+-                return this.b(playerchunk, chunkstatus);
++                //return this.b(playerchunk, chunkstatus); // CraftBukkit
++                completablefuture = this.b(playerchunk, chunkstatus); // CraftBukkit
+             }
++            // CraftBukkit start - Preload tasks must finish before chunk can be loaded
++            if (chunkstatus == ChunkStatus.FULL) {
++                completablefuture = completablefuture.thenApply((either) -> {
++                    if (either.right().isPresent()) {
++                        return either;
++                    }
++                    for (CompletableFuture<?> task : playerchunk.preLoadTasks) {
++                        if (task == null) {
++                            continue;
++                        }
++                        try {
++                            task.join();
++                        } catch (java.util.concurrent.CancellationException | java.util.concurrent.CompletionException ignored) { }
++                    }
++                    return either;
++                });
++            }
++            return completablefuture;
++            // CraftBukkit end
+         }
+     }
+ 
+@@ -616,7 +679,21 @@
  
      private static void a(WorldServer worldserver, List<NBTTagCompound> list) {
          if (!list.isEmpty()) {
@@ -101,7 +173,7 @@
          }
  
      }
-@@ -844,7 +883,8 @@
+@@ -844,7 +921,8 @@
                  return ichunkaccess instanceof Chunk ? Optional.of((Chunk) ichunkaccess) : Optional.empty();
              });
  
@@ -111,7 +183,7 @@
                  return chunk.getTileEntities().size();
              }).orElse(0));
          }
-@@ -853,7 +893,7 @@
+@@ -853,7 +931,7 @@
  
      private static String a(CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture) {
          try {
@@ -120,7 +192,7 @@
  
              return either != null ? (String) either.map((chunk) -> {
                  return "done";
-@@ -871,7 +911,7 @@
+@@ -871,7 +949,7 @@
      private NBTTagCompound readChunkData(ChunkCoordIntPair chunkcoordintpair) throws IOException {
          NBTTagCompound nbttagcompound = this.read(chunkcoordintpair);
  
@@ -129,7 +201,7 @@
      }
  
      boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair) {
-@@ -1238,7 +1278,7 @@
+@@ -1238,7 +1316,7 @@
          public final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
  
          public EntityTracker(Entity entity, int i, int j, boolean flag) {
@@ -138,7 +210,7 @@
              this.entity = entity;
              this.range = i;
              this.lastSectionPos = SectionPosition.a(entity);
-@@ -1291,10 +1331,18 @@
+@@ -1291,10 +1369,18 @@
  
          public void updatePlayer(EntityPlayer entityplayer) {
              if (entityplayer != this.entity) {

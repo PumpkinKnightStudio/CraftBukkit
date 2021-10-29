@@ -11,7 +11,14 @@
  public class PlayerChunk {
  
      public static final Either<IChunkAccess, PlayerChunk.Failure> UNLOADED_CHUNK = Either.right(PlayerChunk.Failure.UNLOADED);
-@@ -75,11 +79,11 @@
+@@ -69,17 +73,18 @@
+     private boolean wasAccessibleSinceLastSave;
+     private boolean resendLight;
+     private CompletableFuture<Void> pendingFullStateConfirmation;
++    final java.util.Collection<CompletableFuture<?>> preLoadTasks = new java.util.LinkedList<>(); // CraftBukkit
+ 
+     public PlayerChunk(ChunkCoordIntPair chunkcoordintpair, int i, LevelHeightAccessor levelheightaccessor, LightEngine lightengine, PlayerChunk.d playerchunk_d, PlayerChunk.e playerchunk_e) {
+         this.futures = new AtomicReferenceArray(PlayerChunk.CHUNK_STATUSES.size());
          this.fullChunkFuture = PlayerChunk.UNLOADED_LEVEL_CHUNK_FUTURE;
          this.tickingChunkFuture = PlayerChunk.UNLOADED_LEVEL_CHUNK_FUTURE;
          this.entityTickingChunkFuture = PlayerChunk.UNLOADED_LEVEL_CHUNK_FUTURE;
@@ -25,7 +32,7 @@
          this.pos = chunkcoordintpair;
          this.levelHeightAccessor = levelheightaccessor;
          this.lightEngine = lightengine;
-@@ -92,6 +96,19 @@
+@@ -92,6 +97,19 @@
          this.changedBlocksPerSection = new ShortSet[levelheightaccessor.getSectionsCount()];
      }
  
@@ -45,7 +52,7 @@
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
          CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.futures.get(chunkstatus.c());
  
-@@ -117,9 +134,9 @@
+@@ -117,9 +135,9 @@
      @Nullable
      public Chunk getChunk() {
          CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture = this.a();
@@ -57,7 +64,7 @@
      }
  
      @Nullable
-@@ -164,6 +181,7 @@
+@@ -164,6 +182,7 @@
          if (chunk != null) {
              int i = this.levelHeightAccessor.getSectionIndex(blockposition.getY());
  
@@ -65,7 +72,7 @@
              if (this.changedBlocksPerSection[i] == null) {
                  this.hasChangedSections = true;
                  this.changedBlocksPerSection[i] = new ShortArraySet();
-@@ -274,7 +292,7 @@
+@@ -274,7 +293,7 @@
          CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.futures.get(i);
  
          if (completablefuture != null) {
@@ -74,7 +81,7 @@
              boolean flag = either != null && either.right().isPresent();
  
              if (!flag) {
-@@ -341,7 +359,7 @@
+@@ -341,7 +360,7 @@
          this.pendingFullStateConfirmation = completablefuture1;
          completablefuture.thenAccept((either) -> {
              either.ifLeft((chunk) -> {
@@ -83,7 +90,7 @@
              });
          });
      }
-@@ -358,6 +376,30 @@
+@@ -358,6 +377,30 @@
          boolean flag1 = this.ticketLevel <= PlayerChunkMap.MAX_CHUNK_DISTANCE;
          PlayerChunk.State playerchunk_state = getChunkState(this.oldTicketLevel);
          PlayerChunk.State playerchunk_state1 = getChunkState(this.ticketLevel);
@@ -114,7 +121,7 @@
          CompletableFuture completablefuture;
  
          if (flag) {
-@@ -388,7 +430,7 @@
+@@ -388,7 +431,7 @@
          if (flag2 && !flag3) {
              completablefuture = this.fullChunkFuture;
              this.fullChunkFuture = PlayerChunk.UNLOADED_LEVEL_CHUNK_FUTURE;
@@ -123,7 +130,7 @@
                  Objects.requireNonNull(playerchunkmap);
                  return either1.ifLeft(playerchunkmap::a);
              }), "unfull");
-@@ -432,6 +474,26 @@
+@@ -432,6 +475,27 @@
  
          this.onLevelChange.a(this.pos, this::k, this.ticketLevel, this::d);
          this.oldTicketLevel = this.ticketLevel;
@@ -131,6 +138,7 @@
 +        // ChunkLoadEvent: Called after the chunk is loaded: isChunkLoaded returns true and chunk is ready to be modified by plugins.
 +        if (!playerchunk_state.isAtLeast(PlayerChunk.State.BORDER) && playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER)) {
 +            this.getStatusFutureUnchecked(ChunkStatus.FULL).thenAccept((either) -> {
++                this.preLoadTasks.clear(); // AsyncChunkPreLoadEvent - clear tasks on successful load.
 +                Chunk chunk = (Chunk)either.left().orElse(null);
 +                if (chunk != null) {
 +                    playerchunkmap.callbackExecutor.execute(() -> {
