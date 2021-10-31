@@ -1,10 +1,16 @@
 --- a/net/minecraft/server/network/LegacyPingHandler.java
 +++ b/net/minecraft/server/network/LegacyPingHandler.java
-@@ -36,11 +36,12 @@
+@@ -36,11 +36,18 @@
              MinecraftServer minecraftserver = this.serverConnectionListener.d();
              int i = bytebuf.readableBytes();
              String s;
-+            org.bukkit.event.server.ServerListPingEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callServerListPingEvent(minecraftserver.server, inetsocketaddress.getAddress(), minecraftserver.getMotd(), minecraftserver.getPlayerCount(), minecraftserver.getMaxPlayers()); // CraftBukkit
++            // CraftBukkit start
++            java.util.concurrent.CompletableFuture<Void> completedEventFuture = new java.util.concurrent.CompletableFuture<>();
++            org.bukkit.event.server.ServerListPingEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callServerListPingEvent(minecraftserver.server, inetsocketaddress.getAddress(), minecraftserver.getMotd(), minecraftserver.getPlayerCount(), minecraftserver.getMaxPlayers(), () -> {
++                completedEventFuture.complete(null);
++            });
++            completedEventFuture.join();
++            // CraftBukkit end
  
              switch (i) {
                  case 0:
@@ -14,7 +20,7 @@
                      this.a(channelhandlercontext, this.a(s));
                      break;
                  case 1:
-@@ -49,7 +50,7 @@
+@@ -49,7 +56,7 @@
                      }
  
                      LegacyPingHandler.LOGGER.debug("Ping: (1.4-1.5.x) from {}:{}", inetsocketaddress.getAddress(), inetsocketaddress.getPort());
@@ -23,7 +29,7 @@
                      this.a(channelhandlercontext, this.a(s));
                      break;
                  default:
-@@ -68,7 +69,7 @@
+@@ -68,7 +75,7 @@
                      }
  
                      LegacyPingHandler.LOGGER.debug("Ping: (1.6) from {}:{}", inetsocketaddress.getAddress(), inetsocketaddress.getPort());

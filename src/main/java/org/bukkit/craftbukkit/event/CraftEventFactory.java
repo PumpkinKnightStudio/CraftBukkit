@@ -823,12 +823,19 @@ public class CraftEventFactory {
         return event;
     }
 
-    /**
+    /*
      * Server methods
      */
+
+    @Deprecated
     public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, int numPlayers, int maxPlayers) {
-        ServerListPingEvent event = new ServerListPingEvent(address, motd, numPlayers, maxPlayers);
+        return callServerListPingEvent(craftServer, address, motd, numPlayers, maxPlayers, () -> {});
+    }
+
+    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, int numPlayers, int maxPlayers, Runnable callback) {
+        ServerListPingEvent event = new ServerListPingEvent(address, motd, numPlayers, maxPlayers, callback);
         craftServer.getPluginManager().callEvent(event);
+        event.setDispatched();
         return event;
     }
 

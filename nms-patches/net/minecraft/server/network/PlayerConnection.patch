@@ -607,13 +607,13 @@
      public void a(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set) {
 -        this.a(d0, d1, d2, f, f1, set, false);
 +        this.a(d0, d1, d2, f, f1, set, PlayerTeleportEvent.TeleportCause.UNKNOWN);
++    }
++
++    public void a(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set, PlayerTeleportEvent.TeleportCause cause) {
++        this.a(d0, d1, d2, f, f1, set, false, cause);
      }
  
 -    public void a(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set, boolean flag) {
-+    public void a(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set, PlayerTeleportEvent.TeleportCause cause) {
-+        this.a(d0, d1, d2, f, f1, set, false, cause);
-+    }
-+
 +    public boolean a(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set, boolean flag, PlayerTeleportEvent.TeleportCause cause) { // CraftBukkit - Return event status
 +        Player player = this.getPlayer();
 +        Location from = player.getLocation();
@@ -957,7 +957,7 @@
              } else {
                  String s1 = itextfilter_a.b();
                  ChatMessage chatmessage = s1.isEmpty() ? null : new ChatMessage("chat.type.text", new Object[]{this.player.getScoreboardDisplayName(), s1});
-@@ -1234,28 +1760,198 @@
+@@ -1234,28 +1760,211 @@
                  }, ChatMessageType.CHAT, this.player.getUniqueID());
              }
  
@@ -1006,63 +1006,76 @@
 +            // Do nothing, this is coming from a plugin
 +        } else {
 +            Player player = this.getPlayer();
-+            AsyncPlayerChatEvent event = new AsyncPlayerChatEvent(async, player, s, new LazyPlayerSet(server));
++
++            CompletableFuture<Void> eventCompleteFuture = new CompletableFuture<>();
++            AsyncPlayerChatEvent event = new AsyncPlayerChatEvent(async, player, s, new LazyPlayerSet(server), () -> {
++                eventCompleteFuture.complete(null);
++            });
 +            this.cserver.getPluginManager().callEvent(event);
++            event.setDispatched();
 +
-+            if (PlayerChatEvent.getHandlerList().getRegisteredListeners().length != 0) {
-+                // Evil plugins still listening to deprecated event
-+                final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
-+                queueEvent.setCancelled(event.isCancelled());
-+                Waitable waitable = new Waitable() {
-+                    @Override
-+                    protected Object evaluate() {
-+                        org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
++            Runnable chatTask = () -> {
++                if (PlayerChatEvent.getHandlerList().getRegisteredListeners().length != 0) {
++                    // Evil plugins still listening to deprecated event
++                    final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
++                    queueEvent.setCancelled(event.isCancelled());
++                    Waitable waitable = new Waitable() {
++                        @Override
++                        protected Object evaluate() {
++                            org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
 +
-+                        if (queueEvent.isCancelled()) {
++                            if (queueEvent.isCancelled()) {
++                                return null;
++                            }
++
++                            String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
++                            PlayerConnection.this.server.console.sendMessage(message);
++                            if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
++                                for (EntityPlayer recipient : server.getPlayerList().players) {
++                                    recipient.getBukkitEntity().sendMessage(PlayerConnection.this.player.getUniqueID(), message);
++                                }
++                            } else {
++                                for (Player player : queueEvent.getRecipients()) {
++                                    player.sendMessage(PlayerConnection.this.player.getUniqueID(), message);
++                                }
++                            }
 +                            return null;
-+                        }
-+
-+                        String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
-+                        PlayerConnection.this.server.console.sendMessage(message);
-+                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-+                            for (EntityPlayer recipient : server.getPlayerList().players) {
-+                                recipient.getBukkitEntity().sendMessage(PlayerConnection.this.player.getUniqueID(), message);
-+                            }
-+                        } else {
-+                            for (Player player : queueEvent.getRecipients()) {
-+                                player.sendMessage(PlayerConnection.this.player.getUniqueID(), message);
-+                            }
-+                        }
-+                        return null;
-+                    }};
-+                if (async) {
-+                    server.processQueue.add(waitable);
++                        }};
++                    if (!cserver.isPrimaryThread()) {
++                        server.processQueue.add(waitable);
++                    } else {
++                        waitable.run();
++                    }
++                    try {
++                        waitable.get();
++                    } catch (InterruptedException e) {
++                        Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
++                    } catch (ExecutionException e) {
++                        throw new RuntimeException("Exception processing chat event", e.getCause());
++                    }
 +                } else {
-+                    waitable.run();
++                    if (event.isCancelled()) {
++                        return;
++                    }
++
++                    String t = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
++                    server.console.sendMessage(t);
++                    if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
++                        for (EntityPlayer recipient : server.getPlayerList().players) {
++                            recipient.getBukkitEntity().sendMessage(PlayerConnection.this.player.getUniqueID(), t);
++                        }
++                    } else {
++                        for (Player recipient : event.getRecipients()) {
++                            recipient.sendMessage(PlayerConnection.this.player.getUniqueID(), t);
++                        }
++                    }
 +                }
-+                try {
-+                    waitable.get();
-+                } catch (InterruptedException e) {
-+                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
-+                } catch (ExecutionException e) {
-+                    throw new RuntimeException("Exception processing chat event", e.getCause());
-+                }
++            };
++
++            if (async) {
++                eventCompleteFuture.thenRun(() -> chatTask.run());
 +            } else {
-+                if (event.isCancelled()) {
-+                    return;
-+                }
-+
-+                s = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
-+                server.console.sendMessage(s);
-+                if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
-+                    for (EntityPlayer recipient : server.getPlayerList().players) {
-+                        recipient.getBukkitEntity().sendMessage(PlayerConnection.this.player.getUniqueID(), s);
-+                    }
-+                } else {
-+                    for (Player recipient : event.getRecipients()) {
-+                        recipient.sendMessage(PlayerConnection.this.player.getUniqueID(), s);
-+                    }
-+                }
++                server.processQueue.add(() -> chatTask.run());
 +            }
 +        }
 +    }
@@ -1160,7 +1173,7 @@
          this.player.resetIdleTimer();
          IJumpable ijumpable;
  
-@@ -1313,6 +2009,7 @@
+@@ -1313,6 +2022,7 @@
      @Override
      public void a(PacketPlayInUseEntity packetplayinuseentity) {
          PlayerConnectionUtils.ensureMainThread(packetplayinuseentity, this, this.player.getWorldServer());
@@ -1168,7 +1181,7 @@
          WorldServer worldserver = this.player.getWorldServer();
          final Entity entity = packetplayinuseentity.a(worldserver);
  
-@@ -1323,10 +2020,44 @@
+@@ -1323,10 +2033,44 @@
  
              if (this.player.f(entity) < 36.0D) {
                  packetplayinuseentity.a(new PacketPlayInUseEntity.c() {
@@ -1214,7 +1227,7 @@
                          if (enuminteractionresult.a()) {
                              CriterionTriggers.PLAYER_INTERACTED_WITH_ENTITY.a(PlayerConnection.this.player, itemstack, entity);
                              if (enuminteractionresult.b()) {
-@@ -1338,20 +2069,27 @@
+@@ -1338,20 +2082,27 @@
  
                      @Override
                      public void a(EnumHand enumhand) {
@@ -1245,7 +1258,7 @@
                          } else {
                              PlayerConnection.this.disconnect(new ChatMessage("multiplayer.disconnect.invalid_entity_attacked"));
                              PlayerConnection.LOGGER.warn("Player {} tried to attack an invalid entity", PlayerConnection.this.player.getDisplayName().getString());
-@@ -1396,21 +2134,304 @@
+@@ -1396,21 +2147,304 @@
      @Override
      public void a(PacketPlayInCloseWindow packetplayinclosewindow) {
          PlayerConnectionUtils.ensureMainThread(packetplayinclosewindow, this, this.player.getWorldServer());
@@ -1553,7 +1566,7 @@
                  ObjectIterator objectiterator = Int2ObjectMaps.fastIterable(packetplayinwindowclick.f()).iterator();
  
                  while (objectiterator.hasNext()) {
-@@ -1445,6 +2466,7 @@
+@@ -1445,6 +2479,7 @@
      @Override
      public void a(PacketPlayInEnchantItem packetplayinenchantitem) {
          PlayerConnectionUtils.ensureMainThread(packetplayinenchantitem, this, this.player.getWorldServer());
@@ -1561,7 +1574,7 @@
          this.player.resetIdleTimer();
          if (this.player.containerMenu.containerId == packetplayinenchantitem.b() && !this.player.isSpectator()) {
              this.player.containerMenu.a((EntityHuman) this.player, packetplayinenchantitem.c());
-@@ -1477,6 +2499,43 @@
+@@ -1477,6 +2512,43 @@
  
              boolean flag1 = packetplayinsetcreativeslot.b() >= 1 && packetplayinsetcreativeslot.b() <= 45;
              boolean flag2 = itemstack.isEmpty() || itemstack.getDamage() >= 0 && itemstack.getCount() <= 64 && !itemstack.isEmpty();
@@ -1605,7 +1618,7 @@
  
              if (flag1 && flag2) {
                  this.player.inventoryMenu.getSlot(packetplayinsetcreativeslot.b()).set(itemstack);
-@@ -1499,6 +2558,7 @@
+@@ -1499,6 +2571,7 @@
      }
  
      private void a(PacketPlayInUpdateSign packetplayinupdatesign, List<ITextFilter.a> list) {
@@ -1613,7 +1626,7 @@
          this.player.resetIdleTimer();
          WorldServer worldserver = this.player.getWorldServer();
          BlockPosition blockposition = packetplayinupdatesign.b();
-@@ -1515,18 +2575,37 @@
+@@ -1515,18 +2588,37 @@
  
              if (!tileentitysign.d() || !this.player.getUniqueID().equals(tileentitysign.f())) {
                  PlayerConnection.LOGGER.warn("Player {} just tried to change non-editable sign", this.player.getDisplayName().getString());
@@ -1653,7 +1666,7 @@
  
              tileentitysign.update();
              worldserver.notify(blockposition, iblockdata, iblockdata, 3);
-@@ -1536,6 +2615,7 @@
+@@ -1536,6 +2628,7 @@
  
      @Override
      public void a(PacketPlayInKeepAlive packetplayinkeepalive) {
@@ -1661,7 +1674,7 @@
          if (this.keepAlivePending && packetplayinkeepalive.b() == this.keepAliveChallenge) {
              int i = (int) (SystemUtils.getMonotonicMillis() - this.keepAliveTime);
  
-@@ -1550,7 +2630,17 @@
+@@ -1550,7 +2643,17 @@
      @Override
      public void a(PacketPlayInAbilities packetplayinabilities) {
          PlayerConnectionUtils.ensureMainThread(packetplayinabilities, this, this.player.getWorldServer());
@@ -1680,7 +1693,7 @@
      }
  
      @Override
-@@ -1559,8 +2649,50 @@
+@@ -1559,8 +2662,50 @@
          this.player.a(packetplayinsettings);
      }
  

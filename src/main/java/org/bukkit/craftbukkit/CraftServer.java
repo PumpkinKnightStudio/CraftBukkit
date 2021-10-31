@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1559,19 +1560,21 @@ public final class CraftServer implements Server {
             }
         }
 
-        BroadcastMessageEvent broadcastMessageEvent = new BroadcastMessageEvent(!Bukkit.isPrimaryThread(), message, recipients);
+        CompletableFuture<Void> eventCompletedFuture = new CompletableFuture<>();
+        BroadcastMessageEvent broadcastMessageEvent = new BroadcastMessageEvent(!Bukkit.isPrimaryThread(), message, recipients, () -> {
+            eventCompletedFuture.complete(null);
+        });
         getPluginManager().callEvent(broadcastMessageEvent);
-
+        broadcastMessageEvent.setDispatched();
         if (broadcastMessageEvent.isCancelled()) {
             return 0;
         }
-
-        message = broadcastMessageEvent.getMessage();
-
+        // Broadcast should be called by plugins asynchronously.
+        eventCompletedFuture.join();
+        String eventMessage = broadcastMessageEvent.getMessage();
         for (CommandSender recipient : recipients) {
-            recipient.sendMessage(message);
+            recipient.sendMessage(eventMessage);
         }
-
         return recipients.size();
     }
 
