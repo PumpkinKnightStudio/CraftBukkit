@@ -61,7 +61,22 @@
                  this.b(damagesource.getEntity(), false);
                  this.playSound(this.h(), 1.0F, 1.0F);
              }
-@@ -277,6 +294,12 @@
+@@ -223,7 +240,13 @@
+         if (!this.fixed) {
+             ItemStack itemstack = this.getItem();
+ 
+-            this.setItem(ItemStack.EMPTY);
++            // CraftBukkit start - ItemFrameChangeItemEvent
++            org.bukkit.event.entity.ItemFrameChangeItemEvent itemFrameChangeItemEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeItemEvent(this, ItemStack.EMPTY);
++            if (itemFrameChangeItemEvent.isCancelled()) {
++                return;
++            }
++            this.setItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemFrameChangeItemEvent.getNewItemInFrame()));
++            // CraftBukkit end
+             if (!this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                 if (entity == null) {
+                     this.c(itemstack);
+@@ -277,6 +300,12 @@
      }
  
      public void setItem(ItemStack itemstack, boolean flag) {
@@ -74,7 +89,7 @@
          if (!itemstack.isEmpty()) {
              itemstack = itemstack.cloneItemStack();
              itemstack.setCount(1);
-@@ -284,7 +307,7 @@
+@@ -284,7 +313,7 @@
          }
  
          this.getDataWatcher().set(EntityItemFrame.DATA_ITEM, itemstack);
@@ -83,3 +98,33 @@
              this.playSound(this.l(), 1.0F, 1.0F);
          }
  
+@@ -405,14 +434,24 @@
+                         }
+                     }
+ 
+-                    this.setItem(itemstack);
+-                    if (!entityhuman.getAbilities().instabuild) {
+-                        itemstack.subtract(1);
++                    // CraftBukkit start - ItemFrameChangeItemEvent
++                    org.bukkit.event.entity.ItemFrameChangeItemEvent itemFrameChangeItemEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeItemEvent(this, itemstack);
++                    if (!itemFrameChangeItemEvent.isCancelled()) {
++                        this.setItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemFrameChangeItemEvent.getNewItemInFrame()));
++                        if (!entityhuman.getAbilities().instabuild && itemFrameChangeItemEvent.consumeItem()) {
++                            itemstack.subtract(1);
++                        }
+                     }
++                    // CraftBukkit end
+                 }
+             } else {
+-                this.playSound(this.n(), 1.0F, 1.0F);
+-                this.setRotation(this.getRotation() + 1);
++                // CraftBukkit start - ItemFrameChangeRotationEvent
++                org.bukkit.event.entity.ItemFrameChangeRotationEvent itemFrameChangeRotationEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeRotationEvent(this, this.getRotation() + 1);
++                if (!itemFrameChangeRotationEvent.isCancelled()) {
++                    this.playSound(this.n(), 1.0F, 1.0F);
++                    this.setRotation(org.bukkit.craftbukkit.entity.CraftItemFrame.toInteger(itemFrameChangeRotationEvent.getNewRotation()));
++                }
++                // CraftBukkit end
+             }
+ 
+             return EnumInteractionResult.CONSUME;

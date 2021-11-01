@@ -36,6 +36,7 @@ import net.minecraft.world.entity.animal.EntityFish;
 import net.minecraft.world.entity.animal.EntityGolem;
 import net.minecraft.world.entity.animal.EntityWaterAnimal;
 import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
+import net.minecraft.world.entity.decoration.EntityItemFrame;
 import net.minecraft.world.entity.item.EntityItem;
 import net.minecraft.world.entity.monster.EntityGhast;
 import net.minecraft.world.entity.monster.EntityIllagerWizard;
@@ -87,6 +88,7 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftItemFrame;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftRaider;
@@ -109,6 +111,7 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.Fish;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pig;
@@ -179,6 +182,8 @@ import org.bukkit.event.entity.FireworkExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.HorseJumpEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.entity.ItemFrameChangeItemEvent;
+import org.bukkit.event.entity.ItemFrameChangeRotationEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
@@ -1157,6 +1162,26 @@ public class CraftEventFactory {
 
         EntityBreakDoorEvent event = new EntityBreakDoorEvent((LivingEntity) entity1, block);
         entity1.getServer().getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    public static ItemFrameChangeItemEvent callItemFrameChangeItemEvent(EntityItemFrame entityItemFrame, ItemStack itemStack) {
+        org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
+        org.bukkit.inventory.ItemStack itemForEntityFrame = CraftItemStack.asCraftMirror(itemStack);
+
+        ItemFrameChangeItemEvent event = new ItemFrameChangeItemEvent(itemFrame, itemForEntityFrame);
+        itemFrame.getServer().getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, int rotation) {
+        org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
+        org.bukkit.Rotation newRotation = CraftItemFrame.toBukkitRotation(rotation);
+
+        ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, newRotation);
+        itemFrame.getServer().getPluginManager().callEvent(event);
 
         return event;
     }
