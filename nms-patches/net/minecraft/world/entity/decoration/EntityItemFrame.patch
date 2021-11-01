@@ -118,7 +118,7 @@
              } else {
 -                this.playSound(this.n(), 1.0F, 1.0F);
 -                this.setRotation(this.getRotation() + 1);
-+                // CraftBukkit start - ItemFrameChangeRotationEvent
++                // CraftBukkit start - call ItemFrameChangeRotationEvent
 +                org.bukkit.event.entity.ItemFrameChangeRotationEvent itemFrameChangeRotationEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeRotationEvent(this, this.getRotation() + 1);
 +                if (!itemFrameChangeRotationEvent.isCancelled()) {
 +                    this.playSound(this.n(), 1.0F, 1.0F);
