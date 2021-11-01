@@ -66,7 +66,7 @@
              ItemStack itemstack = this.getItem();
  
 -            this.setItem(ItemStack.EMPTY);
-+            // CraftBukkit start - ItemFrameChangeItemEvent
++            // CraftBukkit start - call ItemFrameChangeItemEvent
 +            org.bukkit.event.entity.ItemFrameChangeItemEvent itemFrameChangeItemEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeItemEvent(this, ItemStack.EMPTY);
 +            if (itemFrameChangeItemEvent.isCancelled()) {
 +                return;
@@ -105,7 +105,7 @@
 -                    this.setItem(itemstack);
 -                    if (!entityhuman.getAbilities().instabuild) {
 -                        itemstack.subtract(1);
-+                    // CraftBukkit start - ItemFrameChangeItemEvent
++                    // CraftBukkit start - call ItemFrameChangeItemEvent
 +                    org.bukkit.event.entity.ItemFrameChangeItemEvent itemFrameChangeItemEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeItemEvent(this, itemstack);
 +                    if (!itemFrameChangeItemEvent.isCancelled()) {
 +                        this.setItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemFrameChangeItemEvent.getNewItemInFrame()));
@@ -122,7 +122,7 @@
 +                org.bukkit.event.entity.ItemFrameChangeRotationEvent itemFrameChangeRotationEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeRotationEvent(this, this.getRotation() + 1);
 +                if (!itemFrameChangeRotationEvent.isCancelled()) {
 +                    this.playSound(this.n(), 1.0F, 1.0F);
-+                    this.setRotation(org.bukkit.craftbukkit.entity.CraftItemFrame.toInteger(itemFrameChangeRotationEvent.getNewRotation()));
++                    this.setRotation(itemFrameChangeRotationEvent.getNewRotation().ordinal());
 +                }
 +                // CraftBukkit end
              }

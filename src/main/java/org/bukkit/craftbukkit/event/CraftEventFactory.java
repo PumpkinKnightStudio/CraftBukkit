@@ -88,7 +88,6 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftItemFrame;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftRaider;
@@ -1178,7 +1177,7 @@ public class CraftEventFactory {
 
     public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, int rotation) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
-        org.bukkit.Rotation newRotation = CraftItemFrame.toBukkitRotation(rotation);
+        org.bukkit.Rotation newRotation = org.bukkit.Rotation.values()[rotation];
 
         ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, newRotation);
         itemFrame.getServer().getPluginManager().callEvent(event);

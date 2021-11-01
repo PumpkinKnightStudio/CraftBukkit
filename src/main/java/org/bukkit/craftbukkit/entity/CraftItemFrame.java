@@ -86,7 +86,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         return toBukkitRotation(getHandle().getRotation());
     }
 
-    public static Rotation toBukkitRotation(int value) {
+    Rotation toBukkitRotation(int value) {
         // Translate NMS rotation integer to Bukkit API
         switch (value) {
         case 0:
@@ -116,7 +116,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         getHandle().setRotation(toInteger(rotation));
     }
 
-    public static int toInteger(Rotation rotation) {
+    static int toInteger(Rotation rotation) {
         // Translate Bukkit API rotation to NMS integer
         switch (rotation) {
         case NONE:
