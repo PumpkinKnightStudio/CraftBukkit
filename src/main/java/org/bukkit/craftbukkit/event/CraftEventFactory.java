@@ -72,6 +72,7 @@ import net.minecraft.world.phys.MovingObjectPositionEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Rotation;
 import org.bukkit.Server;
 import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
@@ -1177,6 +1178,10 @@ public class CraftEventFactory {
 
     public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, int rotation) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
+        // Check if the newRotation is upper the last value (this is for the cicle complete)
+        if (rotation > org.bukkit.Rotation.values()[Rotation.values().length - 1].ordinal()) {
+            rotation = 0;
+        }
         org.bukkit.Rotation newRotation = org.bukkit.Rotation.values()[rotation];
 
         ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, newRotation);
