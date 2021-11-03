@@ -1166,17 +1166,17 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static ItemFrameChangeItemEvent callItemFrameChangeItemEvent(EntityItemFrame entityItemFrame, ItemStack itemStack) {
+    public static ItemFrameChangeItemEvent callItemFrameChangeItemEvent(EntityItemFrame entityItemFrame, Entity entityInteract, ItemStack itemStack) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
         org.bukkit.inventory.ItemStack itemForEntityFrame = CraftItemStack.asCraftMirror(itemStack);
 
-        ItemFrameChangeItemEvent event = new ItemFrameChangeItemEvent(itemFrame, itemForEntityFrame);
+        ItemFrameChangeItemEvent event = new ItemFrameChangeItemEvent(itemFrame, entityInteract == null ? null : entityInteract.getBukkitEntity(), itemForEntityFrame);
         itemFrame.getServer().getPluginManager().callEvent(event);
 
         return event;
     }
 
-    public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, int rotation) {
+    public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, Entity entityInteract, int rotation) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
         // Check if the newRotation is upper the last value (this is for the cicle complete)
         if (rotation > org.bukkit.Rotation.values()[Rotation.values().length - 1].ordinal()) {
@@ -1184,7 +1184,7 @@ public class CraftEventFactory {
         }
         org.bukkit.Rotation newRotation = org.bukkit.Rotation.values()[rotation];
 
-        ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, newRotation);
+        ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, entityInteract.getBukkitEntity(), newRotation);
         itemFrame.getServer().getPluginManager().callEvent(event);
 
         return event;
