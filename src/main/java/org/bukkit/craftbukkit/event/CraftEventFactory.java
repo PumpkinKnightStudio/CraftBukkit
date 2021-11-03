@@ -1169,8 +1169,14 @@ public class CraftEventFactory {
     public static ItemFrameChangeItemEvent callItemFrameChangeItemEvent(EntityItemFrame entityItemFrame, Entity entityInteract, ItemStack itemStack) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
         org.bukkit.inventory.ItemStack itemForEntityFrame = CraftItemStack.asCraftMirror(itemStack);
+        org.bukkit.entity.Entity entityWhoInteract = entityInteract == null ? null : entityInteract.getBukkitEntity();
 
-        ItemFrameChangeItemEvent event = new ItemFrameChangeItemEvent(itemFrame, entityInteract == null ? null : entityInteract.getBukkitEntity(), itemForEntityFrame);
+        // This allow change who modified the ItemFrame based in the damage where this is called when the item is null
+        if (itemStack.isEmpty() && entityItemFrame.getBukkitEntity().getLastDamageCause() instanceof EntityDamageByEntityEvent) {
+            entityWhoInteract = ((EntityDamageByEntityEvent) entityItemFrame.getBukkitEntity().getLastDamageCause()).getDamager();
+        }
+
+        ItemFrameChangeItemEvent event = new ItemFrameChangeItemEvent(itemFrame, entityWhoInteract, itemForEntityFrame);
         itemFrame.getServer().getPluginManager().callEvent(event);
 
         return event;
