@@ -1184,10 +1184,6 @@ public class CraftEventFactory {
 
     public static ItemFrameChangeRotationEvent callItemFrameChangeRotationEvent(EntityItemFrame entityItemFrame, Entity entityInteract, int rotation) {
         org.bukkit.entity.ItemFrame itemFrame = (ItemFrame) entityItemFrame.getBukkitEntity();
-        // Check if the newRotation is upper the last value (this is for the cicle complete)
-        if (rotation > org.bukkit.Rotation.values()[Rotation.values().length - 1].ordinal()) {
-            rotation = 0;
-        }
         org.bukkit.Rotation newRotation = org.bukkit.Rotation.values()[rotation];
 
         ItemFrameChangeRotationEvent event = new ItemFrameChangeRotationEvent(itemFrame, entityInteract.getBukkitEntity(), newRotation);

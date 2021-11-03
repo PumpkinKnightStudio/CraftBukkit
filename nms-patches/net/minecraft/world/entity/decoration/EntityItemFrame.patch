@@ -98,7 +98,7 @@
              this.playSound(this.l(), 1.0F, 1.0F);
          }
  
-@@ -405,14 +434,24 @@
+@@ -405,14 +434,25 @@
                          }
                      }
  
@@ -119,7 +119,8 @@
 -                this.playSound(this.n(), 1.0F, 1.0F);
 -                this.setRotation(this.getRotation() + 1);
 +                // CraftBukkit start - call ItemFrameChangeRotationEvent
-+                org.bukkit.event.entity.ItemFrameChangeRotationEvent itemFrameChangeRotationEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeRotationEvent(this, entityhuman, this.getRotation() + 1);
++                int rotationToSet = (this.getRotation() + 1) % 8;
++                org.bukkit.event.entity.ItemFrameChangeRotationEvent itemFrameChangeRotationEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callItemFrameChangeRotationEvent(this, entityhuman, rotationToSet);
 +                if (!itemFrameChangeRotationEvent.isCancelled()) {
 +                    this.playSound(this.n(), 1.0F, 1.0F);
 +                    this.setRotation(itemFrameChangeRotationEvent.getNewRotation().ordinal());
