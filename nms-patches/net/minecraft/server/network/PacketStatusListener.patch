@@ -19,7 +19,7 @@
  public class PacketStatusListener implements PacketStatusInListener {
  
      private static final IChatBaseComponent DISCONNECT_REASON = new ChatMessage("multiplayer.status.request_handled");
-@@ -36,8 +48,103 @@
+@@ -36,8 +48,96 @@
              this.connection.close(PacketStatusListener.DISCONNECT_REASON);
          } else {
              this.hasRequestedStatus = true;
@@ -31,8 +31,8 @@
 +
 +                CraftIconCache icon = server.server.getServerIcon();
 +
-+                ServerListPingEvent(java.lang.Runnable callback) {
-+                    super(((InetSocketAddress) connection.getSocketAddress()).getAddress(), server.getMotd(), server.getPlayerList().getMaxPlayers(), callback);
++                ServerListPingEvent() {
++                    super(((InetSocketAddress) connection.getSocketAddress()).getAddress(), server.getMotd(), server.getPlayerList().getMaxPlayers());
 +                }
 +
 +                @Override
@@ -91,34 +91,27 @@
 +                }
 +            }
 +
-+            java.util.concurrent.CompletableFuture<Void> eventCompletedFuture = new java.util.concurrent.CompletableFuture<>();
-+            ServerListPingEvent event = new ServerListPingEvent(() -> {
-+                eventCompletedFuture.complete(null);
-+            });
++            ServerListPingEvent event = new ServerListPingEvent();
 +            this.server.server.getPluginManager().callEvent(event);
-+            event.setDispatched();
 +
-+            eventCompletedFuture.thenRun(() -> {
-+                java.util.List<GameProfile> profiles = new java.util.ArrayList<GameProfile>(players.length);
-+                for (Object player : players) {
-+                    if (player != null) {
-+                        profiles.add(((EntityPlayer) player).getProfile());
-+                    }
++            java.util.List<GameProfile> profiles = new java.util.ArrayList<GameProfile>(players.length);
++            for (Object player : players) {
++                if (player != null) {
++                    profiles.add(((EntityPlayer) player).getProfile());
 +                }
++            }
 +
-+                ServerPing.ServerPingPlayerSample playerSample = new ServerPing.ServerPingPlayerSample(event.getMaxPlayers(), profiles.size());
-+                playerSample.a(profiles.toArray(new GameProfile[profiles.size()]));
++            ServerPing.ServerPingPlayerSample playerSample = new ServerPing.ServerPingPlayerSample(event.getMaxPlayers(), profiles.size());
++            playerSample.a(profiles.toArray(new GameProfile[profiles.size()]));
 +
-+                ServerPing ping = new ServerPing();
-+                ping.setFavicon(event.icon.value);
-+                ping.setMOTD(CraftChatMessage.fromString(event.getMotd(), true)[0]);
-+                ping.setPlayerSample(playerSample);
-+                int version = SharedConstants.getGameVersion().getProtocolVersion();
-+                ping.setServerInfo(new ServerPing.ServerData(server.getServerModName() + " " + server.getVersion(), version));
++            ServerPing ping = new ServerPing();
++            ping.setFavicon(event.icon.value);
++            ping.setMOTD(CraftChatMessage.fromString(event.getMotd(), true)[0]);
++            ping.setPlayerSample(playerSample);
++            int version = SharedConstants.getGameVersion().getProtocolVersion();
++            ping.setServerInfo(new ServerPing.ServerData(server.getServerModName() + " " + server.getVersion(), version));
 +
-+                this.connection.sendPacket(new PacketStatusOutServerInfo(ping));
-+            });
-+
++            this.connection.sendPacket(new PacketStatusOutServerInfo(ping));
          }
 +        // CraftBukkit end
      }

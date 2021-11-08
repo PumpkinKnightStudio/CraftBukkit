@@ -1,12 +1,13 @@
 --- a/net/minecraft/server/network/LoginListener.java
 +++ b/net/minecraft/server/network/LoginListener.java
-@@ -36,6 +36,13 @@
+@@ -36,6 +36,14 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.network.chat.ChatComponentText;
 +import org.bukkit.craftbukkit.util.Waitable;
++import org.bukkit.event.EventIntents;
 +import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 +import org.bukkit.event.player.PlayerPreLoginEvent;
 +// CraftBukkit end
@@ -14,7 +15,7 @@
  public class LoginListener implements PacketLoginInListener {
  
      private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
-@@ -52,6 +59,8 @@
+@@ -52,6 +60,8 @@
      private final String serverId;
      @Nullable
      private EntityPlayer delayedAcceptPlayer;
@@ -23,7 +24,7 @@
  
      public LoginListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
          this.state = LoginListener.EnumProtocolState.HELLO;
-@@ -63,7 +72,11 @@
+@@ -63,7 +73,11 @@
  
      public void tick() {
          if (this.state == LoginListener.EnumProtocolState.READY_TO_ACCEPT) {
@@ -36,7 +37,7 @@
          } else if (this.state == LoginListener.EnumProtocolState.DELAY_ACCEPT) {
              EntityPlayer entityplayer = this.server.getPlayerList().getPlayer(this.gameProfile.getId());
  
-@@ -80,6 +93,20 @@
+@@ -80,6 +94,20 @@
  
      }
  
@@ -57,7 +58,7 @@
      @Override
      public NetworkManager a() {
          return this.connection;
-@@ -101,10 +128,12 @@
+@@ -101,10 +129,12 @@
              this.gameProfile = this.a(this.gameProfile);
          }
  
@@ -73,7 +74,7 @@
          } else {
              this.state = LoginListener.EnumProtocolState.ACCEPTED;
              if (this.server.av() >= 0 && !this.connection.isLocal()) {
-@@ -117,7 +146,7 @@
+@@ -117,7 +147,7 @@
              EntityPlayer entityplayer = this.server.getPlayerList().getPlayer(this.gameProfile.getId());
  
              try {
@@ -82,7 +83,7 @@
  
                  if (entityplayer != null) {
                      this.state = LoginListener.EnumProtocolState.DELAY_ACCEPT;
-@@ -191,6 +220,46 @@
+@@ -191,6 +221,55 @@
                  try {
                      LoginListener.this.gameProfile = LoginListener.this.server.getMinecraftSessionService().hasJoinedServer(new GameProfile((UUID) null, gameprofile.getName()), s, this.a());
                      if (LoginListener.this.gameProfile != null) {
@@ -96,11 +97,20 @@
 +                        java.util.UUID uniqueId = gameProfile.getId();
 +                        final org.bukkit.craftbukkit.CraftServer server = LoginListener.this.server.server;
 +
-+                        AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId, () -> {
++                        EventIntents intents = new EventIntents(() -> {
 +                            LoginListener.this.preLoginTasksCompleted.set(true);
-+                        });
++                        }, 100);
++                        AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId, intents);
 +                        server.getPluginManager().callEvent(asyncEvent);
-+                        asyncEvent.setDispatched();
++                        intents.setDispatched(asyncEvent.getEventName());
++                        if (!intents.hasCompleted()) {
++                            @Nullable Integer timeout = intents.getCompletionTimeout();
++                            if (timeout != null) {
++                                server.getServer().a(new net.minecraft.server.TickTask(server.getServer().ah() + timeout, () -> {
++                                    intents.timeoutIntents(timeout, server.getLogger(), asyncEvent.getEventName());
++                                }));
++                            }
++                        }
 +
 +                        if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
 +                            final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
@@ -129,7 +139,7 @@
                          LoginListener.LOGGER.info("UUID of player {} is {}", LoginListener.this.gameProfile.getName(), LoginListener.this.gameProfile.getId());
                          LoginListener.this.state = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
                      } else if (LoginListener.this.server.isEmbeddedServer()) {
-@@ -210,6 +279,11 @@
+@@ -210,6 +289,11 @@
                          LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.authservers_down"));
                          LoginListener.LOGGER.error("Couldn't verify username because servers are unavailable");
                      }
