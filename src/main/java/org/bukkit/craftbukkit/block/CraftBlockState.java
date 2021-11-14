@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.block;
 import com.google.common.base.Preconditions;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.block.state.IBlockData;
@@ -22,39 +23,30 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
 public class CraftBlockState implements BlockState {
+
     protected final CraftWorld world;
     private final BlockPosition position;
     protected IBlockData data;
     protected int flag;
     private WeakReference<GeneratorAccess> weakWorld;
 
-    public CraftBlockState(final Block block) {
-        this.world = (CraftWorld) block.getWorld();
-        this.position = ((CraftBlock) block).getPosition();
-        this.data = ((CraftBlock) block).getNMS();
+    protected CraftBlockState(final Block block) {
+        this(block.getWorld(), ((CraftBlock) block).getPosition(), ((CraftBlock) block).getNMS());
         this.flag = 3;
 
         setWorldHandle(((CraftBlock) block).getHandle());
     }
 
-    public CraftBlockState(final Block block, int flag) {
+    protected CraftBlockState(final Block block, int flag) {
         this(block);
         this.flag = flag;
     }
 
-    public CraftBlockState(Material material) {
-        world = null;
-        data = CraftMagicNumbers.getBlock(material).getBlockData();
-        position = BlockPosition.ZERO;
-        this.weakWorld = null;
-    }
-
-    public static CraftBlockState getBlockState(GeneratorAccess world, net.minecraft.core.BlockPosition pos) {
-        return new CraftBlockState(CraftBlock.at(world, pos));
-    }
-
-    public static CraftBlockState getBlockState(GeneratorAccess world, net.minecraft.core.BlockPosition pos, int flag) {
-        return new CraftBlockState(CraftBlock.at(world, pos), flag);
+    // world can be null for non-placed BlockStates.
+    protected CraftBlockState(@Nullable World world, BlockPosition blockPosition, IBlockData blockData) {
+        this.world = (CraftWorld) world;
+        position = blockPosition;
+        data = blockData;
     }
 
     public void setWorldHandle(GeneratorAccess generatorAccess) {
@@ -65,18 +57,31 @@ public class CraftBlockState implements BlockState {
         }
     }
 
+    // Returns null if weakWorld is not available and the BlockState is not placed.
+    // If this returns a World instead of only a GeneratorAccess, this implies that this BlockState is placed.
     public GeneratorAccess getWorldHandle() {
         if (weakWorld == null) {
-            return world.getHandle();
+            return this.isPlaced() ? world.getHandle() : null;
         }
 
         GeneratorAccess access = weakWorld.get();
         if (access == null) {
             weakWorld = null;
-            return world.getHandle();
+            return this.isPlaced() ? world.getHandle() : null;
         }
 
         return access;
+    }
+
+    protected final boolean isWorldGeneration() {
+        GeneratorAccess generatorAccess = this.getWorldHandle();
+        return generatorAccess != null && !(generatorAccess instanceof net.minecraft.world.level.World);
+    }
+
+    protected final void ensureNoWorldGeneration() {
+        if (isWorldGeneration()) {
+            throw new IllegalStateException("This operation is not supported during world generation!");
+        }
     }
 
     @Override

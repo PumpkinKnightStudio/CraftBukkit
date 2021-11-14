@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.block;
 
-import com.google.common.base.Preconditions;
 import net.minecraft.sounds.SoundEffects;
 import net.minecraft.world.ITileInventory;
 import net.minecraft.world.level.block.BlockChest;
@@ -8,7 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityChest;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -17,12 +16,8 @@ import org.bukkit.inventory.Inventory;
 
 public class CraftChest extends CraftLootable<TileEntityChest> implements Chest {
 
-    public CraftChest(final Block block) {
-        super(block, TileEntityChest.class);
-    }
-
-    public CraftChest(final Material material, final TileEntityChest te) {
-        super(material, te);
+    public CraftChest(World world, TileEntityChest tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -41,10 +36,8 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
 
     @Override
     public Inventory getInventory() {
-        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't get inventory during world generation, use getBlockInventory() instead");
-
         CraftInventory inventory = (CraftInventory) this.getBlockInventory();
-        if (!isPlaced()) {
+        if (!isPlaced() || isWorldGeneration()) {
             return inventory;
         }
 
@@ -52,7 +45,7 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
         CraftWorld world = (CraftWorld) this.getWorld();
 
         BlockChest blockChest = (BlockChest) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
-        ITileInventory nms = blockChest.getInventory(data, world.getHandle(), this.getPosition());
+        ITileInventory nms = blockChest.getInventory(data, world.getHandle(), this.getPosition(), true);
 
         if (nms instanceof BlockChest.DoubleInventory) {
             inventory = new CraftInventoryDoubleChest((BlockChest.DoubleInventory) nms);

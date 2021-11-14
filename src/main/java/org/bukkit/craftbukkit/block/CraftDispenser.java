@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.BlockDispenser;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -15,12 +16,8 @@ import org.bukkit.projectiles.BlockProjectileSource;
 
 public class CraftDispenser extends CraftLootable<TileEntityDispenser> implements Dispenser {
 
-    public CraftDispenser(final Block block) {
-        super(block, TileEntityDispenser.class);
-    }
-
-    public CraftDispenser(final Material material, final TileEntityDispenser te) {
-        super(material, te);
+    public CraftDispenser(World world, TileEntityDispenser tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -50,10 +47,8 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
 
     @Override
     public boolean dispense() {
-        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't dispense during world generation");
-
+        ensureNoWorldGeneration();
         Block block = getBlock();
-
         if (block.getType() == Material.DISPENSER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDispenser dispense = (BlockDispenser) Blocks.DISPENSER;

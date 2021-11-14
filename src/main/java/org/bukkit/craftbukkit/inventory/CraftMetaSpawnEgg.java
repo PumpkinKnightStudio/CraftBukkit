@@ -111,21 +111,23 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        if (type == Material.BAT_SPAWN_EGG || type == Material.BEE_SPAWN_EGG
-                || type == Material.BLAZE_SPAWN_EGG || type == Material.CAT_SPAWN_EGG
-                || type == Material.CAVE_SPIDER_SPAWN_EGG || type == Material.CHICKEN_SPAWN_EGG
-                || type == Material.COD_SPAWN_EGG || type == Material.COW_SPAWN_EGG
-                || type == Material.CREEPER_SPAWN_EGG || type == Material.DOLPHIN_SPAWN_EGG
-                || type == Material.DONKEY_SPAWN_EGG || type == Material.DROWNED_SPAWN_EGG
-                || type == Material.ELDER_GUARDIAN_SPAWN_EGG || type == Material.ENDERMAN_SPAWN_EGG
-                || type == Material.ENDERMITE_SPAWN_EGG || type == Material.EVOKER_SPAWN_EGG
-                || type == Material.FOX_SPAWN_EGG || type == Material.GHAST_SPAWN_EGG
-                || type == Material.GUARDIAN_SPAWN_EGG || type == Material.HOGLIN_SPAWN_EGG
-                || type == Material.HORSE_SPAWN_EGG || type == Material.HUSK_SPAWN_EGG
-                || type == Material.LLAMA_SPAWN_EGG || type == Material.MAGMA_CUBE_SPAWN_EGG
-                || type == Material.MOOSHROOM_SPAWN_EGG || type == Material.MULE_SPAWN_EGG
-                || type == Material.OCELOT_SPAWN_EGG || type == Material.PANDA_SPAWN_EGG
-                || type == Material.PARROT_SPAWN_EGG || type == Material.PHANTOM_SPAWN_EGG
+        if (type == Material.AXOLOTL_SPAWN_EGG || type == Material.BAT_SPAWN_EGG
+                || type == Material.BEE_SPAWN_EGG || type == Material.BLAZE_SPAWN_EGG
+                || type == Material.CAT_SPAWN_EGG || type == Material.CAVE_SPIDER_SPAWN_EGG
+                || type == Material.CHICKEN_SPAWN_EGG || type == Material.COD_SPAWN_EGG
+                || type == Material.COW_SPAWN_EGG || type == Material.CREEPER_SPAWN_EGG
+                || type == Material.DOLPHIN_SPAWN_EGG || type == Material.DONKEY_SPAWN_EGG
+                || type == Material.DROWNED_SPAWN_EGG || type == Material.ELDER_GUARDIAN_SPAWN_EGG
+                || type == Material.ENDERMAN_SPAWN_EGG || type == Material.ENDERMITE_SPAWN_EGG
+                || type == Material.EVOKER_SPAWN_EGG || type == Material.FOX_SPAWN_EGG
+                || type == Material.GHAST_SPAWN_EGG || type == Material.GLOW_SQUID_SPAWN_EGG
+                || type == Material.GOAT_SPAWN_EGG || type == Material.GUARDIAN_SPAWN_EGG
+                || type == Material.HOGLIN_SPAWN_EGG || type == Material.HORSE_SPAWN_EGG
+                || type == Material.HUSK_SPAWN_EGG || type == Material.LLAMA_SPAWN_EGG
+                || type == Material.MAGMA_CUBE_SPAWN_EGG || type == Material.MOOSHROOM_SPAWN_EGG
+                || type == Material.MULE_SPAWN_EGG || type == Material.OCELOT_SPAWN_EGG
+                || type == Material.PANDA_SPAWN_EGG || type == Material.PARROT_SPAWN_EGG
+                || type == Material.PHANTOM_SPAWN_EGG || Material.PIGLIN_BRUTE_SPAWN_EGG
                 || type == Material.PIGLIN_SPAWN_EGG || type == Material.PIG_SPAWN_EGG
                 || type == Material.PILLAGER_SPAWN_EGG || type == Material.POLAR_BEAR_SPAWN_EGG
                 || type == Material.PUFFERFISH_SPAWN_EGG || type == Material.RABBIT_SPAWN_EGG
