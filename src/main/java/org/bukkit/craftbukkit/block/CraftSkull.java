@@ -124,28 +124,27 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     @Override
     public SkullType getSkullType() {
-        switch (getType()) {
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-                return SkullType.SKELETON;
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-                return SkullType.WITHER;
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-                return SkullType.ZOMBIE;
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-                return SkullType.PLAYER;
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-                return SkullType.CREEPER;
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-                return SkullType.DRAGON;
-            default:
-                throw new IllegalArgumentException("Unknown SkullType for " + getType());
+        Material type = getType();
+        if (type == Material.SKELETON_SKULL || type == Material.SKELETON_WALL_SKULL) {
+            return SkullType.SKELETON;
         }
+        if (type == Material.WITHER_SKELETON_SKULL || type == Material.WITHER_SKELETON_WALL_SKULL) {
+            return SkullType.WITHER;
+        }
+        if (type == Material.ZOMBIE_HEAD || type == Material.ZOMBIE_WALL_HEAD) {
+            return SkullType.ZOMBIE;
+        }
+        if (type == Material.PLAYER_HEAD || type == Material.PLAYER_WALL_HEAD) {
+            return SkullType.PLAYER;
+        }
+        if (type == Material.CREEPER_HEAD || type == Material.CREEPER_WALL_HEAD) {
+            return SkullType.CREEPER;
+        }
+        if (type == Material.DRAGON_HEAD || type == Material.DRAGON_WALL_HEAD) {
+            return SkullType.DRAGON;
+        }
+
+        throw new IllegalArgumentException("Unknown SkullType for " + getType());
     }
 
     @Override

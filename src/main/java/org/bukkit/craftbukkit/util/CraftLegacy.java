@@ -1,7 +1,11 @@
 package org.bukkit.craftbukkit.util;
 
 import java.util.Arrays;
+
+import com.google.common.collect.Lists;
+import org.bukkit.Art;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.material.MaterialData;
 
 /**
@@ -27,8 +31,7 @@ public final class CraftLegacy {
     }
 
     public static Material[] modern_values() {
-        Material[] values = Material.values();
-        return Arrays.copyOfRange(values, 0, Material.LEGACY_AIR.ordinal());
+        return Lists.newArrayList(Registry.MATERIAL).toArray(new Material[0]);
     }
 
     public static int modern_ordinal(Material material) {

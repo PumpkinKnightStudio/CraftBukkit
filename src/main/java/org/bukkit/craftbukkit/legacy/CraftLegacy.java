@@ -220,8 +220,7 @@ public final class CraftLegacy {
     }
 
     public static Material[] values() {
-        Material[] values = Material.values();
-        return Arrays.copyOfRange(values, Material.LEGACY_AIR.ordinal(), values.length);
+        return CraftLegacyMaterial.MATERIAL_MAP.values().toArray(new CraftLegacyMaterial[0]);
     }
 
     public static Material valueOf(String name) {
@@ -316,10 +315,7 @@ public final class CraftLegacy {
         SharedConstants.a();
         DispenserRegistry.init();
 
-        for (Material material : Material.values()) {
-            if (!material.isLegacy()) {
-                continue;
-            }
+        for (Material material : CraftLegacyMaterial.MATERIAL_MAP.values()) {
 
             // Handle blocks
             if (material.isBlock()) {

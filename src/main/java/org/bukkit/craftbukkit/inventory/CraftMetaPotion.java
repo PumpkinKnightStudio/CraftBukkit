@@ -148,15 +148,12 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case POTION:
-            case SPLASH_POTION:
-            case LINGERING_POTION:
-            case TIPPED_ARROW:
-                return true;
-            default:
-                return false;
+        if (type == Material.POTION || type == Material.SPLASH_POTION
+                || type == Material.LINGERING_POTION || type == Material.TIPPED_ARROW) {
+            return true;
         }
+
+        return false;
     }
 
     @Override

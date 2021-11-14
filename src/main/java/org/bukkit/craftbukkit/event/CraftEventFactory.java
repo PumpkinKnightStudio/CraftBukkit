@@ -1256,16 +1256,14 @@ public class CraftEventFactory {
         org.bukkit.World bukkitWorld = world.getWorld();
         Block igniter = bukkitWorld.getBlockAt(source.getX(), source.getY(), source.getZ());
         IgniteCause cause;
-        switch (igniter.getType()) {
-            case LAVA:
-                cause = IgniteCause.LAVA;
-                break;
-            case DISPENSER:
-                cause = IgniteCause.FLINT_AND_STEEL;
-                break;
-            case FIRE: // Fire or any other unknown block counts as SPREAD.
-            default:
-                cause = IgniteCause.SPREAD;
+        Material type = igniter.getType();
+        if (type == Material.LAVA) {
+            cause = IgniteCause.LAVA;
+        } else if (type == Material.DISPENSER){
+            cause = IgniteCause.FLINT_AND_STEEL;
+        } else {
+            // Fire or any other unknown block counts as SPREAD.
+            cause = IgniteCause.SPREAD;
         }
 
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(block.getX(), block.getY(), block.getZ()), cause, igniter);

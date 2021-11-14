@@ -21,11 +21,7 @@ public final class CraftEvil {
     private static final Int2ObjectMap<Material> byId = new Int2ObjectLinkedOpenHashMap<>();
 
     static {
-        for (Material material : Material.values()) {
-            if (!material.isLegacy()) {
-                continue;
-            }
-
+        for (Material material : CraftLegacyMaterial.MATERIAL_MAP.values()) {
             Preconditions.checkState(!byId.containsKey(material.getId()), "Duplicate material ID for", material);
             byId.put(material.getId(), material);
         }

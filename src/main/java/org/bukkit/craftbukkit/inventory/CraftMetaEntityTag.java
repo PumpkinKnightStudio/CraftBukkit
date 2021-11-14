@@ -64,17 +64,13 @@ public class CraftMetaEntityTag extends CraftMetaItem {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case COD_BUCKET:
-            case PUFFERFISH_BUCKET:
-            case SALMON_BUCKET:
-            case ITEM_FRAME:
-            case GLOW_ITEM_FRAME:
-            case PAINTING:
-                return true;
-            default:
-                return false;
+        if (type == Material.COD_BUCKET || type == Material.PUFFERFISH_BUCKET
+                || type == Material.SALMON_BUCKET || type == Material.ITEM_FRAME
+                || type == Material.GLOW_ITEM_FRAME || type == Material.PAINTING) {
+            return true;
         }
+
+        return false;
     }
 
     @Override

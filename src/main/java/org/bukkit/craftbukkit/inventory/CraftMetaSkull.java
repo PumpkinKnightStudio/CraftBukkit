@@ -110,23 +110,16 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-                return true;
-            default:
-                return false;
+        if (type == Material.CREEPER_HEAD || type == Material.CREEPER_WALL_HEAD
+                || type == Material.DRAGON_HEAD || type == Material.DRAGON_WALL_HEAD
+                || type == Material.PLAYER_HEAD || type == Material.PLAYER_WALL_HEAD
+                || type == Material.SKELETON_SKULL || type == Material.SKELETON_WALL_SKULL
+                || type == Material.WITHER_SKELETON_SKULL || type == Material.WITHER_SKELETON_WALL_SKULL
+                || type == Material.ZOMBIE_HEAD || type == Material.ZOMBIE_WALL_HEAD) {
+            return true;
         }
+
+        return false;
     }
 
     @Override

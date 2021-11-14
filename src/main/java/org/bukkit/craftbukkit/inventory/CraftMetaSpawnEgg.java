@@ -111,74 +111,42 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case BAT_SPAWN_EGG:
-            case BEE_SPAWN_EGG:
-            case BLAZE_SPAWN_EGG:
-            case CAT_SPAWN_EGG:
-            case CAVE_SPIDER_SPAWN_EGG:
-            case CHICKEN_SPAWN_EGG:
-            case COD_SPAWN_EGG:
-            case COW_SPAWN_EGG:
-            case CREEPER_SPAWN_EGG:
-            case DOLPHIN_SPAWN_EGG:
-            case DONKEY_SPAWN_EGG:
-            case DROWNED_SPAWN_EGG:
-            case ELDER_GUARDIAN_SPAWN_EGG:
-            case ENDERMAN_SPAWN_EGG:
-            case ENDERMITE_SPAWN_EGG:
-            case EVOKER_SPAWN_EGG:
-            case FOX_SPAWN_EGG:
-            case GHAST_SPAWN_EGG:
-            case GUARDIAN_SPAWN_EGG:
-            case HOGLIN_SPAWN_EGG:
-            case HORSE_SPAWN_EGG:
-            case HUSK_SPAWN_EGG:
-            case LLAMA_SPAWN_EGG:
-            case MAGMA_CUBE_SPAWN_EGG:
-            case MOOSHROOM_SPAWN_EGG:
-            case MULE_SPAWN_EGG:
-            case OCELOT_SPAWN_EGG:
-            case PANDA_SPAWN_EGG:
-            case PARROT_SPAWN_EGG:
-            case PHANTOM_SPAWN_EGG:
-            case PIGLIN_SPAWN_EGG:
-            case PIG_SPAWN_EGG:
-            case PILLAGER_SPAWN_EGG:
-            case POLAR_BEAR_SPAWN_EGG:
-            case PUFFERFISH_SPAWN_EGG:
-            case RABBIT_SPAWN_EGG:
-            case RAVAGER_SPAWN_EGG:
-            case SALMON_SPAWN_EGG:
-            case SHEEP_SPAWN_EGG:
-            case SHULKER_SPAWN_EGG:
-            case SILVERFISH_SPAWN_EGG:
-            case SKELETON_HORSE_SPAWN_EGG:
-            case SKELETON_SPAWN_EGG:
-            case SLIME_SPAWN_EGG:
-            case SPIDER_SPAWN_EGG:
-            case SQUID_SPAWN_EGG:
-            case STRAY_SPAWN_EGG:
-            case STRIDER_SPAWN_EGG:
-            case TRADER_LLAMA_SPAWN_EGG:
-            case TROPICAL_FISH_SPAWN_EGG:
-            case TURTLE_SPAWN_EGG:
-            case VEX_SPAWN_EGG:
-            case VILLAGER_SPAWN_EGG:
-            case VINDICATOR_SPAWN_EGG:
-            case WANDERING_TRADER_SPAWN_EGG:
-            case WITCH_SPAWN_EGG:
-            case WITHER_SKELETON_SPAWN_EGG:
-            case WOLF_SPAWN_EGG:
-            case ZOGLIN_SPAWN_EGG:
-            case ZOMBIE_HORSE_SPAWN_EGG:
-            case ZOMBIE_SPAWN_EGG:
-            case ZOMBIE_VILLAGER_SPAWN_EGG:
-            case ZOMBIFIED_PIGLIN_SPAWN_EGG:
-                return true;
-            default:
-                return false;
+        if (type == Material.BAT_SPAWN_EGG || type == Material.BEE_SPAWN_EGG
+                || type == Material.BLAZE_SPAWN_EGG || type == Material.CAT_SPAWN_EGG
+                || type == Material.CAVE_SPIDER_SPAWN_EGG || type == Material.CHICKEN_SPAWN_EGG
+                || type == Material.COD_SPAWN_EGG || type == Material.COW_SPAWN_EGG
+                || type == Material.CREEPER_SPAWN_EGG || type == Material.DOLPHIN_SPAWN_EGG
+                || type == Material.DONKEY_SPAWN_EGG || type == Material.DROWNED_SPAWN_EGG
+                || type == Material.ELDER_GUARDIAN_SPAWN_EGG || type == Material.ENDERMAN_SPAWN_EGG
+                || type == Material.ENDERMITE_SPAWN_EGG || type == Material.EVOKER_SPAWN_EGG
+                || type == Material.FOX_SPAWN_EGG || type == Material.GHAST_SPAWN_EGG
+                || type == Material.GUARDIAN_SPAWN_EGG || type == Material.HOGLIN_SPAWN_EGG
+                || type == Material.HORSE_SPAWN_EGG || type == Material.HUSK_SPAWN_EGG
+                || type == Material.LLAMA_SPAWN_EGG || type == Material.MAGMA_CUBE_SPAWN_EGG
+                || type == Material.MOOSHROOM_SPAWN_EGG || type == Material.MULE_SPAWN_EGG
+                || type == Material.OCELOT_SPAWN_EGG || type == Material.PANDA_SPAWN_EGG
+                || type == Material.PARROT_SPAWN_EGG || type == Material.PHANTOM_SPAWN_EGG
+                || type == Material.PIGLIN_SPAWN_EGG || type == Material.PIG_SPAWN_EGG
+                || type == Material.PILLAGER_SPAWN_EGG || type == Material.POLAR_BEAR_SPAWN_EGG
+                || type == Material.PUFFERFISH_SPAWN_EGG || type == Material.RABBIT_SPAWN_EGG
+                || type == Material.RAVAGER_SPAWN_EGG || type == Material.SALMON_SPAWN_EGG
+                || type == Material.SHEEP_SPAWN_EGG || type == Material.SHULKER_SPAWN_EGG
+                || type == Material.SILVERFISH_SPAWN_EGG || type == Material.SKELETON_HORSE_SPAWN_EGG
+                || type == Material.SKELETON_SPAWN_EGG || type == Material.SLIME_SPAWN_EGG
+                || type == Material.SPIDER_SPAWN_EGG || type == Material.SQUID_SPAWN_EGG
+                || type == Material.STRAY_SPAWN_EGG || type == Material.STRIDER_SPAWN_EGG
+                || type == Material.TRADER_LLAMA_SPAWN_EGG || type == Material.TROPICAL_FISH_SPAWN_EGG
+                || type == Material.TURTLE_SPAWN_EGG || type == Material.VEX_SPAWN_EGG
+                || type == Material.VILLAGER_SPAWN_EGG || type == Material.VINDICATOR_SPAWN_EGG
+                || type == Material.WANDERING_TRADER_SPAWN_EGG || type == Material.WITCH_SPAWN_EGG
+                || type == Material.WITHER_SKELETON_SPAWN_EGG || type == Material.WOLF_SPAWN_EGG
+                || type == Material.ZOGLIN_SPAWN_EGG || type == Material.ZOMBIE_HORSE_SPAWN_EGG
+                || type == Material.ZOMBIE_SPAWN_EGG || type == Material.ZOMBIE_VILLAGER_SPAWN_EGG
+                || type == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+            return true;
         }
+
+        return false;
     }
 
     @Override

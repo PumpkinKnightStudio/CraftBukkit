@@ -67,16 +67,13 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case LEATHER_HELMET:
-            case LEATHER_HORSE_ARMOR:
-            case LEATHER_CHESTPLATE:
-            case LEATHER_LEGGINGS:
-            case LEATHER_BOOTS:
-                return true;
-            default:
-                return false;
+        if (type == Material.LEATHER_HELMET || type == Material.LEATHER_HORSE_ARMOR
+                || type == Material.LEATHER_CHESTPLATE || type == Material.LEATHER_LEGGINGS
+                || type == Material.LEATHER_BOOTS) {
+            return true;
         }
+
+        return false;
     }
 
     @Override

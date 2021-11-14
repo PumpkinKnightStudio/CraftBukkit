@@ -48,6 +48,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
@@ -98,11 +99,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
             ITEM_MATERIAL.put(item, Material.getMaterial(IRegistry.ITEM.getKey(item).getKey().toUpperCase(Locale.ROOT)));
         }
 
-        for (Material material : Material.values()) {
-            if (material.isLegacy()) {
-                continue;
-            }
-
+        Registry.MATERIAL.forEach(material -> {
             MinecraftKey key = key(material);
             IRegistry.ITEM.getOptional(key).ifPresent((item) -> {
                 MATERIAL_ITEM.put(material, item);
@@ -110,7 +107,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
             IRegistry.BLOCK.getOptional(key).ifPresent((block) -> {
                 MATERIAL_BLOCK.put(material, block);
             });
-        }
+        });
     }
 
     public static Material getMaterial(Block block) {
@@ -271,6 +268,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
     public boolean removeAdvancement(NamespacedKey key) {
         File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
         return file.delete();
+    }
+
+    @Override
+    public Material createLegacyMaterial(String name, int id, int maxStackSize, short maxDurability, Class<? extends MaterialData> materialData) {
+        return CraftLegacyMaterial.createLegacyMaterial(name, id, maxStackSize, maxDurability, materialData);
+    }
+
+    @Override
+    public Material getLegacyMaterial(String name) {
+        return CraftLegacyMaterial.getLegacyMaterial(name);
     }
 
     private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17");

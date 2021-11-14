@@ -205,43 +205,26 @@ public class CraftMetaBanner extends CraftMetaItem implements BannerMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case BLACK_BANNER:
-            case BLACK_WALL_BANNER:
-            case BLUE_BANNER:
-            case BLUE_WALL_BANNER:
-            case BROWN_BANNER:
-            case BROWN_WALL_BANNER:
-            case CYAN_BANNER:
-            case CYAN_WALL_BANNER:
-            case GRAY_BANNER:
-            case GRAY_WALL_BANNER:
-            case GREEN_BANNER:
-            case GREEN_WALL_BANNER:
-            case LIGHT_BLUE_BANNER:
-            case LIGHT_BLUE_WALL_BANNER:
-            case LIGHT_GRAY_BANNER:
-            case LIGHT_GRAY_WALL_BANNER:
-            case LIME_BANNER:
-            case LIME_WALL_BANNER:
-            case MAGENTA_BANNER:
-            case MAGENTA_WALL_BANNER:
-            case ORANGE_BANNER:
-            case ORANGE_WALL_BANNER:
-            case PINK_BANNER:
-            case PINK_WALL_BANNER:
-            case PURPLE_BANNER:
-            case PURPLE_WALL_BANNER:
-            case RED_BANNER:
-            case RED_WALL_BANNER:
-            case WHITE_BANNER:
-            case WHITE_WALL_BANNER:
-            case YELLOW_BANNER:
-            case YELLOW_WALL_BANNER:
-                return true;
-            default:
-                return false;
+        if (type == Material.BLACK_BANNER || type == Material.BLACK_WALL_BANNER
+                || type == Material.BLUE_BANNER || type == Material.BLUE_WALL_BANNER
+                || type == Material.BROWN_BANNER || type == Material.BROWN_WALL_BANNER
+                || type == Material.CYAN_BANNER || type == Material.CYAN_WALL_BANNER
+                || type == Material.GRAY_BANNER || type == Material.GRAY_WALL_BANNER
+                || type == Material.GREEN_BANNER || type == Material.GREEN_WALL_BANNER
+                || type == Material.LIGHT_BLUE_BANNER || type == Material.LIGHT_BLUE_WALL_BANNER
+                || type == Material.LIGHT_GRAY_BANNER || type == Material.LIGHT_GRAY_WALL_BANNER
+                || type == Material.LIME_BANNER || type == Material.LIME_WALL_BANNER
+                || type == Material.MAGENTA_BANNER || type == Material.MAGENTA_WALL_BANNER
+                || type == Material.ORANGE_BANNER || type == Material.ORANGE_WALL_BANNER
+                || type == Material.PINK_BANNER || type == Material.PINK_WALL_BANNER
+                || type == Material.PURPLE_BANNER || type == Material.PURPLE_WALL_BANNER
+                || type == Material.RED_BANNER || type == Material.RED_WALL_BANNER
+                || type == Material.WHITE_BANNER || type == Material.WHITE_WALL_BANNER
+                || type == Material.YELLOW_BANNER || type == Material.YELLOW_WALL_BANNER) {
+            return true;
         }
+
+        return false;
     }
 
     @Override
