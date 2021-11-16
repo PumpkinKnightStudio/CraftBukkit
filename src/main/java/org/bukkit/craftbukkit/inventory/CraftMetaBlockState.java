@@ -129,72 +129,41 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case FURNACE:
-            case CHEST:
-            case TRAPPED_CHEST:
-            case JUKEBOX:
-            case DISPENSER:
-            case DROPPER:
-            case ACACIA_SIGN:
-            case ACACIA_WALL_SIGN:
-            case BIRCH_SIGN:
-            case BIRCH_WALL_SIGN:
-            case CRIMSON_SIGN:
-            case CRIMSON_WALL_SIGN:
-            case DARK_OAK_SIGN:
-            case DARK_OAK_WALL_SIGN:
-            case JUNGLE_SIGN:
-            case JUNGLE_WALL_SIGN:
-            case OAK_SIGN:
-            case OAK_WALL_SIGN:
-            case SPRUCE_SIGN:
-            case SPRUCE_WALL_SIGN:
-            case WARPED_SIGN:
-            case WARPED_WALL_SIGN:
-            case SPAWNER:
-            case BREWING_STAND:
-            case ENCHANTING_TABLE:
-            case COMMAND_BLOCK:
-            case REPEATING_COMMAND_BLOCK:
-            case CHAIN_COMMAND_BLOCK:
-            case BEACON:
-            case DAYLIGHT_DETECTOR:
-            case HOPPER:
-            case COMPARATOR:
-            case SHIELD:
-            case STRUCTURE_BLOCK:
-            case SHULKER_BOX:
-            case WHITE_SHULKER_BOX:
-            case ORANGE_SHULKER_BOX:
-            case MAGENTA_SHULKER_BOX:
-            case LIGHT_BLUE_SHULKER_BOX:
-            case YELLOW_SHULKER_BOX:
-            case LIME_SHULKER_BOX:
-            case PINK_SHULKER_BOX:
-            case GRAY_SHULKER_BOX:
-            case LIGHT_GRAY_SHULKER_BOX:
-            case CYAN_SHULKER_BOX:
-            case PURPLE_SHULKER_BOX:
-            case BLUE_SHULKER_BOX:
-            case BROWN_SHULKER_BOX:
-            case GREEN_SHULKER_BOX:
-            case RED_SHULKER_BOX:
-            case BLACK_SHULKER_BOX:
-            case ENDER_CHEST:
-            case BARREL:
-            case BELL:
-            case BLAST_FURNACE:
-            case CAMPFIRE:
-            case SOUL_CAMPFIRE:
-            case JIGSAW:
-            case LECTERN:
-            case SMOKER:
-            case BEEHIVE:
-            case BEE_NEST:
-            case SCULK_SENSOR:
+        if (type == Material.FURNACE || type == Material.CHEST
+                || type == Material.TRAPPED_CHEST || type == Material.JUKEBOX
+                || type == Material.DISPENSER || type == Material.DROPPER
+                || type == Material.ACACIA_SIGN || type == Material.ACACIA_WALL_SIGN
+                || type == Material.BIRCH_SIGN || type == Material.BIRCH_WALL_SIGN
+                || type == Material.CRIMSON_SIGN || type == Material.CRIMSON_WALL_SIGN
+                || type == Material.DARK_OAK_SIGN || type == Material.DARK_OAK_WALL_SIGN
+                || type == Material.JUNGLE_SIGN || type == Material.JUNGLE_WALL_SIGN
+                || type == Material.OAK_SIGN || type == Material.OAK_WALL_SIGN
+                || type == Material.SPRUCE_SIGN || type == Material.SPRUCE_WALL_SIGN
+                || type == Material.WARPED_SIGN || type == Material.WARPED_WALL_SIGN
+                || type == Material.SPAWNER || type == Material.BREWING_STAND
+                || type == Material.ENCHANTING_TABLE || type == Material.COMMAND_BLOCK
+                || type == Material.REPEATING_COMMAND_BLOCK || type == Material.CHAIN_COMMAND_BLOCK
+                || type == Material.BEACON || type == Material.DAYLIGHT_DETECTOR
+                || type == Material.HOPPER || type == Material.COMPARATOR
+                || type == Material.SHIELD || type == Material.STRUCTURE_BLOCK
+                || type == Material.SHULKER_BOX || type == Material.WHITE_SHULKER_BOX
+                || type == Material.ORANGE_SHULKER_BOX || type == Material.MAGENTA_SHULKER_BOX
+                || type == Material.LIGHT_BLUE_SHULKER_BOX || type == Material.YELLOW_SHULKER_BOX
+                || type == Material.LIME_SHULKER_BOX || type == Material.PINK_SHULKER_BOX
+                || type == Material.GRAY_SHULKER_BOX || type == Material.LIGHT_GRAY_SHULKER_BOX
+                || type == Material.CYAN_SHULKER_BOX || type == Material.PURPLE_SHULKER_BOX
+                || type == Material.BLUE_SHULKER_BOX || type == Material.BROWN_SHULKER_BOX
+                || type == Material.GREEN_SHULKER_BOX || type == Material.RED_SHULKER_BOX
+                || type == Material.BLACK_SHULKER_BOX || type == Material.ENDER_CHEST
+                || type == Material.BARREL || type == Material.BELL
+                || type == Material.BLAST_FURNACE || type == Material.CAMPFIRE
+                || type == Material.SOUL_CAMPFIRE || type == Material.JIGSAW
+                || type == Material.LECTERN || type == Material.SMOKER
+                || type == Material.BEEHIVE || type == Material.BEE_NEST
+                || type == Material.SCULK_SENSOR) {
                 return true;
         }
+
         return false;
     }
 
@@ -216,33 +185,20 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
     public BlockState getBlockState() {
         Material stateMaterial = (material != Material.SHIELD) ? material : shieldToBannerHack(blockEntityTag); // Only actually used for jigsaws
         if (blockEntityTag != null) {
-            switch (material) {
-                case SHIELD:
-                    blockEntityTag.setString("id", "banner");
-                    break;
-                case SHULKER_BOX:
-                case WHITE_SHULKER_BOX:
-                case ORANGE_SHULKER_BOX:
-                case MAGENTA_SHULKER_BOX:
-                case LIGHT_BLUE_SHULKER_BOX:
-                case YELLOW_SHULKER_BOX:
-                case LIME_SHULKER_BOX:
-                case PINK_SHULKER_BOX:
-                case GRAY_SHULKER_BOX:
-                case LIGHT_GRAY_SHULKER_BOX:
-                case CYAN_SHULKER_BOX:
-                case PURPLE_SHULKER_BOX:
-                case BLUE_SHULKER_BOX:
-                case BROWN_SHULKER_BOX:
-                case GREEN_SHULKER_BOX:
-                case RED_SHULKER_BOX:
-                case BLACK_SHULKER_BOX:
-                    blockEntityTag.setString("id", "shulker_box");
-                    break;
-                case BEE_NEST:
-                case BEEHIVE:
-                    blockEntityTag.setString("id", "beehive");
-                    break;
+            if (material == Material.SHIELD) {
+                blockEntityTag.setString("id", "banner");
+            } else if (material == Material.SHULKER_BOX || material == Material.WHITE_SHULKER_BOX
+                    || material == Material.ORANGE_SHULKER_BOX || material == Material.MAGENTA_SHULKER_BOX
+                    || material == Material.LIGHT_BLUE_SHULKER_BOX || material == Material.YELLOW_SHULKER_BOX
+                    || material == Material.LIME_SHULKER_BOX || material == Material.PINK_SHULKER_BOX
+                    || material == Material.GRAY_SHULKER_BOX || material == Material.LIGHT_GRAY_SHULKER_BOX
+                    || material == Material.CYAN_SHULKER_BOX || material == Material.PURPLE_SHULKER_BOX
+                    || material == Material.BLUE_SHULKER_BOX || material == Material.BROWN_SHULKER_BOX
+                    || material == Material.GREEN_SHULKER_BOX || material == Material.RED_SHULKER_BOX
+                    || material == Material.BLACK_SHULKER_BOX) {
+                blockEntityTag.setString("id", "shulker_box");
+            } else if (material == Material.BEE_NEST || material == Material.BEEHIVE) {
+                blockEntityTag.setString("id", "beehive");
             }
         }
 

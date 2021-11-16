@@ -1,9 +1,12 @@
 package org.bukkit.craftbukkit.legacy;
 
+import com.google.common.collect.Iterators;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
@@ -93,7 +96,8 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void toLegacyMaterial() {
-        for (Material material : Material.values()) {
+        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
+            Material material = it.next();
             if (!INVALIDATED_MATERIALS.contains(material) && !material.isLegacy()) {
                 MaterialData converted = CraftLegacy.toLegacyData(material);
 
@@ -113,7 +117,8 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void fromLegacyMaterial() {
-        for (Material material : Material.values()) {
+        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
+            Material material = it.next();
             if (!INVALIDATED_MATERIALS.contains(material) && material.isLegacy()) {
                 Material converted = CraftLegacy.fromLegacy(material);
                 Assert.assertNotEquals("Could not fromLegacy " + material, Material.AIR, converted);

@@ -1,9 +1,6 @@
 package org.bukkit.craftbukkit.util;
 
-import java.util.Arrays;
-
 import com.google.common.collect.Lists;
-import org.bukkit.Art;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.material.MaterialData;

@@ -5,6 +5,7 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.util.CraftLegacy;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,236 +51,164 @@ public final class CraftItemFactory implements ItemFactory {
 
     private ItemMeta getItemMeta(Material material, CraftMetaItem meta) {
         material = CraftLegacy.fromLegacy(material); // This may be called from legacy item stacks, try to get the right material
-        switch (material) {
-        case AIR:
+
+        if (material == Material.AIR) {
             return null;
-        case WRITTEN_BOOK:
-            return meta instanceof CraftMetaBookSigned ? meta : new CraftMetaBookSigned(meta);
-        case WRITABLE_BOOK:
-            return meta != null && meta.getClass().equals(CraftMetaBook.class) ? meta : new CraftMetaBook(meta);
-        case CREEPER_HEAD:
-        case CREEPER_WALL_HEAD:
-        case DRAGON_HEAD:
-        case DRAGON_WALL_HEAD:
-        case PLAYER_HEAD:
-        case PLAYER_WALL_HEAD:
-        case SKELETON_SKULL:
-        case SKELETON_WALL_SKULL:
-        case WITHER_SKELETON_SKULL:
-        case WITHER_SKELETON_WALL_SKULL:
-        case ZOMBIE_HEAD:
-        case ZOMBIE_WALL_HEAD:
-            return meta instanceof CraftMetaSkull ? meta : new CraftMetaSkull(meta);
-        case LEATHER_HELMET:
-        case LEATHER_HORSE_ARMOR:
-        case LEATHER_CHESTPLATE:
-        case LEATHER_LEGGINGS:
-        case LEATHER_BOOTS:
-            return meta instanceof CraftMetaLeatherArmor ? meta : new CraftMetaLeatherArmor(meta);
-        case POTION:
-        case SPLASH_POTION:
-        case LINGERING_POTION:
-        case TIPPED_ARROW:
-            return meta instanceof CraftMetaPotion ? meta : new CraftMetaPotion(meta);
-        case FILLED_MAP:
-            return meta instanceof CraftMetaMap ? meta : new CraftMetaMap(meta);
-        case FIREWORK_ROCKET:
-            return meta instanceof CraftMetaFirework ? meta : new CraftMetaFirework(meta);
-        case FIREWORK_STAR:
-            return meta instanceof CraftMetaCharge ? meta : new CraftMetaCharge(meta);
-        case ENCHANTED_BOOK:
-            return meta instanceof CraftMetaEnchantedBook ? meta : new CraftMetaEnchantedBook(meta);
-        case BLACK_BANNER:
-        case BLACK_WALL_BANNER:
-        case BLUE_BANNER:
-        case BLUE_WALL_BANNER:
-        case BROWN_BANNER:
-        case BROWN_WALL_BANNER:
-        case CYAN_BANNER:
-        case CYAN_WALL_BANNER:
-        case GRAY_BANNER:
-        case GRAY_WALL_BANNER:
-        case GREEN_BANNER:
-        case GREEN_WALL_BANNER:
-        case LIGHT_BLUE_BANNER:
-        case LIGHT_BLUE_WALL_BANNER:
-        case LIGHT_GRAY_BANNER:
-        case LIGHT_GRAY_WALL_BANNER:
-        case LIME_BANNER:
-        case LIME_WALL_BANNER:
-        case MAGENTA_BANNER:
-        case MAGENTA_WALL_BANNER:
-        case ORANGE_BANNER:
-        case ORANGE_WALL_BANNER:
-        case PINK_BANNER:
-        case PINK_WALL_BANNER:
-        case PURPLE_BANNER:
-        case PURPLE_WALL_BANNER:
-        case RED_BANNER:
-        case RED_WALL_BANNER:
-        case WHITE_BANNER:
-        case WHITE_WALL_BANNER:
-        case YELLOW_BANNER:
-        case YELLOW_WALL_BANNER:
-            return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
-        case AXOLOTL_SPAWN_EGG:
-        case BAT_SPAWN_EGG:
-        case BEE_SPAWN_EGG:
-        case BLAZE_SPAWN_EGG:
-        case CAT_SPAWN_EGG:
-        case CAVE_SPIDER_SPAWN_EGG:
-        case CHICKEN_SPAWN_EGG:
-        case COD_SPAWN_EGG:
-        case COW_SPAWN_EGG:
-        case CREEPER_SPAWN_EGG:
-        case DOLPHIN_SPAWN_EGG:
-        case DONKEY_SPAWN_EGG:
-        case DROWNED_SPAWN_EGG:
-        case ELDER_GUARDIAN_SPAWN_EGG:
-        case ENDERMAN_SPAWN_EGG:
-        case ENDERMITE_SPAWN_EGG:
-        case EVOKER_SPAWN_EGG:
-        case FOX_SPAWN_EGG:
-        case GHAST_SPAWN_EGG:
-        case GLOW_SQUID_SPAWN_EGG:
-        case GOAT_SPAWN_EGG:
-        case GUARDIAN_SPAWN_EGG:
-        case HOGLIN_SPAWN_EGG:
-        case HORSE_SPAWN_EGG:
-        case HUSK_SPAWN_EGG:
-        case LLAMA_SPAWN_EGG:
-        case MAGMA_CUBE_SPAWN_EGG:
-        case MOOSHROOM_SPAWN_EGG:
-        case MULE_SPAWN_EGG:
-        case OCELOT_SPAWN_EGG:
-        case PANDA_SPAWN_EGG:
-        case PARROT_SPAWN_EGG:
-        case PHANTOM_SPAWN_EGG:
-        case PIGLIN_BRUTE_SPAWN_EGG:
-        case PIGLIN_SPAWN_EGG:
-        case PIG_SPAWN_EGG:
-        case PILLAGER_SPAWN_EGG:
-        case POLAR_BEAR_SPAWN_EGG:
-        case PUFFERFISH_SPAWN_EGG:
-        case RABBIT_SPAWN_EGG:
-        case RAVAGER_SPAWN_EGG:
-        case SALMON_SPAWN_EGG:
-        case SHEEP_SPAWN_EGG:
-        case SHULKER_SPAWN_EGG:
-        case SILVERFISH_SPAWN_EGG:
-        case SKELETON_HORSE_SPAWN_EGG:
-        case SKELETON_SPAWN_EGG:
-        case SLIME_SPAWN_EGG:
-        case SPIDER_SPAWN_EGG:
-        case SQUID_SPAWN_EGG:
-        case STRAY_SPAWN_EGG:
-        case STRIDER_SPAWN_EGG:
-        case TRADER_LLAMA_SPAWN_EGG:
-        case TROPICAL_FISH_SPAWN_EGG:
-        case TURTLE_SPAWN_EGG:
-        case VEX_SPAWN_EGG:
-        case VILLAGER_SPAWN_EGG:
-        case VINDICATOR_SPAWN_EGG:
-        case WANDERING_TRADER_SPAWN_EGG:
-        case WITCH_SPAWN_EGG:
-        case WITHER_SKELETON_SPAWN_EGG:
-        case WOLF_SPAWN_EGG:
-        case ZOGLIN_SPAWN_EGG:
-        case ZOMBIE_HORSE_SPAWN_EGG:
-        case ZOMBIE_SPAWN_EGG:
-        case ZOMBIE_VILLAGER_SPAWN_EGG:
-        case ZOMBIFIED_PIGLIN_SPAWN_EGG:
-            return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
-        case ARMOR_STAND:
-            return meta instanceof CraftMetaArmorStand ? meta : new CraftMetaArmorStand(meta);
-        case KNOWLEDGE_BOOK:
-            return meta instanceof CraftMetaKnowledgeBook ? meta : new CraftMetaKnowledgeBook(meta);
-        case FURNACE:
-        case CHEST:
-        case TRAPPED_CHEST:
-        case JUKEBOX:
-        case DISPENSER:
-        case DROPPER:
-        case ACACIA_SIGN:
-        case ACACIA_WALL_SIGN:
-        case BIRCH_SIGN:
-        case BIRCH_WALL_SIGN:
-        case CRIMSON_SIGN:
-        case CRIMSON_WALL_SIGN:
-        case DARK_OAK_SIGN:
-        case DARK_OAK_WALL_SIGN:
-        case JUNGLE_SIGN:
-        case JUNGLE_WALL_SIGN:
-        case OAK_SIGN:
-        case OAK_WALL_SIGN:
-        case SPRUCE_SIGN:
-        case SPRUCE_WALL_SIGN:
-        case WARPED_SIGN:
-        case WARPED_WALL_SIGN:
-        case SPAWNER:
-        case BREWING_STAND:
-        case ENCHANTING_TABLE:
-        case COMMAND_BLOCK:
-        case REPEATING_COMMAND_BLOCK:
-        case CHAIN_COMMAND_BLOCK:
-        case BEACON:
-        case DAYLIGHT_DETECTOR:
-        case HOPPER:
-        case COMPARATOR:
-        case SHIELD:
-        case STRUCTURE_BLOCK:
-        case SHULKER_BOX:
-        case WHITE_SHULKER_BOX:
-        case ORANGE_SHULKER_BOX:
-        case MAGENTA_SHULKER_BOX:
-        case LIGHT_BLUE_SHULKER_BOX:
-        case YELLOW_SHULKER_BOX:
-        case LIME_SHULKER_BOX:
-        case PINK_SHULKER_BOX:
-        case GRAY_SHULKER_BOX:
-        case LIGHT_GRAY_SHULKER_BOX:
-        case CYAN_SHULKER_BOX:
-        case PURPLE_SHULKER_BOX:
-        case BLUE_SHULKER_BOX:
-        case BROWN_SHULKER_BOX:
-        case GREEN_SHULKER_BOX:
-        case RED_SHULKER_BOX:
-        case BLACK_SHULKER_BOX:
-        case ENDER_CHEST:
-        case BARREL:
-        case BELL:
-        case BLAST_FURNACE:
-        case CAMPFIRE:
-        case SOUL_CAMPFIRE:
-        case JIGSAW:
-        case LECTERN:
-        case SMOKER:
-        case BEEHIVE:
-        case BEE_NEST:
-        case SCULK_SENSOR:
-            return new CraftMetaBlockState(meta, material);
-        case TROPICAL_FISH_BUCKET:
-            return meta instanceof CraftMetaTropicalFishBucket ? meta : new CraftMetaTropicalFishBucket(meta);
-        case AXOLOTL_BUCKET:
-            return meta instanceof CraftMetaAxolotlBucket ? meta : new CraftMetaAxolotlBucket(meta);
-        case CROSSBOW:
-            return meta instanceof CraftMetaCrossbow ? meta : new CraftMetaCrossbow(meta);
-        case SUSPICIOUS_STEW:
-            return meta instanceof CraftMetaSuspiciousStew ? meta : new CraftMetaSuspiciousStew(meta);
-        case COD_BUCKET:
-        case PUFFERFISH_BUCKET:
-        case SALMON_BUCKET:
-        case ITEM_FRAME:
-        case GLOW_ITEM_FRAME:
-        case PAINTING:
-            return meta instanceof CraftMetaEntityTag ? meta : new CraftMetaEntityTag(meta);
-        case COMPASS:
-            return meta instanceof CraftMetaCompass ? meta : new CraftMetaCompass(meta);
-        case BUNDLE:
-            return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
-        default:
-            return new CraftMetaItem(meta);
         }
+        if (material == Material.WRITTEN_BOOK) {
+            return meta instanceof CraftMetaBookSigned ? meta : new CraftMetaBookSigned(meta);
+        }
+        if (material == Material.WRITABLE_BOOK) {
+            return meta != null && meta.getClass().equals(CraftMetaBook.class) ? meta : new CraftMetaBook(meta);
+        }
+        if (material == Material.CREEPER_HEAD || material == Material.CREEPER_WALL_HEAD
+                || material == Material.DRAGON_HEAD || material == Material.DRAGON_WALL_HEAD
+                || material == Material.PLAYER_HEAD || material == Material.PLAYER_WALL_HEAD
+                || material == Material.SKELETON_SKULL || material == Material.SKELETON_WALL_SKULL
+                || material == Material.WITHER_SKELETON_SKULL || material == Material.WITHER_SKELETON_WALL_SKULL
+                || material == Material.ZOMBIE_HEAD || material == Material.ZOMBIE_WALL_HEAD) {
+            return meta instanceof CraftMetaSkull ? meta : new CraftMetaSkull(meta);
+        }
+        if (material == Material.LEATHER_HELMET || material == Material.LEATHER_HORSE_ARMOR
+                || material == Material.LEATHER_CHESTPLATE || material == Material.LEATHER_LEGGINGS
+                || material == Material.LEATHER_BOOTS) {
+            return meta instanceof CraftMetaLeatherArmor ? meta : new CraftMetaLeatherArmor(meta);
+        }
+        if (material == Material.POTION || material == Material.SPLASH_POTION
+                || material == Material.LINGERING_POTION || material == Material.TIPPED_ARROW) {
+            return meta instanceof CraftMetaPotion ? meta : new CraftMetaPotion(meta);
+        }
+        if (material == Material.FILLED_MAP) {
+            return meta instanceof CraftMetaMap ? meta : new CraftMetaMap(meta);
+        }
+        if (material == Material.FIREWORK_ROCKET) {
+            return meta instanceof CraftMetaFirework ? meta : new CraftMetaFirework(meta);
+        }
+        if (material == Material.FIREWORK_STAR) {
+            return meta instanceof CraftMetaCharge ? meta : new CraftMetaCharge(meta);
+        }
+        if (material == Material.ENCHANTED_BOOK) {
+            return meta instanceof CraftMetaEnchantedBook ? meta : new CraftMetaEnchantedBook(meta);
+        }
+        if (material == Material.BLACK_BANNER || material == Material.BLACK_WALL_BANNER
+                || material == Material.BLUE_BANNER || material == Material.BLUE_WALL_BANNER
+                || material == Material.BROWN_BANNER || material == Material.BROWN_WALL_BANNER
+                || material == Material.CYAN_BANNER || material == Material.CYAN_WALL_BANNER
+                || material == Material.GRAY_BANNER || material == Material.GRAY_WALL_BANNER
+                || material == Material.GREEN_BANNER || material == Material.GREEN_WALL_BANNER
+                || material == Material.LIGHT_BLUE_BANNER || material == Material.LIGHT_BLUE_WALL_BANNER
+                || material == Material.LIGHT_GRAY_BANNER || material == Material.LIGHT_GRAY_WALL_BANNER
+                || material == Material.LIME_BANNER || material == Material.LIME_WALL_BANNER
+                || material == Material.MAGENTA_BANNER || material == Material.MAGENTA_WALL_BANNER
+                || material == Material.ORANGE_BANNER || material == Material.ORANGE_WALL_BANNER
+                || material == Material.PINK_BANNER || material == Material.PINK_WALL_BANNER
+                || material == Material.PURPLE_BANNER || material == Material.PURPLE_WALL_BANNER
+                || material == Material.RED_BANNER || material == Material.RED_WALL_BANNER
+                || material == Material.WHITE_BANNER || material == Material.WHITE_WALL_BANNER
+                || material == Material.YELLOW_BANNER || material == Material.YELLOW_WALL_BANNER) {
+            return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
+        }
+        if (material == Material.AXOLOTL_SPAWN_EGG || material == Material.BAT_SPAWN_EGG
+                || material == Material.BEE_SPAWN_EGG || material == Material.BLAZE_SPAWN_EGG
+                || material == Material.CAT_SPAWN_EGG || material == Material.CAVE_SPIDER_SPAWN_EGG
+                || material == Material.CHICKEN_SPAWN_EGG || material == Material.COD_SPAWN_EGG
+                || material == Material.COW_SPAWN_EGG || material == Material.CREEPER_SPAWN_EGG
+                || material == Material.DOLPHIN_SPAWN_EGG || material == Material.DONKEY_SPAWN_EGG
+                || material == Material.DROWNED_SPAWN_EGG || material == Material.ELDER_GUARDIAN_SPAWN_EGG
+                || material == Material.ENDERMAN_SPAWN_EGG || material == Material.ENDERMITE_SPAWN_EGG
+                || material == Material.EVOKER_SPAWN_EGG || material == Material.FOX_SPAWN_EGG
+                || material == Material.GHAST_SPAWN_EGG || material == Material.GLOW_SQUID_SPAWN_EGG
+                || material == Material.GOAT_SPAWN_EGG || material == Material.GUARDIAN_SPAWN_EGG
+                || material == Material.HOGLIN_SPAWN_EGG || material == Material.HORSE_SPAWN_EGG
+                || material == Material.HUSK_SPAWN_EGG || material == Material.LLAMA_SPAWN_EGG
+                || material == Material.MAGMA_CUBE_SPAWN_EGG || material == Material.MOOSHROOM_SPAWN_EGG
+                || material == Material.MULE_SPAWN_EGG || material == Material.OCELOT_SPAWN_EGG
+                || material == Material.PANDA_SPAWN_EGG || material == Material.PARROT_SPAWN_EGG
+                || material == Material.PHANTOM_SPAWN_EGG || material == Material.PIGLIN_BRUTE_SPAWN_EGG
+                || material == Material.PIGLIN_SPAWN_EGG || material == Material.PIG_SPAWN_EGG
+                || material == Material.PILLAGER_SPAWN_EGG || material == Material.POLAR_BEAR_SPAWN_EGG
+                || material == Material.PUFFERFISH_SPAWN_EGG || material == Material.RABBIT_SPAWN_EGG
+                || material == Material.RAVAGER_SPAWN_EGG || material == Material.SALMON_SPAWN_EGG
+                || material == Material.SHEEP_SPAWN_EGG || material == Material.SHULKER_SPAWN_EGG
+                || material == Material.SILVERFISH_SPAWN_EGG || material == Material.SKELETON_HORSE_SPAWN_EGG
+                || material == Material.SKELETON_SPAWN_EGG || material == Material.SLIME_SPAWN_EGG
+                || material == Material.SPIDER_SPAWN_EGG || material == Material.SQUID_SPAWN_EGG
+                || material == Material.STRAY_SPAWN_EGG || material == Material.STRIDER_SPAWN_EGG
+                || material == Material.TRADER_LLAMA_SPAWN_EGG || material == Material.TROPICAL_FISH_SPAWN_EGG
+                || material == Material.TURTLE_SPAWN_EGG || material == Material.VEX_SPAWN_EGG
+                || material == Material.VILLAGER_SPAWN_EGG || material == Material.VINDICATOR_SPAWN_EGG
+                || material == Material.WANDERING_TRADER_SPAWN_EGG || material == Material.WITCH_SPAWN_EGG
+                || material == Material.WITHER_SKELETON_SPAWN_EGG || material == Material.WOLF_SPAWN_EGG
+                || material == Material.ZOGLIN_SPAWN_EGG || material == Material.ZOMBIE_HORSE_SPAWN_EGG
+                || material == Material.ZOMBIE_SPAWN_EGG || material == Material.ZOMBIE_VILLAGER_SPAWN_EGG
+                || material == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+            return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
+        }
+        if (material == Material.ARMOR_STAND) {
+            return meta instanceof CraftMetaArmorStand ? meta : new CraftMetaArmorStand(meta);
+        }
+        if (material == Material.KNOWLEDGE_BOOK) {
+            return meta instanceof CraftMetaKnowledgeBook ? meta : new CraftMetaKnowledgeBook(meta);
+        }
+        if (material == Material.FURNACE || material == Material.CHEST
+                || material == Material.TRAPPED_CHEST || material == Material.JUKEBOX
+                || material == Material.DISPENSER || material == Material.DROPPER
+                || material == Material.ACACIA_SIGN || material == Material.ACACIA_WALL_SIGN
+                || material == Material.BIRCH_SIGN || material == Material.BIRCH_WALL_SIGN
+                || material == Material.CRIMSON_SIGN || material == Material.CRIMSON_WALL_SIGN
+                || material == Material.DARK_OAK_SIGN || material == Material.DARK_OAK_WALL_SIGN
+                || material == Material.JUNGLE_SIGN || material == Material.JUNGLE_WALL_SIGN
+                || material == Material.OAK_SIGN || material == Material.OAK_WALL_SIGN
+                || material == Material.SPRUCE_SIGN || material == Material.SPRUCE_WALL_SIGN
+                || material == Material.WARPED_SIGN || material == Material.WARPED_WALL_SIGN
+                || material == Material.SPAWNER || material == Material.BREWING_STAND
+                || material == Material.ENCHANTING_TABLE || material == Material.COMMAND_BLOCK
+                || material == Material.REPEATING_COMMAND_BLOCK || material == Material.CHAIN_COMMAND_BLOCK
+                || material == Material.BEACON || material == Material.DAYLIGHT_DETECTOR
+                || material == Material.HOPPER || material == Material.COMPARATOR
+                || material == Material.SHIELD || material == Material.STRUCTURE_BLOCK
+                || material == Material.SHULKER_BOX || material == Material.WHITE_SHULKER_BOX
+                || material == Material.ORANGE_SHULKER_BOX || material == Material.MAGENTA_SHULKER_BOX
+                || material == Material.LIGHT_BLUE_SHULKER_BOX || material == Material.YELLOW_SHULKER_BOX
+                || material == Material.LIME_SHULKER_BOX || material == Material.PINK_SHULKER_BOX
+                || material == Material.GRAY_SHULKER_BOX || material == Material.LIGHT_GRAY_SHULKER_BOX
+                || material == Material.CYAN_SHULKER_BOX || material == Material.PURPLE_SHULKER_BOX
+                || material == Material.BLUE_SHULKER_BOX || material == Material.BROWN_SHULKER_BOX
+                || material == Material.GREEN_SHULKER_BOX || material == Material.RED_SHULKER_BOX
+                || material == Material.BLACK_SHULKER_BOX || material == Material.ENDER_CHEST
+                || material == Material.BARREL || material == Material.BELL
+                || material == Material.BLAST_FURNACE || material == Material.CAMPFIRE
+                || material == Material.SOUL_CAMPFIRE || material == Material.JIGSAW
+                || material == Material.LECTERN || material == Material.SMOKER
+                || material == Material.BEEHIVE || material == Material.BEE_NEST
+                || material == Material.SCULK_SENSOR) {
+            return new CraftMetaBlockState(meta, material);
+        }
+        if (material == Material.TROPICAL_FISH_BUCKET) {
+            return meta instanceof CraftMetaTropicalFishBucket ? meta : new CraftMetaTropicalFishBucket(meta);
+        }
+        if (material == Material.AXOLOTL_BUCKET) {
+            return meta instanceof CraftMetaAxolotlBucket ? meta : new CraftMetaAxolotlBucket(meta);
+        }
+        if (material == Material.CROSSBOW) {
+            return meta instanceof CraftMetaCrossbow ? meta : new CraftMetaCrossbow(meta);
+        }
+        if (material == Material.SUSPICIOUS_STEW) {
+            return meta instanceof CraftMetaSuspiciousStew ? meta : new CraftMetaSuspiciousStew(meta);
+        }
+        if (material == Material.COD_BUCKET || material == Material.PUFFERFISH_BUCKET
+                || material == Material.SALMON_BUCKET || material == Material.ITEM_FRAME
+                || material == Material.GLOW_ITEM_FRAME || material == Material.PAINTING) {
+            return meta instanceof CraftMetaEntityTag ? meta : new CraftMetaEntityTag(meta);
+        }
+        if (material == Material.COMPASS) {
+            return meta instanceof CraftMetaCompass ? meta : new CraftMetaCompass(meta);
+        }
+        if (material == Material.BUNDLE) {
+            return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
+        }
+
+        return new CraftMetaItem(meta);
     }
 
     @Override

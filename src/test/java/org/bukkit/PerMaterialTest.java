@@ -2,7 +2,9 @@ package org.bukkit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPosition;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.MovingObjectPositionBlock;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.EquipmentSlot;
@@ -46,7 +49,8 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Parameters(name = "{index}: {0}")
     public static List<Object[]> data() {
         List<Object[]> list = Lists.newArrayList();
-        for (Material material : Material.values()) {
+        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
+            Material material = it.next();
             if (!material.isLegacy()) {
                 list.add(new Object[] {material});
             }

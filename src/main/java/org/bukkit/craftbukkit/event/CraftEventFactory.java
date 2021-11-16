@@ -1260,7 +1260,7 @@ public class CraftEventFactory {
         Material type = igniter.getType();
         if (type == Material.LAVA) {
             cause = IgniteCause.LAVA;
-        } else if (type == Material.DISPENSER){
+        } else if (type == Material.DISPENSER) {
             cause = IgniteCause.FLINT_AND_STEEL;
         } else {
             // Fire or any other unknown block counts as SPREAD.

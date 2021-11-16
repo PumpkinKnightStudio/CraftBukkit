@@ -1,61 +1,31 @@
-package org.bukkit.craftbukkit;
+package org.bukkit.craftbukkit.inventory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.core.BlockPosition;
-import net.minecraft.core.IRegistry;
-import net.minecraft.resources.MinecraftKey;
-import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.EntityInsentient;
-import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
-import net.minecraft.world.level.BlockAccessAir;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockFalling;
-import net.minecraft.world.level.block.BlockFire;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
-import net.minecraft.world.level.block.state.BlockBase;
-import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.phys.MovingObjectPositionBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.block.CraftBlockType;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.inventory.CraftItemType;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.CraftMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
 
-public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemType {
-
-    private static int count = 0;
-
-    public static int getNextOrdinal() {
-        return count++;
-    }
-
+public class CraftItemType implements ItemType {
     private final NamespacedKey key;
-    private final Block block;
     private final Item item;
     private final String name;
     private final int ordinal;
 
-    public CraftMaterial(NamespacedKey key, Block block, Item item) {
+    public CraftItemType(NamespacedKey key, Item item) {
         this.key = key;
-        this.block = block;
         this.item = item;
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
         // in case plugins use for example the name as key in a config file to receive material specific values.
@@ -66,7 +36,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
         } else {
             this.name = key.toString();
         }
-        this.ordinal = getNextOrdinal();
+        this.ordinal = CraftMaterial.getNextOrdinal();
     }
 
     @Override
@@ -76,10 +46,6 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public int getMaxStackSize() {
-        if (this == Material.AIR) {
-            return 0;
-        }
-
         return item.getMaxStackSize();
     }
 
@@ -105,7 +71,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isBlock() {
-        return true;
+        return false;
     }
 
     @Override
@@ -120,31 +86,27 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isSolid() {
-        return block.getBlockData().getMaterial().isSolid();
+        return false;
     }
 
     @Override
     public boolean isAir() {
-        return block.getBlockData().isAir();
+        return false;
     }
 
     @Override
     public boolean isTransparent() {
-        if (this == Material.AIR) {
-            return true;
-        }
-
-        return block.getBlockData().getMaterial().f();
+        return false;
     }
 
     @Override
     public boolean isFlammable() {
-        return block.getBlockData().getMaterial().isBurnable();
+        return false;
     }
 
     @Override
     public boolean isBurnable() {
-        return ((BlockFire) Blocks.FIRE).flameOdds.containsKey(block) && ((BlockFire) Blocks.FIRE).flameOdds.get(block) > 0;
+        return false;
     }
 
     @Override
@@ -154,12 +116,12 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isOccluding() {
-        return block.getBlockData().isOccluding(BlockAccessAir.INSTANCE, BlockPosition.ZERO);
+        return false;
     }
 
     @Override
     public boolean hasGravity() {
-        return block instanceof BlockFalling;
+        return false;
     }
 
     @Override
@@ -174,28 +136,22 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isInteractable() {
-        try {
-            return !block.getClass()
-                    .getMethod("interact", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
-                    .getDeclaringClass().equals(BlockBase.class);
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+        return false;
     }
 
     @Override
     public float getHardness() {
-        return block.getBlockData().destroySpeed;
+        throw new IllegalArgumentException("The Material is not an block!");
     }
 
     @Override
     public float getBlastResistance() {
-        return block.getDurability();
+        throw new IllegalArgumentException("The Material is not an block!");
     }
 
     @Override
     public float getSlipperiness() {
-        return block.getFrictionFactor();
+        throw new IllegalArgumentException("The Material is not an block!");
     }
 
     @Override
@@ -226,7 +182,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public BlockType<?> asBlockType() {
-        return this;
+        throw new UnsupportedOperationException("Material " + this + " is not a block");
     }
 
     @Override
@@ -261,65 +217,11 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
             return true;
         }
 
-        if (!(other instanceof CraftMaterial)) {
+        if (!(other instanceof CraftItemType)) {
             return false;
         }
 
-        return getKey().equals(((CraftMaterial) other).getKey());
+        return getKey().equals(((CraftItemType) other).getKey());
     }
 
-    @Override
-    public int hashCode() {
-        return getKey().hashCode();
-    }
-
-    public static class CraftMaterialRegistry implements Registry<Material> {
-        private final Map<NamespacedKey, Material> cache = new HashMap<>();
-        private final IRegistry<Block> blockRegistry;
-        private final IRegistry<Item> itemRegistry;
-
-        public CraftMaterialRegistry(IRegistry<Block> blockRegistry, IRegistry<Item> itemRegistry) {
-            this.blockRegistry = blockRegistry;
-            this.itemRegistry = itemRegistry;
-        }
-
-        @Override
-        public Material get(NamespacedKey namespacedKey) {
-            Material cached = cache.get(namespacedKey);
-            if (cached != null) {
-                return cached;
-            }
-
-            MinecraftKey minecraftKey = CraftNamespacedKey.toMinecraft(namespacedKey);
-            Block block = blockRegistry.getOptional(minecraftKey).orElse(null);
-            Item item = itemRegistry.getOptional(minecraftKey).orElse(null);
-
-            if (block != null && item != null) {
-                Material bukkit = new CraftMaterial<>(namespacedKey, block, item);
-                cache.put(namespacedKey, bukkit);
-                return bukkit;
-            }
-
-            if (block != null) {
-                Material bukkit = new CraftBlockType<>(namespacedKey, block);
-                cache.put(namespacedKey, bukkit);
-                return bukkit;
-            }
-
-            if (item != null) {
-                Material bukkit = new CraftItemType(namespacedKey, item);
-                cache.put(namespacedKey, bukkit);
-                return bukkit;
-            }
-
-            return null;
-        }
-
-        @Override
-        public Iterator<Material> iterator() {
-            Set<MinecraftKey> keySet = new LinkedHashSet<>(itemRegistry.keySet());
-            keySet.addAll(blockRegistry.keySet());
-            return keySet.stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey))).iterator();
-        }
-    }
 }

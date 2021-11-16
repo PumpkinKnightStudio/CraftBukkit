@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import net.minecraft.world.level.block.entity.TileEntityBed;
 import org.bukkit.DyeColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Bed;
 

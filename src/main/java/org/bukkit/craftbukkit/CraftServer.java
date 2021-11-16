@@ -178,6 +178,7 @@ import org.bukkit.craftbukkit.inventory.CraftSmokingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftStonecuttingRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
 import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
 import org.bukkit.craftbukkit.metadata.PlayerMetadataStore;
@@ -308,6 +309,7 @@ public final class CraftServer implements Server {
 
         Bukkit.setServer(this);
 
+        CraftLegacyMaterial.blockCreating();
         Potion.setPotionBrewer(new CraftPotionBrewer());
         // Ugly hack :(
 

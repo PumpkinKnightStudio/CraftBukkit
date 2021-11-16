@@ -10,6 +10,7 @@ import net.minecraft.core.IRegistryCustom;
 import org.bukkit.Art;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
@@ -59,6 +60,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == Sound.class) {
             return new CraftRegistry<>(IRegistry.SOUND_EVENT, CraftSound::new);
+        }
+        if (bukkitClass == Material.class) {
+            return new CraftMaterial.CraftMaterialRegistry(IRegistry.BLOCK, IRegistry.ITEM);
         }
 
         return null;

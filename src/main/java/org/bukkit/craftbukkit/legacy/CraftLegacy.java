@@ -224,7 +224,13 @@ public final class CraftLegacy {
     }
 
     public static Material valueOf(String name) {
-        return (name.startsWith(Material.LEGACY_PREFIX)) ? Material.valueOf(name) : Material.valueOf(Material.LEGACY_PREFIX + name);
+        Material material = (name.startsWith(Material.LEGACY_PREFIX)) ? CraftLegacyMaterial.getLegacyMaterial(name) : CraftLegacyMaterial.getLegacyMaterial(Material.LEGACY_PREFIX + name);
+
+        if (material == null) {
+            throw new IllegalArgumentException("No legacy material with the name " + name);
+        }
+
+        return material;
     }
 
     public static Material getMaterial(String name) {

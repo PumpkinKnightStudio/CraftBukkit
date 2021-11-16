@@ -2,9 +2,13 @@ package org.bukkit.craftbukkit.inventory;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -22,7 +26,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final Material[] materials;
 
     static {
-        Material[] local_materials = Material.values();
+        Material[] local_materials = Lists.newArrayList(Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator())).toArray(new Material[0]);
         List<Material> list = new ArrayList<Material>(local_materials.length);
         for (Material material : local_materials) {
             if (INVALIDATED_MATERIALS.contains(material)) {
@@ -34,7 +38,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         materials = list.toArray(new Material[list.size()]);
     }
 
-    static String name(Enum<?> from, Enum<?> to) {
+    static String name(Material from, Material to) {
         if (from.getClass() == to.getClass()) {
             return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append(' ').append(from.name()).append(" to ").append(to.name()).toString();
         }

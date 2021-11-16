@@ -127,7 +127,7 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
                 || type == Material.MAGMA_CUBE_SPAWN_EGG || type == Material.MOOSHROOM_SPAWN_EGG
                 || type == Material.MULE_SPAWN_EGG || type == Material.OCELOT_SPAWN_EGG
                 || type == Material.PANDA_SPAWN_EGG || type == Material.PARROT_SPAWN_EGG
-                || type == Material.PHANTOM_SPAWN_EGG || Material.PIGLIN_BRUTE_SPAWN_EGG
+                || type == Material.PHANTOM_SPAWN_EGG || type == Material.PIGLIN_BRUTE_SPAWN_EGG
                 || type == Material.PIGLIN_SPAWN_EGG || type == Material.PIG_SPAWN_EGG
                 || type == Material.PILLAGER_SPAWN_EGG || type == Material.POLAR_BEAR_SPAWN_EGG
                 || type == Material.PUFFERFISH_SPAWN_EGG || type == Material.RABBIT_SPAWN_EGG

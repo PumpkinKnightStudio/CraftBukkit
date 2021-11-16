@@ -15,7 +15,7 @@ import java.util.zip.ZipEntry;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import org.bukkit.Material;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.plugin.AuthorNagException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -360,10 +360,7 @@ public class Commodore
 
                         if ( owner.equals( "org/bukkit/Material" ) )
                         {
-                            try
-                            {
-                                Material.valueOf( "LEGACY_" + name );
-                            } catch ( IllegalArgumentException ex )
+                            if ( CraftLegacyMaterial.getLegacyMaterial( "LEGACY_" + name ) == null )
                             {
                                 throw new AuthorNagException( "No legacy enum constant for " + name + ". Did you forget to define a modern (1.13+) api-version in your plugin.yml?" );
                             }
@@ -434,6 +431,7 @@ public class Commodore
                                 || owner.equals( "org/bukkit/Fluid" )
                                 || owner.equals( "org/bukkit/entity/EntityType" )
                                 || owner.equals( "org/bukkit/Sound" )
+                                || owner.equals( "org/bukkit/Material" )
                                 || owner.equals( "org/bukkit/attribute/Attribute" )
                                 || owner.equals( "org/bukkit/entity/Villager$Type" )
                                 || owner.equals( "org/bukkit/entity/Villager$Profession" ) ) && name.equals( "compareTo" ) && desc.equals( "(Ljava/lang/Enum;)I" ) )
@@ -455,8 +453,13 @@ public class Commodore
                                         super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/util/CraftLegacy", "modern_" + name, "(Lorg/bukkit/Material;)I", false );
                                         return;
                                 }
-                            }
 
+                                itf = true;
+                                if ( opcode == Opcodes.INVOKEVIRTUAL )
+                                {
+                                    opcode = Opcodes.INVOKEINTERFACE;
+                                }
+                            }
                             super.visitMethodInsn( opcode, owner, name, desc, itf );
                             return;
                         }
@@ -515,6 +518,12 @@ public class Commodore
                                 case "toString":
                                     super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/CraftLegacy", name, "(Lorg/bukkit/Material;)Ljava/lang/String;", false );
                                     return;
+                            }
+
+                            itf = true;
+                            if ( opcode == Opcodes.INVOKEVIRTUAL )
+                            {
+                                opcode = Opcodes.INVOKEINTERFACE;
                             }
                         }
 

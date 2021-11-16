@@ -2,6 +2,8 @@ package org.bukkit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import java.util.stream.StreamSupport;
 import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
+import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
@@ -23,7 +26,8 @@ public class MaterialTest extends AbstractTestingBase {
     @Test
     public void verifyMapping() {
         Map<MinecraftKey, Material> materials = Maps.newHashMap();
-        for (Material material : Material.values()) {
+        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
+            Material material = it.next();
             if (INVALIDATED_MATERIALS.contains(material)) {
                 continue;
             }
@@ -51,7 +55,8 @@ public class MaterialTest extends AbstractTestingBase {
 
     @Test
     public void verifyMaterialOrder() {
-        List<Material> expectedOrder = new ArrayList<>(Material.values().length);
+        Material[] materials = Lists.newArrayList(Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator())).toArray(new Material[0]);
+        List<Material> expectedOrder = new ArrayList<>(materials.length);
 
         // Start with items in the same order as IRegistry.ITEM
         StreamSupport.stream(IRegistry.ITEM.spliterator(), false)
@@ -65,11 +70,11 @@ public class MaterialTest extends AbstractTestingBase {
                 .forEach(expectedOrder::add);
 
         // Then legacy materials in order of ID
-        Arrays.stream(Material.values())
+        Arrays.stream(materials)
                 .filter(Material::isLegacy)
                 .sorted(Comparator.comparingInt(Material::getId))
                 .forEach(expectedOrder::add);
 
-        assertArrayEquals(expectedOrder.toArray(), Material.values());
+        assertArrayEquals(expectedOrder.toArray(), materials);
     }
 }

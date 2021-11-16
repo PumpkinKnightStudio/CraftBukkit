@@ -1,9 +1,10 @@
 package org.bukkit.craftbukkit.legacy;
 
 import com.google.common.base.Preconditions;
-
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
@@ -19,21 +20,28 @@ import org.bukkit.material.MaterialData;
 @Deprecated
 public class CraftLegacyMaterial implements Material {
 
-    protected static final Map<String, CraftLegacyMaterial> MATERIAL_MAP = new HashMap<>();
-    private static boolean ALLOW_CREATING = true;
+    protected static Map<String, CraftLegacyMaterial> MATERIAL_MAP;
+    private static boolean BLOCK_CREATING = false;
 
     public static CraftLegacyMaterial createLegacyMaterial(String name, int id, int maxStackSize, short maxDurability, Class<? extends MaterialData> materialData) {
-        Preconditions.checkState(ALLOW_CREATING, "Plugins cannot create Legacy Materials");
+        Preconditions.checkState(!BLOCK_CREATING, "Plugins cannot create Legacy Materials");
+        if (MATERIAL_MAP == null) {
+            MATERIAL_MAP = new LinkedHashMap<>();
+        }
 
         return MATERIAL_MAP.computeIfAbsent(name.toUpperCase(), n -> new CraftLegacyMaterial(n, id, maxStackSize, maxDurability, materialData));
     }
 
-    public static void stopAllowing() {
-        ALLOW_CREATING = false;
+    public static void blockCreating() {
+        BLOCK_CREATING = true;
     }
 
     public static CraftLegacyMaterial getLegacyMaterial(String name) {
         return MATERIAL_MAP.get(name);
+    }
+
+    public static Collection<Material> getLegacyMaterials() {
+        return new LinkedHashSet<>(MATERIAL_MAP.values());
     }
 
     private final int id;
