@@ -70,6 +70,11 @@ public class CraftItemType implements ItemType {
     }
 
     @Override
+    public Class<?> getBlockDataClass() {
+        return MaterialData.class;
+    }
+
+    @Override
     public boolean isBlock() {
         return false;
     }

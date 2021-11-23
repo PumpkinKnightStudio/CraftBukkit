@@ -49,6 +49,7 @@ public class CraftLegacyMaterial implements Material {
     private final short maxDurability;
     private final String name;
     private final int ordinal;
+    private final Class<?> data;
     private final Constructor<? extends MaterialData> ctor;
 
     public CraftLegacyMaterial(String name, int id, int maxStackSize, short maxDurability, Class<? extends MaterialData> materialData) {
@@ -57,6 +58,7 @@ public class CraftLegacyMaterial implements Material {
         this.maxDurability = maxDurability;
         this.name = name;
         this.ordinal = CraftMaterial.getNextOrdinal();
+        this.data = materialData;
         // try to cache the constructor for this material
         try {
             if (MaterialData.class.isAssignableFrom(materialData)) {
@@ -104,6 +106,11 @@ public class CraftLegacyMaterial implements Material {
     @Override
     public BlockData createBlockData(String data) {
         return Bukkit.createBlockData(this, data);
+    }
+
+    @Override
+    public Class<?> getBlockDataClass() {
+        return data;
     }
 
     @Override

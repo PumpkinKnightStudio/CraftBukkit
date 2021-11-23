@@ -324,6 +324,12 @@ public class Commodore
                             }
                         }
 
+                        if ( owner.equals( "org/bukkit/Material" )  && name.equals( "data" ) )
+                        {
+                            super.visitMethodInsn( Opcodes.INVOKEINTERFACE, owner, "getBlockDataClass", "()Ljava/lang/Class;", true );
+                            return;
+                        }
+
                         if ( modern )
                         {
                             if ( owner.equals( "org/bukkit/Material" ) )

@@ -30,6 +30,7 @@ import org.bukkit.Registry;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -50,12 +51,14 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
     private final NamespacedKey key;
     private final Block block;
     private final Item item;
+    private final Class<B> blockDataClass;
     private final String name;
     private final int ordinal;
 
     public CraftMaterial(NamespacedKey key, Block block, Item item) {
         this.key = key;
         this.block = block;
+        this.blockDataClass = (Class<B>) CraftBlockData.fromData(block.getBlockData()).getClass().getInterfaces()[0];
         this.item = item;
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
         // in case plugins use for example the name as key in a config file to receive material specific values.
@@ -89,18 +92,23 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
     }
 
     @Override
-    public BlockData createBlockData() {
-        return Bukkit.createBlockData(this);
+    public Class<B> getBlockDataClass() {
+        return blockDataClass;
     }
 
     @Override
-    public BlockData createBlockData(Consumer<BlockData> consumer) {
-        return Bukkit.createBlockData(this, consumer);
+    public B createBlockData() {
+        return (B) Bukkit.createBlockData(this);
     }
 
     @Override
-    public BlockData createBlockData(String data) {
-        return Bukkit.createBlockData(this, data);
+    public B createBlockData(Consumer<BlockData> consumer) {
+        return (B) Bukkit.createBlockData(this, consumer);
+    }
+
+    @Override
+    public B createBlockData(String data) {
+        return (B) Bukkit.createBlockData(this, data);
     }
 
     @Override
