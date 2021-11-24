@@ -13,14 +13,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import net.minecraft.SystemUtils;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
@@ -28,6 +31,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutUpdateTime;
 import net.minecraft.network.protocol.game.PacketPlayOutWorldEvent;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.level.ChunkMapDistance;
+import net.minecraft.server.level.ChunkProviderServer;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.level.PlayerChunk;
 import net.minecraft.server.level.Ticket;
@@ -36,6 +40,7 @@ import net.minecraft.server.level.WorldServer;
 import net.minecraft.sounds.SoundCategory;
 import net.minecraft.util.ArraySetSorted;
 import net.minecraft.util.Unit;
+import net.minecraft.util.thread.ThreadedMailbox;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.entity.EntityLightning;
 import net.minecraft.world.entity.EntityTypes;
@@ -54,6 +59,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
+import net.minecraft.world.level.levelgen.HeightMap;
 import net.minecraft.world.level.levelgen.feature.StructureGenerator;
 import net.minecraft.world.level.storage.SavedFile;
 import net.minecraft.world.phys.AxisAlignedBB;
@@ -269,27 +275,64 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean regenerateChunk(int x, int z) {
-        throw new UnsupportedOperationException("Not supported in this Minecraft version! Unless you can fix it, this is not a bug :)");
-        /*
-        if (!unloadChunk0(x, z, false)) {
-            return false;
+        return regenerateChunks(x, z, x, z) > 0;
+    }
+
+    @Override
+    public int regenerateChunks(int minX, int minZ, int maxX, int maxZ) {
+        ChunkCoordIntPair min = new ChunkCoordIntPair(minX, minZ);
+        ChunkCoordIntPair max = new ChunkCoordIntPair(maxX, maxZ);
+        ChunkProviderServer chunkSource = world.getChunkSource();
+
+        int count = (int) ChunkCoordIntPair.rangeClosed(min, max).filter(pos -> {
+            net.minecraft.world.level.chunk.Chunk chunk = chunkSource.getChunk(pos.x, pos.z, false);
+            if (chunk == null) return false;
+            for (BlockPosition blockPosition : BlockPosition.betweenClosed(pos.getMinBlockX(), getMinHeight(), pos.getMinBlockZ(), pos.getMaxBlockX(), getMaxHeight() - 1, pos.getMaxBlockZ())) {
+                chunk.setBlockState(blockPosition, Blocks.AIR.defaultBlockState(), false, false);
+            }
+            return true;
+        }).count();
+
+        ThreadedMailbox<Runnable> mailbox = ThreadedMailbox.create(SystemUtils.backgroundExecutor(), "craft-bukkit-regenerate-chunks");
+
+        for (ChunkStatus status : new ChunkStatus[] {ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.LIQUID_CARVERS, ChunkStatus.FEATURES}) {
+            int neighbourRadius = Math.max(1, status.getRange());
+
+            CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> null, mailbox::tell);
+
+            Iterator<ChunkCoordIntPair> iterator = ChunkCoordIntPair.rangeClosed(min, max).iterator();
+            while (iterator.hasNext()) {
+                ChunkCoordIntPair pos = iterator.next();
+                if (!world.hasChunk(pos.x, pos.z)) continue;
+
+                List<IChunkAccess> neighbours = ChunkCoordIntPair.rangeClosed(new ChunkCoordIntPair(pos.x - neighbourRadius, pos.z - neighbourRadius), new ChunkCoordIntPair(pos.x + neighbourRadius, pos.z + neighbourRadius)).map(neighbourPos -> {
+                    return chunkSource.getChunk(neighbourPos.x, neighbourPos.z, status.getParent(), true);
+                }).map(neighbour -> {
+                    if (neighbour instanceof ProtoChunkExtension) {
+                        return new ProtoChunkExtension(((ProtoChunkExtension) neighbour).getWrapped(), true);
+                    } else if (neighbour instanceof net.minecraft.world.level.chunk.Chunk) {
+                        return new ProtoChunkExtension((net.minecraft.world.level.chunk.Chunk) neighbour, true);
+                    } else {
+                        return neighbour;
+                    }
+                }).collect(Collectors.toList());
+
+                future = future.thenComposeAsync(unused -> status.generate(mailbox::tell, world, chunkSource.getGenerator(), world.getStructureManager(), chunkSource.getLightEngine(), ignored -> {
+                    throw new IllegalStateException();
+                }, neighbours, true).thenApply(either -> {
+                    if (status == ChunkStatus.NOISE) {
+                        either.left().ifPresent(c -> HeightMap.primeHeightmaps(c, ChunkStatus.POST_FEATURES));
+                    }
+                    return null;
+                }), mailbox::tell);
+            }
+
+            server.getServer().managedBlock(future::isDone);
         }
 
-        final long chunkKey = ChunkCoordIntPair.pair(x, z);
-        world.getChunkProvider().unloadQueue.remove(chunkKey);
+        ChunkCoordIntPair.rangeClosed(min, max).forEach(pos -> refreshChunk(pos.x, pos.z));
 
-        net.minecraft.server.Chunk chunk = world.getChunkProvider().generateChunk(x, z);
-        PlayerChunk playerChunk = world.getPlayerChunkMap().getChunk(x, z);
-        if (playerChunk != null) {
-            playerChunk.chunk = chunk;
-        }
-
-        if (chunk != null) {
-            refreshChunk(x, z);
-        }
-
-        return chunk != null;
-        */
+        return count;
     }
 
     @Override
