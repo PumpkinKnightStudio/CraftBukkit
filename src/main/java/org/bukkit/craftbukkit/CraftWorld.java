@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.SystemUtils;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.SectionPosition;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutUpdateTime;
@@ -33,6 +35,7 @@ import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.level.ChunkMapDistance;
 import net.minecraft.server.level.ChunkProviderServer;
 import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.level.LightEngineThreaded;
 import net.minecraft.server.level.PlayerChunk;
 import net.minecraft.server.level.Ticket;
 import net.minecraft.server.level.TicketType;
@@ -51,13 +54,16 @@ import net.minecraft.world.entity.projectile.EntityArrow;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.raid.PersistentRaid;
 import net.minecraft.world.level.ChunkCoordIntPair;
+import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.RayTrace;
 import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
+import net.minecraft.world.level.chunk.NibbleArray;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
 import net.minecraft.world.level.levelgen.HeightMap;
 import net.minecraft.world.level.levelgen.feature.StructureGenerator;
@@ -283,19 +289,34 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         ChunkCoordIntPair min = new ChunkCoordIntPair(minX, minZ);
         ChunkCoordIntPair max = new ChunkCoordIntPair(maxX, maxZ);
         ChunkProviderServer chunkSource = world.getChunkSource();
+        LightEngineThreaded lightEngine = chunkSource.getLightEngine();
 
+        IBlockData air = Blocks.AIR.defaultBlockState();
         int count = (int) ChunkCoordIntPair.rangeClosed(min, max).filter(pos -> {
             net.minecraft.world.level.chunk.Chunk chunk = chunkSource.getChunk(pos.x, pos.z, false);
             if (chunk == null) return false;
+
+            for (int i = chunk.getMinSection(); i <= chunk.getMaxSection(); i++) {
+                SectionPosition sectionPos = SectionPosition.of(pos, i);
+                NibbleArray blockLight = lightEngine.getLayerListener(EnumSkyBlock.BLOCK).getDataLayerData(sectionPos);
+                if (blockLight != null && !blockLight.isEmpty()) Arrays.fill(blockLight.getData(), (byte) 0);
+                NibbleArray skyLight = lightEngine.getLayerListener(EnumSkyBlock.SKY).getDataLayerData(sectionPos);
+                if (skyLight != null && !skyLight.isEmpty()) Arrays.fill(skyLight.getData(), (byte) 0);
+            }
+            chunk.setLightCorrect(false);
+
             for (BlockPosition blockPosition : BlockPosition.betweenClosed(pos.getMinBlockX(), getMinHeight(), pos.getMinBlockZ(), pos.getMaxBlockX(), getMaxHeight() - 1, pos.getMaxBlockZ())) {
-                chunk.setBlockState(blockPosition, Blocks.AIR.defaultBlockState(), false, false);
+                chunk.removeBlockEntity(blockPosition);
+                IBlockData oldBlockData = chunk.setBlockState(blockPosition, air, false, false);
+                if (oldBlockData == null || oldBlockData.isAir()) continue;
+                world.onBlockStateChange(blockPosition, oldBlockData, air);
             }
             return true;
         }).count();
 
         ThreadedMailbox<Runnable> mailbox = ThreadedMailbox.create(SystemUtils.backgroundExecutor(), "craft-bukkit-regenerate-chunks");
 
-        for (ChunkStatus status : new ChunkStatus[] {ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.LIQUID_CARVERS, ChunkStatus.FEATURES}) {
+        for (ChunkStatus status : new ChunkStatus[] {ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.LIQUID_CARVERS, ChunkStatus.FEATURES, ChunkStatus.LIGHT}) {
             int neighbourRadius = Math.max(1, status.getRange());
 
             CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> null, mailbox::tell);
@@ -317,7 +338,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
                     }
                 }).collect(Collectors.toList());
 
-                future = future.thenComposeAsync(unused -> status.generate(mailbox::tell, world, chunkSource.getGenerator(), world.getStructureManager(), chunkSource.getLightEngine(), ignored -> {
+                future = future.thenComposeAsync(unused -> status.generate(mailbox::tell, world, chunkSource.getGenerator(), world.getStructureManager(), lightEngine, ignored -> {
                     throw new IllegalStateException();
                 }, neighbours, true).thenApply(either -> {
                     if (status == ChunkStatus.NOISE) {
