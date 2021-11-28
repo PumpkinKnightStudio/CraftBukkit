@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.command;
 import com.google.common.base.Joiner;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +26,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.CommandMinecart;
 
-public final class VanillaCommandWrapper extends BukkitCommand {
+public final class VanillaCommandWrapper extends BukkitCommand implements BrigadierCommand {
 
     private final CommandDispatcher dispatcher;
     public final CommandNode<CommandListenerWrapper> vanillaCommand;
@@ -62,6 +63,11 @@ public final class VanillaCommandWrapper extends BukkitCommand {
 
         return results;
     }
+
+	@Override
+	public LiteralCommandNode<CommandListenerWrapper> getNode() {
+		return (LiteralCommandNode<CommandListenerWrapper>) vanillaCommand;
+	}
 
     public static CommandListenerWrapper getListener(CommandSender sender) {
         if (sender instanceof Player) {

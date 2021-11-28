@@ -158,6 +158,7 @@ import org.bukkit.conversations.Conversable;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftBossBar;
 import org.bukkit.craftbukkit.boss.CraftKeyedBossbar;
+import org.bukkit.craftbukkit.command.BrigadierCommand;
 import org.bukkit.craftbukkit.command.BukkitCommandWrapper;
 import org.bukkit.craftbukkit.command.CraftCommandMap;
 import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
@@ -472,8 +473,8 @@ public final class CraftServer implements Server {
             String label = entry.getKey();
             Command command = entry.getValue();
 
-            if (command instanceof VanillaCommandWrapper) {
-                LiteralCommandNode<CommandListenerWrapper> node = (LiteralCommandNode<CommandListenerWrapper>) ((VanillaCommandWrapper) command).vanillaCommand;
+            if (command instanceof BrigadierCommand) {
+                LiteralCommandNode<CommandListenerWrapper> node = ((BrigadierCommand) command).getNode();
                 if (!node.getLiteral().equals(label)) {
                     LiteralCommandNode<CommandListenerWrapper> clone = new LiteralCommandNode(label, node.getCommand(), node.getRequirement(), node.getRedirect(), node.getRedirectModifier(), node.isFork());
 
