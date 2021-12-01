@@ -27,22 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +40,10 @@ import net.minecraft.commands.CommandListenerWrapper;
 import net.minecraft.commands.arguments.ArgumentEntity;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.IRegistryWritable;
 import net.minecraft.core.RegistryMaterials;
+import net.minecraft.data.RegistryGeneration;
+import net.minecraft.data.worldgen.SurfaceRuleData;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.resources.MinecraftKey;
@@ -107,14 +95,16 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
 import net.minecraft.world.level.WorldSettings;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.TerrainShaper;
 import net.minecraft.world.level.biome.WorldChunkManager;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.dimension.WorldDimension;
-import net.minecraft.world.level.levelgen.ChunkGeneratorAbstract;
-import net.minecraft.world.level.levelgen.GeneratorSettings;
-import net.minecraft.world.level.levelgen.MobSpawnerPatrol;
-import net.minecraft.world.level.levelgen.MobSpawnerPhantom;
+import net.minecraft.world.level.levelgen.*;
+import net.minecraft.world.level.levelgen.feature.StructureGenerator;
+import net.minecraft.world.level.levelgen.feature.configurations.StructureSettingsFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.StructureSettingsStronghold;
 import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
@@ -124,21 +114,9 @@ import net.minecraft.world.level.storage.WorldNBTStorage;
 import net.minecraft.world.level.storage.loot.LootTableRegistry;
 import net.minecraft.world.phys.Vec3D;
 import org.apache.commons.lang.Validate;
-import org.bukkit.BanList;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Keyed;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
-import org.bukkit.StructureType;
-import org.bukkit.UnsafeValues;
+import org.bukkit.*;
 import org.bukkit.Warning.WarningState;
-import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -1020,6 +998,10 @@ public final class CraftServer implements Server {
             case THE_END:
                 actualDimension = WorldDimension.END;
                 break;
+            case CUSTOM:
+                if(creator.getEnvironmentBuilder() == null) throw new IllegalArgumentException("Selected Environment.CUSTOM but not specified an EnvironmentBuilder!");
+                actualDimension = ResourceKey.create(IRegistry.LEVEL_STEM_REGISTRY, new MinecraftKey(name));
+                break;
             default:
                 throw new IllegalArgumentException("Illegal dimension");
         }
@@ -1058,16 +1040,134 @@ public final class CraftServer implements Server {
             }, worlddata.worldGenSettings());
         }
 
+        RegistryMaterials<WorldDimension> registrymaterials = worlddata.worldGenSettings().dimensions();
+
+        GeneratorConfiguration generatorConfiguration = creator.getGeneratorConfiguration();
+        GeneratorSettingBase generatorSettingBase = null;
+        ResourceKey<GeneratorSettingBase> generatorSettingBaseResourceKey = null;
+
+        if(generatorConfiguration != null){
+            StructureSettingsStronghold stronghold = null;
+            HashMap<StructureGenerator<?>, StructureSettingsFeature> structureMaps = new HashMap<>();
+
+            GeneratorConfiguration.NoiseGeneration noiseGeneration = generatorConfiguration.getNoiseGeneration();
+            GeneratorConfiguration.StructureGeneration structureGeneration = generatorConfiguration.getStructureGeneration();
+            HashMap<StructureType, GeneratorConfiguration.StructureInfo> strucctureInfos = structureGeneration.getStructureInfos();
+
+            for(StructureType type : strucctureInfos.keySet()){
+                String typename = type.getName();
+
+                if(typename != null){
+                    GeneratorConfiguration.StructureInfo structureInfo = strucctureInfos.get(type);
+                    if(typename.equals("Stronghold")){
+                        stronghold = new StructureSettingsStronghold(structureInfo.getSpacing(), structureInfo.getSeparation(), structureInfo.getSalt());
+                    }else {
+                        StructureGenerator<?> structureGenerator = StructureGenerator.STRUCTURES_REGISTRY.get(typename.toLowerCase(Locale.ROOT));
+
+                        if (structureGenerator != null) {
+                            structureMaps.put(structureGenerator, new StructureSettingsFeature(structureInfo.getSpacing(), structureInfo.getSeparation(), structureInfo.getSalt()));
+                        } else {
+                            throw new IllegalStateException("Can't find StructureGenerator for " + typename + " while creating a World!");
+                        }
+                    }
+                }else{
+                    throw new IllegalStateException("Can't find Name for " + type.getName() + " while creating a World!");
+                }
+
+
+            }
+
+            GeneratorConfiguration.SamplingGeneration samplingGeneration = noiseGeneration.getSamplingGeneration();
+            NoiseSamplingSettings noiseSamplingSettings = new NoiseSamplingSettings(samplingGeneration.getXzScale(),samplingGeneration.getyScale(),samplingGeneration.getXzFactor(),samplingGeneration.getyFactor());
+
+            GeneratorConfiguration.SliderGeneration topSliderGeneration = noiseGeneration.getTopSlideSettings();
+            GeneratorConfiguration.SliderGeneration bottomSliderGeneration = noiseGeneration.getBottomSlideSettings();
+
+
+            NoiseSlider topNoiseSlider = new NoiseSlider(topSliderGeneration.getTarget(),topSliderGeneration.getSize(),topSliderGeneration.getOffset());
+            NoiseSlider bottomNoiseSlider = new NoiseSlider(bottomSliderGeneration.getTarget(),bottomSliderGeneration.getSize(),bottomSliderGeneration.getOffset());
+
+            NoiseSettings noiseSettings = new NoiseSettings(noiseGeneration.getMinY(),noiseGeneration.getHeight(),noiseSamplingSettings,topNoiseSlider,
+                    bottomNoiseSlider,noiseGeneration.getNoiseSizeHorizontal(),noiseGeneration.getNoiseSizeVertical(),noiseGeneration.isIslandNoiseOverride(),
+                    noiseGeneration.isAmplified(),noiseGeneration.isLargeBiomes(), TerrainShaper.overworld(false));
+
+            StructureSettings structureSettings = new StructureSettings(Optional.ofNullable(stronghold),structureMaps);
+
+            IBlockData baseBlock = ((CraftBlockData)Bukkit.createBlockData(generatorConfiguration.getDefaultBlock())).getState();
+            IBlockData baseFluid = ((CraftBlockData)Bukkit.createBlockData(generatorConfiguration.getDefaultFluid())).getState();
+
+
+            generatorSettingBase = new GeneratorSettingBase(structureSettings,noiseSettings,baseBlock,baseFluid, SurfaceRuleData.overworld(),
+                    generatorConfiguration.getSeaLevel(), generatorConfiguration.isDisableMobGeneration(),generatorConfiguration.isAquifersEnabled(),
+                    generatorConfiguration.isNoiseCavesEnabled(),generatorConfiguration.isOreVeinsEnabled(),generatorConfiguration.isNoiseCavesEnabled(),
+                    generatorConfiguration.getRandomGenerationType() == GeneratorConfiguration.RandomGenerationType.LEGACY);
+
+            generatorSettingBaseResourceKey = ResourceKey.create(IRegistry.NOISE_GENERATOR_SETTINGS_REGISTRY, new MinecraftKey("spigot",creator.name()));
+            IRegistryWritable<GeneratorSettingBase> registryGeneratorSettings = getHandle().getServer().registryAccess().ownedRegistryOrThrow(IRegistry.NOISE_GENERATOR_SETTINGS_REGISTRY);
+
+            registryGeneratorSettings.register(generatorSettingBaseResourceKey,generatorSettingBase,Lifecycle.stable());
+            RegistryGeneration.register(RegistryGeneration.NOISE_GENERATOR_SETTINGS, generatorSettingBaseResourceKey.location(), generatorSettingBase);
+        }
+
+
+        // We need to register the DimensionManager of the Custom Environment before using it :)
+        if(creator.environment() == Environment.CUSTOM) {
+            ResourceKey<DimensionManager> resourceKeyDimension = ResourceKey.create(IRegistry.DIMENSION_TYPE_REGISTRY, new MinecraftKey("spigot", creator.name()));
+            IRegistryWritable<DimensionManager> registryDimensions = getHandle().getServer().registryAccess().ownedRegistryOrThrow(IRegistry.DIMENSION_TYPE_REGISTRY);
+
+            EnvironmentBuilder build = creator.getEnvironmentBuilder();
+
+            DimensionManager dimensionManager = DimensionManager.create(
+                    build.getFixedTime() == null ? OptionalLong.empty() : OptionalLong.of(build.getFixedTime()),
+                    build.isHasSkylight(),
+                    build.isHasCeiling(),
+                    build.isUltraWarm(),
+                    build.isNatural(),
+                    build.getCoordinateScale(),
+                    build.isCreateDragonFight(),
+                    build.isPiglinSafe(),
+                    build.isBedWorks(),
+                    build.isRespawnAnchorWorks(),
+                    build.isHasRaids(),
+                    build.getMinY(),
+                    build.getHeight(),
+                    build.getLogicalHeight(),
+                    new MinecraftKey(build.getInfiniburn().getNamespace(),build.getInfiniburn().getKey()),
+                    new MinecraftKey(build.getEffectsLocation().getNamespace(),build.getEffectsLocation().getKey()),
+                    build.getAmbientLight());
+            registryDimensions.register(resourceKeyDimension, dimensionManager, Lifecycle.stable());
+
+            ChunkGeneratorAbstract generatorAbstract = null;
+            if(generatorSettingBase == null){
+                generatorAbstract = GeneratorSettings.makeDefaultOverworld(console.registryHolder, creator.seed());
+            }else{
+                generatorAbstract = GeneratorSettings.makeOverworld(console.registryHolder, creator.seed(), generatorSettingBaseResourceKey);
+            }
+
+
+            WorldDimension dimension = new WorldDimension(()->dimensionManager,generatorAbstract);
+
+            registrymaterials.register(actualDimension,dimension,Lifecycle.stable());
+
+        }
+
         long j = BiomeManager.obfuscateSeed(creator.seed());
         List<MobSpawner> list = ImmutableList.of(new MobSpawnerPhantom(), new MobSpawnerPatrol(), new MobSpawnerCat(), new VillageSiege(), new MobSpawnerTrader(worlddata));
-        RegistryMaterials<WorldDimension> registrymaterials = worlddata.worldGenSettings().dimensions();
+
+
         WorldDimension worlddimension = (WorldDimension) registrymaterials.get(actualDimension);
         DimensionManager dimensionmanager;
         net.minecraft.world.level.chunk.ChunkGenerator chunkgenerator;
 
         if (worlddimension == null) {
             dimensionmanager = (DimensionManager) console.registryHolder.registryOrThrow(IRegistry.DIMENSION_TYPE_REGISTRY).getOrThrow(DimensionManager.OVERWORLD_LOCATION);
-            chunkgenerator = GeneratorSettings.makeDefaultOverworld(console.registryHolder, (new Random()).nextLong());
+
+            if(generatorSettingBase == null){
+                chunkgenerator = GeneratorSettings.makeDefaultOverworld(console.registryHolder, creator.seed());
+            }else{
+                chunkgenerator = GeneratorSettings.makeOverworld(console.registryHolder, creator.seed(), generatorSettingBaseResourceKey);
+            }
+
         } else {
             dimensionmanager = worlddimension.type();
             chunkgenerator = worlddimension.generator();
