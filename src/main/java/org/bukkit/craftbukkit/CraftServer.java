@@ -1046,7 +1046,7 @@ public final class CraftServer implements Server {
         GeneratorSettingBase generatorSettingBase = null;
         ResourceKey<GeneratorSettingBase> generatorSettingBaseResourceKey = null;
 
-        if(generatorConfiguration != null){
+        if (generatorConfiguration != null) {
             StructureSettingsStronghold stronghold = null;
             HashMap<StructureGenerator<?>, StructureSettingsFeature> structureMaps = new HashMap<>();
 
@@ -1054,14 +1054,14 @@ public final class CraftServer implements Server {
             GeneratorConfiguration.StructureGeneration structureGeneration = generatorConfiguration.getStructureGeneration();
             HashMap<StructureType, GeneratorConfiguration.StructureInfo> strucctureInfos = structureGeneration.getStructureInfos();
 
-            for(StructureType type : strucctureInfos.keySet()){
+            for (StructureType type : strucctureInfos.keySet()) {
                 String typename = type.getName();
 
-                if(typename != null){
+                if (typename != null) {
                     GeneratorConfiguration.StructureInfo structureInfo = strucctureInfos.get(type);
-                    if(typename.equals("Stronghold")){
+                    if (typename.equals("Stronghold")) {
                         stronghold = new StructureSettingsStronghold(structureInfo.getSpacing(), structureInfo.getSeparation(), structureInfo.getSalt());
-                    }else {
+                    } else {
                         StructureGenerator<?> structureGenerator = StructureGenerator.STRUCTURES_REGISTRY.get(typename.toLowerCase(Locale.ROOT));
 
                         if (structureGenerator != null) {
@@ -1070,7 +1070,7 @@ public final class CraftServer implements Server {
                             throw new IllegalStateException("Can't find StructureGenerator for " + typename + " while creating a World!");
                         }
                     }
-                }else{
+                } else {
                     throw new IllegalStateException("Can't find Name for " + type.getName() + " while creating a World!");
                 }
 
@@ -1111,7 +1111,7 @@ public final class CraftServer implements Server {
 
 
         // We need to register the DimensionManager of the Custom Environment before using it :)
-        if(creator.environment() == Environment.CUSTOM) {
+        if (creator.environment() == Environment.CUSTOM) {
             ResourceKey<DimensionManager> resourceKeyDimension = ResourceKey.create(IRegistry.DIMENSION_TYPE_REGISTRY, new MinecraftKey("spigot", creator.name()));
             IRegistryWritable<DimensionManager> registryDimensions = getHandle().getServer().registryAccess().ownedRegistryOrThrow(IRegistry.DIMENSION_TYPE_REGISTRY);
 
@@ -1138,9 +1138,9 @@ public final class CraftServer implements Server {
             registryDimensions.register(resourceKeyDimension, dimensionManager, Lifecycle.stable());
 
             ChunkGeneratorAbstract generatorAbstract = null;
-            if(generatorSettingBase == null){
+            if (generatorSettingBase == null) {
                 generatorAbstract = GeneratorSettings.makeDefaultOverworld(console.registryHolder, creator.seed());
-            }else{
+            } else {
                 generatorAbstract = GeneratorSettings.makeOverworld(console.registryHolder, creator.seed(), generatorSettingBaseResourceKey);
             }
 
@@ -1162,9 +1162,9 @@ public final class CraftServer implements Server {
         if (worlddimension == null) {
             dimensionmanager = (DimensionManager) console.registryHolder.registryOrThrow(IRegistry.DIMENSION_TYPE_REGISTRY).getOrThrow(DimensionManager.OVERWORLD_LOCATION);
 
-            if(generatorSettingBase == null){
+            if (generatorSettingBase == null) {
                 chunkgenerator = GeneratorSettings.makeDefaultOverworld(console.registryHolder, creator.seed());
-            }else{
+            } else {
                 chunkgenerator = GeneratorSettings.makeOverworld(console.registryHolder, creator.seed(), generatorSettingBaseResourceKey);
             }
 
