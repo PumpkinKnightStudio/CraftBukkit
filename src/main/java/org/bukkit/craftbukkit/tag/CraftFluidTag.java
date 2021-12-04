@@ -18,11 +18,11 @@ public class CraftFluidTag extends CraftTag<FluidType, Fluid> {
 
     @Override
     public boolean isTagged(Fluid fluid) {
-        return getHandle().isTagged(CraftFluid.bukkitToMinecraft(fluid));
+        return getHandle().contains(CraftFluid.bukkitToMinecraft(fluid));
     }
 
     @Override
     public Set<Fluid> getValues() {
-        return Collections.unmodifiableSet(getHandle().getTagged().stream().map(CraftFluid::minecraftToBukkit).collect(Collectors.toSet()));
+        return Collections.unmodifiableSet(getHandle().getValues().stream().map(CraftFluid::minecraftToBukkit).collect(Collectors.toSet()));
     }
 }

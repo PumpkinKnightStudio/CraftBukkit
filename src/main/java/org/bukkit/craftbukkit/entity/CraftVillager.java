@@ -45,6 +45,13 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     }
 
     @Override
+    public void remove() {
+        getHandle().releaseAllPois();
+
+        super.remove();
+    }
+
+    @Override
     public Profession getProfession() {
         return CraftVillager.nmsToBukkitProfession(getHandle().getVillagerData().getProfession());
     }
@@ -52,18 +59,18 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     @Override
     public void setProfession(Profession profession) {
         Validate.notNull(profession);
-        getHandle().setVillagerData(getHandle().getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(profession)));
+        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftVillager.bukkitToNmsProfession(profession)));
     }
 
     @Override
     public Type getVillagerType() {
-        return Type.valueOf(IRegistry.VILLAGER_TYPE.getKey(getHandle().getVillagerData().getType()).getKey().toUpperCase(Locale.ROOT));
+        return Type.valueOf(IRegistry.VILLAGER_TYPE.getKey(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override
     public void setVillagerType(Type type) {
         Validate.notNull(type);
-        getHandle().setVillagerData(getHandle().getVillagerData().withType(IRegistry.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        getHandle().setVillagerData(getHandle().getVillagerData().setType(IRegistry.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
     }
 
     @Override
@@ -75,19 +82,19 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     public void setVillagerLevel(int level) {
         Preconditions.checkArgument(1 <= level && level <= 5, "level must be between [1, 5]");
 
-        getHandle().setVillagerData(getHandle().getVillagerData().withLevel(level));
+        getHandle().setVillagerData(getHandle().getVillagerData().setLevel(level));
     }
 
     @Override
     public int getVillagerExperience() {
-        return getHandle().getExperience();
+        return getHandle().getVillagerXp();
     }
 
     @Override
     public void setVillagerExperience(int experience) {
         Preconditions.checkArgument(experience >= 0, "Experience must be positive");
 
-        getHandle().setExperience(experience);
+        getHandle().setVillagerXp(experience);
     }
 
     @Override
@@ -98,12 +105,12 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkState(!getHandle().generation, "Cannot sleep during world generation");
 
         BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        IBlockData iblockdata = getHandle().level.getType(position);
+        IBlockData iblockdata = getHandle().level.getBlockState(position);
         if (!(iblockdata.getBlock() instanceof BlockBed)) {
             return false;
         }
 
-        getHandle().entitySleep(position);
+        getHandle().startSleeping(position);
         return true;
     }
 
@@ -112,12 +119,12 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkState(isSleeping(), "Cannot wakeup if not sleeping");
         Preconditions.checkState(!getHandle().generation, "Cannot wakeup during world generation");
 
-        getHandle().entityWakeup();
+        getHandle().stopSleeping();
     }
 
     @Override
     public void shakeHead() {
-        getHandle().fT(); // PAIL rename shakeHead
+        getHandle().setUnhappy();
     }
 
     public static class CraftType extends Type {
@@ -265,7 +272,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     }
 
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {
-        return Profession.valueOf(IRegistry.VILLAGER_PROFESSION.getKey(nms).getKey().toUpperCase(Locale.ROOT));
+        return Profession.valueOf(IRegistry.VILLAGER_PROFESSION.getKey(nms).getPath().toUpperCase(Locale.ROOT));
     }
 
     public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {

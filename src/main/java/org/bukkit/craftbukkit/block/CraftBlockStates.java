@@ -106,8 +106,12 @@ public final class CraftBlockStates {
     private static final BlockStateFactory<?> DEFAULT_FACTORY = new BlockStateFactory<CraftBlockState>(CraftBlockState.class) {
         @Override
         public CraftBlockState createBlockState(World world, BlockPosition blockPosition, IBlockData blockData, TileEntity tileEntity) {
-            // When a block is being destroyed, the TileEntity may temporarily still exist while the block's type has already been set to AIR. We ignore the TileEntity in this case.
-            Preconditions.checkState(tileEntity == null || CraftMagicNumbers.getMaterial(blockData.getBlock()) == Material.AIR, "Unexpected BlockState for %s", CraftMagicNumbers.getMaterial(blockData.getBlock()));
+            // SPIGOT-6754, SPIGOT-6817: Restore previous behaviour for tile entities with removed blocks (loot generation post-destroy)
+            if (tileEntity != null) {
+                // block with unhandled TileEntity:
+                return new CraftBlockEntityState<>(world, tileEntity);
+            }
+            Preconditions.checkState(tileEntity == null, "Unexpected BlockState for %s", CraftMagicNumbers.getMaterial(blockData.getBlock()));
             return new CraftBlockState(world, blockPosition, blockData);
         }
     };
@@ -326,7 +330,7 @@ public final class CraftBlockStates {
         CraftWorld world = (CraftWorld) block.getWorld();
         BlockPosition blockPosition = craftBlock.getPosition();
         IBlockData blockData = craftBlock.getNMS();
-        TileEntity tileEntity = craftBlock.getHandle().getTileEntity(blockPosition);
+        TileEntity tileEntity = craftBlock.getHandle().getBlockEntity(blockPosition);
         CraftBlockState blockState = getBlockState(world, blockPosition, blockData, tileEntity);
         blockState.setWorldHandle(craftBlock.getHandle()); // Inject the block's generator access
         return blockState;
@@ -338,7 +342,7 @@ public final class CraftBlockStates {
 
     public static BlockState getBlockState(BlockPosition blockPosition, Material material, @Nullable NBTTagCompound blockEntityTag) {
         Preconditions.checkNotNull(material, "material is null");
-        IBlockData blockData = CraftMagicNumbers.getBlock(material).getBlockData();
+        IBlockData blockData = CraftMagicNumbers.getBlock(material).defaultBlockState();
         return getBlockState(blockPosition, blockData, blockEntityTag);
     }
 
@@ -349,7 +353,7 @@ public final class CraftBlockStates {
     public static BlockState getBlockState(BlockPosition blockPosition, IBlockData blockData, @Nullable NBTTagCompound blockEntityTag) {
         Preconditions.checkNotNull(blockPosition, "blockPosition is null");
         Preconditions.checkNotNull(blockData, "blockData is null");
-        TileEntity tileEntity = (blockEntityTag == null) ? null : TileEntity.create(blockPosition, blockData, blockEntityTag);
+        TileEntity tileEntity = (blockEntityTag == null) ? null : TileEntity.loadStatic(blockPosition, blockData, blockEntityTag);
         return getBlockState(null, blockPosition, blockData, tileEntity);
     }
 

@@ -41,18 +41,18 @@ public abstract class AbstractTestingBase {
     public static final IRegistryCustom REGISTRY_CUSTOM;
 
     static {
-        SharedConstants.a();
-        DispenserRegistry.init();
+        SharedConstants.tryDetectVersion();
+        DispenserRegistry.bootStrap();
         REGISTRY_CUSTOM = IRegistryCustom.a();
         // Set up resource manager
         ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA);
         // add tags and loot tables for unit tests
-        resourceManager.a(TAG_REGISTRY = new TagRegistry(IRegistryCustom.a()));
-        resourceManager.a(LOOT_TABLE_REGISTRY = new LootTableRegistry(new LootPredicateManager()));
+        resourceManager.registerReloadListener(TAG_REGISTRY = new TagRegistry(IRegistryCustom.builtin()));
+        resourceManager.registerReloadListener(LOOT_TABLE_REGISTRY = new LootTableRegistry(new LootPredicateManager()));
         // Register vanilla pack
-        resourceManager.a(MoreExecutors.directExecutor(), MoreExecutors.directExecutor(), Collections.singletonList(new ResourcePackVanilla(ResourcePackSourceVanilla.BUILT_IN_METADATA, "minecraft")), CompletableFuture.completedFuture(Unit.INSTANCE)).join();
+        resourceManager.reload(MoreExecutors.directExecutor(), MoreExecutors.directExecutor(), Collections.singletonList(new ResourcePackVanilla(ResourcePackSourceVanilla.BUILT_IN_METADATA, "minecraft")), CompletableFuture.completedFuture(Unit.INSTANCE)).join();
         // Bind tags
-        TAG_REGISTRY.a().bind();
+        TAG_REGISTRY.getTags().bindToGlobal();
 
         DummyServer.setup();
 

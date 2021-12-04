@@ -92,11 +92,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     static {
         for (Block block : IRegistry.BLOCK) {
-            BLOCK_MATERIAL.put(block, Material.getMaterial(IRegistry.BLOCK.getKey(block).getKey().toUpperCase(Locale.ROOT)));
+            BLOCK_MATERIAL.put(block, Material.getMaterial(IRegistry.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
         }
 
         for (Item item : IRegistry.ITEM) {
-            ITEM_MATERIAL.put(item, Material.getMaterial(IRegistry.ITEM.getKey(item).getKey().toUpperCase(Locale.ROOT)));
+            ITEM_MATERIAL.put(item, Material.getMaterial(IRegistry.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
         }
 
         Registry.MATERIAL.forEach(material -> {
@@ -178,11 +178,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
             return Material.getMaterial(material);
         }
 
-        Dynamic<NBTBase> name = new Dynamic<>(DynamicOpsNBT.INSTANCE, NBTTagString.a("minecraft:" + material.toLowerCase(Locale.ROOT)));
-        Dynamic<NBTBase> converted = DataConverterRegistry.a().update(DataConverterTypes.ITEM_NAME, name, version, this.getDataVersion());
+        Dynamic<NBTBase> name = new Dynamic<>(DynamicOpsNBT.INSTANCE, NBTTagString.valueOf("minecraft:" + material.toLowerCase(Locale.ROOT)));
+        Dynamic<NBTBase> converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.ITEM_NAME, name, version, this.getDataVersion());
 
         if (name.equals(converted)) {
-            converted = DataConverterRegistry.a().update(DataConverterTypes.BLOCK_NAME, name, version, this.getDataVersion());
+            converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.BLOCK_NAME, name, version, this.getDataVersion());
         }
 
         return Material.matchMaterial(converted.asString(""));
@@ -204,12 +204,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "f0e3dfc7390de285a4693518dd5bd126";
+        return "9e9fe6961a80f3e586c25601590b51ec";
     }
 
     @Override
     public int getDataVersion() {
-        return SharedConstants.getGameVersion().getWorldVersion();
+        return SharedConstants.getCurrentVersion().getWorldVersion();
     }
 
     @Override
@@ -217,7 +217,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
 
         try {
-            nmsStack.setTag((NBTTagCompound) MojangsonParser.parse(arguments));
+            nmsStack.setTag((NBTTagCompound) MojangsonParser.parseTag(arguments));
         } catch (CommandSyntaxException ex) {
             Logger.getLogger(CraftMagicNumbers.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -228,7 +228,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     private static File getBukkitDataPackFolder() {
-        return new File(MinecraftServer.getServer().a(SavedFile.DATAPACK_DIR).toFile(), "bukkit");
+        return new File(MinecraftServer.getServer().getWorldPath(SavedFile.DATAPACK_DIR).toFile(), "bukkit");
     }
 
     @Override
@@ -239,10 +239,10 @@ public final class CraftMagicNumbers implements UnsafeValues {
         MinecraftKey minecraftkey = CraftNamespacedKey.toMinecraft(key);
 
         JsonElement jsonelement = AdvancementDataWorld.GSON.fromJson(advancement, JsonElement.class);
-        JsonObject jsonobject = ChatDeserializer.m(jsonelement, "advancement");
-        net.minecraft.advancements.Advancement.SerializedAdvancement nms = net.minecraft.advancements.Advancement.SerializedAdvancement.a(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().getLootPredicateManager()));
+        JsonObject jsonobject = ChatDeserializer.convertToJsonObject(jsonelement, "advancement");
+        net.minecraft.advancements.Advancement.SerializedAdvancement nms = net.minecraft.advancements.Advancement.SerializedAdvancement.fromJson(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().getPredicateManager()));
         if (nms != null) {
-            MinecraftServer.getServer().getAdvancementData().advancements.a(Maps.newHashMap(Collections.singletonMap(minecraftkey, nms)));
+            MinecraftServer.getServer().getAdvancements().advancements.add(Maps.newHashMap(Collections.singletonMap(minecraftkey, nms)));
             Advancement bukkit = Bukkit.getAdvancement(key);
 
             if (bukkit != null) {
@@ -255,7 +255,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
                     Bukkit.getLogger().log(Level.SEVERE, "Error saving advancement " + key, ex);
                 }
 
-                MinecraftServer.getServer().getPlayerList().reload();
+                MinecraftServer.getServer().getPlayerList().reloadResources();
 
                 return bukkit;
             }
@@ -280,7 +280,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return CraftLegacyMaterial.getLegacyMaterial(name);
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17");
+    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18");
 
     @Override
     public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
