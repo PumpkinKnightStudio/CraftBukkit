@@ -38,7 +38,7 @@ public class EntityTypesTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.ENTITY_TYPE.getKey(entityTypes);
 
             try {
-                EntityType entityType = (EntityType) EntityType.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                EntityType entityType = (EntityType) EntityType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(entityType.getKey()));
             } catch (NoSuchFieldException e) {

@@ -33,7 +33,7 @@ public class FluidTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.FLUID.getKey(fluidType);
 
             try {
-                Fluid fluid = (Fluid) Fluid.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Fluid fluid = (Fluid) Fluid.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(fluid.getKey()));
             } catch (NoSuchFieldException e) {

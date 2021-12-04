@@ -18,10 +18,65 @@ import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
 import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
 
 public class MaterialTest extends AbstractTestingBase {
+
+    @Test
+    public void getByName() {
+        for (Material material : Registry.MATERIAL) {
+            assertThat(Material.getMaterial(material.toString()), is(material));
+        }
+    }
+
+    @Test
+    public void getData() {
+        for (Material material : Registry.MATERIAL) {
+            if (!material.isLegacy()) {
+                continue;
+            }
+            Class<? extends MaterialData> clazz = material.getData();
+
+            assertThat(material.getNewData((byte) 0), is(instanceOf(clazz)));
+        }
+    }
+
+    @Test
+    public void matchMaterialByName() {
+        for (Material material : Registry.MATERIAL) {
+            assertThat(Material.matchMaterial(material.toString()), is(material));
+        }
+    }
+
+    @Test
+    public void matchMaterialByKey() {
+        for (Material material : Registry.MATERIAL) {
+            if (material.isLegacy()) {
+                continue;
+            }
+            assertThat(Material.matchMaterial(material.getKey().toString()), is(material));
+        }
+    }
+
+    @Test
+    public void matchMaterialByWrongNamespace() {
+        for (Material material : Registry.MATERIAL) {
+            if (material.isLegacy()) {
+                continue;
+            }
+            assertNull(Material.matchMaterial("bogus:" + material.getKey().getKey()));
+        }
+    }
+
+    @Test
+    public void matchMaterialByLowerCaseAndSpaces() {
+        for (Material material : Registry.MATERIAL) {
+            String name = material.toString().replaceAll("_", " ").toLowerCase(java.util.Locale.ENGLISH);
+            assertThat(Material.matchMaterial(name), is(material));
+        }
+    }
 
     @Test
     public void verifyMapping() {

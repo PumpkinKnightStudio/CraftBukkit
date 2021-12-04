@@ -41,7 +41,7 @@ public class AttributeTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.ATTRIBUTE.getKey(attributeBase);
 
             try {
-                Attribute attribute = (Attribute) Attribute.class.getField(minecraftKey.getKey().toUpperCase().replace(".", "_")).get(null);
+                Attribute attribute = (Attribute) Attribute.class.getField(minecraftKey.getPath().toUpperCase().replace(".", "_")).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(attribute.getKey()));
             } catch (NoSuchFieldException e) {

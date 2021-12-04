@@ -34,7 +34,7 @@ public class EnchantmentTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.ENCHANTMENT.getKey(enchantment);
 
             try {
-                Enchantment bukkitEnchantment = (Enchantment) Enchantment.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Enchantment bukkitEnchantment = (Enchantment) Enchantment.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(bukkitEnchantment.getKey()));
             } catch (NoSuchFieldException e) {

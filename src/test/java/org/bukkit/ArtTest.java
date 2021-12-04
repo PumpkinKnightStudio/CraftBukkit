@@ -42,7 +42,7 @@ public class ArtTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.MOTIVE.getKey(painting);
 
             try {
-                Art art = (Art) Art.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Art art = (Art) Art.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(art.getKey()));
             } catch (NoSuchFieldException e) {

@@ -35,7 +35,7 @@ public class VillagerProfessionTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.VILLAGER_PROFESSION.getKey(villagerProfession);
 
             try {
-                Villager.Profession profession = (Villager.Profession) Villager.Profession.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Villager.Profession profession = (Villager.Profession) Villager.Profession.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(profession.getKey()));
             } catch (NoSuchFieldException e) {

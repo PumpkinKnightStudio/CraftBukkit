@@ -35,7 +35,7 @@ public class VillagerTypeTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.VILLAGER_TYPE.getKey(villagerType);
 
             try {
-                Villager.Type type = (Villager.Type) Villager.Type.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Villager.Type type = (Villager.Type) Villager.Type.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(type.getKey()));
             } catch (NoSuchFieldException e) {

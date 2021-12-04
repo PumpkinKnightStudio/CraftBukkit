@@ -32,7 +32,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
     public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == Biome.class) {
-            return new CraftBiome.CraftBiomeRegistry(registryHolder.b(IRegistry.BIOME_REGISTRY), CraftBiome::new);
+            return new CraftBiome.CraftBiomeRegistry(registryHolder.ownedRegistryOrThrow(IRegistry.BIOME_REGISTRY), CraftBiome::new);
         }
         if (bukkitClass == Art.class) {
             return new CraftRegistry<>(IRegistry.MOTIVE, CraftArt::new);

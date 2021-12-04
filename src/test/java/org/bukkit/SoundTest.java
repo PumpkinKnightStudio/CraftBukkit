@@ -40,7 +40,7 @@ public class SoundTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.SOUND_EVENT.getKey(soundEffect);
 
             try {
-                Sound sound = (Sound) Sound.class.getField(minecraftKey.getKey().toUpperCase().replace(".", "_")).get(null);
+                Sound sound = (Sound) Sound.class.getField(minecraftKey.getPath().toUpperCase().replace(".", "_")).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(sound.getKey()));
             } catch (NoSuchFieldException e) {

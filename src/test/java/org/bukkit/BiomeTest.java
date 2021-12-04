@@ -35,7 +35,7 @@ public class BiomeTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = RegistryGeneration.BIOME.getKey(biomeBase);
 
             try {
-                Biome biome = (Biome) Biome.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                Biome biome = (Biome) Biome.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(biome.getKey()));
             } catch (NoSuchFieldException e) {

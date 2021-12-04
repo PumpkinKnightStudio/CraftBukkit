@@ -34,7 +34,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     public CraftBlockType(NamespacedKey key, Block block) {
         this.key = key;
         this.block = block;
-        this.blockDataClass = (Class<B>) CraftBlockData.fromData(block.getBlockData()).getClass().getInterfaces()[0];
+        this.blockDataClass = (Class<B>) CraftBlockData.fromData(block.defaultBlockState()).getClass().getInterfaces()[0];
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
         // in case plugins use for example the name as key in a config file to receive material specific values.
         // Custom materials will return the key with namespace. For a plugin this should look than like a new material
@@ -99,22 +99,22 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isSolid() {
-        return block.getBlockData().getMaterial().isSolid();
+        return block.defaultBlockState().getMaterial().blocksMotion();
     }
 
     @Override
     public boolean isAir() {
-        return block.getBlockData().isAir();
+        return block.defaultBlockState().isAir();
     }
 
     @Override
     public boolean isTransparent() {
-        return block.getBlockData().getMaterial().f();
+        return block.defaultBlockState().getMaterial().isSolidBlocking();
     }
 
     @Override
     public boolean isFlammable() {
-        return block.getBlockData().getMaterial().isBurnable();
+        return block.defaultBlockState().getMaterial().isFlammable();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isOccluding() {
-        return block.getBlockData().isOccluding(BlockAccessAir.INSTANCE, BlockPosition.ZERO);
+        return block.defaultBlockState().isRedstoneConductor(BlockAccessAir.INSTANCE, BlockPosition.ZERO);
     }
 
     @Override
@@ -151,7 +151,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     public boolean isInteractable() {
         try {
             return !block.getClass()
-                    .getMethod("interact", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
+                    .getMethod("use", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
                     .getDeclaringClass().equals(BlockBase.class);
         } catch (NoSuchMethodException e) {
             return false;
@@ -160,17 +160,17 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public float getHardness() {
-        return block.getBlockData().destroySpeed;
+        return block.defaultBlockState().destroySpeed;
     }
 
     @Override
     public float getBlastResistance() {
-        return block.getDurability();
+        return block.getExplosionResistance();
     }
 
     @Override
     public float getSlipperiness() {
-        return block.getFrictionFactor();
+        return block.getFriction();
     }
 
     @Override

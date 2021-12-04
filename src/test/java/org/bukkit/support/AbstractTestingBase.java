@@ -43,7 +43,7 @@ public abstract class AbstractTestingBase {
     static {
         SharedConstants.tryDetectVersion();
         DispenserRegistry.bootStrap();
-        REGISTRY_CUSTOM = IRegistryCustom.a();
+        REGISTRY_CUSTOM = IRegistryCustom.builtin();
         // Set up resource manager
         ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA);
         // add tags and loot tables for unit tests

@@ -283,7 +283,7 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Test
     public void testBlockDataClass() {
         if (material.isBlock()) {
-            Class<?> expectedClass = material.data;
+            Class<?> expectedClass = material.getBlockDataClass();
             if (expectedClass != MaterialData.class) {
                 BlockData blockData = Bukkit.createBlockData(material);
                 assertTrue(expectedClass + " <> " + blockData.getClass(), expectedClass.isInstance(blockData));

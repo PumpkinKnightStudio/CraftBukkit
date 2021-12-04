@@ -41,7 +41,7 @@ public class PotionTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.MOB_EFFECT.getKey(mobEffectList);
 
             try {
-                PotionEffectType potionEffectType = (PotionEffectType) PotionEffectType.class.getField(minecraftKey.getKey().toUpperCase()).get(null);
+                PotionEffectType potionEffectType = (PotionEffectType) PotionEffectType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(potionEffectType.getKey()));
             } catch (NoSuchFieldException e) {

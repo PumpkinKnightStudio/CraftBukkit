@@ -51,7 +51,7 @@ public class CraftItemType implements ItemType {
 
     @Override
     public short getMaxDurability() {
-        return (short) item.getMaxDurability();
+        return (short) item.getMaxDamage();
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CraftItemType implements ItemType {
 
     @Override
     public boolean isEdible() {
-        return item.isFood();
+        return item.isEdible();
     }
 
     @Override
