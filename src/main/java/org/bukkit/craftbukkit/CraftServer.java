@@ -38,6 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -74,27 +75,38 @@ import net.minecraft.server.players.JsonListEntry;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.tags.Tags;
 import net.minecraft.tags.TagsBlock;
+import net.minecraft.tags.TagsEntity;
 import net.minecraft.tags.TagsFluid;
 import net.minecraft.tags.TagsItem;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.MobSpawnerCat;
 import net.minecraft.world.entity.npc.MobSpawnerTrader;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.inventory.Container;
+import net.minecraft.world.inventory.ContainerWorkbench;
+import net.minecraft.world.inventory.InventoryCraftResult;
+import net.minecraft.world.inventory.InventoryCrafting;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemWorldMap;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.IRecipe;
+import net.minecraft.world.item.crafting.RecipeCrafting;
+import net.minecraft.world.item.crafting.RecipeRepair;
+import net.minecraft.world.item.crafting.Recipes;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
 import net.minecraft.world.level.WorldSettings;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.WorldChunkManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.dimension.WorldDimension;
+import net.minecraft.world.level.levelgen.ChunkGeneratorAbstract;
 import net.minecraft.world.level.levelgen.GeneratorSettings;
 import net.minecraft.world.level.levelgen.MobSpawnerPatrol;
 import net.minecraft.world.level.levelgen.MobSpawnerPhantom;
@@ -145,7 +157,10 @@ import org.bukkit.craftbukkit.command.BukkitCommandWrapper;
 import org.bukkit.craftbukkit.command.CraftCommandMap;
 import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.generator.CraftChunkData;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.generator.CraftWorldInfo;
+import org.bukkit.craftbukkit.generator.CustomWorldChunkManager;
+import org.bukkit.craftbukkit.generator.OldCraftChunkData;
 import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftBlastingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftCampfireRecipe;
@@ -168,7 +183,9 @@ import org.bukkit.craftbukkit.metadata.WorldMetadataStore;
 import org.bukkit.craftbukkit.potion.CraftPotionBrewer;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
+import org.bukkit.craftbukkit.structure.CraftStructureManager;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
+import org.bukkit.craftbukkit.tag.CraftEntityTag;
 import org.bukkit.craftbukkit.tag.CraftFluidTag;
 import org.bukkit.craftbukkit.tag.CraftItemTag;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -187,7 +204,9 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
 import org.bukkit.help.HelpMap;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.CampfireRecipe;
@@ -195,6 +214,7 @@ import org.bukkit.inventory.ComplexRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
@@ -219,6 +239,7 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitWorker;
+import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
 import org.yaml.snakeyaml.Yaml;
@@ -236,6 +257,7 @@ public final class CraftServer implements Server {
     private final SimpleHelpMap helpMap = new SimpleHelpMap(this);
     private final StandardMessenger messenger = new StandardMessenger();
     private final SimplePluginManager pluginManager = new SimplePluginManager(this, commandMap);
+    private final StructureManager structureManager;
     protected final DedicatedServer console;
     protected final DedicatedPlayerList playerList;
     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
@@ -250,6 +272,7 @@ public final class CraftServer implements Server {
     private int animalSpawn = -1;
     private int waterAnimalSpawn = -1;
     private int waterAmbientSpawn = -1;
+    private int waterUndergroundCreatureSpawn = -1;
     private int ambientSpawn = -1;
     private File container;
     private WarningState warningState = WarningState.DEFAULT;
@@ -278,6 +301,7 @@ public final class CraftServer implements Server {
             }
         }));
         this.serverVersion = CraftServer.class.getPackage().getImplementationVersion();
+        this.structureManager = new CraftStructureManager(console.getDefinedStructureManager());
 
         Bukkit.setServer(this);
 
@@ -337,6 +361,7 @@ public final class CraftServer implements Server {
         animalSpawn = configuration.getInt("spawn-limits.animals");
         waterAnimalSpawn = configuration.getInt("spawn-limits.water-animals");
         waterAmbientSpawn = configuration.getInt("spawn-limits.water-ambient");
+        waterUndergroundCreatureSpawn = configuration.getInt("spawn-limits.water-underground-creature");
         ambientSpawn = configuration.getInt("spawn-limits.ambient");
         console.autosavePeriod = configuration.getInt("ticks-per.autosave");
         warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
@@ -682,6 +707,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getTicksPerWaterUndergroundCreatureSpawns() {
+        return this.configuration.getInt("ticks-per.water-underground-creature-spawns");
+    }
+
+    @Override
     public int getTicksPerAmbientSpawns() {
         return this.configuration.getInt("ticks-per.ambient-spawns");
     }
@@ -765,6 +795,7 @@ public final class CraftServer implements Server {
         animalSpawn = configuration.getInt("spawn-limits.animals");
         waterAnimalSpawn = configuration.getInt("spawn-limits.water-animals");
         waterAmbientSpawn = configuration.getInt("spawn-limits.water-ambient");
+        waterUndergroundCreatureSpawn = configuration.getInt("spawn-limits.water-underground-creature");
         ambientSpawn = configuration.getInt("spawn-limits.ambient");
         warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
         TicketType.PLUGIN.timeout = configuration.getInt("chunk-gc.period-in-ticks");
@@ -811,6 +842,12 @@ public final class CraftServer implements Server {
                 world.ticksPerWaterAmbientSpawns = this.getTicksPerWaterAmbientSpawns();
             }
 
+            if (this.getTicksPerWaterUndergroundCreatureSpawns() < 0) {
+                world.ticksPerWaterUndergroundCreatureSpawns = 1;
+            } else {
+                world.ticksPerWaterUndergroundCreatureSpawns = this.getTicksPerWaterUndergroundCreatureSpawns();
+            }
+
             if (this.getTicksPerAmbientSpawns() < 0) {
                 world.ticksPerAmbientSpawns = 1;
             } else {
@@ -837,14 +874,10 @@ public final class CraftServer implements Server {
         List<BukkitWorker> overdueWorkers = getScheduler().getActiveWorkers();
         for (BukkitWorker worker : overdueWorkers) {
             Plugin plugin = worker.getOwner();
-            String author = "<NoAuthorGiven>";
-            if (plugin.getDescription().getAuthors().size() > 0) {
-                author = plugin.getDescription().getAuthors().get(0);
-            }
             getLogger().log(Level.SEVERE, String.format(
-                "Nag author: '%s' of '%s' about the following: %s",
-                author,
-                plugin.getDescription().getName(),
+                "Nag author(s): '%s' of '%s' about the following: %s",
+                plugin.getDescription().getAuthors(),
+                plugin.getDescription().getFullName(),
                 "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
             ));
         }
@@ -946,6 +979,7 @@ public final class CraftServer implements Server {
 
         String name = creator.name();
         ChunkGenerator generator = creator.generator();
+        BiomeProvider biomeProvider = creator.biomeProvider();
         File folder = new File(getWorldContainer(), name);
         World world = getWorld(name);
 
@@ -959,6 +993,10 @@ public final class CraftServer implements Server {
 
         if (generator == null) {
             generator = getGenerator(name);
+        }
+
+        if (biomeProvider == null) {
+            biomeProvider = getBiomeProvider(name);
         }
 
         ResourceKey<WorldDimension> actualDimension;
@@ -1028,6 +1066,18 @@ public final class CraftServer implements Server {
             chunkgenerator = worlddimension.c();
         }
 
+        WorldInfo worldInfo = new CraftWorldInfo(worlddata, worldSession, creator.environment(), dimensionmanager);
+        if (biomeProvider == null && generator != null) {
+            biomeProvider = generator.getDefaultBiomeProvider(worldInfo);
+        }
+
+        if (biomeProvider != null) {
+            WorldChunkManager worldChunkManager = new CustomWorldChunkManager(worldInfo, biomeProvider, console.registryHolder.b(IRegistry.BIOME_REGISTRY));
+            if (chunkgenerator instanceof ChunkGeneratorAbstract) {
+                chunkgenerator = new ChunkGeneratorAbstract(worldChunkManager, chunkgenerator.strongholdSeed, ((ChunkGeneratorAbstract) chunkgenerator).settings);
+            }
+        }
+
         ResourceKey<net.minecraft.world.level.World> worldKey;
         String levelName = this.getServer().getDedicatedServerProperties().levelName;
         if (name.equals(levelName + "_nether")) {
@@ -1039,7 +1089,7 @@ public final class CraftServer implements Server {
         }
 
         WorldServer internal = (WorldServer) new WorldServer(console, console.executor, worldSession, worlddata, worldKey, dimensionmanager, getServer().progressListenerFactory.create(11),
-                chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator);
+                chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator, biomeProvider);
 
         if (!(worlds.containsKey(name.toLowerCase(java.util.Locale.ENGLISH)))) {
             return null;
@@ -1095,6 +1145,7 @@ public final class CraftServer implements Server {
             }
 
             handle.getChunkProvider().close(save);
+            handle.entityManager.close(save); // SPIGOT-6722: close entityManager
             handle.convertable.close();
         } catch (Exception ex) {
             getLogger().log(Level.SEVERE, null, ex);
@@ -1220,6 +1271,74 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public Recipe getCraftingRecipe(ItemStack[] craftingMatrix, World world) {
+        // Create a players Crafting Inventory
+        Container container = new Container(null, -1) {
+            @Override
+            public InventoryView getBukkitView() {
+                return null;
+            }
+
+            @Override
+            public boolean canUse(EntityHuman entityhuman) {
+                return false;
+            }
+        };
+        InventoryCrafting inventoryCrafting = new InventoryCrafting(container, 3, 3);
+
+        return getNMSRecipe(craftingMatrix, inventoryCrafting, (CraftWorld) world).map(IRecipe::toBukkitRecipe).orElse(null);
+    }
+
+    @Override
+    public ItemStack craftItem(ItemStack[] craftingMatrix, World world, Player player) {
+        Preconditions.checkArgument(world != null, "world must not be null");
+        Preconditions.checkArgument(player != null, "player must not be null");
+
+        CraftWorld craftWorld = (CraftWorld) world;
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+
+        // Create a players Crafting Inventory and get the recipe
+        ContainerWorkbench container = new ContainerWorkbench(-1, craftPlayer.getHandle().getInventory());
+        InventoryCrafting inventoryCrafting = container.craftSlots;
+        InventoryCraftResult craftResult = container.resultSlots;
+
+        Optional<RecipeCrafting> recipe = getNMSRecipe(craftingMatrix, inventoryCrafting, craftWorld);
+
+        // Generate the resulting ItemStack from the Crafting Matrix
+        net.minecraft.world.item.ItemStack itemstack = net.minecraft.world.item.ItemStack.EMPTY;
+
+        if (recipe.isPresent()) {
+            RecipeCrafting recipeCrafting = recipe.get();
+            if (craftResult.setRecipeUsed(craftWorld.getHandle(), craftPlayer.getHandle(), recipeCrafting)) {
+                itemstack = recipeCrafting.a(inventoryCrafting);
+            }
+        }
+
+        // Call Bukkit event to check for matrix/result changes.
+        net.minecraft.world.item.ItemStack result = CraftEventFactory.callPreCraftEvent(inventoryCrafting, craftResult, itemstack, container.getBukkitView(), recipe.orElse(null) instanceof RecipeRepair);
+
+        // Set the resulting matrix items
+        for (int i = 0; i < craftingMatrix.length; i++) {
+            Item remaining = inventoryCrafting.getContents().get(i).getItem().getCraftingRemainingItem();
+            craftingMatrix[i] = (remaining != null) ? CraftItemStack.asBukkitCopy(remaining.createItemStack()) : null;
+        }
+
+        return CraftItemStack.asBukkitCopy(result);
+    }
+
+    private Optional<RecipeCrafting> getNMSRecipe(ItemStack[] craftingMatrix, InventoryCrafting inventoryCrafting, CraftWorld world) {
+        Preconditions.checkArgument(craftingMatrix != null, "craftingMatrix must not be null");
+        Preconditions.checkArgument(craftingMatrix.length == 9, "craftingMatrix must be an array of length 9");
+        Preconditions.checkArgument(world != null, "world must not be null");
+
+        for (int i = 0; i < craftingMatrix.length; i++) {
+            inventoryCrafting.setItem(i, CraftItemStack.asNMSCopy(craftingMatrix[i]));
+        }
+
+        return getServer().getCraftingManager().craft(Recipes.CRAFTING, inventoryCrafting, world.getHandle());
+    }
+
+    @Override
     public Iterator<Recipe> recipeIterator() {
         return new RecipeIterator();
     }
@@ -1337,6 +1456,42 @@ public final class CraftServer implements Server {
                             }
                         } catch (Throwable t) {
                             plugin.getLogger().log(Level.SEVERE, "Could not set generator for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName(), t);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public BiomeProvider getBiomeProvider(String world) {
+        ConfigurationSection section = configuration.getConfigurationSection("worlds");
+        BiomeProvider result = null;
+
+        if (section != null) {
+            section = section.getConfigurationSection(world);
+
+            if (section != null) {
+                String name = section.getString("biome-provider");
+
+                if ((name != null) && (!name.equals(""))) {
+                    String[] split = name.split(":", 2);
+                    String id = (split.length > 1) ? split[1] : null;
+                    Plugin plugin = pluginManager.getPlugin(split[0]);
+
+                    if (plugin == null) {
+                        getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + split[0] + "' does not exist");
+                    } else if (!plugin.isEnabled()) {
+                        getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' is not enabled yet (is it load:STARTUP?)");
+                    } else {
+                        try {
+                            result = plugin.getDefaultBiomeProvider(world, id);
+                            if (result == null) {
+                                getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' lacks a default world biome provider");
+                            }
+                        } catch (Throwable t) {
+                            plugin.getLogger().log(Level.SEVERE, "Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName(), t);
                         }
                     }
                 }
@@ -1694,6 +1849,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getWaterUndergroundCreatureSpawnLimit() {
+        return waterUndergroundCreatureSpawn;
+    }
+
+    @Override
     public int getAmbientSpawnLimit() {
         return ambientSpawn;
     }
@@ -1841,7 +2001,7 @@ public final class CraftServer implements Server {
     @Override
     public ChunkGenerator.ChunkData createChunkData(World world) {
         Validate.notNull(world, "World cannot be null");
-        return new CraftChunkData(world);
+        return new OldCraftChunkData(world);
     }
 
     @Override
@@ -1978,6 +2138,10 @@ public final class CraftServer implements Server {
                 Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace must have fluid type");
 
                 return (org.bukkit.Tag<T>) new CraftFluidTag(TagsFluid.a(), key);
+            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
+                Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
+
+                return (org.bukkit.Tag<T>) new CraftEntityTag(TagsEntity.a(), key);
             default:
                 throw new IllegalArgumentException();
         }
@@ -2002,6 +2166,11 @@ public final class CraftServer implements Server {
 
                 Tags<FluidType> fluidTags = TagsFluid.a();
                 return fluidTags.a().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftFluidTag(fluidTags, key)).collect(ImmutableList.toImmutableList());
+            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
+                Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
+
+                Tags<EntityTypes<?>> entityTags = TagsEntity.a();
+                return entityTags.a().keySet().stream().map(key -> (org.bukkit.Tag<T>) new CraftEntityTag(entityTags, key)).collect(ImmutableList.toImmutableList());
             default:
                 throw new IllegalArgumentException();
         }
@@ -2032,6 +2201,11 @@ public final class CraftServer implements Server {
         }
 
         return new ArrayList<>(Lists.transform(nms, (entity) -> entity.getBukkitEntity()));
+    }
+
+    @Override
+    public StructureManager getStructureManager() {
+        return structureManager;
     }
 
     @Deprecated

@@ -222,7 +222,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendMessage(String[] messages) {
+    public void sendMessage(String... messages) {
         for (String message : messages) {
             sendMessage(message);
         }
@@ -236,7 +236,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendMessage(UUID sender, String[] messages) {
+    public void sendMessage(UUID sender, String... messages) {
         for (String message : messages) {
             sendMessage(sender, message);
         }
@@ -527,10 +527,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (data != null) {
             Validate.isTrue(effect.getData() != null && effect.getData().isAssignableFrom(data.getClass()), "Wrong kind of data for this effect!");
         } else {
-            Validate.isTrue(effect.getData() == null, "Wrong kind of data for this effect!");
+            // Special case: the axis is optional for ELECTRIC_SPARK
+            Validate.isTrue(effect.getData() == null || effect == Effect.ELECTRIC_SPARK, "Wrong kind of data for this effect!");
         }
 
-        int datavalue = data == null ? 0 : CraftEffect.getDataValue(effect, data);
+        int datavalue = CraftEffect.getDataValue(effect, data);
         playEffect(loc, effect, datavalue);
     }
 
@@ -572,11 +573,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendSignChange(Location loc, String[] lines) {
-       sendSignChange(loc, lines, DyeColor.BLACK);
+        sendSignChange(loc, lines, DyeColor.BLACK);
     }
 
     @Override
     public void sendSignChange(Location loc, String[] lines, DyeColor dyeColor) {
+        sendSignChange(loc, lines, dyeColor, false);
+    }
+
+    @Override
+    public void sendSignChange(Location loc, String[] lines, DyeColor dyeColor, boolean hasGlowingText) {
         if (getHandle().connection == null) {
             return;
         }
@@ -594,6 +600,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         IChatBaseComponent[] components = CraftSign.sanitizeLines(lines);
         TileEntitySign sign = new TileEntitySign(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), Blocks.OAK_SIGN.getBlockData());
         sign.setColor(EnumColor.fromColorIndex(dyeColor.getWoolData()));
+        sign.setHasGlowingText(hasGlowingText);
         for (int i = 0; i < components.length; i++) {
             sign.a(i, components[i]);
         }
@@ -775,7 +782,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             Optional<Vec3D> spawnLoc = EntityHuman.getBed(world, bed, getHandle().getSpawnAngle(), getHandle().isSpawnForced(), true);
             if (spawnLoc.isPresent()) {
                 Vec3D vec = spawnLoc.get();
-                return new Location(world.getWorld(), vec.x, vec.y, vec.z);
+                return new Location(world.getWorld(), vec.x, vec.y, vec.z, getHandle().getSpawnAngle(), 0);
             }
         }
         return null;

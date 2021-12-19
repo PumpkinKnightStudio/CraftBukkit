@@ -57,6 +57,7 @@ import net.minecraft.world.inventory.ContainerMerchant;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.ItemActionContext;
+import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.World;
@@ -76,6 +77,7 @@ import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRaid;
 import org.bukkit.craftbukkit.CraftServer;
@@ -83,6 +85,7 @@ import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
@@ -222,6 +225,8 @@ import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
@@ -636,7 +641,22 @@ public class CraftEventFactory {
         } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.Vehicle) {
             event = CraftEventFactory.callVehicleCreateEvent(entity);
         } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.LightningStrike) {
-            LightningStrikeEvent.Cause cause = (spawnReason == SpawnReason.COMMAND ? LightningStrikeEvent.Cause.COMMAND : LightningStrikeEvent.Cause.UNKNOWN);
+            LightningStrikeEvent.Cause cause = LightningStrikeEvent.Cause.UNKNOWN;
+            switch (spawnReason) {
+                case COMMAND:
+                    cause = LightningStrikeEvent.Cause.COMMAND;
+                    break;
+                case CUSTOM:
+                    cause = LightningStrikeEvent.Cause.CUSTOM;
+                    break;
+                case SPAWNER:
+                    cause = LightningStrikeEvent.Cause.SPAWNER;
+                    break;
+            }
+            // This event is called in nms-patches for common causes like Weather, Trap or Trident (SpawnReason.DEFAULT) then can ignore this cases for avoid two calls to this event
+            if (cause == LightningStrikeEvent.Cause.UNKNOWN && spawnReason == SpawnReason.DEFAULT) {
+                return true;
+            }
             event = CraftEventFactory.callLightningStrikeEvent((LightningStrike) entity.getBukkitEntity(), cause);
         } else if (!(entity instanceof EntityPlayer)) {
             event = CraftEventFactory.callEntitySpawnEvent(entity);
@@ -688,7 +708,7 @@ public class CraftEventFactory {
         org.bukkit.entity.AnimalTamer bukkitTamer = (tamer != null ? tamer.getBukkitEntity() : null);
         CraftServer craftServer = (CraftServer) bukkitEntity.getServer();
 
-        entity.persistenceRequired = true;
+        entity.setPersistenceRequired(true);
 
         EntityTameEvent event = new EntityTameEvent((LivingEntity) bukkitEntity, bukkitTamer);
         craftServer.getPluginManager().callEvent(event);
@@ -757,7 +777,7 @@ public class CraftEventFactory {
      * BlockFadeEvent
      */
     public static BlockFadeEvent callBlockFadeEvent(GeneratorAccess world, BlockPosition pos, IBlockData newBlock) {
-        CraftBlockState state = CraftBlockState.getBlockState(world, pos);
+        CraftBlockState state = CraftBlockStates.getBlockState(world, pos);
         state.setData(newBlock);
 
         BlockFadeEvent event = new BlockFadeEvent(state.getBlock(), state);
@@ -766,7 +786,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handleMoistureChangeEvent(World world, BlockPosition pos, IBlockData newBlock, int flag) {
-        CraftBlockState state = CraftBlockState.getBlockState(world, pos, flag);
+        CraftBlockState state = CraftBlockStates.getBlockState(world, pos, flag);
         state.setData(newBlock);
 
         MoistureChangeEvent event = new MoistureChangeEvent(state.getBlock(), state);
@@ -789,7 +809,7 @@ public class CraftEventFactory {
             return true;
         }
 
-        CraftBlockState state = CraftBlockState.getBlockState(world, target, flag);
+        CraftBlockState state = CraftBlockStates.getBlockState(world, target, flag);
         state.setData(block);
 
         BlockSpreadEvent event = new BlockSpreadEvent(state.getBlock(), CraftBlock.at(world, source), state);
@@ -826,6 +846,7 @@ public class CraftEventFactory {
         CraftPlayer entity = victim.getBukkitEntity();
         PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
         event.setKeepInventory(keepInventory);
+        event.setKeepLevel(victim.keepLevel); // SPIGOT-2222: pre-set keepLevel
         org.bukkit.World world = entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -924,6 +945,8 @@ public class CraftEventFactory {
                 cause = DamageCause.HOT_FLOOR;
             } else if (source == DamageSource.MAGIC) {
                 cause = DamageCause.MAGIC;
+            } else if (source == DamageSource.IN_FIRE) {
+                cause = DamageCause.FIRE;
             } else {
                 throw new IllegalStateException(String.format("Unhandled damage of %s by %s from %s", entity, damager, source.msgId));
             }
@@ -1420,6 +1443,10 @@ public class CraftEventFactory {
                 case CROUCH_ONE_CM:
                 case TIME_SINCE_DEATH:
                 case SNEAK_TIME:
+                case TOTAL_WORLD_TIME:
+                case TIME_SINCE_REST:
+                case AVIATE_ONE_CM:
+                case STRIDER_ONE_CM:
                     // Do not process event for these - too spammy
                     return null;
                 default:
@@ -1548,7 +1575,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handleBlockFormEvent(World world, BlockPosition pos, IBlockData block, int flag, @Nullable Entity entity) {
-        CraftBlockState blockState = CraftBlockState.getBlockState(world, pos, flag);
+        CraftBlockState blockState = CraftBlockStates.getBlockState(world, pos, flag);
         blockState.setData(block);
 
         BlockFormEvent event = (entity == null) ? new BlockFormEvent(blockState.getBlock(), blockState) : new EntityBlockFormEvent(entity.getBukkitEntity(), blockState.getBlock(), blockState);
@@ -1662,5 +1689,16 @@ public class CraftEventFactory {
         PiglinBarterEvent event = new PiglinBarterEvent((Piglin) piglin.getBukkitEntity(), CraftItemStack.asBukkitCopy(input), outcome.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()));
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+
+    public static void callEntitiesLoadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
+        List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
+        EntitiesLoadEvent event = new EntitiesLoadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+    public static void callEntitiesUnloadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
+        List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
+        EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
+        Bukkit.getPluginManager().callEvent(event);
     }
 }

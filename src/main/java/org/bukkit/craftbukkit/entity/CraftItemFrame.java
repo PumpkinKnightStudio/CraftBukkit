@@ -26,8 +26,10 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         EnumDirection oldDir = hanging.getDirection();
         EnumDirection newDir = CraftBlock.blockFaceToNotch(face);
 
+        Preconditions.checkArgument(newDir != null, "%s is not a valid facing direction", face);
+
         getHandle().setDirection(newDir);
-        if (!force && !hanging.survives()) {
+        if (!force && !getHandle().generation && !hanging.survives()) {
             hanging.setDirection(oldDir);
             return false;
         }
@@ -47,7 +49,9 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         }
 
         // update redstone
-        getHandle().getWorld().updateAdjacentComparators(getHandle().pos, Blocks.AIR);
+        if (!getHandle().generation) {
+            getHandle().getWorld().updateAdjacentComparators(getHandle().pos, Blocks.AIR);
+        }
     }
 
     @Override
@@ -57,7 +61,8 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setItem(org.bukkit.inventory.ItemStack item, boolean playSound) {
-        getHandle().setItem(CraftItemStack.asNMSCopy(item), true, playSound);
+        // only updated redstone and play sound when it is not in generation
+        getHandle().setItem(CraftItemStack.asNMSCopy(item), !getHandle().generation, !getHandle().generation && playSound);
     }
 
     @Override

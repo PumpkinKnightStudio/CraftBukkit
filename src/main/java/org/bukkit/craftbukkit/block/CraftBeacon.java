@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.world.ChestLock;
@@ -7,9 +8,8 @@ import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
-import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Beacon;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
@@ -17,16 +17,14 @@ import org.bukkit.potion.PotionEffectType;
 
 public class CraftBeacon extends CraftBlockEntityState<TileEntityBeacon> implements Beacon {
 
-    public CraftBeacon(final Block block) {
-        super(block, TileEntityBeacon.class);
-    }
-
-    public CraftBeacon(final Material material, final TileEntityBeacon te) {
-        super(material, te);
+    public CraftBeacon(World world, TileEntityBeacon tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
     public Collection<LivingEntity> getEntitiesInRange() {
+        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't get entities during world generation");
+
         TileEntity tileEntity = this.getTileEntityFromWorld();
         if (tileEntity instanceof TileEntityBeacon) {
             TileEntityBeacon beacon = (TileEntityBeacon) tileEntity;
