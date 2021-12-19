@@ -47,15 +47,13 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
 
     @Override
     public boolean dispense() {
-        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't dispense during world generation");
-
+        ensureNoWorldGeneration();
         Block block = getBlock();
-
         if (block.getType() == Material.DISPENSER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDispenser dispense = (BlockDispenser) Blocks.DISPENSER;
 
-            dispense.dispense(world.getHandle(), this.getPosition());
+            dispense.dispenseFrom(world.getHandle(), this.getPosition());
             return true;
         } else {
             return false;

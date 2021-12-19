@@ -43,7 +43,7 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
 
     @Override
     public int getEntityCount() {
-        return getSnapshot().getBeeCount();
+        return getSnapshot().getOccupantCount();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
 
     @Override
     public List<Bee> releaseEntities() {
-        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't release entities during world generation");
+        ensureNoWorldGeneration();
 
         List<Bee> bees = new ArrayList<>();
 
@@ -78,6 +78,6 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
     public void addEntity(Bee entity) {
         Preconditions.checkArgument(entity != null, "Entity must not be null");
 
-        getSnapshot().addBee(((CraftBee) entity).getHandle(), false);
+        getSnapshot().addOccupant(((CraftBee) entity).getHandle(), false);
     }
 }

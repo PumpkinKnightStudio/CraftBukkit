@@ -34,15 +34,13 @@ public class CraftDropper extends CraftLootable<TileEntityDropper> implements Dr
 
     @Override
     public void drop() {
-        Preconditions.checkState(getWorldHandle() instanceof net.minecraft.world.level.World, "Can't drop during world generation");
-
+        ensureNoWorldGeneration();
         Block block = getBlock();
-
         if (block.getType() == Material.DROPPER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDropper drop = (BlockDropper) Blocks.DROPPER;
 
-            drop.dispense(world.getHandle(), this.getPosition());
+            drop.dispenseFrom(world.getHandle(), this.getPosition());
         }
     }
 }

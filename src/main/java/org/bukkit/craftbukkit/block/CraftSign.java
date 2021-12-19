@@ -1,13 +1,17 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.network.chat.ChatComponentText;
 import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.block.entity.TileEntitySign;
 import org.bukkit.DyeColor;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.entity.Player;
 
 public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements Sign {
 
@@ -64,12 +68,12 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
 
     @Override
     public DyeColor getColor() {
-        return DyeColor.getByWoolData((byte) getSnapshot().getColor().getColorIndex());
+        return DyeColor.getByWoolData((byte) getSnapshot().getColor().getId());
     }
 
     @Override
     public void setColor(DyeColor color) {
-        getSnapshot().setColor(EnumColor.fromColorIndex(color.getWoolData()));
+        getSnapshot().setColor(EnumColor.byId(color.getWoolData()));
     }
 
     @Override
@@ -82,9 +86,20 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
                 if (line.equals(originalLines[i])) {
                     continue; // The line contents are still the same, skip.
                 }
-                sign.a(i, CraftChatMessage.fromString(line)[0]);
+                sign.setMessage(i, CraftChatMessage.fromString(line)[0]);
             }
         }
+    }
+
+    public static void openSign(Sign sign, Player player) {
+        Preconditions.checkArgument(sign != null, "sign == null");
+        Preconditions.checkArgument(sign.isPlaced(), "Sign must be placed");
+        Preconditions.checkArgument(sign.getWorld() == player.getWorld(), "Sign must be in same world as Player");
+
+        TileEntitySign handle = ((CraftSign) sign).getTileEntity();
+        handle.isEditable = true;
+
+        ((CraftPlayer) player).getHandle().openTextEdit(handle);
     }
 
     public static IChatBaseComponent[] sanitizeLines(String[] lines) {
