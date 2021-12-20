@@ -72,6 +72,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
+import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -1376,30 +1377,18 @@ public class CraftEventFactory {
                 System.err.println("Unhandled statistic: " + statistic);
                 return null;
             }
-            switch (stat) {
-                case FALL_ONE_CM:
-                case BOAT_ONE_CM:
-                case CLIMB_ONE_CM:
-                case WALK_ON_WATER_ONE_CM:
-                case WALK_UNDER_WATER_ONE_CM:
-                case FLY_ONE_CM:
-                case HORSE_ONE_CM:
-                case MINECART_ONE_CM:
-                case PIG_ONE_CM:
-                case PLAY_ONE_MINUTE:
-                case SWIM_ONE_CM:
-                case WALK_ONE_CM:
-                case SPRINT_ONE_CM:
-                case CROUCH_ONE_CM:
-                case TIME_SINCE_DEATH:
-                case SNEAK_TIME:
-                case TOTAL_WORLD_TIME:
-                case TIME_SINCE_REST:
-                case AVIATE_ONE_CM:
-                case STRIDER_ONE_CM:
-                    // Do not process event for these - too spammy
-                    return null;
-                default:
+
+            if (stat == Statistic.FALL_ONE_CM || stat == Statistic.BOAT_ONE_CM
+                    || stat == Statistic.CLIMB_ONE_CM || stat == Statistic.WALK_ON_WATER_ONE_CM
+                    || stat == Statistic.WALK_UNDER_WATER_ONE_CM || stat == Statistic.FLY_ONE_CM
+                    || stat == Statistic.HORSE_ONE_CM || stat == Statistic.MINECART_ONE_CM
+                    || stat == Statistic.PIG_ONE_CM || stat == Statistic.PLAY_ONE_MINUTE
+                    || stat == Statistic.SWIM_ONE_CM || stat == Statistic.WALK_ONE_CM
+                    || stat == Statistic.SPRINT_ONE_CM || stat == Statistic.CROUCH_ONE_CM
+                    || stat == Statistic.TIME_SINCE_DEATH || stat == Statistic.SNEAK_TIME
+                    || stat == Statistic.TOTAL_WORLD_TIME || stat == Statistic.TIME_SINCE_REST
+                    || stat == Statistic.AVIATE_ONE_CM || stat == Statistic.STRIDER_ONE_CM) {
+                return null;
             }
             if (stat.getType() == Type.UNTYPED) {
                 event = new PlayerStatisticIncrementEvent(player, stat, current, newValue);

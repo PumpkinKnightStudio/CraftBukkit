@@ -469,6 +469,7 @@ public class Commodore
                                 || owner.equals( "org/bukkit/Art" )
                                 || owner.equals( "org/bukkit/Fluid" )
                                 || owner.equals( "org/bukkit/entity/EntityType" )
+                                || owner.equals( "org/bukkit/Statistic" )
                                 || owner.equals( "org/bukkit/Sound" )
                                 || owner.equals( "org/bukkit/Material" )
                                 || owner.equals( "org/bukkit/attribute/Attribute" )

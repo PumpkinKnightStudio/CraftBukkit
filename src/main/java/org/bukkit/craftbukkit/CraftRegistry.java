@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
+import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
@@ -63,6 +64,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == Material.class) {
             return new CraftMaterial.CraftMaterialRegistry(IRegistry.BLOCK, IRegistry.ITEM);
+        }
+        if (bukkitClass == Statistic.class) {
+            return new CraftStatistic.CraftStatisticRegistry(IRegistry.STAT_TYPE);
         }
 
         return null;
