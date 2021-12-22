@@ -4,12 +4,14 @@ import com.google.common.base.Preconditions;
 import java.util.Locale;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
+import net.minecraft.world.entity.ai.gossip.ReputationType;
 import net.minecraft.world.entity.npc.EntityVillager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.level.block.BlockBed;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
@@ -121,11 +123,36 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         getHandle().setUnhappy();
     }
 
+    @Override
+    public int getReputation(OfflinePlayer player, GossipType gossipType) {
+        return getHandle().getGossips().getReputation(player.getUniqueId(), reputationType -> reputationType == bukkitToNmsReputationType(gossipType));
+    }
+
+    @Override
+    public void addReputation(OfflinePlayer player, GossipType gossipType, int amount) {
+        getHandle().getGossips().add(player.getUniqueId(), bukkitToNmsReputationType(gossipType), amount);
+    }
+
+    @Override
+    public void removeReputation(OfflinePlayer player, GossipType gossipType, int amount) {
+        getHandle().getGossips().remove(player.getUniqueId(), bukkitToNmsReputationType(gossipType), amount);
+    }
+
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {
         return Profession.valueOf(IRegistry.VILLAGER_PROFESSION.getKey(nms).getPath().toUpperCase(Locale.ROOT));
     }
 
     public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {
         return IRegistry.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+    }
+
+    public static ReputationType bukkitToNmsReputationType(GossipType gossipType) {
+        return switch (gossipType) {
+            case TRADING -> ReputationType.TRADING;
+            case MAJOR_NEGATIVE -> ReputationType.MAJOR_NEGATIVE;
+            case MINOR_NEGATIVE -> ReputationType.MINOR_NEGATIVE;
+            case MAJOR_POSITIVE -> ReputationType.MAJOR_POSITIVE;
+            case MINOR_POSITIVE -> ReputationType.MINOR_POSITIVE;
+        };
     }
 }
