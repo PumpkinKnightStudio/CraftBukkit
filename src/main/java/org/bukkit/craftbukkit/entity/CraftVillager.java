@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.Locale;
+import java.util.UUID;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.entity.ai.gossip.ReputationType;
@@ -125,17 +126,41 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public int getReputation(OfflinePlayer player, GossipType gossipType) {
-        return getHandle().getGossips().getReputation(player.getUniqueId(), reputationType -> reputationType == bukkitToNmsReputationType(gossipType));
+        Preconditions.checkNotNull(player, "Player must not be null.");
+        return getReputation(player.getUniqueId(), gossipType);
+    }
+
+    @Override
+    public int getReputation(UUID uuid, GossipType gossipType) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
+        return getHandle().getGossips().getReputation(uuid, reputationType -> reputationType == bukkitToNmsReputationType(gossipType));
     }
 
     @Override
     public void addReputation(OfflinePlayer player, GossipType gossipType, int amount) {
-        getHandle().getGossips().add(player.getUniqueId(), bukkitToNmsReputationType(gossipType), amount);
+        Preconditions.checkNotNull(player, "Player must not be null.");
+        addReputation(player.getUniqueId(), gossipType, amount);
+    }
+
+    @Override
+    public void addReputation(UUID uuid, GossipType gossipType, int amount) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
+        getHandle().getGossips().add(uuid, bukkitToNmsReputationType(gossipType), amount);
     }
 
     @Override
     public void removeReputation(OfflinePlayer player, GossipType gossipType, int amount) {
-        getHandle().getGossips().remove(player.getUniqueId(), bukkitToNmsReputationType(gossipType), amount);
+        Preconditions.checkNotNull(player, "Player must not be null.");
+        removeReputation(player.getUniqueId(), gossipType, amount);
+    }
+
+    @Override
+    public void removeReputation(UUID uuid, GossipType gossipType, int amount) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
+        getHandle().getGossips().remove(uuid, bukkitToNmsReputationType(gossipType), amount);
     }
 
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {
