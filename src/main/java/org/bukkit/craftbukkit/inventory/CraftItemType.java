@@ -1,17 +1,26 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import java.util.Map;
 import java.util.function.Consumer;
+import net.minecraft.core.IRegistry;
 import net.minecraft.world.entity.EntityInsentient;
+import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftMaterial;
+import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
+import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -168,6 +177,19 @@ public class CraftItemType implements ItemType {
     @Override
     public EquipmentSlot getEquipmentSlot() {
         return CraftEquipmentSlot.getSlot(EntityInsentient.getEquipmentSlotForItem(CraftItemStack.asNMSCopy(new ItemStack(this))));
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
+
+        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
+        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
+            Attribute attribute = CraftAttributeMap.fromMinecraft(IRegistry.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
+        }
+
+        return defaultAttributes.build();
     }
 
     @Override

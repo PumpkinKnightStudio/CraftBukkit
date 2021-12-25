@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -11,6 +13,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.EntityInsentient;
+import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
@@ -27,8 +30,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
+import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -221,6 +228,19 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
     @Override
     public EquipmentSlot getEquipmentSlot() {
         return CraftEquipmentSlot.getSlot(EntityInsentient.getEquipmentSlotForItem(CraftItemStack.asNMSCopy(new ItemStack(this))));
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
+
+        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
+        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
+            Attribute attribute = CraftAttributeMap.fromMinecraft(IRegistry.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
+        }
+
+        return defaultAttributes.build();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.legacy;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -10,6 +11,8 @@ import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftMaterial;
@@ -899,6 +902,11 @@ public class CraftLegacyMaterial implements Material {
     public EquipmentSlot getEquipmentSlot() {
         Preconditions.checkArgument(isItem(), "The Material is not an item!");
         return EquipmentSlot.HAND;
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        throw new IllegalArgumentException("Cannot get default attribute modifiers from Legacy material");
     }
 
     @Override

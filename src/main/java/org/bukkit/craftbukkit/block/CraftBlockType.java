@@ -1,20 +1,18 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.collect.Multimap;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.world.EnumHand;
-import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockFalling;
 import net.minecraft.world.level.block.BlockFire;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBase;
-import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.phys.MovingObjectPositionBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftMaterial;
@@ -176,6 +174,11 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public EquipmentSlot getEquipmentSlot() {
+        throw new IllegalArgumentException("The Material is not an item!");
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
         throw new IllegalArgumentException("The Material is not an item!");
     }
 
