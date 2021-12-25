@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -205,26 +206,7 @@ public class CraftMetaBanner extends CraftMetaItem implements BannerMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        if (type == Material.BLACK_BANNER || type == Material.BLACK_WALL_BANNER
-                || type == Material.BLUE_BANNER || type == Material.BLUE_WALL_BANNER
-                || type == Material.BROWN_BANNER || type == Material.BROWN_WALL_BANNER
-                || type == Material.CYAN_BANNER || type == Material.CYAN_WALL_BANNER
-                || type == Material.GRAY_BANNER || type == Material.GRAY_WALL_BANNER
-                || type == Material.GREEN_BANNER || type == Material.GREEN_WALL_BANNER
-                || type == Material.LIGHT_BLUE_BANNER || type == Material.LIGHT_BLUE_WALL_BANNER
-                || type == Material.LIGHT_GRAY_BANNER || type == Material.LIGHT_GRAY_WALL_BANNER
-                || type == Material.LIME_BANNER || type == Material.LIME_WALL_BANNER
-                || type == Material.MAGENTA_BANNER || type == Material.MAGENTA_WALL_BANNER
-                || type == Material.ORANGE_BANNER || type == Material.ORANGE_WALL_BANNER
-                || type == Material.PINK_BANNER || type == Material.PINK_WALL_BANNER
-                || type == Material.PURPLE_BANNER || type == Material.PURPLE_WALL_BANNER
-                || type == Material.RED_BANNER || type == Material.RED_WALL_BANNER
-                || type == Material.WHITE_BANNER || type == Material.WHITE_WALL_BANNER
-                || type == Material.YELLOW_BANNER || type == Material.YELLOW_WALL_BANNER) {
-            return true;
-        }
-
-        return false;
+        return Tag.BANNERS.isTagged(type);
     }
 
     @Override

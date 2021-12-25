@@ -7,6 +7,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.block.CraftBanner;
@@ -129,38 +130,22 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean applicableTo(Material type) {
-        if (type == Material.FURNACE || type == Material.CHEST
-                || type == Material.TRAPPED_CHEST || type == Material.JUKEBOX
-                || type == Material.DISPENSER || type == Material.DROPPER
-                || type == Material.ACACIA_SIGN || type == Material.ACACIA_WALL_SIGN
-                || type == Material.BIRCH_SIGN || type == Material.BIRCH_WALL_SIGN
-                || type == Material.CRIMSON_SIGN || type == Material.CRIMSON_WALL_SIGN
-                || type == Material.DARK_OAK_SIGN || type == Material.DARK_OAK_WALL_SIGN
-                || type == Material.JUNGLE_SIGN || type == Material.JUNGLE_WALL_SIGN
-                || type == Material.OAK_SIGN || type == Material.OAK_WALL_SIGN
-                || type == Material.SPRUCE_SIGN || type == Material.SPRUCE_WALL_SIGN
-                || type == Material.WARPED_SIGN || type == Material.WARPED_WALL_SIGN
-                || type == Material.SPAWNER || type == Material.BREWING_STAND
-                || type == Material.ENCHANTING_TABLE || type == Material.COMMAND_BLOCK
-                || type == Material.REPEATING_COMMAND_BLOCK || type == Material.CHAIN_COMMAND_BLOCK
-                || type == Material.BEACON || type == Material.DAYLIGHT_DETECTOR
-                || type == Material.HOPPER || type == Material.COMPARATOR
-                || type == Material.SHIELD || type == Material.STRUCTURE_BLOCK
-                || type == Material.SHULKER_BOX || type == Material.WHITE_SHULKER_BOX
-                || type == Material.ORANGE_SHULKER_BOX || type == Material.MAGENTA_SHULKER_BOX
-                || type == Material.LIGHT_BLUE_SHULKER_BOX || type == Material.YELLOW_SHULKER_BOX
-                || type == Material.LIME_SHULKER_BOX || type == Material.PINK_SHULKER_BOX
-                || type == Material.GRAY_SHULKER_BOX || type == Material.LIGHT_GRAY_SHULKER_BOX
-                || type == Material.CYAN_SHULKER_BOX || type == Material.PURPLE_SHULKER_BOX
-                || type == Material.BLUE_SHULKER_BOX || type == Material.BROWN_SHULKER_BOX
-                || type == Material.GREEN_SHULKER_BOX || type == Material.RED_SHULKER_BOX
-                || type == Material.BLACK_SHULKER_BOX || type == Material.ENDER_CHEST
-                || type == Material.BARREL || type == Material.BELL
-                || type == Material.BLAST_FURNACE || type == Material.CAMPFIRE
-                || type == Material.SOUL_CAMPFIRE || type == Material.JIGSAW
-                || type == Material.LECTERN || type == Material.SMOKER
-                || type == Material.BEEHIVE || type == Material.BEE_NEST
-                || type == Material.SCULK_SENSOR) {
+        if (material == Material.FURNACE || material == Material.CHEST
+                || material == Material.TRAPPED_CHEST || material == Material.JUKEBOX
+                || material == Material.DISPENSER || material == Material.DROPPER
+                || Tag.SIGNS.isTagged(material) || material == Material.SPAWNER
+                || material == Material.BREWING_STAND || material == Material.ENCHANTING_TABLE
+                || material == Material.COMMAND_BLOCK || material == Material.REPEATING_COMMAND_BLOCK
+                || material == Material.CHAIN_COMMAND_BLOCK || material == Material.BEACON
+                || material == Material.DAYLIGHT_DETECTOR || material == Material.HOPPER
+                || material == Material.COMPARATOR || material == Material.SHIELD
+                || material == Material.STRUCTURE_BLOCK || Tag.SHULKER_BOXES.isTagged(material)
+                || material == Material.ENDER_CHEST || material == Material.BARREL
+                || material == Material.BELL || material == Material.BLAST_FURNACE
+                || material == Material.CAMPFIRE || material == Material.SOUL_CAMPFIRE
+                || material == Material.JIGSAW || material == Material.LECTERN
+                || material == Material.SMOKER || material == Material.BEEHIVE
+                || material == Material.BEE_NEST || material == Material.SCULK_SENSOR) {
                 return true;
         }
 

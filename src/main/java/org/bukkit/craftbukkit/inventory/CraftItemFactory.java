@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -90,22 +91,7 @@ public final class CraftItemFactory implements ItemFactory {
         if (material == Material.ENCHANTED_BOOK) {
             return meta instanceof CraftMetaEnchantedBook ? meta : new CraftMetaEnchantedBook(meta);
         }
-        if (material == Material.BLACK_BANNER || material == Material.BLACK_WALL_BANNER
-                || material == Material.BLUE_BANNER || material == Material.BLUE_WALL_BANNER
-                || material == Material.BROWN_BANNER || material == Material.BROWN_WALL_BANNER
-                || material == Material.CYAN_BANNER || material == Material.CYAN_WALL_BANNER
-                || material == Material.GRAY_BANNER || material == Material.GRAY_WALL_BANNER
-                || material == Material.GREEN_BANNER || material == Material.GREEN_WALL_BANNER
-                || material == Material.LIGHT_BLUE_BANNER || material == Material.LIGHT_BLUE_WALL_BANNER
-                || material == Material.LIGHT_GRAY_BANNER || material == Material.LIGHT_GRAY_WALL_BANNER
-                || material == Material.LIME_BANNER || material == Material.LIME_WALL_BANNER
-                || material == Material.MAGENTA_BANNER || material == Material.MAGENTA_WALL_BANNER
-                || material == Material.ORANGE_BANNER || material == Material.ORANGE_WALL_BANNER
-                || material == Material.PINK_BANNER || material == Material.PINK_WALL_BANNER
-                || material == Material.PURPLE_BANNER || material == Material.PURPLE_WALL_BANNER
-                || material == Material.RED_BANNER || material == Material.RED_WALL_BANNER
-                || material == Material.WHITE_BANNER || material == Material.WHITE_WALL_BANNER
-                || material == Material.YELLOW_BANNER || material == Material.YELLOW_WALL_BANNER) {
+        if (Tag.BANNERS.isTagged(material)) {
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
         }
         if (material == Material.AXOLOTL_SPAWN_EGG || material == Material.BAT_SPAWN_EGG
@@ -153,35 +139,19 @@ public final class CraftItemFactory implements ItemFactory {
         if (material == Material.FURNACE || material == Material.CHEST
                 || material == Material.TRAPPED_CHEST || material == Material.JUKEBOX
                 || material == Material.DISPENSER || material == Material.DROPPER
-                || material == Material.ACACIA_SIGN || material == Material.ACACIA_WALL_SIGN
-                || material == Material.BIRCH_SIGN || material == Material.BIRCH_WALL_SIGN
-                || material == Material.CRIMSON_SIGN || material == Material.CRIMSON_WALL_SIGN
-                || material == Material.DARK_OAK_SIGN || material == Material.DARK_OAK_WALL_SIGN
-                || material == Material.JUNGLE_SIGN || material == Material.JUNGLE_WALL_SIGN
-                || material == Material.OAK_SIGN || material == Material.OAK_WALL_SIGN
-                || material == Material.SPRUCE_SIGN || material == Material.SPRUCE_WALL_SIGN
-                || material == Material.WARPED_SIGN || material == Material.WARPED_WALL_SIGN
-                || material == Material.SPAWNER || material == Material.BREWING_STAND
-                || material == Material.ENCHANTING_TABLE || material == Material.COMMAND_BLOCK
-                || material == Material.REPEATING_COMMAND_BLOCK || material == Material.CHAIN_COMMAND_BLOCK
-                || material == Material.BEACON || material == Material.DAYLIGHT_DETECTOR
-                || material == Material.HOPPER || material == Material.COMPARATOR
-                || material == Material.SHIELD || material == Material.STRUCTURE_BLOCK
-                || material == Material.SHULKER_BOX || material == Material.WHITE_SHULKER_BOX
-                || material == Material.ORANGE_SHULKER_BOX || material == Material.MAGENTA_SHULKER_BOX
-                || material == Material.LIGHT_BLUE_SHULKER_BOX || material == Material.YELLOW_SHULKER_BOX
-                || material == Material.LIME_SHULKER_BOX || material == Material.PINK_SHULKER_BOX
-                || material == Material.GRAY_SHULKER_BOX || material == Material.LIGHT_GRAY_SHULKER_BOX
-                || material == Material.CYAN_SHULKER_BOX || material == Material.PURPLE_SHULKER_BOX
-                || material == Material.BLUE_SHULKER_BOX || material == Material.BROWN_SHULKER_BOX
-                || material == Material.GREEN_SHULKER_BOX || material == Material.RED_SHULKER_BOX
-                || material == Material.BLACK_SHULKER_BOX || material == Material.ENDER_CHEST
-                || material == Material.BARREL || material == Material.BELL
-                || material == Material.BLAST_FURNACE || material == Material.CAMPFIRE
-                || material == Material.SOUL_CAMPFIRE || material == Material.JIGSAW
-                || material == Material.LECTERN || material == Material.SMOKER
-                || material == Material.BEEHIVE || material == Material.BEE_NEST
-                || material == Material.SCULK_SENSOR) {
+                || Tag.SIGNS.isTagged(material) || material == Material.SPAWNER
+                || material == Material.BREWING_STAND || material == Material.ENCHANTING_TABLE
+                || material == Material.COMMAND_BLOCK || material == Material.REPEATING_COMMAND_BLOCK
+                || material == Material.CHAIN_COMMAND_BLOCK || material == Material.BEACON
+                || material == Material.DAYLIGHT_DETECTOR || material == Material.HOPPER
+                || material == Material.COMPARATOR || material == Material.SHIELD
+                || material == Material.STRUCTURE_BLOCK || Tag.SHULKER_BOXES.isTagged(material)
+                || material == Material.ENDER_CHEST || material == Material.BARREL
+                || material == Material.BELL || material == Material.BLAST_FURNACE
+                || material == Material.CAMPFIRE || material == Material.SOUL_CAMPFIRE
+                || material == Material.JIGSAW || material == Material.LECTERN
+                || material == Material.SMOKER || material == Material.BEEHIVE
+                || material == Material.BEE_NEST || material == Material.SCULK_SENSOR) {
             return new CraftMetaBlockState(meta, material);
         }
         if (material == Material.TROPICAL_FISH_BUCKET) {
