@@ -13,7 +13,6 @@ import net.minecraft.server.level.WorldServer;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.EnumCreatureType;
 import net.minecraft.world.level.BlockColumn;
-import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.GeneratorAccessSeed;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.StructureManager;
@@ -37,7 +36,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStruct
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.CraftHeightMap;
 import org.bukkit.craftbukkit.block.CraftBiome;
-import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.ChunkGenerator.BiomeGrid;
 import org.bukkit.generator.ChunkGenerator.ChunkData;
@@ -74,13 +72,13 @@ public class CustomChunkGenerator extends InternalChunkGenerator {
 
         @Override
         public Biome getBiome(int x, int y, int z) {
-            return CraftBiome.biomeBaseToBiome((IRegistry<BiomeBase>) biome.biomeRegistry, biome.getNoiseBiome(x >> 2, y >> 2, z >> 2));
+            return CraftBiome.minecraftToBukkit((IRegistry<BiomeBase>) biome.biomeRegistry, biome.getNoiseBiome(x >> 2, y >> 2, z >> 2));
         }
 
         @Override
         public void setBiome(int x, int y, int z, Biome bio) {
             Preconditions.checkArgument(bio != Biome.CUSTOM, "Cannot set the biome to %s", bio);
-            biome.setBiome(x >> 2, y >> 2, z >> 2, CraftBiome.biomeToBiomeBase((IRegistry<BiomeBase>) biome.biomeRegistry, bio));
+            biome.setBiome(x >> 2, y >> 2, z >> 2, CraftBiome.bukkitToMinecraft((IRegistry<BiomeBase>) biome.biomeRegistry, bio));
         }
     }
 

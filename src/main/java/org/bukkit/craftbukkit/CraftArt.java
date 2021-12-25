@@ -21,7 +21,7 @@ public class CraftArt extends Art {
 
     public static Paintings bukkitToMinecraft(Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
-        return IRegistry.MOTIVE.getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).get();
+        return ((CraftArt) bukkit).getHandle();
     }
 
     private final NamespacedKey key;

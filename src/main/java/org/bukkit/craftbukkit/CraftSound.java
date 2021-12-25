@@ -20,10 +20,7 @@ public class CraftSound extends Sound {
     }
 
     public static SoundEffect getSoundEffect(Sound s) {
-        SoundEffect effect = IRegistry.SOUND_EVENT.get(CraftNamespacedKey.toMinecraft(s.getKey()));
-        Preconditions.checkArgument(effect != null, "Sound effect %s does not exist", s);
-
-        return effect;
+        return ((CraftSound) s).getHandle();
     }
 
     public static Sound getBukkit(SoundEffect soundEffect) {

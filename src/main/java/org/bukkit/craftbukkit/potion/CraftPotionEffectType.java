@@ -27,7 +27,7 @@ public class CraftPotionEffectType extends PotionEffectType {
             return null;
         }
 
-        return IRegistry.MOB_EFFECT.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+        return ((CraftPotionEffectType) bukkit).getHandle();
     }
 
     private final NamespacedKey key;

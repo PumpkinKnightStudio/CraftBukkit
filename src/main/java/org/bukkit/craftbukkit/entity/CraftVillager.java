@@ -53,24 +53,24 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Profession getProfession() {
-        return CraftVillager.nmsToBukkitProfession(getHandle().getVillagerData().getProfession());
+        return CraftProfession.minecraftToBukkit(getHandle().getVillagerData().getProfession());
     }
 
     @Override
     public void setProfession(Profession profession) {
         Validate.notNull(profession);
-        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftVillager.bukkitToNmsProfession(profession)));
+        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftProfession.bukkitToMinecraft(profession)));
     }
 
     @Override
     public Type getVillagerType() {
-        return Type.valueOf(IRegistry.VILLAGER_TYPE.getKey(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return CraftType.minecraftToBukkit(getHandle().getVillagerData().getType());
     }
 
     @Override
     public void setVillagerType(Type type) {
         Validate.notNull(type);
-        getHandle().setVillagerData(getHandle().getVillagerData().setType(IRegistry.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        getHandle().setVillagerData(getHandle().getVillagerData().setType(CraftType.bukkitToMinecraft(type)));
     }
 
     @Override
@@ -129,6 +129,22 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     public static class CraftType extends Type {
         private static int count = 0;
+
+        public static Type minecraftToBukkit(VillagerType minecraft) {
+            if (minecraft == null) {
+                return null;
+            }
+
+            return Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(IRegistry.VILLAGER_TYPE.getKey(minecraft)));
+        }
+
+        public static VillagerType bukkitToMinecraft(Type bukkit) {
+            if (bukkit == null) {
+                return null;
+            }
+
+            return ((CraftType) bukkit).getHandle();
+        }
 
         private final NamespacedKey key;
         private final VillagerType villagerType;
@@ -202,6 +218,22 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     public static class CraftProfession extends Profession {
         private static int count = 0;
 
+        public static Profession minecraftToBukkit(VillagerProfession minecraft) {
+            if (minecraft == null) {
+                return null;
+            }
+
+            return Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(IRegistry.VILLAGER_PROFESSION.getKey(minecraft)));
+        }
+
+        public static VillagerProfession bukkitToMinecraft(Profession bukkit) {
+            if (bukkit == null) {
+                return null;
+            }
+
+            return ((CraftProfession) bukkit).getHandle();
+        }
+
         private final NamespacedKey key;
         private final VillagerProfession villagerProfession;
         private final String name;
@@ -269,13 +301,5 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         public int hashCode() {
             return getKey().hashCode();
         }
-    }
-
-    public static Profession nmsToBukkitProfession(VillagerProfession nms) {
-        return Profession.valueOf(IRegistry.VILLAGER_PROFESSION.getKey(nms).getPath().toUpperCase(Locale.ROOT));
-    }
-
-    public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {
-        return IRegistry.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
     }
 }

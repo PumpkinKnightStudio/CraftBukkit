@@ -133,7 +133,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         validateChunkCoordinates(x, y, z);
 
         DataPaletteBlock<BiomeBase> biome = this.biome[getSectionIndex(y >> 2)];
-        return CraftBiome.biomeBaseToBiome((IRegistry<BiomeBase>) biome.registry, biome.get(x >> 2, (y & 0xF) >> 2, z >> 2));
+        return CraftBiome.minecraftToBukkit((IRegistry<BiomeBase>) biome.registry, biome.get(x >> 2, (y & 0xF) >> 2, z >> 2));
     }
 
     @Override

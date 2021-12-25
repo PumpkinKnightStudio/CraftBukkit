@@ -24,7 +24,7 @@ public class CustomWorldChunkManager extends WorldChunkManager {
 
         for (Biome biome : biomes) {
             Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot use the biome %s", biome);
-            biomeBases.add(CraftBiome.biomeToBiomeBase(registry, biome));
+            biomeBases.add(CraftBiome.bukkitToMinecraft(registry, biome));
         }
 
         return biomeBases;
@@ -54,6 +54,6 @@ public class CustomWorldChunkManager extends WorldChunkManager {
         Biome biome = biomeProvider.getBiome(worldInfo, x << 2, y << 2, z << 2);
         Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
 
-        return CraftBiome.biomeToBiomeBase(registry, biome);
+        return CraftBiome.bukkitToMinecraft(registry, biome);
     }
 }

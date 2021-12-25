@@ -23,7 +23,7 @@ public class CraftFluid extends Fluid {
             return null;
         }
 
-        return IRegistry.FLUID.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+        return ((CraftFluid) bukkit).getHandle();
     }
 
 

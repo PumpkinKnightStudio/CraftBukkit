@@ -13,20 +13,20 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftBiome extends Biome {
     private static int count = 0;
 
-    public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, BiomeBase base) {
-        if (base == null) {
+    public static Biome minecraftToBukkit(IRegistry<BiomeBase> registry, BiomeBase minecraft) {
+        if (minecraft == null) {
             return null;
         }
 
-        return Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(base)));
+        return Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
     }
 
-    public static BiomeBase biomeToBiomeBase(IRegistry<BiomeBase> registry, Biome bio) {
-        if (bio == null || bio == Biome.CUSTOM) {
+    public static BiomeBase bukkitToMinecraft(IRegistry<BiomeBase> registry, Biome bukkit) {
+        if (bukkit == null || bukkit == Biome.CUSTOM) {
             return null;
         }
 
-        return registry.get(CraftNamespacedKey.toMinecraft(bio.getKey()));
+        return registry.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
     }
 
     private final NamespacedKey key;

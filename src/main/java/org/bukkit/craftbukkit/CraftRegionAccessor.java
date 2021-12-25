@@ -215,7 +215,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
     @Override
     public Biome getBiome(int x, int y, int z) {
-        return CraftBiome.biomeBaseToBiome(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
+        return CraftBiome.minecraftToBukkit(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override
@@ -226,7 +226,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     @Override
     public void setBiome(int x, int y, int z, Biome biome) {
         Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
-        BiomeBase biomeBase = CraftBiome.biomeToBiomeBase(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), biome);
+        BiomeBase biomeBase = CraftBiome.bukkitToMinecraft(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), biome);
         setBiome(x, y, z, biomeBase);
     }
 
