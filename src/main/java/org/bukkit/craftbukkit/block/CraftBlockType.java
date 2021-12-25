@@ -30,6 +30,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     private final Class<B> blockDataClass;
     private final String name;
     private final int ordinal;
+    private final boolean interactable;
 
     public CraftBlockType(NamespacedKey key, Block block) {
         this.key = key;
@@ -45,6 +46,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
             this.name = key.toString();
         }
         this.ordinal = CraftMaterial.getNextOrdinal();
+        this.interactable = CraftMaterial.isInteractable(block);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isBurnable() {
-        return ((BlockFire) Blocks.FIRE).flameOdds.containsKey(block) && ((BlockFire) Blocks.FIRE).flameOdds.get(block) > 0;
+        return ((BlockFire) Blocks.FIRE).flameOdds.getOrDefault(block, 0) > 0;
     }
 
     @Override
@@ -149,13 +151,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isInteractable() {
-        try {
-            return !block.getClass()
-                    .getMethod("use", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
-                    .getDeclaringClass().equals(BlockBase.class);
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+        return interactable;
     }
 
     @Override

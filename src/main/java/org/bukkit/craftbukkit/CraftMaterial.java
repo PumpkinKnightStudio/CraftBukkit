@@ -48,12 +48,23 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
         return count++;
     }
 
+    public static boolean isInteractable(Block block) {
+        try {
+            return !block.getClass()
+                    .getMethod("use", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
+                    .getDeclaringClass().equals(BlockBase.class);
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
     private final NamespacedKey key;
     private final Block block;
     private final Item item;
     private final Class<B> blockDataClass;
     private final String name;
     private final int ordinal;
+    private final boolean interactable;
 
     public CraftMaterial(NamespacedKey key, Block block, Item item) {
         this.key = key;
@@ -70,6 +81,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
             this.name = key.toString();
         }
         this.ordinal = getNextOrdinal();
+        this.interactable = isInteractable(block);
     }
 
     @Override
@@ -152,7 +164,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isBurnable() {
-        return ((BlockFire) Blocks.FIRE).flameOdds.containsKey(block) && ((BlockFire) Blocks.FIRE).flameOdds.get(block) > 0;
+        return ((BlockFire) Blocks.FIRE).flameOdds.getOrDefault(block, 0) > 0;
     }
 
     @Override
@@ -182,13 +194,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isInteractable() {
-        try {
-            return !block.getClass()
-                    .getMethod("use", IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class)
-                    .getDeclaringClass().equals(BlockBase.class);
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+        return interactable;
     }
 
     @Override
