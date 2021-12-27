@@ -1148,7 +1148,7 @@ public final class CraftServer implements Server {
 
         WorldDimension dimension = new WorldDimension(()->dimensionManager,generatorAbstract);
 
-        registrymaterials.register(actualDimension,dimension,Lifecycle.stable());
+        registrymaterials.registerOrOverride(OptionalInt.empty(),actualDimension,dimension,Lifecycle.stable());
     }
 
     /**
@@ -1214,8 +1214,7 @@ public final class CraftServer implements Server {
         ResourceKey<GeneratorSettingBase> generatorSettingBaseResourceKey = ResourceKey.create(IRegistry.NOISE_GENERATOR_SETTINGS_REGISTRY, minecraftKey);
         IRegistryWritable<GeneratorSettingBase> registryGeneratorSettings = getHandle().getServer().registryAccess().ownedRegistryOrThrow(IRegistry.NOISE_GENERATOR_SETTINGS_REGISTRY);
 
-        registryGeneratorSettings.register(generatorSettingBaseResourceKey,generatorSettingBase,Lifecycle.stable());
-        RegistryGeneration.register(RegistryGeneration.NOISE_GENERATOR_SETTINGS, generatorSettingBaseResourceKey.location(), generatorSettingBase);
+        registryGeneratorSettings.registerOrOverride(OptionalInt.empty(),generatorSettingBaseResourceKey,generatorSettingBase,Lifecycle.stable());
 
         return generatorSettingBaseResourceKey;
     }
