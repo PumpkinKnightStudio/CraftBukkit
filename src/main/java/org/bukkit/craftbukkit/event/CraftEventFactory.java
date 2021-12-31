@@ -366,7 +366,7 @@ public class CraftEventFactory {
         LivingEntity livingEntity = (LivingEntity) who.getBukkitEntity();
         org.bukkit.inventory.ItemStack oldArmorBukkit = CraftItemStack.asCraftMirror(oldArmor);
         org.bukkit.inventory.ItemStack newArmorBukkit = CraftItemStack.asCraftMirror(newArmor);
-        EquipmentSlot equipmentSlot = CraftEnumSlotConverter.getAsBucketSlot(slot);
+        EquipmentSlot equipmentSlot = CraftEnumSlotConverter.getAsBukkitSlot(slot);
 
         // Don't call for air
         if (oldArmorBukkit.getType() == Material.AIR && newArmorBukkit.getType() == Material.AIR) {
