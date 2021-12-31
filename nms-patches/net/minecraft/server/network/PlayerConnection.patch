@@ -11,9 +11,10 @@
 +import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 +import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntityLiving;
 +import net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition;
++import net.minecraft.util.MathHelper;
 +import net.minecraft.world.entity.EntityInsentient;
-+import net.minecraft.world.entity.animal.EntityFish;
-+import net.minecraft.world.inventory.ContainerPlayer;
++import net.minecraft.world.entity.animal.Bucketable;
++import net.minecraft.world.entity.EntityLiving;
 +import net.minecraft.world.inventory.InventoryClickType;
 +import net.minecraft.world.inventory.Slot;
 +import net.minecraft.world.item.crafting.IRecipe;
@@ -23,7 +24,6 @@
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
-+import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftChatMessage;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.craftbukkit.util.LazyPlayerSet;
@@ -1165,9 +1165,9 @@
 +
 +                        cserver.getPluginManager().callEvent(event);
 +
-+                        // Fish bucket - SPIGOT-4048
-+                        if ((entity instanceof EntityFish && origItem != null && origItem.asItem() == Items.WATER_BUCKET) && (event.isCancelled() || player.getInventory().getSelected() == null || player.getInventory().getSelected().getItem() != origItem)) {
-+                            send(new PacketPlayOutSpawnEntityLiving((EntityFish) entity));
++                        // Entity in bucket - SPIGOT-4048 and SPIGOT-6859
++                        if ((entity instanceof Bucketable && entity instanceof EntityLiving && origItem != null && origItem.asItem() == Items.WATER_BUCKET) && (event.isCancelled() || player.getInventory().getSelected() == null || player.getInventory().getSelected().getItem() != origItem)) {
++                            send(new PacketPlayOutSpawnEntityLiving((EntityLiving) entity));
 +                            player.containerMenu.sendAllDataToRemote();
 +                        }
 +
@@ -1228,7 +1228,7 @@
                          } else {
                              PlayerConnection.this.disconnect(new ChatMessage("multiplayer.disconnect.invalid_entity_attacked"));
                              PlayerConnection.LOGGER.warn("Player {} tried to attack an invalid entity", PlayerConnection.this.player.getName().getString());
-@@ -1407,21 +2146,311 @@
+@@ -1407,21 +2146,304 @@
      @Override
      public void handleContainerClose(PacketPlayInCloseWindow packetplayinclosewindow) {
          PlayerConnectionUtils.ensureRunningOnSameThread(packetplayinclosewindow, this, this.player.getLevel());
@@ -1533,17 +1533,10 @@
 +                    }
 +                }
 +                // CraftBukkit end
-+
-+                // CraftBukkit start
-+                if (CraftEnumSlotConverter.isEnumArmorSlot(packetplayinwindowclick.getSlotNum()) && this.player.containerMenu instanceof ContainerPlayer && click != ClickType.SHIFT_LEFT && click != ClickType.SHIFT_RIGHT) {
-+                    CraftEventFactory.callEntityEquipArmorEvent(player, packetplayinwindowclick.getCarriedItem(), this.player.containerMenu.slots.get(packetplayinwindowclick.getSlotNum()).getItem(), packetplayinwindowclick.getSlotNum());
-+                }
-+                // CraftBukkit end
-+
                  ObjectIterator objectiterator = Int2ObjectMaps.fastIterable(packetplayinwindowclick.getChangedSlots()).iterator();
  
                  while (objectiterator.hasNext()) {
-@@ -1456,6 +2485,7 @@
+@@ -1456,6 +2478,7 @@
      @Override
      public void handleContainerButtonClick(PacketPlayInEnchantItem packetplayinenchantitem) {
          PlayerConnectionUtils.ensureRunningOnSameThread(packetplayinenchantitem, this, this.player.getLevel());
@@ -1551,7 +1544,7 @@
          this.player.resetLastActionTime();
          if (this.player.containerMenu.containerId == packetplayinenchantitem.getContainerId() && !this.player.isSpectator()) {
              this.player.containerMenu.clickMenuButton(this.player, packetplayinenchantitem.getButtonId());
-@@ -1483,6 +2513,43 @@
+@@ -1483,6 +2506,43 @@
  
              boolean flag1 = packetplayinsetcreativeslot.getSlotNum() >= 1 && packetplayinsetcreativeslot.getSlotNum() <= 45;
              boolean flag2 = itemstack.isEmpty() || itemstack.getDamageValue() >= 0 && itemstack.getCount() <= 64 && !itemstack.isEmpty();
@@ -1595,7 +1588,7 @@
  
              if (flag1 && flag2) {
                  this.player.inventoryMenu.getSlot(packetplayinsetcreativeslot.getSlotNum()).set(itemstack);
-@@ -1505,6 +2572,7 @@
+@@ -1505,6 +2565,7 @@
      }
  
      private void updateSignText(PacketPlayInUpdateSign packetplayinupdatesign, List<ITextFilter.a> list) {
@@ -1603,7 +1596,7 @@
          this.player.resetLastActionTime();
          WorldServer worldserver = this.player.getLevel();
          BlockPosition blockposition = packetplayinupdatesign.getPos();
-@@ -1521,18 +2589,37 @@
+@@ -1521,18 +2582,37 @@
  
              if (!tileentitysign.isEditable() || !this.player.getUUID().equals(tileentitysign.getPlayerWhoMayEdit())) {
                  PlayerConnection.LOGGER.warn("Player {} just tried to change non-editable sign", this.player.getName().getString());
@@ -1643,7 +1636,7 @@
  
              tileentitysign.setChanged();
              worldserver.sendBlockUpdated(blockposition, iblockdata, iblockdata, 3);
-@@ -1542,6 +2629,7 @@
+@@ -1542,6 +2622,7 @@
  
      @Override
      public void handleKeepAlive(PacketPlayInKeepAlive packetplayinkeepalive) {
@@ -1651,7 +1644,7 @@
          if (this.keepAlivePending && packetplayinkeepalive.getId() == this.keepAliveChallenge) {
              int i = (int) (SystemUtils.getMillis() - this.keepAliveTime);
  
-@@ -1556,7 +2644,17 @@
+@@ -1556,7 +2637,17 @@
      @Override
      public void handlePlayerAbilities(PacketPlayInAbilities packetplayinabilities) {
          PlayerConnectionUtils.ensureRunningOnSameThread(packetplayinabilities, this, this.player.getLevel());
@@ -1670,7 +1663,7 @@
      }
  
      @Override
-@@ -1565,8 +2663,50 @@
+@@ -1565,8 +2656,50 @@
          this.player.updateOptions(packetplayinsettings);
      }
  
