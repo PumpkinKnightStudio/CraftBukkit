@@ -1,12 +1,11 @@
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -72,6 +72,42 @@
+@@ -72,6 +72,41 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
 +// CraftBukkit start
 +import com.mojang.serialization.Dynamic;
-+import java.util.List;
 +import java.util.Map;
 +import java.util.Objects;
 +import net.minecraft.core.EnumDirection;
@@ -43,7 +42,7 @@
  public final class ItemStack {
  
      public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create((instance) -> {
-@@ -139,16 +175,30 @@
+@@ -139,16 +174,30 @@
          this.updateEmptyCacheFlag();
      }
  
@@ -76,7 +75,7 @@
              this.getItem().verifyTagAfterLoad(this.tag);
          }
  
-@@ -156,6 +206,11 @@
+@@ -156,6 +205,11 @@
              this.setDamageValue(this.getDamageValue());
          }
  
@@ -88,7 +87,7 @@
          this.updateEmptyCacheFlag();
      }
  
-@@ -193,7 +248,7 @@
+@@ -193,7 +247,7 @@
          return this.getItem() == item;
      }
  
@@ -97,7 +96,7 @@
          EntityHuman entityhuman = itemactioncontext.getPlayer();
          BlockPosition blockposition = itemactioncontext.getClickedPos();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getLevel(), blockposition, false);
-@@ -201,12 +256,157 @@
+@@ -201,12 +255,157 @@
          if (entityhuman != null && !entityhuman.getAbilities().mayBuild && !this.hasAdventureModePlaceTagForBlock(itemactioncontext.getLevel().getTagManager(), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
@@ -256,7 +255,7 @@
  
              return enuminteractionresult;
          }
-@@ -287,6 +487,21 @@
+@@ -287,6 +486,21 @@
                  }
  
                  i -= k;
@@ -278,14 +277,14 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -308,6 +523,17 @@
+@@ -308,6 +522,17 @@
                  if (this.hurt(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
 +                    // CraftBukkit start - Check for item breaking
 +                    if (this.count == 1) {
 +
-+                        if(t0 instanceof org.bukkit.entity.Entity) {
++                        if(t0 instanceof EntityHuman) {
 +                            CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                        }
 +                        if(item instanceof ItemArmor){
@@ -296,7 +295,7 @@
  
                      this.shrink(1);
                      if (t0 instanceof EntityHuman) {
-@@ -463,6 +689,17 @@
+@@ -463,6 +688,17 @@
          return this.tag;
      }
  
@@ -314,7 +313,7 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -843,6 +1080,12 @@
+@@ -843,6 +1079,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -327,7 +326,7 @@
          this.getOrCreateTag().putInt("RepairCost", i);
      }
  
-@@ -892,6 +1135,13 @@
+@@ -892,6 +1134,13 @@
          nbttaglist.add(nbttagcompound);
      }
  
