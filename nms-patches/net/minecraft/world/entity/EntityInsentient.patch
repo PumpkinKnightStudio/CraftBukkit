@@ -190,20 +190,23 @@
          this.level.getProfiler().push("sensing");
          this.sensing.tick();
          this.level.getProfiler().pop();
-@@ -881,10 +965,31 @@
+@@ -881,11 +965,39 @@
                  this.handItems.set(enumitemslot.getIndex(), itemstack);
                  break;
              case ARMOR:
 +                // CraftBukkit start
-+                EntityArmorChangeEvent.ChangeReason changeReason = this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem())
-+                        ? EntityArmorChangeEvent.ChangeReason.EQUIP : EntityArmorChangeEvent.ChangeReason.SWITCH;
++
++                boolean previousItemNotAir = !this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem());
++                boolean newItemNotAir = !itemstack.getItem().equals(ItemStack.EMPTY.getItem());
++                EntityArmorChangeEvent.ChangeReason changeReason = newItemNotAir ?
++                        (previousItemNotAir ? EntityArmorChangeEvent.ChangeReason.SWITCH : EntityArmorChangeEvent.ChangeReason.EQUIP) : EntityArmorChangeEvent.ChangeReason.UNEQUIP;
 +                CraftEventFactory.callEntityEquipArmorEvent(this, this.armorItems.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot);
 +                // CraftBukkit end
-+                this.armorItems.set(enumitemslot.getIndex(), itemstack);
-+        }
-+
-+    }
-+
+                 this.armorItems.set(enumitemslot.getIndex(), itemstack);
+         }
+ 
+     }
+ 
 +    // CraftBukkit start
 +    public void setItemSlot(EnumItemSlot enumitemslot, ItemStack itemstack, boolean itemBreak) {
 +        this.verifyEquippedItem(itemstack);
@@ -212,17 +215,22 @@
 +                this.handItems.set(enumitemslot.getIndex(), itemstack);
 +                break;
 +            case ARMOR:
-+                EntityArmorChangeEvent.ChangeReason changeReason = this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem())
-+                        ? EntityArmorChangeEvent.ChangeReason.EQUIP : (itemBreak ? EntityArmorChangeEvent.ChangeReason.BREAK : EntityArmorChangeEvent.ChangeReason.SWITCH);                CraftEventFactory.callEntityEquipArmorEvent(this, this.armorItems.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot);
-                 this.armorItems.set(enumitemslot.getIndex(), itemstack);
-         }
- 
-     }
++                boolean previousItemNotAir = !this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem());
++                boolean newItemNotAir = !itemstack.getItem().equals(ItemStack.EMPTY.getItem());
++                EntityArmorChangeEvent.ChangeReason changeReason = newItemNotAir ?
++                        (previousItemNotAir ? EntityArmorChangeEvent.ChangeReason.SWITCH : EntityArmorChangeEvent.ChangeReason.EQUIP) :
++                        (itemBreak ? EntityArmorChangeEvent.ChangeReason.BREAK : EntityArmorChangeEvent.ChangeReason.UNEQUIP);
++                CraftEventFactory.callEntityEquipArmorEvent(this, this.armorItems.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot);
++                this.armorItems.set(enumitemslot.getIndex(), itemstack);
++        }
++
++    }
 +    // CraftBukkit end
- 
++
      @Override
      protected void dropCustomDeathLoot(DamageSource damagesource, int i, boolean flag) {
-@@ -1056,7 +1161,10 @@
+         super.dropCustomDeathLoot(damagesource, i, flag);
+@@ -1056,7 +1168,10 @@
          ItemStack itemstack = this.getItemBySlot(enumitemslot);
  
          if (!itemstack.isEmpty() && this.random.nextFloat() < 0.5F * f) {
@@ -234,7 +242,7 @@
          }
  
      }
-@@ -1116,6 +1224,12 @@
+@@ -1116,6 +1231,12 @@
          if (!this.isAlive()) {
              return EnumInteractionResult.PASS;
          } else if (this.getLeashHolder() == entityhuman) {
@@ -247,7 +255,7 @@
              this.dropLeash(true, !entityhuman.getAbilities().instabuild);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
          } else {
-@@ -1134,6 +1248,12 @@
+@@ -1134,6 +1255,12 @@
          ItemStack itemstack = entityhuman.getItemInHand(enumhand);
  
          if (itemstack.is(Items.LEAD) && this.canBeLeashed(entityhuman)) {
@@ -260,7 +268,7 @@
              this.setLeashedTo(entityhuman, true);
              itemstack.shrink(1);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
-@@ -1149,7 +1269,7 @@
+@@ -1149,7 +1276,7 @@
              if (itemstack.getItem() instanceof ItemMonsterEgg) {
                  if (this.level instanceof WorldServer) {
                      ItemMonsterEgg itemmonsteregg = (ItemMonsterEgg) itemstack.getItem();
@@ -269,7 +277,7 @@
  
                      optional.ifPresent((entityinsentient) -> {
                          this.onOffspringSpawnedFromEgg(entityhuman, entityinsentient);
-@@ -1199,12 +1319,19 @@
+@@ -1199,12 +1326,19 @@
          return this.restrictRadius != -1.0F;
      }
  
@@ -290,7 +298,7 @@
  
              t0.copyPosition(this);
              t0.setBaby(this.isBaby());
-@@ -1236,7 +1363,12 @@
+@@ -1236,7 +1370,12 @@
                  }
              }
  
@@ -304,7 +312,7 @@
              if (this.isPassenger()) {
                  Entity entity = this.getVehicle();
  
-@@ -1256,6 +1388,7 @@
+@@ -1256,6 +1395,7 @@
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -312,7 +320,7 @@
                  this.dropLeash(true, true);
              }
  
-@@ -1267,7 +1400,9 @@
+@@ -1267,7 +1407,9 @@
              this.leashHolder = null;
              this.leashInfoTag = null;
              if (!this.level.isClientSide && flag1) {
@@ -322,7 +330,7 @@
              }
  
              if (!this.level.isClientSide && flag && this.level instanceof WorldServer) {
-@@ -1317,6 +1452,7 @@
+@@ -1317,6 +1459,7 @@
          boolean flag1 = super.startRiding(entity, flag);
  
          if (flag1 && this.isLeashed()) {
@@ -330,7 +338,7 @@
              this.dropLeash(true, true);
          }
  
-@@ -1341,7 +1477,9 @@
+@@ -1341,7 +1484,9 @@
              }
  
              if (this.tickCount > 100) {
@@ -340,7 +348,7 @@
                  this.leashInfoTag = null;
              }
          }
-@@ -1412,7 +1550,14 @@
+@@ -1412,7 +1557,14 @@
          int i = EnchantmentManager.getFireAspect(this);
  
          if (i > 0) {
@@ -356,7 +364,7 @@
          }
  
          boolean flag = entity.hurt(DamageSource.mobAttack(this), f);
-@@ -1480,9 +1625,10 @@
+@@ -1480,9 +1632,10 @@
      @Override
      protected void removeAfterChangingDimensions() {
          super.removeAfterChangingDimensions();

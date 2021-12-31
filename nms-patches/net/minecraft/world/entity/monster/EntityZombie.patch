@@ -1,15 +1,13 @@
 --- a/net/minecraft/world/entity/monster/EntityZombie.java
 +++ b/net/minecraft/world/entity/monster/EntityZombie.java
-@@ -66,6 +66,17 @@
+@@ -66,6 +66,15 @@
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
  
 +// CraftBukkit start
 +import net.minecraft.server.MinecraftServer;
-+import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.entity.Zombie;
 +import org.bukkit.event.entity.CreatureSpawnEvent;
-+import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.entity.EntityCombustByEntityEvent;
 +import org.bukkit.event.entity.EntityTargetEvent;
 +import org.bukkit.event.entity.EntityTransformEvent;
@@ -18,7 +16,7 @@
  public class EntityZombie extends EntityMonster {
  
      private static final UUID SPEED_MODIFIER_BABY_UUID = UUID.fromString("B9766B59-9566-4402-BC1F-2EE2A276D836");
-@@ -85,6 +96,7 @@
+@@ -85,6 +94,7 @@
      private boolean canBreakDoors;
      private int inWaterTime;
      public int conversionTime;
@@ -26,7 +24,7 @@
  
      public EntityZombie(EntityTypes<? extends EntityZombie> entitytypes, World world) {
          super(entitytypes, world);
-@@ -201,7 +213,10 @@
+@@ -201,7 +211,10 @@
      public void tick() {
          if (!this.level.isClientSide && this.isAlive() && !this.isNoAi()) {
              if (this.isUnderWaterConverting()) {
@@ -38,7 +36,7 @@
                  if (this.conversionTime < 0) {
                      this.doUnderWaterConversion();
                  }
-@@ -218,6 +233,7 @@
+@@ -218,6 +231,7 @@
          }
  
          super.tick();
@@ -46,7 +44,7 @@
      }
  
      @Override
-@@ -233,7 +249,7 @@
+@@ -233,7 +247,7 @@
                          itemstack.setDamageValue(itemstack.getDamageValue() + this.random.nextInt(2));
                          if (itemstack.getDamageValue() >= itemstack.getMaxDamage()) {
                              this.broadcastBreakEvent(EnumItemSlot.HEAD);
@@ -55,7 +53,7 @@
                          }
                      }
  
-@@ -250,6 +266,7 @@
+@@ -250,6 +264,7 @@
      }
  
      public void startUnderWaterConversion(int i) {
@@ -63,7 +61,7 @@
          this.conversionTime = i;
          this.getEntityData().set(EntityZombie.DATA_DROWNED_CONVERSION_ID, true);
      }
-@@ -263,11 +280,15 @@
+@@ -263,11 +278,15 @@
      }
  
      protected void convertToZombieType(EntityTypes<? extends EntityZombie> entitytypes) {
@@ -80,7 +78,7 @@
          }
  
      }
-@@ -307,9 +328,9 @@
+@@ -307,9 +326,9 @@
                      if (SpawnerCreature.isSpawnPositionOk(entitypositiontypes_surface, this.level, blockposition, entitytypes) && EntityPositionTypes.checkSpawnRules(entitytypes, worldserver, EnumMobSpawn.REINFORCEMENT, blockposition, this.level.random)) {
                          entityzombie.setPos((double) i1, (double) j1, (double) k1);
                          if (!this.level.hasNearbyAlivePlayer((double) i1, (double) j1, (double) k1, 7.0D) && this.level.isUnobstructed(entityzombie) && this.level.noCollision((Entity) entityzombie) && !this.level.containsAnyLiquid(entityzombie.getBoundingBox())) {
@@ -92,7 +90,7 @@
                              this.getAttribute(GenericAttributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier("Zombie reinforcement caller charge", -0.05000000074505806D, AttributeModifier.Operation.ADDITION));
                              entityzombie.getAttribute(GenericAttributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier("Zombie reinforcement callee charge", -0.05000000074505806D, AttributeModifier.Operation.ADDITION));
                              break;
-@@ -330,7 +351,14 @@
+@@ -330,7 +349,14 @@
              float f = this.level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
  
              if (this.getMainHandItem().isEmpty() && this.isOnFire() && this.random.nextFloat() < f * 0.3F) {
@@ -108,7 +106,7 @@
              }
          }
  
-@@ -411,7 +439,12 @@
+@@ -411,7 +437,12 @@
              }
  
              EntityVillager entityvillager = (EntityVillager) entityliving;
@@ -122,7 +120,7 @@
  
              entityzombievillager.finalizeSpawn(worldserver, worldserver.getCurrentDifficultyAt(entityzombievillager.blockPosition()), EnumMobSpawn.CONVERSION, new EntityZombie.GroupDataZombie(false, true), (NBTTagCompound) null);
              entityzombievillager.setVillagerData(entityvillager.getVillagerData());
-@@ -473,7 +506,7 @@
+@@ -473,7 +504,7 @@
                          entitychicken1.finalizeSpawn(worldaccess, difficultydamagescaler, EnumMobSpawn.JOCKEY, (GroupDataEntity) null, (NBTTagCompound) null);
                          entitychicken1.setChickenJockey(true);
                          this.startRiding(entitychicken1);

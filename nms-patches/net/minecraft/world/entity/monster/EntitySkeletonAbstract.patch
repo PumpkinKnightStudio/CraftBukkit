@@ -1,18 +1,6 @@
 --- a/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
 +++ b/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
-@@ -44,6 +44,11 @@
- import net.minecraft.world.level.block.Blocks;
- import net.minecraft.world.level.block.state.IBlockData;
- 
-+// CraftBukkit start
-+import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.entity.EntityArmorChangeEvent;
-+// CraftBukkit end
-+
- public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
- 
-     private final PathfinderGoalBowShoot<EntitySkeletonAbstract> bowGoal = new PathfinderGoalBowShoot<>(this, 1.0D, 20, 15.0F);
-@@ -108,7 +113,7 @@
+@@ -108,7 +108,7 @@
                      itemstack.setDamageValue(itemstack.getDamageValue() + this.random.nextInt(2));
                      if (itemstack.getDamageValue() >= itemstack.getMaxDamage()) {
                          this.broadcastBreakEvent(EnumItemSlot.HEAD);
@@ -21,7 +9,7 @@
                      }
                  }
  
-@@ -194,8 +199,19 @@
+@@ -194,8 +194,19 @@
          double d3 = Math.sqrt(d0 * d0 + d2 * d2);
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.level.getDifficulty().getId() * 4));
