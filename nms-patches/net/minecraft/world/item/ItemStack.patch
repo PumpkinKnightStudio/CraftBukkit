@@ -284,10 +284,10 @@
 +                    // CraftBukkit start - Check for item breaking
 +                    if (this.count == 1) {
 +
-+                        if(t0 instanceof EntityHuman) {
++                        if (t0 instanceof EntityHuman) {
 +                            CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                        }
-+                        if(item instanceof ItemArmor){
++                        if (item instanceof ItemArmor) {
 +                            CraftEventFactory.callEntityEquipArmorEvent(t0, this, ItemStack.EMPTY, EntityArmorChangeEvent.ChangeReason.BREAK, ((ItemArmor) item).getSlot());
 +                        }
 +                    }

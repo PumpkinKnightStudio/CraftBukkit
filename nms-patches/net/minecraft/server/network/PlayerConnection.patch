@@ -1,14 +1,6 @@
 --- a/net/minecraft/server/network/PlayerConnection.java
 +++ b/net/minecraft/server/network/PlayerConnection.java
-@@ -126,6 +126,7 @@
- import net.minecraft.world.inventory.ContainerAnvil;
- import net.minecraft.world.inventory.ContainerBeacon;
- import net.minecraft.world.inventory.ContainerMerchant;
-+import net.minecraft.world.inventory.ContainerPlayer;
- import net.minecraft.world.inventory.ContainerRecipeBook;
- import net.minecraft.world.item.Item;
- import net.minecraft.world.item.ItemBlock;
-@@ -156,6 +157,63 @@
+@@ -156,6 +156,64 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
@@ -30,6 +22,7 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
++import net.minecraft.world.inventory.ContainerPlayer;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.craftbukkit.inventory.util.CraftEnumSlotConverter;
 +import org.bukkit.craftbukkit.util.CraftChatMessage;
