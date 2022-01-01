@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.entity.ai.gossip.ReputationType;
@@ -125,42 +126,55 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     }
 
     @Override
-    public int getReputation(OfflinePlayer player, GossipType gossipType) {
-        Preconditions.checkNotNull(player, "Player must not be null.");
-        return getReputation(player.getUniqueId(), gossipType);
-    }
-
-    @Override
-    public int getReputation(UUID uuid, GossipType gossipType) {
+    public int getReputation(UUID uuid, ReputationType reputationType) {
         Preconditions.checkNotNull(uuid, "UUID must not be null.");
-        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
-        return getHandle().getGossips().getReputation(uuid, reputationType -> reputationType == bukkitToNmsReputationType(gossipType));
+        Preconditions.checkNotNull(reputationType, "reputationType must not be null.");
+        return getHandle().getGossips().getReputation(uuid, nmsReputationType -> nmsReputationType == net.minecraft.world.entity.ai.gossip.ReputationType.toNMS(reputationType), false);
     }
 
     @Override
-    public void addReputation(OfflinePlayer player, GossipType gossipType, int amount) {
-        Preconditions.checkNotNull(player, "Player must not be null.");
-        addReputation(player.getUniqueId(), gossipType, amount);
-    }
-
-    @Override
-    public void addReputation(UUID uuid, GossipType gossipType, int amount) {
+    public int getWeightedReputation(UUID uuid, ReputationType reputationType) {
         Preconditions.checkNotNull(uuid, "UUID must not be null.");
-        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
-        getHandle().getGossips().add(uuid, bukkitToNmsReputationType(gossipType), amount);
+        Preconditions.checkNotNull(reputationType, "reputationType must not be null.");
+        return getHandle().getGossips().getReputation(uuid, nmsReputationType -> nmsReputationType == net.minecraft.world.entity.ai.gossip.ReputationType.toNMS(reputationType));
     }
 
     @Override
-    public void removeReputation(OfflinePlayer player, GossipType gossipType, int amount) {
-        Preconditions.checkNotNull(player, "Player must not be null.");
-        removeReputation(player.getUniqueId(), gossipType, amount);
-    }
-
-    @Override
-    public void removeReputation(UUID uuid, GossipType gossipType, int amount) {
+    public int getWeightedReputation(UUID uuid, Predicate<ReputationType> predicate) {
         Preconditions.checkNotNull(uuid, "UUID must not be null.");
-        Preconditions.checkNotNull(gossipType, "gossipType must not be null.");
-        getHandle().getGossips().remove(uuid, bukkitToNmsReputationType(gossipType), amount);
+        Preconditions.checkNotNull(predicate, "predicate must not be null.");
+        return getHandle().getGossips().getReputation(uuid, nmsReputationType -> predicate.test(nmsReputationType.toBukkit()));
+    }
+
+    @Override
+    public void addReputation(UUID uuid, ReputationType reputationType, int amount) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(reputationType, "reputationType must not be null.");
+        getHandle().getGossips().add(uuid, net.minecraft.world.entity.ai.gossip.ReputationType.toNMS(reputationType), amount);
+    }
+
+    @Override
+    public void removeReputation(UUID uuid, ReputationType reputationType, int amount) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(reputationType, "reputationType must not be null.");
+        getHandle().getGossips().remove(uuid, net.minecraft.world.entity.ai.gossip.ReputationType.toNMS(reputationType), amount);
+    }
+
+    @Override
+    public void setReputation(UUID uuid, ReputationType reputationType, int amount) {
+        Preconditions.checkNotNull(uuid, "UUID must not be null.");
+        Preconditions.checkNotNull(reputationType, "reputationType must not be null.");
+        getHandle().getGossips().set(uuid, net.minecraft.world.entity.ai.gossip.ReputationType.toNMS(reputationType), amount);
+    }
+
+    @Override
+    public void setGossipDecayTime(long ticks) {
+        getHandle().gossipDecayTime = ticks;
+    }
+
+    @Override
+    public long getGossipDecayTime() {
+        return getHandle().gossipDecayTime;
     }
 
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {
@@ -171,13 +185,4 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         return IRegistry.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
     }
 
-    public static ReputationType bukkitToNmsReputationType(GossipType gossipType) {
-        return switch (gossipType) {
-            case TRADING -> ReputationType.TRADING;
-            case MAJOR_NEGATIVE -> ReputationType.MAJOR_NEGATIVE;
-            case MINOR_NEGATIVE -> ReputationType.MINOR_NEGATIVE;
-            case MAJOR_POSITIVE -> ReputationType.MAJOR_POSITIVE;
-            case MINOR_POSITIVE -> ReputationType.MINOR_POSITIVE;
-        };
-    }
 }

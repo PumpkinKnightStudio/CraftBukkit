@@ -1,0 +1,130 @@
+--- a/net/minecraft/world/entity/ai/gossip/Reputation.java
++++ b/net/minecraft/world/entity/ai/gossip/Reputation.java
+@@ -16,6 +16,7 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Objects;
+ import java.util.Random;
+ import java.util.Set;
+ import java.util.UUID;
+@@ -27,6 +28,13 @@
+ import net.minecraft.core.MinecraftSerializableUUID;
+ import net.minecraft.util.VisibleForDebug;
+ 
++// CraftBukkit start
++import net.minecraft.world.entity.npc.EntityVillager;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.entity.Villager;
++import org.bukkit.event.entity.VillagerReputationDecayEvent;
++// CraftBukkit end
++
+ public class Reputation {
+ 
+     public static final int DISCARD_THRESHOLD = 2;
+@@ -46,18 +54,25 @@
+         return map;
+     }
+ 
+-    public void decay() {
+-        Iterator iterator = this.gossips.values().iterator();
++    // CraftBukkit - add EntityVillager to parameters
++    public void decay(EntityVillager villager) {
++        // CraftBukkit start
++        Iterator<Map.Entry<UUID, a>> iterator = this.gossips.entrySet().iterator();
+ 
+         while (iterator.hasNext()) {
+-            Reputation.a reputation_a = (Reputation.a) iterator.next();
++            Map.Entry<UUID, a> entry = iterator.next();
++            Reputation.a reputation_a = (Reputation.a) this.gossips.get(entry.getKey());
+ 
+-            reputation_a.decay();
+-            if (reputation_a.isEmpty()) {
+-                iterator.remove();
++            VillagerReputationDecayEvent event = CraftEventFactory.callVillagerReputationDecayEvent(villager, entry.getKey());
++
++            if (!event.isCancelled()) {
++                reputation_a.decay(event.getDecayAmounts());
++                if (reputation_a.isEmpty()) {
++                    iterator.remove();
++                }
+             }
+         }
+-
++        // CraftBukkit end
+     }
+ 
+     private Stream<Reputation.b> unpack() {
+@@ -114,11 +129,17 @@
+         });
+     }
+ 
+-    public int getReputation(UUID uuid, Predicate<ReputationType> predicate) {
+-        Reputation.a reputation_a = (Reputation.a) this.gossips.get(uuid);
++    // CraftBukkit start
++    public int getReputation(UUID uuid, Predicate<ReputationType> predicate, boolean weighted) {
++        a reputation_a = (a) this.gossips.get(uuid);
++
++        return reputation_a != null ? (weighted ? reputation_a.weightedValue(predicate) : reputation_a.value(predicate)) : 0;
++    }
+ 
+-        return reputation_a != null ? reputation_a.weightedValue(predicate) : 0;
++    public int getReputation(UUID uuid, Predicate<ReputationType> predicate) {
++       return getReputation(uuid, predicate, true);
+     }
++    // CraftBukkit end
+ 
+     public long getCountForType(ReputationType reputationtype, DoublePredicate doublepredicate) {
+         return this.gossips.values().stream().filter((reputation_a) -> {
+@@ -169,6 +190,18 @@
+ 
+     }
+ 
++    // CraftBukkit start
++    public void set(UUID uuid, ReputationType reputationtype, int i) {
++        Reputation.a reputation_a = this.getOrCreate(uuid);
++
++        reputation_a.entries.put(reputationtype, i);
++        reputation_a.makeSureValueIsntTooLowOrTooHigh(reputationtype);
++        if (reputation_a.isEmpty()) {
++            this.gossips.remove(uuid);
++        }
++    }
++    // CraftBukkit end
++
+     public <T> Dynamic<T> store(DynamicOps<T> dynamicops) {
+         return new Dynamic(dynamicops, dynamicops.createList(this.unpack().map((reputation_b) -> {
+             return reputation_b.store(dynamicops);
+@@ -207,18 +240,30 @@
+             }).sum();
+         }
+ 
++        // CraftBukkit start
++        public int value(Predicate<ReputationType> predicate) {
++            return this.entries.object2IntEntrySet().stream().filter((entry) -> {
++                return predicate.test((ReputationType) entry.getKey());
++            }).mapToInt((entry) -> {
++                return entry.getIntValue();
++            }).sum();
++        }
++        // CraftBukkit end
++
+         public Stream<Reputation.b> unpack(UUID uuid) {
+             return this.entries.object2IntEntrySet().stream().map((entry) -> {
+                 return new Reputation.b(uuid, (ReputationType) entry.getKey(), entry.getIntValue());
+             });
+         }
+ 
+-        public void decay() {
++        // CraftBukkit - add variable decay amounts
++        public void decay(Map<Villager.ReputationType, Integer> decayAmounts) {
+             ObjectIterator objectiterator = this.entries.object2IntEntrySet().iterator();
+ 
+             while (objectiterator.hasNext()) {
+                 Entry<ReputationType> entry = (Entry) objectiterator.next();
+-                int i = entry.getIntValue() - ((ReputationType) entry.getKey()).decayPerDay;
++                Integer decaysPerDay = decayAmounts.getOrDefault(entry.getKey().toBukkit(), entry.getKey().decayPerDay);
++                int i = entry.getIntValue() - Objects.requireNonNullElse(decaysPerDay, entry.getKey().decayPerDay);
+ 
+                 if (i < 2) {
+                     objectiterator.remove();

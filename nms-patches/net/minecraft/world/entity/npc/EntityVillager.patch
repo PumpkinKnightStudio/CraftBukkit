@@ -1,21 +1,34 @@
 --- a/net/minecraft/world/entity/npc/EntityVillager.java
 +++ b/net/minecraft/world/entity/npc/EntityVillager.java
-@@ -89,6 +89,14 @@
+@@ -89,6 +89,17 @@
  import net.minecraft.world.phys.AxisAlignedBB;
  import org.apache.logging.log4j.Logger;
  
 +// CraftBukkit start
++import com.google.common.collect.Maps;
 +import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.entity.CraftVillager;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.entity.Villager;
 +import org.bukkit.event.entity.EntityTransformEvent;
++import org.bukkit.event.entity.EntityVillagerReputationEvent;
 +import org.bukkit.event.entity.VillagerReplenishTradeEvent;
 +// CraftBukkit end
 +
  public class EntityVillager extends EntityVillagerAbstract implements ReputationHandler, VillagerDataHolder {
  
      private static final DataWatcherObject<VillagerData> DATA_VILLAGER_DATA = DataWatcher.defineId(EntityVillager.class, DataWatcherRegistry.VILLAGER_DATA);
-@@ -146,7 +154,7 @@
+@@ -130,6 +141,9 @@
+     }, MemoryModuleType.MEETING_POINT, (entityvillager, villageplacetype) -> {
+         return villageplacetype == VillagePlaceType.MEETING;
+     });
++    // CraftBukkit start
++    public long gossipDecayTime = 24000L;
++    // CraftBukkit end
+ 
+     public EntityVillager(EntityTypes<? extends EntityVillager> entitytypes, World world) {
+         this(entitytypes, world, VillagerType.PLAINS);
+@@ -146,7 +160,7 @@
  
      @Override
      public BehaviorController<EntityVillager> getBrain() {
@@ -24,7 +37,7 @@
      }
  
      @Override
-@@ -229,7 +237,7 @@
+@@ -229,7 +243,7 @@
                      this.increaseProfessionLevelOnUpdate = false;
                  }
  
@@ -33,7 +46,7 @@
              }
          }
  
-@@ -445,7 +453,14 @@
+@@ -445,7 +459,14 @@
              while (iterator.hasNext()) {
                  MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
  
@@ -49,7 +62,7 @@
              }
          }
  
-@@ -474,7 +489,7 @@
+@@ -474,7 +495,7 @@
      @Override
      public void addAdditionalSaveData(NBTTagCompound nbttagcompound) {
          super.addAdditionalSaveData(nbttagcompound);
@@ -58,7 +71,7 @@
          Logger logger = EntityVillager.LOGGER;
  
          Objects.requireNonNull(logger);
-@@ -816,7 +831,12 @@
+@@ -816,7 +837,12 @@
              }
  
              entitywitch.setPersistenceRequired();
@@ -72,7 +85,7 @@
              this.releaseAllPois();
              this.discard();
          } else {
-@@ -837,6 +857,13 @@
+@@ -837,6 +863,13 @@
                  return;
              }
  
@@ -86,7 +99,18 @@
              this.onItemPickup(entityitem);
              this.take(entityitem, itemstack.getCount());
              ItemStack itemstack1 = inventorysubcontainer.addItem(itemstack);
-@@ -949,7 +976,7 @@
+@@ -907,8 +940,8 @@
+ 
+         if (this.lastGossipDecayTime == 0L) {
+             this.lastGossipDecayTime = i;
+-        } else if (i >= this.lastGossipDecayTime + 24000L) {
+-            this.gossips.decay();
++        } else if (i >= this.lastGossipDecayTime + gossipDecayTime) { // CraftBukkit - add gossipDecayTime variable
++            this.gossips.decay(this); // CraftBukkit - add EntityVillager to parameters
+             this.lastGossipDecayTime = i;
+         }
+     }
+@@ -949,7 +982,7 @@
  
                  if (entityirongolem != null) {
                      if (entityirongolem.checkSpawnRules(worldserver, EnumMobSpawn.MOB_SUMMONED) && entityirongolem.checkSpawnObstruction(worldserver)) {
@@ -95,7 +119,44 @@
                          return entityirongolem;
                      }
  
-@@ -1027,7 +1054,7 @@
+@@ -983,17 +1016,31 @@
+ 
+     @Override
+     public void onReputationEventFrom(ReputationEvent reputationevent, Entity entity) {
++        // CraftBukkit start - add event for Villager Reputation
++        Map<Villager.ReputationType, Integer> reputationTypeAmounts = Maps.newHashMap();
++
+         if (reputationevent == ReputationEvent.ZOMBIE_VILLAGER_CURED) {
+-            this.gossips.add(entity.getUUID(), ReputationType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(entity.getUUID(), ReputationType.MINOR_POSITIVE, 25);
++            reputationTypeAmounts.put(Villager.ReputationType.MAJOR_POSITIVE, 20);
++            reputationTypeAmounts.put(Villager.ReputationType.MINOR_POSITIVE, 25);
+         } else if (reputationevent == ReputationEvent.TRADE) {
+-            this.gossips.add(entity.getUUID(), ReputationType.TRADING, 2);
++            reputationTypeAmounts.put(Villager.ReputationType.TRADING, 2);
+         } else if (reputationevent == ReputationEvent.VILLAGER_HURT) {
+-            this.gossips.add(entity.getUUID(), ReputationType.MINOR_NEGATIVE, 25);
++            reputationTypeAmounts.put(Villager.ReputationType.MINOR_NEGATIVE, 25);
+         } else if (reputationevent == ReputationEvent.VILLAGER_KILLED) {
+-            this.gossips.add(entity.getUUID(), ReputationType.MAJOR_NEGATIVE, 25);
++            reputationTypeAmounts.put(Villager.ReputationType.MAJOR_NEGATIVE, 25);
+         }
+ 
++        EntityVillagerReputationEvent event = CraftEventFactory.callEntityVillagerReputationEvent(entity, this, reputationevent, reputationTypeAmounts);
++
++        if (event.isCancelled())
++            return;
++
++        for (Map.Entry<Villager.ReputationType, Integer> entry : event.getReputationTypeAmounts().entrySet()) {
++            if (Objects.nonNull(entry.getValue())) {
++                this.gossips.add(entity.getUUID(), ReputationType.toNMS(entry.getKey()), entry.getValue());
++            }
++        }
++        // CraftBukit end
+     }
+ 
+     @Override
+@@ -1027,7 +1074,7 @@
      @Override
      public void startSleeping(BlockPosition blockposition) {
          super.startSleeping(blockposition);
@@ -104,7 +165,7 @@
          this.brain.eraseMemory(MemoryModuleType.WALK_TARGET);
          this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
      }
-@@ -1035,7 +1062,7 @@
+@@ -1035,7 +1082,7 @@
      @Override
      public void stopSleeping() {
          super.stopSleeping();

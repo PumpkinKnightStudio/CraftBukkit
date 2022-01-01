@@ -1,0 +1,42 @@
+--- a/net/minecraft/world/entity/ai/village/ReputationEvent.java
++++ b/net/minecraft/world/entity/ai/village/ReputationEvent.java
+@@ -1,18 +1,33 @@
+ package net.minecraft.world.entity.ai.village;
+ 
++import org.bukkit.event.entity.EntityVillagerReputationEvent;
++
+ public interface ReputationEvent {
+ 
+-    ReputationEvent ZOMBIE_VILLAGER_CURED = register("zombie_villager_cured");
+-    ReputationEvent GOLEM_KILLED = register("golem_killed");
+-    ReputationEvent VILLAGER_HURT = register("villager_hurt");
+-    ReputationEvent VILLAGER_KILLED = register("villager_killed");
+-    ReputationEvent TRADE = register("trade");
++    // CraftBukkit start - added bukkit parameter
++    ReputationEvent ZOMBIE_VILLAGER_CURED = register("zombie_villager_cured", EntityVillagerReputationEvent.ReputationEvent.ZOMBIE_VILLAGER_CURED);
++    ReputationEvent GOLEM_KILLED = register("golem_killed", EntityVillagerReputationEvent.ReputationEvent.GOLEM_KILLED);
++    ReputationEvent VILLAGER_HURT = register("villager_hurt", EntityVillagerReputationEvent.ReputationEvent.VILLAGER_HURT);
++    ReputationEvent VILLAGER_KILLED = register("villager_killed", EntityVillagerReputationEvent.ReputationEvent.VILLAGER_KILLED);
++    ReputationEvent TRADE = register("trade", EntityVillagerReputationEvent.ReputationEvent.TRADE);
++    // CraftBukkit end
+ 
+-    static ReputationEvent register(final String s) {
++    // CraftBukkit added bukkit parameter
++    static ReputationEvent register(final String s, EntityVillagerReputationEvent.ReputationEvent bukkitReputationEvent) {
+         return new ReputationEvent() {
+             public String toString() {
+                 return s;
+             }
++
++            // CraftBukkit start
++            public EntityVillagerReputationEvent.ReputationEvent toBukkit() {
++                return bukkitReputationEvent;
++            }
++            // CraftBukkit end
+         };
+     }
++
++    // CraftBukkit start
++    EntityVillagerReputationEvent.ReputationEvent toBukkit();
++    // CraftBukkit end
+ }

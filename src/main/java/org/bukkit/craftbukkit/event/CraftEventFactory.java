@@ -6,10 +6,12 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPosition;
@@ -31,6 +33,8 @@ import net.minecraft.world.entity.EntityExperienceOrb;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.gossip.ReputationType;
+import net.minecraft.world.entity.ai.village.ReputationEvent;
 import net.minecraft.world.entity.animal.EntityAnimal;
 import net.minecraft.world.entity.animal.EntityFish;
 import net.minecraft.world.entity.animal.EntityGolem;
@@ -174,6 +178,7 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
+import org.bukkit.event.entity.EntityVillagerReputationEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.entity.FireworkExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -191,6 +196,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.StriderTemperatureChangeEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
+import org.bukkit.event.entity.VillagerReputationDecayEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
@@ -551,6 +557,30 @@ public class CraftEventFactory {
      */
     public static VillagerCareerChangeEvent callVillagerCareerChangeEvent(EntityVillager vilager, Profession future, VillagerCareerChangeEvent.ChangeReason reason) {
         VillagerCareerChangeEvent event = new VillagerCareerChangeEvent((Villager) vilager.getBukkitEntity(), future, reason);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    /**
+     * EntityVillagerReputationEvent
+     */
+    public static EntityVillagerReputationEvent callEntityVillagerReputationEvent(Entity entity, EntityVillager villager, ReputationEvent reputationEvent, Map<Villager.ReputationType, Integer> reputationTypeAmounts) {
+        EntityVillagerReputationEvent event = new EntityVillagerReputationEvent(entity.getBukkitEntity(), (Villager) villager.getBukkitEntity(), reputationEvent.toBukkit(), reputationTypeAmounts);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    /**
+     * VillagerReputationDecayEvent
+     */
+    public static VillagerReputationDecayEvent callVillagerReputationDecayEvent(EntityVillager villager, UUID uuid) {
+        // Generates the default map of decay amounts for each ReputationType.
+        Map<Villager.ReputationType, Integer> decayAmounts = Arrays.stream(net.minecraft.world.entity.ai.gossip.ReputationType.values())
+                .collect(Collectors.toMap(ReputationType::toBukkit, reputationType -> reputationType.decayPerDay));
+
+        VillagerReputationDecayEvent event = new VillagerReputationDecayEvent((Villager) villager.getBukkitEntity(), uuid, decayAmounts);
         Bukkit.getPluginManager().callEvent(event);
 
         return event;

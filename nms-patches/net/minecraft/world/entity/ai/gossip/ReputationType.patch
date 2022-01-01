@@ -1,0 +1,43 @@
+--- a/net/minecraft/world/entity/ai/gossip/ReputationType.java
++++ b/net/minecraft/world/entity/ai/gossip/ReputationType.java
+@@ -1,8 +1,13 @@
+ package net.minecraft.world.entity.ai.gossip;
+ 
+ import com.google.common.collect.ImmutableMap;
++import org.bukkit.entity.Villager;
++
++import java.util.Arrays;
++import java.util.List;
+ import java.util.Map;
+ import java.util.function.Function;
++import java.util.stream.Collectors;
+ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
+ 
+@@ -34,4 +39,26 @@
+     public static ReputationType byId(String s) {
+         return (ReputationType) ReputationType.BY_ID.get(s);
+     }
++
++    // CraftBukkit start
++    public Villager.ReputationType toBukkit() {
++        return switch (this) {
++            case MAJOR_NEGATIVE -> Villager.ReputationType.MAJOR_NEGATIVE;
++            case MINOR_NEGATIVE -> Villager.ReputationType.MINOR_NEGATIVE;
++            case MINOR_POSITIVE -> Villager.ReputationType.MINOR_POSITIVE;
++            case MAJOR_POSITIVE -> Villager.ReputationType.MAJOR_POSITIVE;
++            case TRADING -> Villager.ReputationType.TRADING;
++        };
++    }
++
++    public static ReputationType toNMS(Villager.ReputationType reputationType) {
++        return switch (reputationType) {
++            case MAJOR_NEGATIVE -> MAJOR_NEGATIVE;
++            case MINOR_NEGATIVE -> MINOR_NEGATIVE;
++            case MINOR_POSITIVE -> MINOR_POSITIVE;
++            case MAJOR_POSITIVE -> MAJOR_POSITIVE;
++            case TRADING -> TRADING;
++        };
++    }
++    // CraftBukkit end
+ }
