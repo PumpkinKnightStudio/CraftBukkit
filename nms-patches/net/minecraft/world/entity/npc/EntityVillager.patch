@@ -46,23 +46,37 @@
              }
          }
  
-@@ -445,7 +459,14 @@
+@@ -357,7 +371,13 @@
+         while (iterator.hasNext()) {
+             MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
+ 
+-            merchantrecipe.resetUses();
++            // CraftBukkit start
++            VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit());
++            Bukkit.getPluginManager().callEvent(event);
++            if (!event.isCancelled()) {
++                merchantrecipe.resetUses();
++            }
++            // CraftBukkit end
+         }
+ 
+         this.lastRestockGameTime = this.level.getGameTime();
+@@ -415,7 +435,13 @@
              while (iterator.hasNext()) {
                  MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
  
--                merchantrecipe.addToSpecialPriceDiff(-MathHelper.floor((float) i * merchantrecipe.getPriceMultiplier()));
+-                merchantrecipe.resetUses();
 +                // CraftBukkit start
-+                int bonus = -MathHelper.floor((float) i * merchantrecipe.getPriceMultiplier());
-+                VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit(), bonus);
++                VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit());
 +                Bukkit.getPluginManager().callEvent(event);
 +                if (!event.isCancelled()) {
-+                    merchantrecipe.addToSpecialPriceDiff(event.getBonus());
++                    merchantrecipe.resetUses();
 +                }
 +                // CraftBukkit end
              }
          }
  
-@@ -474,7 +495,7 @@
+@@ -474,7 +500,7 @@
      @Override
      public void addAdditionalSaveData(NBTTagCompound nbttagcompound) {
          super.addAdditionalSaveData(nbttagcompound);
@@ -71,7 +85,7 @@
          Logger logger = EntityVillager.LOGGER;
  
          Objects.requireNonNull(logger);
-@@ -816,7 +837,12 @@
+@@ -816,7 +842,12 @@
              }
  
              entitywitch.setPersistenceRequired();
@@ -85,7 +99,7 @@
              this.releaseAllPois();
              this.discard();
          } else {
-@@ -837,6 +863,13 @@
+@@ -837,6 +868,13 @@
                  return;
              }
  
@@ -99,7 +113,7 @@
              this.onItemPickup(entityitem);
              this.take(entityitem, itemstack.getCount());
              ItemStack itemstack1 = inventorysubcontainer.addItem(itemstack);
-@@ -907,8 +940,8 @@
+@@ -907,8 +945,8 @@
  
          if (this.lastGossipDecayTime == 0L) {
              this.lastGossipDecayTime = i;
@@ -110,7 +124,7 @@
              this.lastGossipDecayTime = i;
          }
      }
-@@ -949,7 +982,7 @@
+@@ -949,7 +987,7 @@
  
                  if (entityirongolem != null) {
                      if (entityirongolem.checkSpawnRules(worldserver, EnumMobSpawn.MOB_SUMMONED) && entityirongolem.checkSpawnObstruction(worldserver)) {
@@ -119,7 +133,7 @@
                          return entityirongolem;
                      }
  
-@@ -983,17 +1016,31 @@
+@@ -983,17 +1021,31 @@
  
      @Override
      public void onReputationEventFrom(ReputationEvent reputationevent, Entity entity) {
@@ -156,7 +170,7 @@
      }
  
      @Override
-@@ -1027,7 +1074,7 @@
+@@ -1027,7 +1079,7 @@
      @Override
      public void startSleeping(BlockPosition blockposition) {
          super.startSleeping(blockposition);
@@ -165,7 +179,7 @@
          this.brain.eraseMemory(MemoryModuleType.WALK_TARGET);
          this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
      }
-@@ -1035,7 +1082,7 @@
+@@ -1035,7 +1087,7 @@
      @Override
      public void stopSleeping() {
          super.stopSleeping();
