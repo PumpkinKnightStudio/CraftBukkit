@@ -1386,6 +1386,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         ATTRIBUTES_UUID_LOW.NBT,
                         ATTRIBUTES_SLOT.NBT,
                         CraftMetaMap.MAP_SCALING.NBT,
+                        CraftMetaMap.MAP_COLOR.NBT,
                         CraftMetaMap.MAP_ID.NBT,
                         CraftMetaPotion.POTION_EFFECTS.NBT,
                         CraftMetaPotion.DEFAULT_POTION.NBT,

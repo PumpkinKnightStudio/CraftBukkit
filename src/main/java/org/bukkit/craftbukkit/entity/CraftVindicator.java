@@ -19,4 +19,14 @@ public class CraftVindicator extends CraftIllager implements Vindicator {
     public String toString() {
         return "CraftVindicator";
     }
+
+    @Override
+    public boolean isJohnny() {
+        return getHandle().isJohnny;
+    }
+
+    @Override
+    public void setJohnny(boolean johnny) {
+        getHandle().isJohnny = johnny;
+    }
 }
