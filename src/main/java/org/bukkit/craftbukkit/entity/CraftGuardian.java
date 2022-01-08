@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityGuardian;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Guardian;
 import org.bukkit.entity.LivingEntity;
 
@@ -20,11 +19,6 @@ public class CraftGuardian extends CraftMonster implements Guardian {
     @Override
     public String toString() {
         return "CraftGuardian";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.GUARDIAN;
     }
 
     @Override

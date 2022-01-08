@@ -13,7 +13,6 @@ import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.entity.ComplexEntityPart;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragon.Phase;
-import org.bukkit.entity.EntityType;
 
 public class CraftEnderDragon extends CraftComplexLivingEntity implements EnderDragon {
 
@@ -40,11 +39,6 @@ public class CraftEnderDragon extends CraftComplexLivingEntity implements EnderD
     @Override
     public String toString() {
         return "CraftEnderDragon";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ENDER_DRAGON;
     }
 
     @Override

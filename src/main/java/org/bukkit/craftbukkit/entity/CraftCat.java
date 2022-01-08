@@ -7,7 +7,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Cat.Type;
-import org.bukkit.entity.EntityType;
 
 public class CraftCat extends CraftTameableAnimal implements Cat {
 
@@ -18,11 +17,6 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
     @Override
     public EntityCat getHandle() {
         return (EntityCat) super.getHandle();
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.CAT;
     }
 
     @Override

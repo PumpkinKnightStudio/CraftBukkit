@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 
@@ -30,11 +29,6 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
     @Override
     public String toString() {
         return "CraftVillagerZombie";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ZOMBIE_VILLAGER;
     }
 
     @Override

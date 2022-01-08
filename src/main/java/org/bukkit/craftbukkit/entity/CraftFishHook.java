@@ -6,7 +6,6 @@ import net.minecraft.world.entity.projectile.EntityFishingHook;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.FishHook.HookState;
 
@@ -25,11 +24,6 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
     @Override
     public String toString() {
         return "CraftFishingHook";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.FISHING_BOBBER;
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityVindicator;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Vindicator;
 
 public class CraftVindicator extends CraftIllager implements Vindicator {
@@ -19,10 +18,5 @@ public class CraftVindicator extends CraftIllager implements Vindicator {
     @Override
     public String toString() {
         return "CraftVindicator";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.VINDICATOR;
     }
 }

@@ -166,6 +166,7 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftVector;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pose;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -186,12 +187,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     protected final CraftServer server;
     protected Entity entity;
+    private final EntityType entityType;
     private EntityDamageEvent lastDamageEvent;
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
         this.entity = entity;
+        this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
     }
 
     public static CraftEntity getEntity(CraftServer server, Entity entity) {
@@ -729,6 +732,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     public Entity getHandle() {
         return entity;
+    }
+
+    @Override
+    public EntityType getType() {
+        return entityType;
     }
 
     @Override
