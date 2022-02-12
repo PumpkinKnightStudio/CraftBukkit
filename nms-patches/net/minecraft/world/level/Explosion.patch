@@ -82,59 +82,102 @@
                          double d14 = d13;
  
                          if (entity instanceof EntityLiving) {
-@@ -259,6 +302,51 @@
+@@ -246,6 +289,74 @@
  
-             Collections.shuffle(this.toBlow, this.level.random);
-             Iterator iterator = this.toBlow.iterator();
-+            // CraftBukkit start
-+            org.bukkit.World bworld = this.level.getWorld();
-+            org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
-+            Location location = new Location(bworld, this.x, this.y, this.z);
-+
-+            List<org.bukkit.block.Block> blockList = Lists.newArrayList();
-+            for (int i1 = this.toBlow.size() - 1; i1 >= 0; i1--) {
-+                BlockPosition cpos = (BlockPosition) this.toBlow.get(i1);
-+                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
-+                if (!bblock.getType().isAir()) {
-+                    blockList.add(bblock);
-+                }
-+            }
-+
-+            boolean cancelled;
-+            List<org.bukkit.block.Block> bukkitBlocks;
-+            float yield;
-+
-+            if (explode != null) {
-+                EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
-+                this.level.getCraftServer().getPluginManager().callEvent(event);
-+                cancelled = event.isCancelled();
-+                bukkitBlocks = event.blockList();
-+                yield = event.getYield();
+         boolean flag1 = this.blockInteraction != Explosion.Effect.NONE;
+ 
++        /* CraftBukkit start - show particle code below, not here
++        if (flag) {
++            if (this.radius >= 2.0F && flag1) {
++                this.level.addParticle(Particles.EXPLOSION_EMITTER, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
 +            } else {
-+                BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
-+                this.level.getCraftServer().getPluginManager().callEvent(event);
-+                cancelled = event.isCancelled();
-+                bukkitBlocks = event.blockList();
-+                yield = event.getYield();
++                this.level.addParticle(Particles.EXPLOSION, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
 +            }
++        }
++        // CraftBukkit end */
 +
++        // CraftBukkit start - Run ExplodeEvent run in any cases
++        Collections.shuffle(this.toBlow, this.level.random);
++        if (!flag1) {
 +            this.toBlow.clear();
++        }
++        Iterator iterator = this.toBlow.iterator();
++        ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist = new ObjectArrayList();
++        org.bukkit.World bworld = this.level.getWorld();
++        org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
++        Location location = new Location(bworld, this.x, this.y, this.z);
 +
-+            for (org.bukkit.block.Block bblock : bukkitBlocks) {
-+                BlockPosition coords = new BlockPosition(bblock.getX(), bblock.getY(), bblock.getZ());
-+                toBlow.add(coords);
++        List<org.bukkit.block.Block> blockList = Lists.newArrayList();
++        for (int i1 = this.toBlow.size() - 1; i1 >= 0; i1--) {
++            BlockPosition cpos = (BlockPosition) this.toBlow.get(i1);
++            org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
++            if (!bblock.getType().isAir()) {
++                blockList.add(bblock);
 +            }
++        }
 +
-+            if (cancelled) {
-+                this.wasCanceled = true;
-+                return;
-+            }
-+            // CraftBukkit end
++        boolean cancelled;
++        List<org.bukkit.block.Block> bukkitBlocks;
++        float yield = 0;
++
++        if (this.blockInteraction == Explosion.Effect.DESTROY) {
++            yield = 1.0F / this.radius;
++        } else if (this.blockInteraction == Explosion.Effect.BREAK) {
++            yield = 1.0F;
++        }
++
++        if (explode != null) {
++            EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
++            this.level.getCraftServer().getPluginManager().callEvent(event);
++            cancelled = event.isCancelled();
++            bukkitBlocks = event.blockList();
++            yield = event.getYield();
++        } else {
++            BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, this.blockInteraction == Explosion.Effect.DESTROY ? 1.0F / this.radius : 1.0F);
++            this.level.getCraftServer().getPluginManager().callEvent(event);
++            cancelled = event.isCancelled();
++            bukkitBlocks = event.blockList();
++            yield = event.getYield();
++        }
++
++        this.toBlow.clear();
++
++        for (org.bukkit.block.Block bblock : bukkitBlocks) {
++            BlockPosition coords = new BlockPosition(bblock.getX(), bblock.getY(), bblock.getZ());
++            toBlow.add(coords);
++        }
++
++        if (cancelled) {
++            this.wasCanceled = true;
++            return;
++        }
++
++        flag1 = !this.toBlow.isEmpty(); // Override this in base of blocks to destroy
++
+         if (flag) {
+             if (this.radius >= 2.0F && flag1) {
+                 this.level.addParticle(Particles.EXPLOSION_EMITTER, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
+@@ -253,12 +364,16 @@
+                 this.level.addParticle(Particles.EXPLOSION, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
+             }
+         }
++        // CraftBukkit end
+ 
+         if (flag1) {
+-            ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist = new ObjectArrayList();
++            /* CraftBukkit start - move this code above
++            // ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist = new ObjectArrayList();
+ 
+-            Collections.shuffle(this.toBlow, this.level.random);
+-            Iterator iterator = this.toBlow.iterator();
++            // Collections.shuffle(this.toBlow, this.level.random);
++            // Iterator iterator = this.toBlow.iterator();
++            CraftBukkit end */
 +            iterator = this.toBlow.iterator();
  
              while (iterator.hasNext()) {
                  BlockPosition blockposition = (BlockPosition) iterator.next();
-@@ -273,8 +361,8 @@
+@@ -273,8 +388,8 @@
                          TileEntity tileentity = iblockdata.hasBlockEntity() ? this.level.getBlockEntity(blockposition) : null;
                          LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.level)).withRandom(this.level.random).withParameter(LootContextParameters.ORIGIN, Vec3D.atCenterOf(blockposition)).withParameter(LootContextParameters.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParameters.BLOCK_ENTITY, tileentity).withOptionalParameter(LootContextParameters.THIS_ENTITY, this.source);
  
@@ -145,7 +188,7 @@
                          }
  
                          iblockdata.getDrops(loottableinfo_builder).forEach((itemstack) -> {
-@@ -304,7 +392,11 @@
+@@ -304,7 +419,11 @@
                  BlockPosition blockposition2 = (BlockPosition) iterator1.next();
  
                  if (this.random.nextInt(3) == 0 && this.level.getBlockState(blockposition2).isAir() && this.level.getBlockState(blockposition2.below()).isSolidRender(this.level, blockposition2.below())) {
@@ -158,7 +201,7 @@
                  }
              }
          }
-@@ -312,6 +404,7 @@
+@@ -312,6 +431,7 @@
      }
  
      private static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPosition>> objectarraylist, ItemStack itemstack, BlockPosition blockposition) {
