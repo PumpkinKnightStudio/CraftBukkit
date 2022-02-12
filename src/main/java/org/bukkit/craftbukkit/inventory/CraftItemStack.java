@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -25,7 +26,7 @@ public final class CraftItemStack extends ItemStack {
     public static net.minecraft.world.item.ItemStack asNMSCopy(ItemStack original) {
         if (original instanceof CraftItemStack) {
             CraftItemStack stack = (CraftItemStack) original;
-            return stack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : stack.handle.cloneItemStack();
+            return stack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : stack.handle.copy();
         }
         if (original == null || original.getType() == Material.AIR) {
             return net.minecraft.world.item.ItemStack.EMPTY;
@@ -45,7 +46,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     public static net.minecraft.world.item.ItemStack copyNMSStack(net.minecraft.world.item.ItemStack original, int amount) {
-        net.minecraft.world.item.ItemStack stack = original.cloneItemStack();
+        net.minecraft.world.item.ItemStack stack = original.copy();
         stack.setCount(amount);
         return stack;
     }
@@ -71,7 +72,7 @@ public final class CraftItemStack extends ItemStack {
     public static CraftItemStack asCraftCopy(ItemStack original) {
         if (original instanceof CraftItemStack) {
             CraftItemStack stack = (CraftItemStack) original;
-            return new CraftItemStack(stack.handle == null ? null : stack.handle.cloneItemStack());
+            return new CraftItemStack(stack.handle == null ? null : stack.handle.copy());
         }
         return new CraftItemStack(original);
     }
@@ -155,14 +156,14 @@ public final class CraftItemStack extends ItemStack {
     public void setDurability(final short durability) {
         // Ignore damage if item is null
         if (handle != null) {
-            handle.setDamage(durability);
+            handle.setDamageValue(durability);
         }
     }
 
     @Override
     public short getDurability() {
         if (handle != null) {
-            return (short) handle.getDamage();
+            return (short) handle.getDamageValue();
         } else {
             return -1;
         }
@@ -183,21 +184,21 @@ public final class CraftItemStack extends ItemStack {
         NBTTagList list = getEnchantmentList(handle);
         if (list == null) {
             list = new NBTTagList();
-            handle.getTag().set(ENCHANTMENTS.NBT, list);
+            handle.getTag().put(ENCHANTMENTS.NBT, list);
         }
         int size = list.size();
 
         for (int i = 0; i < size; i++) {
             NBTTagCompound tag = (NBTTagCompound) list.get(i);
             String id = tag.getString(ENCHANTMENTS_ID.NBT);
-            if (id.equals(ench.getKey().toString())) {
-                tag.setShort(ENCHANTMENTS_LVL.NBT, (short) level);
+            if (ench.getKey().equals(NamespacedKey.fromString(id))) {
+                tag.putShort(ENCHANTMENTS_LVL.NBT, (short) level);
                 return;
             }
         }
         NBTTagCompound tag = new NBTTagCompound();
-        tag.setString(ENCHANTMENTS_ID.NBT, ench.getKey().toString());
-        tag.setShort(ENCHANTMENTS_LVL.NBT, (short) level);
+        tag.putString(ENCHANTMENTS_ID.NBT, ench.getKey().toString());
+        tag.putShort(ENCHANTMENTS_LVL.NBT, (short) level);
         list.add(tag);
     }
 
@@ -224,7 +225,7 @@ public final class CraftItemStack extends ItemStack {
         if (handle == null) {
             return 0;
         }
-        return EnchantmentManager.getEnchantmentLevel(CraftEnchantment.getRaw(ench), handle);
+        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.getRaw(ench), handle);
     }
 
     @Override
@@ -242,7 +243,7 @@ public final class CraftItemStack extends ItemStack {
         for (int i = 0; i < size; i++) {
             NBTTagCompound enchantment = (NBTTagCompound) list.get(i);
             String id = enchantment.getString(ENCHANTMENTS_ID.NBT);
-            if (id.equals(ench.getKey().toString())) {
+            if (ench.getKey().equals(NamespacedKey.fromString(id))) {
                 index = i;
                 level = 0xffff & enchantment.getShort(ENCHANTMENTS_LVL.NBT);
                 break;
@@ -267,7 +268,7 @@ public final class CraftItemStack extends ItemStack {
                 listCopy.add(list.get(i));
             }
         }
-        handle.getTag().set(ENCHANTMENTS.NBT, listCopy);
+        handle.getTag().put(ENCHANTMENTS.NBT, listCopy);
 
         return level;
     }
@@ -278,7 +279,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     static Map<Enchantment, Integer> getEnchantments(net.minecraft.world.item.ItemStack item) {
-        NBTTagList list = (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
+        NBTTagList list = (item != null && item.isEnchanted()) ? item.getEnchantmentTags() : null;
 
         if (list == null || list.size() == 0) {
             return ImmutableMap.of();
@@ -300,14 +301,14 @@ public final class CraftItemStack extends ItemStack {
     }
 
     static NBTTagList getEnchantmentList(net.minecraft.world.item.ItemStack item) {
-        return (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
+        return (item != null && item.isEnchanted()) ? item.getEnchantmentTags() : null;
     }
 
     @Override
     public CraftItemStack clone() {
         CraftItemStack itemStack = (CraftItemStack) super.clone();
         if (this.handle != null) {
-            itemStack.handle = this.handle.cloneItemStack();
+            itemStack.handle = this.handle.copy();
         }
         return itemStack;
     }
@@ -391,6 +392,7 @@ public final class CraftItemStack extends ItemStack {
             case YELLOW_BANNER:
             case YELLOW_WALL_BANNER:
                 return new CraftMetaBanner(item.getTag());
+            case AXOLOTL_SPAWN_EGG:
             case BAT_SPAWN_EGG:
             case BEE_SPAWN_EGG:
             case BLAZE_SPAWN_EGG:
@@ -409,6 +411,8 @@ public final class CraftItemStack extends ItemStack {
             case EVOKER_SPAWN_EGG:
             case FOX_SPAWN_EGG:
             case GHAST_SPAWN_EGG:
+            case GLOW_SQUID_SPAWN_EGG:
+            case GOAT_SPAWN_EGG:
             case GUARDIAN_SPAWN_EGG:
             case HOGLIN_SPAWN_EGG:
             case HORSE_SPAWN_EGG:
@@ -421,6 +425,7 @@ public final class CraftItemStack extends ItemStack {
             case PANDA_SPAWN_EGG:
             case PARROT_SPAWN_EGG:
             case PHANTOM_SPAWN_EGG:
+            case PIGLIN_BRUTE_SPAWN_EGG:
             case PIGLIN_SPAWN_EGG:
             case PIG_SPAWN_EGG:
             case PILLAGER_SPAWN_EGG:
@@ -583,8 +588,8 @@ public final class CraftItemStack extends ItemStack {
         ((CraftMetaItem) itemMeta).applyToItem(tag);
         item.convertStack(((CraftMetaItem) itemMeta).getVersion());
         // SpigotCraft#463 this is required now by the Vanilla client, so mimic ItemStack constructor in ensuring it
-        if (item.getItem() != null && item.getItem().usesDurability()) {
-            item.setDamage(item.getDamage());
+        if (item.getItem() != null && item.getItem().canBeDepleted()) {
+            item.setDamageValue(item.getDamageValue());
         }
 
         return true;

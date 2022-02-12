@@ -4,20 +4,15 @@ import net.minecraft.sounds.SoundEffects;
 import net.minecraft.world.level.block.BlockBarrel;
 import net.minecraft.world.level.block.entity.TileEntityBarrel;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Barrel;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
 
 public class CraftBarrel extends CraftLootable<TileEntityBarrel> implements Barrel {
 
-    public CraftBarrel(Block block) {
-        super(block, TileEntityBarrel.class);
-    }
-
-    public CraftBarrel(Material material, TileEntityBarrel te) {
-        super(material, te);
+    public CraftBarrel(World world, TileEntityBarrel tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -38,12 +33,14 @@ public class CraftBarrel extends CraftLootable<TileEntityBarrel> implements Barr
     public void open() {
         requirePlaced();
         if (!getTileEntity().openersCounter.opened) {
-            IBlockData blockData = getTileEntity().getBlock();
-            boolean open = blockData.get(BlockBarrel.OPEN);
+            IBlockData blockData = getTileEntity().getBlockState();
+            boolean open = blockData.getValue(BlockBarrel.OPEN);
 
             if (!open) {
-                getTileEntity().setOpenFlag(blockData, true);
-                getTileEntity().playOpenSound(blockData, SoundEffects.BARREL_OPEN);
+                getTileEntity().updateBlockState(blockData, true);
+                if (getWorldHandle() instanceof net.minecraft.world.level.World) {
+                    getTileEntity().playSound(blockData, SoundEffects.BARREL_OPEN);
+                }
             }
         }
         getTileEntity().openersCounter.opened = true;
@@ -53,9 +50,11 @@ public class CraftBarrel extends CraftLootable<TileEntityBarrel> implements Barr
     public void close() {
         requirePlaced();
         if (getTileEntity().openersCounter.opened) {
-            IBlockData blockData = getTileEntity().getBlock();
-            getTileEntity().setOpenFlag(blockData, false);
-            getTileEntity().playOpenSound(blockData, SoundEffects.BARREL_CLOSE);
+            IBlockData blockData = getTileEntity().getBlockState();
+            getTileEntity().updateBlockState(blockData, false);
+            if (getWorldHandle() instanceof net.minecraft.world.level.World) {
+                getTileEntity().playSound(blockData, SoundEffects.BARREL_CLOSE);
+            }
         }
         getTileEntity().openersCounter.opened = false;
     }

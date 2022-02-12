@@ -15,8 +15,10 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
@@ -42,9 +44,9 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     CraftMetaSkull(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.hasKeyOfType(SKULL_OWNER.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            this.setProfile(GameProfileSerializer.deserialize(tag.getCompound(SKULL_OWNER.NBT)));
-        } else if (tag.hasKeyOfType(SKULL_OWNER.NBT, CraftMagicNumbers.NBT.TAG_STRING) && !tag.getString(SKULL_OWNER.NBT).isEmpty()) {
+        if (tag.contains(SKULL_OWNER.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
+            this.setProfile(GameProfileSerializer.readGameProfile(tag.getCompound(SKULL_OWNER.NBT)));
+        } else if (tag.contains(SKULL_OWNER.NBT, CraftMagicNumbers.NBT.TAG_STRING) && !tag.getString(SKULL_OWNER.NBT).isEmpty()) {
             this.setProfile(new GameProfile(null, tag.getString(SKULL_OWNER.NBT)));
         }
     }
@@ -52,7 +54,12 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     CraftMetaSkull(Map<String, Object> map) {
         super(map);
         if (profile == null) {
-            setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
+            Object object = map.get(SKULL_OWNER.BUKKIT);
+            if (object instanceof PlayerProfile) {
+                setOwnerProfile((PlayerProfile) object);
+            } else {
+                setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
+            }
         }
     }
 
@@ -60,15 +67,15 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     void deserializeInternal(NBTTagCompound tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.hasKeyOfType(SKULL_PROFILE.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
+        if (tag.contains(SKULL_PROFILE.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
             NBTTagCompound skullTag = tag.getCompound(SKULL_PROFILE.NBT);
             // convert type of stored Id from String to UUID for backwards compatibility
-            if (skullTag.hasKeyOfType("Id", CraftMagicNumbers.NBT.TAG_STRING)) {
+            if (skullTag.contains("Id", CraftMagicNumbers.NBT.TAG_STRING)) {
                 UUID uuid = UUID.fromString(skullTag.getString("Id"));
-                skullTag.a("Id", uuid);
+                skullTag.putUUID("Id", uuid);
             }
 
-            this.setProfile(GameProfileSerializer.deserialize(skullTag));
+            this.setProfile(GameProfileSerializer.readGameProfile(skullTag));
         }
     }
 
@@ -81,7 +88,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
     private void setProfile(GameProfile profile) {
         this.profile = profile;
-        this.serializedProfile = (profile == null) ? null : GameProfileSerializer.serialize(new NBTTagCompound(), profile);
+        this.serializedProfile = (profile == null) ? null : GameProfileSerializer.writeGameProfile(new NBTTagCompound(), profile);
     }
 
     @Override
@@ -90,11 +97,11 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
         if (profile != null) {
             // SPIGOT-6558: Set initial textures
-            tag.set(SKULL_OWNER.NBT, serializedProfile);
+            tag.put(SKULL_OWNER.NBT, serializedProfile);
             // Fill in textures
-            TileEntitySkull.a(profile, (filledProfile) -> {
+            TileEntitySkull.updateGameprofile(profile, (filledProfile) -> {
                 setProfile(filledProfile);
-                tag.set(SKULL_OWNER.NBT, serializedProfile);
+                tag.put(SKULL_OWNER.NBT, serializedProfile);
             });
         }
     }
@@ -188,6 +195,24 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     }
 
     @Override
+    public PlayerProfile getOwnerProfile() {
+        if (!hasOwner()) {
+            return null;
+        }
+
+        return new CraftPlayerProfile(profile);
+    }
+
+    @Override
+    public void setOwnerProfile(PlayerProfile profile) {
+        if (profile == null) {
+            setProfile(null);
+        } else {
+            setProfile(CraftPlayerProfile.validateSkullProfile(((CraftPlayerProfile) profile).buildGameProfile()));
+        }
+    }
+
+    @Override
     int applyHash() {
         final int original;
         int hash = original = super.applyHash();
@@ -220,7 +245,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
         if (hasOwner()) {
-            return builder.put(SKULL_OWNER.BUKKIT, this.profile.getName());
+            return builder.put(SKULL_OWNER.BUKKIT, new CraftPlayerProfile(this.profile));
         }
         return builder;
     }

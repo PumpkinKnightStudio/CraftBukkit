@@ -1,14 +1,17 @@
 package org.bukkit.craftbukkit.generator;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.lang.ref.WeakReference;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ITileEntity;
+import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.chunk.ChunkSection;
+import net.minecraft.world.level.chunk.IChunkAccess;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -18,19 +21,37 @@ import org.bukkit.material.MaterialData;
  * Data to be used for the block types and data in a newly generated chunk.
  */
 public final class CraftChunkData implements ChunkGenerator.ChunkData {
-    private final int minHeight;
     private final int maxHeight;
-    private final ChunkSection[] sections;
-    private Set<BlockPosition> tiles;
+    private final int minHeight;
+    private final WeakReference<IChunkAccess> weakChunk;
 
-    public CraftChunkData(World world) {
-        this(world.getMinHeight(), world.getMaxHeight());
+    public CraftChunkData(World world, IChunkAccess chunkAccess) {
+        this(world.getMaxHeight(), world.getMinHeight(), chunkAccess);
     }
 
-    /* pp for tests */ CraftChunkData(int minHeight, int maxHeight) {
-        this.minHeight = minHeight;
+    CraftChunkData(int maxHeight, int minHeight, IChunkAccess chunkAccess) {
         this.maxHeight = maxHeight;
-        sections = new ChunkSection[(((maxHeight - 1) >> 4) + 1) - (minHeight >> 4)];
+        this.minHeight = minHeight;
+        this.weakChunk = new WeakReference<>(chunkAccess);
+    }
+
+    public IChunkAccess getHandle() {
+        IChunkAccess access = weakChunk.get();
+
+        if (access == null) {
+            throw new IllegalStateException("IChunkAccess no longer present, are you using it in a different tick?");
+        }
+
+        return access;
+    }
+
+    public void breakLink() {
+        weakChunk.clear();
+    }
+
+    @Override
+    public int getMaxHeight() {
+        return maxHeight;
     }
 
     @Override
@@ -39,8 +60,8 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public int getMaxHeight() {
-        return maxHeight;
+    public Biome getBiome(int x, int y, int z) {
+        return CraftBlock.biomeBaseToBiome(getHandle().biomeRegistry, getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override
@@ -115,11 +136,9 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
             return;
         }
         for (int y = yMin; y < yMax; y++) {
-            ChunkSection section = getChunkSection(y, true);
-            int offsetBase = y & 0xf;
             for (int x = xMin; x < xMax; x++) {
                 for (int z = zMin; z < zMax; z++) {
-                    section.setType(x, offsetBase, z, type);
+                    setBlock(x, y, z, type);
                 }
             }
         }
@@ -127,14 +146,11 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
 
     public IBlockData getTypeId(int x, int y, int z) {
         if (x != (x & 0xf) || y < minHeight || y >= maxHeight || z != (z & 0xf)) {
-            return Blocks.AIR.getBlockData();
+            return Blocks.AIR.defaultBlockState();
         }
-        ChunkSection section = getChunkSection(y, false);
-        if (section == null) {
-            return Blocks.AIR.getBlockData();
-        } else {
-            return section.getType(x, y & 0xf, z);
-        }
+
+        IChunkAccess access = getHandle();
+        return access.getBlockState(new BlockPosition(access.getPos().getMinBlockX() + x, y, access.getPos().getMinBlockZ() + z));
     }
 
     @Override
@@ -146,32 +162,22 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
         if (x != (x & 0xf) || y < minHeight || y >= maxHeight || z != (z & 0xf)) {
             return;
         }
-        ChunkSection section = getChunkSection(y, true);
-        section.setType(x, y & 0xf, z, type);
 
-        if (type.isTileEntity()) {
-            if (tiles == null) {
-                tiles = new HashSet<>();
+        IChunkAccess access = getHandle();
+        BlockPosition blockPosition = new BlockPosition(access.getPos().getMinBlockX() + x, y, access.getPos().getMinBlockZ() + z);
+        IBlockData oldBlockData = access.setBlockState(blockPosition, type, false);
+
+        if (type.hasBlockEntity()) {
+            TileEntity tileEntity = ((ITileEntity) type.getBlock()).newBlockEntity(blockPosition, type);
+
+            // createTile can return null, currently only the case with material MOVING_PISTON
+            if (tileEntity == null) {
+                access.removeBlockEntity(blockPosition);
+            } else {
+                access.setBlockEntity(tileEntity);
             }
-
-            tiles.add(new BlockPosition(x, y, z));
+        } else if (oldBlockData != null && oldBlockData.hasBlockEntity()) {
+            access.removeBlockEntity(blockPosition);
         }
-    }
-
-    private ChunkSection getChunkSection(int y, boolean create) {
-        int offset = (y - minHeight) >> 4;
-        ChunkSection section = sections[offset];
-        if (create && section == null) {
-            sections[offset] = section = new ChunkSection(offset + (minHeight >> 4));
-        }
-        return section;
-    }
-
-    ChunkSection[] getRawChunkData() {
-        return sections;
-    }
-
-    Set<BlockPosition> getTiles() {
-        return tiles;
     }
 }

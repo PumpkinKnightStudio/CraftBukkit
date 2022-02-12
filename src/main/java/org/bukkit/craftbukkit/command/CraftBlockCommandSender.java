@@ -24,7 +24,7 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
 
     @Override
     public Block getBlock() {
-        return CraftBlock.at(tile.getWorld(), tile.getPosition());
+        return CraftBlock.at(tile.getLevel(), tile.getBlockPos());
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
     }
 
     @Override
-    public void sendMessage(String[] messages) {
+    public void sendMessage(String... messages) {
         for (String message : messages) {
             sendMessage(message);
         }
@@ -43,7 +43,7 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
 
     @Override
     public String getName() {
-        return block.getName();
+        return block.getTextName();
     }
 
     @Override

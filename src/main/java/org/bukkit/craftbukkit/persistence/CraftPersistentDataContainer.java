@@ -15,7 +15,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public final class CraftPersistentDataContainer implements PersistentDataContainer {
+public class CraftPersistentDataContainer implements PersistentDataContainer {
 
     private final Map<String, NBTBase> customDataTags = new HashMap<>();
     private final CraftPersistentDataTypeRegistry registry;
@@ -30,6 +30,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
         this.registry = registry;
         this.adapterContext = new CraftPersistentDataAdapterContext(this.registry);
     }
+
 
     @Override
     public <T, Z> void set(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
@@ -118,7 +119,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     public NBTTagCompound toTagCompound() {
         NBTTagCompound tag = new NBTTagCompound();
         for (Entry<String, NBTBase> entry : this.customDataTags.entrySet()) {
-            tag.set(entry.getKey(), entry.getValue());
+            tag.put(entry.getKey(), entry.getValue());
         }
         return tag;
     }
@@ -132,7 +133,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     }
 
     public void putAll(NBTTagCompound compound) {
-        for (String key : compound.getKeys()) {
+        for (String key : compound.getAllKeys()) {
             this.customDataTags.put(key, compound.get(key));
         }
     }

@@ -40,7 +40,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
     CraftMetaBundle(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.hasKeyOfType(ITEMS.NBT, CraftMagicNumbers.NBT.TAG_LIST)) {
+        if (tag.contains(ITEMS.NBT, CraftMagicNumbers.NBT.TAG_LIST)) {
             NBTTagList list = tag.getList(ITEMS.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
 
             if (list != null && !list.isEmpty()) {
@@ -49,7 +49,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
                 for (int i = 0; i < list.size(); i++) {
                     NBTTagCompound nbttagcompound1 = list.getCompound(i);
 
-                    addItem(CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.a(nbttagcompound1)));
+                    addItem(CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(nbttagcompound1)));
                 }
             }
         }
@@ -62,7 +62,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
         if (items != null) {
             for (Object stack : items) {
                 if (stack instanceof ItemStack) {
-                    this.items.add((ItemStack) stack);
+                    addItem((ItemStack) stack);
                 }
             }
         }
@@ -81,7 +81,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
                 list.add(saved);
             }
 
-            tag.set(ITEMS.NBT, list);
+            tag.put(ITEMS.NBT, list);
         }
     }
 

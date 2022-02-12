@@ -7,8 +7,7 @@ import net.minecraft.world.level.block.EnumBlockRotation;
 import net.minecraft.world.level.block.entity.TileEntityStructure;
 import net.minecraft.world.level.block.state.properties.BlockPropertyStructureMode;
 import org.apache.commons.lang3.Validate;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.block.Structure;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
@@ -21,12 +20,8 @@ public class CraftStructureBlock extends CraftBlockEntityState<TileEntityStructu
 
     private static final int MAX_SIZE = 48;
 
-    public CraftStructureBlock(Block block) {
-        super(block, TileEntityStructure.class);
-    }
-
-    public CraftStructureBlock(Material material, TileEntityStructure structure) {
-        super(material, structure);
+    public CraftStructureBlock(World world, TileEntityStructure tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -54,7 +49,7 @@ public class CraftStructureBlock extends CraftBlockEntityState<TileEntityStructu
     @Override
     public void setAuthor(LivingEntity entity) {
         Preconditions.checkArgument(entity != null, "Structure Block author entity cannot be null");
-        getSnapshot().setAuthor(((CraftLivingEntity) entity).getHandle());
+        getSnapshot().createdBy(((CraftLivingEntity) entity).getHandle());
     }
 
     @Override
@@ -110,7 +105,7 @@ public class CraftStructureBlock extends CraftBlockEntityState<TileEntityStructu
 
     @Override
     public UsageMode getUsageMode() {
-        return UsageMode.valueOf(getSnapshot().getUsageMode().name());
+        return UsageMode.valueOf(getSnapshot().getMode().name());
     }
 
     @Override
@@ -180,9 +175,19 @@ public class CraftStructureBlock extends CraftBlockEntityState<TileEntityStructu
     @Override
     protected void applyTo(TileEntityStructure tileEntity) {
         super.applyTo(tileEntity);
+        net.minecraft.world.level.GeneratorAccess access = getWorldHandle();
 
         // Ensure block type is correct
-        tileEntity.setUsageMode(tileEntity.getUsageMode());
+        if (access instanceof net.minecraft.world.level.World) {
+            tileEntity.setMode(tileEntity.getMode());
+        } else if (access != null) {
+            // Custom handle during world generation
+            // From TileEntityStructure#setUsageMode(BlockPropertyStructureMode)
+            net.minecraft.world.level.block.state.IBlockData data = access.getBlockState(this.getPosition());
+            if (data.is(net.minecraft.world.level.block.Blocks.STRUCTURE_BLOCK)) {
+                access.setBlock(this.getPosition(), data.setValue(net.minecraft.world.level.block.BlockStructure.MODE, tileEntity.getMode()), 2);
+            }
+        }
     }
 
     private static boolean isBetween(int num, int min, int max) {

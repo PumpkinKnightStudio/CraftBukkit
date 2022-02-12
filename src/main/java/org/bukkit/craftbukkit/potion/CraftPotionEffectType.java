@@ -8,7 +8,7 @@ public class CraftPotionEffectType extends PotionEffectType {
     private final MobEffectList handle;
 
     public CraftPotionEffectType(MobEffectList handle) {
-        super(MobEffectList.getId(handle));
+        super(MobEffectList.getId(handle), org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(net.minecraft.core.IRegistry.MOB_EFFECT.getKey(handle)));
         this.handle = handle;
     }
 
@@ -95,7 +95,7 @@ public class CraftPotionEffectType extends PotionEffectType {
 
     @Override
     public boolean isInstant() {
-        return handle.isInstant();
+        return handle.isInstantenous();
     }
 
     @Override
