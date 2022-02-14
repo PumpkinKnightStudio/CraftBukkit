@@ -1159,6 +1159,7 @@ public final class CraftServer implements Server {
 
         worlds.remove(world.getName().toLowerCase(java.util.Locale.ENGLISH));
         console.levels.remove(handle.dimension());
+        ((CraftWorld) world).unloadWorld();
         return true;
     }
 

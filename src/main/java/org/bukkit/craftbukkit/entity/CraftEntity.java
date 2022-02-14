@@ -408,6 +408,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
     }
 
+    public void ensureWorldLoaded() {
+        getWorld().getHandle(); // Throws error when world not loaded
+    }
+
     @Override
     public Location getLocation() {
         return new Location(getWorld(), entity.getX(), entity.getY(), entity.getZ(), entity.getBukkitYaw(), entity.getXRot());
@@ -470,7 +474,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
-    public World getWorld() {
+    public CraftWorld getWorld() {
         return entity.level.getWorld();
     }
 
@@ -536,7 +540,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     public List<org.bukkit.entity.Entity> getNearbyEntities(double x, double y, double z) {
         Preconditions.checkState(!entity.generation, "Cannot get nearby entities during world generation");
 
-        List<Entity> notchEntityList = entity.level.getEntities(entity, entity.getBoundingBox().inflate(x, y, z), Predicates.alwaysTrue());
+        List<Entity> notchEntityList = getWorld().getHandle().getEntities(entity, entity.getBoundingBox().inflate(x, y, z), Predicates.alwaysTrue());
         List<org.bukkit.entity.Entity> bukkitEntityList = new java.util.ArrayList<org.bukkit.entity.Entity>(notchEntityList.size());
 
         for (Entity e : notchEntityList) {
@@ -740,7 +744,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         Preconditions.checkState(!entity.generation, "Cannot play effect during world generation");
 
         if (type.getApplicable().isInstance(this)) {
-            this.getHandle().level.broadcastEntityEvent(getHandle(), type.getData());
+            getWorld().getHandle().broadcastEntityEvent(getHandle(), type.getData());
         }
     }
 

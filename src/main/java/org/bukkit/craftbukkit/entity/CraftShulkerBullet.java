@@ -37,6 +37,7 @@ public class CraftShulkerBullet extends AbstractProjectile implements ShulkerBul
     @Override
     public void setTarget(org.bukkit.entity.Entity target) {
         Preconditions.checkState(!getHandle().generation, "Cannot set target during world generation");
+        ensureWorldLoaded();
 
         getHandle().setTarget(target == null ? null : ((CraftEntity) target).getHandle());
     }

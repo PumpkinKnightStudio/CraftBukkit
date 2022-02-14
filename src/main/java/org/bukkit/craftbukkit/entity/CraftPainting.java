@@ -28,6 +28,7 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     @Override
     public boolean setArt(Art art, boolean force) {
+        ensureWorldLoaded();
         EntityPainting painting = this.getHandle();
         Paintings oldArt = painting.motive;
         painting.motive = CraftArt.BukkitToNotch(art);

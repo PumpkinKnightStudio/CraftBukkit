@@ -25,6 +25,7 @@ public class CraftHanging extends CraftEntity implements Hanging {
 
     @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
+        ensureWorldLoaded();
         EntityHanging hanging = getHandle();
         EnumDirection dir = hanging.getDirection();
         switch (face) {
