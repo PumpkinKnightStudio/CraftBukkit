@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
@@ -183,6 +184,20 @@ public class CraftBlock implements Block {
     public void setBlockData(BlockData data, boolean applyPhysics) {
         Preconditions.checkArgument(data != null, "BlockData cannot be null");
         setTypeAndData(((CraftBlockData) data).getState(), applyPhysics);
+    }
+
+    @Override
+    public void setBlockData(Consumer<BlockData> dataConsumer) {
+        setBlockData(dataConsumer, true);
+    }
+
+    @Override
+    public void setBlockData(Consumer<BlockData> dataConsumer, boolean applyPhysics) {
+        Preconditions.checkArgument(dataConsumer != null, "dataConsumer cannot be null");
+
+        BlockData blockData = getBlockData();
+        dataConsumer.accept(blockData);
+        setBlockData(blockData, applyPhysics);
     }
 
     boolean setTypeAndData(final IBlockData blockData, final boolean applyPhysics) {
