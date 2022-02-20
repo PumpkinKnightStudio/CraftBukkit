@@ -60,7 +60,7 @@
              int j = Math.min(this.xpToDurability(this.value), itemstack.getDamageValue());
 +            // CraftBukkit start
 +            int l = this.durabilityToXp(j);
-+            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, j);
++            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, j, l);
 +            j = event.getRepairAmount();
 +            if (event.isCancelled()) {
 +                return i;
@@ -69,7 +69,7 @@
  
              itemstack.setDamageValue(itemstack.getDamageValue() - j);
 -            int k = i - this.durabilityToXp(j);
-+            int k = i - l; // CraftBukkit - use pre-event experience cost (allowing change of experience to repair ratio)
++            int k = i - event.getExperienceCost(); // CraftBukkit - use event's experience cost
 +            this.value = k; // CraftBukkit - update exp value of orb for PlayerItemMendEvent calls
  
              return k > 0 ? this.repairPlayerItems(entityhuman, k) : 0;
