@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import static org.bukkit.craftbukkit.inventory.CraftMetaItem.*;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.Item;
@@ -559,6 +560,17 @@ public final class CraftItemStack extends ItemStack {
     @Override
     public boolean setItemMeta(ItemMeta itemMeta) {
         return setItemMeta(handle, itemMeta);
+    }
+
+    @Override
+    public boolean setItemMeta(Consumer<ItemMeta> itemMetaConsumer) {
+        ItemMeta meta = getItemMeta();
+        if (meta == null) {
+            return false;
+        }
+
+        itemMetaConsumer.accept(meta);
+        return setItemMeta(handle, meta);
     }
 
     public static boolean setItemMeta(net.minecraft.world.item.ItemStack item, ItemMeta itemMeta) {
