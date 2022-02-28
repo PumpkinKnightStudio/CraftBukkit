@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkCoordIntPair;
@@ -38,29 +39,19 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     // there the order is {..., FEATURES, LIQUID_CARVERS, STRUCTURE_STARTS, ...}
     private final int buffer = 16;
     private final BoundingBox region;
+    boolean entitiesLoaded = false;
     // Minecraft saves the entities as NBTTagCompound during chunk generation. This causes that
     // changes made to the returned bukkit entity are not saved. To combat this we keep them and
     // save them when the population is finished.
     private final List<net.minecraft.world.entity.Entity> entities = new ArrayList<>();
+    // SPIGOT-6891: Save outside Entities extra, since they are not part of the region.
+    // Prevents crash for chunks which are converting from 1.17 to 1.18
+    private final List<net.minecraft.world.entity.Entity> outsideEntities = new ArrayList<>();
 
     public CraftLimitedRegion(GeneratorAccessSeed access, ChunkCoordIntPair center) {
         this.weakAccess = new WeakReference<>(access);
         centerChunkX = center.x;
         centerChunkZ = center.z;
-
-        // load entities which are already present
-        for (int x = -(buffer >> 4); x <= (buffer >> 4); x++) {
-            for (int z = -(buffer >> 4); z <= (buffer >> 4); z++) {
-                ProtoChunk chunk = (ProtoChunk) access.getChunk(centerChunkX + x, centerChunkZ + z);
-                for (NBTTagCompound compound : chunk.getEntities()) {
-                    EntityTypes.loadEntityRecursive(compound, access.getMinecraftWorld(), (entity) -> {
-                        entity.generation = true;
-                        entities.add(entity);
-                        return entity;
-                    });
-                }
-            }
-        }
 
         World world = access.getMinecraftWorld().getWorld();
         int xCenter = centerChunkX << 4;
@@ -83,12 +74,42 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
         return handle;
     }
 
-    public void saveEntities() {
+    public void loadEntities() {
+        if (entitiesLoaded) {
+            return;
+        }
+
         GeneratorAccessSeed access = getHandle();
+        // load entities which are already present
         for (int x = -(buffer >> 4); x <= (buffer >> 4); x++) {
             for (int z = -(buffer >> 4); z <= (buffer >> 4); z++) {
                 ProtoChunk chunk = (ProtoChunk) access.getChunk(centerChunkX + x, centerChunkZ + z);
-                chunk.getEntities().clear();
+                for (NBTTagCompound compound : chunk.getEntities()) {
+                    EntityTypes.loadEntityRecursive(compound, access.getMinecraftWorld(), (entity) -> {
+                        if (region.contains(entity.getX(), entity.getY(), entity.getZ())) {
+                            entity.generation = true;
+                            entities.add(entity);
+                        } else {
+                            outsideEntities.add(entity);
+                        }
+                        return entity;
+                    });
+                }
+            }
+        }
+
+        entitiesLoaded = true;
+    }
+
+    public void saveEntities() {
+        GeneratorAccessSeed access = getHandle();
+        // We don't clear existing entities when they are not loaded and therefore not modified
+        if (entitiesLoaded) {
+            for (int x = -(buffer >> 4); x <= (buffer >> 4); x++) {
+                for (int z = -(buffer >> 4); z <= (buffer >> 4); z++) {
+                    ProtoChunk chunk = (ProtoChunk) access.getChunk(centerChunkX + x, centerChunkZ + z);
+                    chunk.getEntities().clear();
+                }
             }
         }
 
@@ -98,6 +119,10 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
                 Preconditions.checkState(region.contains(entity.getX(), entity.getY(), entity.getZ()), "Entity %s is not in the region", entity);
                 access.addFreshEntity(entity);
             }
+        }
+
+        for (net.minecraft.world.entity.Entity entity : outsideEntities) {
+            access.addFreshEntity(entity);
         }
     }
 
@@ -143,7 +168,7 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
-    public void setBiome(int x, int y, int z, BiomeBase biomeBase) {
+    public void setBiome(int x, int y, int z, Holder<BiomeBase> biomeBase) {
         Preconditions.checkArgument(isInRegion(x, y, z), "Coordinates %s, %s, %s are not in the region", x, y, z);
         IChunkAccess chunk = getHandle().getChunk(x >> 4, z >> 4, ChunkStatus.EMPTY);
         chunk.setBiome(x >> 2, y >> 2, z >> 2, biomeBase);
@@ -187,6 +212,8 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
 
     @Override
     public Collection<net.minecraft.world.entity.Entity> getNMSEntities() {
+        // Only load entities if we need them
+        loadEntities();
         return new ArrayList<>(entities);
     }
 
