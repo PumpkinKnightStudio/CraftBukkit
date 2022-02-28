@@ -17,7 +17,13 @@ public class CraftItemTag extends CraftTag<Item, Material> {
 
     @Override
     public boolean isTagged(Material item) {
-        return CraftMagicNumbers.getItem(item).builtInRegistryHolder().is(tag);
+        Item minecraft = CraftMagicNumbers.getItem(item);
+
+        if (minecraft == null) {
+            return false;
+        }
+
+        return minecraft.builtInRegistryHolder().is(tag);
     }
 
     @Override

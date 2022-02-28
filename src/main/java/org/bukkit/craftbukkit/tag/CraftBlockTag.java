@@ -17,7 +17,13 @@ public class CraftBlockTag extends CraftTag<Block, Material> {
 
     @Override
     public boolean isTagged(Material item) {
-        return CraftMagicNumbers.getBlock(item).builtInRegistryHolder().is(tag);
+        Block block = CraftMagicNumbers.getBlock(item);
+
+        if (block == null) {
+            return false;
+        }
+
+        return block.builtInRegistryHolder().is(tag);
     }
 
     @Override

@@ -227,7 +227,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     @Override
     public void setBiome(int x, int y, int z, Biome biome) {
         Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
-        Holder<BiomeBase> biomeBase = CraftBiome.biomeToBiomeBase(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), biome);
+        Holder<BiomeBase> biomeBase = CraftBiome.bukkitToMinecraft(getHandle().registryAccess().registryOrThrow(IRegistry.BIOME_REGISTRY), biome);
         setBiome(x, y, z, biomeBase);
     }
 

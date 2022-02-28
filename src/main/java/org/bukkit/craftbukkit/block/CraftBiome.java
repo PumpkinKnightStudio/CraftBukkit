@@ -2,7 +2,9 @@ package org.bukkit.craftbukkit.block;
 
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -13,6 +15,10 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftBiome extends Biome {
     private static int count = 0;
 
+    public static Biome minecraftToBukkit(IRegistry<BiomeBase> registry, Holder<BiomeBase> minecraft) {
+        return minecraftToBukkit(registry, minecraft.value());
+    }
+
     public static Biome minecraftToBukkit(IRegistry<BiomeBase> registry, BiomeBase minecraft) {
         if (minecraft == null) {
             return null;
@@ -21,12 +27,12 @@ public class CraftBiome extends Biome {
         return Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
     }
 
-    public static BiomeBase bukkitToMinecraft(IRegistry<BiomeBase> registry, Biome bukkit) {
+    public static Holder<BiomeBase> bukkitToMinecraft(IRegistry<BiomeBase> registry, Biome bukkit) {
         if (bukkit == null || bukkit == Biome.CUSTOM) {
             return null;
         }
 
-        return registry.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+        return registry.getHolderOrThrow(ResourceKey.create(IRegistry.BIOME_REGISTRY, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
     }
 
     private final NamespacedKey key;

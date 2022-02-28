@@ -351,9 +351,12 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
         @Override
         public Iterator<Material> iterator() {
-            Set<MinecraftKey> keySet = new LinkedHashSet<>(itemRegistry.keySet());
-            keySet.addAll(blockRegistry.keySet());
-            return keySet.stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey))).iterator();
+            Set<Material> keySet = new LinkedHashSet<>();
+
+            itemRegistry.iterator().forEachRemaining(item -> keySet.add(CraftMagicNumbers.getMaterial(item)));
+            blockRegistry.iterator().forEachRemaining(block -> keySet.add(CraftMagicNumbers.getMaterial(block)));
+
+            return keySet.stream().iterator();
         }
     }
 }

@@ -4,11 +4,9 @@ import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
-import net.minecraft.tags.TagsBlock;
-import net.minecraft.tags.TagsEntity;
-import net.minecraft.tags.TagsFluid;
-import net.minecraft.tags.TagsItem;
+import net.minecraft.tags.TagKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
@@ -79,19 +77,19 @@ public final class DummyServer {
                     case org.bukkit.Tag.REGISTRY_BLOCKS:
                         Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
 
-                        return new CraftBlockTag(TagsBlock.getAllTags(), key);
+                        return new CraftBlockTag(IRegistry.BLOCK, TagKey.create(IRegistry.BLOCK_REGISTRY, key));
                     case org.bukkit.Tag.REGISTRY_ITEMS:
                         Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
 
-                        return new CraftItemTag(TagsItem.getAllTags(), key);
+                        return new CraftItemTag(IRegistry.ITEM, TagKey.create(IRegistry.ITEM_REGISTRY, key));
                     case org.bukkit.Tag.REGISTRY_FLUIDS:
                         Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace must have fluid type");
 
-                        return new CraftFluidTag(TagsFluid.getAllTags(), key);
+                        return new CraftFluidTag(IRegistry.FLUID, TagKey.create(IRegistry.FLUID_REGISTRY, key));
                     case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
                         Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
 
-                        return new CraftEntityTag(TagsEntity.getAllTags(), key);
+                        return new CraftEntityTag(IRegistry.ENTITY_TYPE, TagKey.create(IRegistry.ENTITY_TYPE_REGISTRY, key));
                     default:
                         throw new IllegalArgumentException();
                 }
