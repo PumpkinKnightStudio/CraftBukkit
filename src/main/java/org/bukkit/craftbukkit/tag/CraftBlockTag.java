@@ -19,6 +19,7 @@ public class CraftBlockTag extends CraftTag<Block, Material> {
     public boolean isTagged(Material item) {
         Block block = CraftMagicNumbers.getBlock(item);
 
+        // SPIGOT-6952: A Material is not necessary a block, in this case return false
         if (block == null) {
             return false;
         }
