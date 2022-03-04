@@ -5,7 +5,6 @@ import com.mojang.authlib.GameProfile;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.GameProfileSerializer;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
@@ -15,8 +14,10 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
@@ -52,7 +53,12 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     CraftMetaSkull(Map<String, Object> map) {
         super(map);
         if (profile == null) {
-            setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
+            Object object = map.get(SKULL_OWNER.BUKKIT);
+            if (object instanceof PlayerProfile) {
+                setOwnerProfile((PlayerProfile) object);
+            } else {
+                setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
+            }
         }
     }
 
@@ -69,13 +75,6 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             }
 
             this.setProfile(GameProfileSerializer.readGameProfile(skullTag));
-        }
-    }
-
-    @Override
-    void serializeInternal(final Map<String, NBTBase> internalTags) {
-        if (profile != null) {
-            internalTags.put(SKULL_PROFILE.NBT, serializedProfile);
         }
     }
 
@@ -188,6 +187,24 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     }
 
     @Override
+    public PlayerProfile getOwnerProfile() {
+        if (!hasOwner()) {
+            return null;
+        }
+
+        return new CraftPlayerProfile(profile);
+    }
+
+    @Override
+    public void setOwnerProfile(PlayerProfile profile) {
+        if (profile == null) {
+            setProfile(null);
+        } else {
+            setProfile(CraftPlayerProfile.validateSkullProfile(((CraftPlayerProfile) profile).buildGameProfile()));
+        }
+    }
+
+    @Override
     int applyHash() {
         final int original;
         int hash = original = super.applyHash();
@@ -219,8 +236,8 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     @Override
     Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
-        if (hasOwner()) {
-            return builder.put(SKULL_OWNER.BUKKIT, this.profile.getName());
+        if (this.profile != null) {
+            return builder.put(SKULL_OWNER.BUKKIT, new CraftPlayerProfile(this.profile));
         }
         return builder;
     }

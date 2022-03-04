@@ -130,6 +130,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockFadeEvent;
@@ -601,17 +602,26 @@ public class CraftEventFactory {
     /**
      * BlockDamageEvent
      */
-    public static BlockDamageEvent callBlockDamageEvent(EntityHuman who, int x, int y, int z, ItemStack itemstack, boolean instaBreak) {
-        Player player = (who == null) ? null : (Player) who.getBukkitEntity();
+    public static BlockDamageEvent callBlockDamageEvent(EntityPlayer who, BlockPosition pos, ItemStack itemstack, boolean instaBreak) {
+        Player player = who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
 
-        CraftWorld craftWorld = (CraftWorld) player.getWorld();
-        CraftServer craftServer = (CraftServer) player.getServer();
-
-        Block blockClicked = craftWorld.getBlockAt(x, y, z);
+        Block blockClicked = CraftBlock.at(who.getLevel(), pos);
 
         BlockDamageEvent event = new BlockDamageEvent(player, blockClicked, itemInHand, instaBreak);
-        craftServer.getPluginManager().callEvent(event);
+        player.getServer().getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    public static BlockDamageAbortEvent callBlockDamageAbortEvent(EntityPlayer who, BlockPosition pos, ItemStack itemstack) {
+        Player player = who.getBukkitEntity();
+        CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
+
+        Block blockClicked = CraftBlock.at(who.getLevel(), pos);
+
+        BlockDamageAbortEvent event = new BlockDamageAbortEvent(player, blockClicked, itemInHand);
+        player.getServer().getPluginManager().callEvent(event);
 
         return event;
     }
@@ -902,6 +912,8 @@ public class CraftEventFactory {
 
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
+            } else {
+                entity.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
             }
             return event;
         } else if (source instanceof EntityDamageSource) {
@@ -926,14 +938,23 @@ public class CraftEventFactory {
             callEvent(event);
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
+            } else {
+                entity.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
             }
             return event;
         } else if (source == DamageSource.LAVA) {
             EntityDamageEvent event = (new EntityDamageByBlockEvent(blockDamage, entity.getBukkitEntity(), DamageCause.LAVA, modifiers, modifierFunctions));
             event.setCancelled(cancelled);
+
+            Block damager = blockDamage;
+            blockDamage = null; // SPIGOT-6639: Clear blockDamage to allow other entity damage during event call
             callEvent(event);
+            blockDamage = damager; // SPIGOT-6639: Re-set blockDamage so that other entities which are also getting damaged have the right cause
+
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
+            } else {
+                entity.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
             }
             return event;
         } else if (blockDamage != null) {
@@ -952,9 +973,15 @@ public class CraftEventFactory {
             }
             EntityDamageEvent event = new EntityDamageByBlockEvent(damager, entity.getBukkitEntity(), cause, modifiers, modifierFunctions);
             event.setCancelled(cancelled);
+
+            blockDamage = null; // SPIGOT-6639: Clear blockDamage to allow other entity damage during event call
             callEvent(event);
+            blockDamage = damager; // SPIGOT-6639: Re-set blockDamage so that other entities which are also getting damaged have the right cause
+
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
+            } else {
+                entity.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
             }
             return event;
         } else if (entityDamage != null) {
@@ -979,6 +1006,8 @@ public class CraftEventFactory {
             callEvent(event);
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
+            } else {
+                entity.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
             }
             return event;
         }
@@ -1039,6 +1068,8 @@ public class CraftEventFactory {
 
         if (!event.isCancelled()) {
             event.getEntity().setLastDamageCause(event);
+        } else {
+            damagee.lastDamageCancelled = true; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
         }
 
         return event;
