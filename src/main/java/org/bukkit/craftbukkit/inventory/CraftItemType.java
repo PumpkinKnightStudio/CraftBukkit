@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
@@ -22,6 +23,7 @@ import org.bukkit.craftbukkit.CraftMaterial;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -190,6 +192,12 @@ public class CraftItemType implements ItemType {
         }
 
         return defaultAttributes.build();
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory() {
+        CreativeModeTab category = item.getItemCategory();
+        return CraftCreativeCategory.fromNMS(category);
     }
 
     @Override

@@ -16,6 +16,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftMaterial;
+import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
@@ -907,6 +908,11 @@ public class CraftLegacyMaterial implements Material {
     @Override
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
         throw new IllegalArgumentException("Cannot get default attribute modifiers from Legacy material");
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory() {
+        throw new IllegalArgumentException("Cannot get creative category from Legacy material");
     }
 
     @Override

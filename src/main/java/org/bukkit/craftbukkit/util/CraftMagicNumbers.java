@@ -32,7 +32,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.datafix.fixes.DataConverterTypes;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
@@ -45,11 +44,8 @@ import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.inventory.CraftCreativeCategory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
-import org.bukkit.inventory.CreativeCategory;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -322,12 +318,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return clazz;
-    }
-
-    @Override
-    public CreativeCategory getCreativeCategory(Material material) {
-        CreativeModeTab category = getItem(material).getItemCategory();
-        return CraftCreativeCategory.fromNMS(category);
     }
 
     /**

@@ -17,6 +17,7 @@ import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftMaterial;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
@@ -179,6 +180,11 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
+        throw new IllegalArgumentException("The Material is not an item!");
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory() {
         throw new IllegalArgumentException("The Material is not an item!");
     }
 
