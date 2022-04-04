@@ -1,14 +1,18 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.EnumInteractionResult;
@@ -20,6 +24,7 @@ import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.RayTrace;
 import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.block.BlockRedstoneWire;
+import net.minecraft.world.level.block.BlockSapling;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.phys.AxisAlignedBB;
@@ -28,11 +33,13 @@ import net.minecraft.world.phys.MovingObjectPositionBlock;
 import net.minecraft.world.phys.Vec3D;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Registry;
+import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -52,6 +59,8 @@ import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftVoxelShape;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockFertilizeEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -348,6 +357,10 @@ public class CraftBlock implements Block {
         getWorld().setBiome(getX(), getY(), getZ(), bio);
     }
 
+    public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, Holder<BiomeBase> base) {
+        return biomeBaseToBiome(registry, base.value());
+    }
+
     public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, BiomeBase base) {
         if (base == null) {
             return null;
@@ -357,17 +370,17 @@ public class CraftBlock implements Block {
         return (biome == null) ? Biome.CUSTOM : biome;
     }
 
-    public static BiomeBase biomeToBiomeBase(IRegistry<BiomeBase> registry, Biome bio) {
+    public static Holder<BiomeBase> biomeToBiomeBase(IRegistry<BiomeBase> registry, Biome bio) {
         if (bio == null || bio == Biome.CUSTOM) {
             return null;
         }
 
-        return registry.get(CraftNamespacedKey.toMinecraft(bio.getKey()));
+        return registry.getHolderOrThrow(ResourceKey.create(IRegistry.BIOME_REGISTRY, CraftNamespacedKey.toMinecraft(bio.getKey())));
     }
 
     @Override
     public double getTemperature() {
-        return world.getBiome(position).getTemperature(position);
+        return world.getBiome(position).value().getTemperature(position);
     }
 
     @Override
@@ -492,9 +505,39 @@ public class CraftBlock implements Block {
     @Override
     public boolean applyBoneMeal(BlockFace face) {
         EnumDirection direction = blockFaceToNotch(face);
-        ItemActionContext context = new ItemActionContext(getCraftWorld().getHandle(), null, EnumHand.MAIN_HAND, Items.BONE_MEAL.getDefaultInstance(), new MovingObjectPositionBlock(Vec3D.ZERO, direction, getPosition(), false));
+        BlockFertilizeEvent event = null;
+        WorldServer world = getCraftWorld().getHandle();
+        ItemActionContext context = new ItemActionContext(world, null, EnumHand.MAIN_HAND, Items.BONE_MEAL.getDefaultInstance(), new MovingObjectPositionBlock(Vec3D.ZERO, direction, getPosition(), false));
 
-        return ItemBoneMeal.applyBonemeal(context) == EnumInteractionResult.SUCCESS;
+        // SPIGOT-6895: Call StructureGrowEvent and BlockFertilizeEvent
+        world.captureTreeGeneration = true;
+        EnumInteractionResult result = ItemBoneMeal.applyBonemeal(context);
+        world.captureTreeGeneration = false;
+
+        if (world.capturedBlockStates.size() > 0) {
+            TreeType treeType = BlockSapling.treeType;
+            BlockSapling.treeType = null;
+            List<BlockState> blocks = new ArrayList<>(world.capturedBlockStates.values());
+            world.capturedBlockStates.clear();
+            StructureGrowEvent structureEvent = null;
+
+            if (treeType != null) {
+                structureEvent = new StructureGrowEvent(getLocation(), treeType, true, null, blocks);
+                Bukkit.getPluginManager().callEvent(structureEvent);
+            }
+
+            event = new BlockFertilizeEvent(CraftBlock.at(world, getPosition()), null, blocks);
+            event.setCancelled(structureEvent != null && structureEvent.isCancelled());
+            Bukkit.getPluginManager().callEvent(event);
+
+            if (!event.isCancelled()) {
+                for (BlockState blockstate : blocks) {
+                    blockstate.update(true);
+                }
+            }
+        }
+
+        return result == EnumInteractionResult.SUCCESS && (event == null || !event.isCancelled());
     }
 
     @Override

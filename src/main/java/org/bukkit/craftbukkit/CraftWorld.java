@@ -23,6 +23,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Holder;
+import net.minecraft.core.IRegistry;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
@@ -39,6 +41,7 @@ import net.minecraft.server.level.Ticket;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.sounds.SoundCategory;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ArraySetSorted;
 import net.minecraft.util.Unit;
 import net.minecraft.world.EnumDifficulty;
@@ -58,7 +61,6 @@ import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
-import net.minecraft.world.level.levelgen.feature.StructureGenerator;
 import net.minecraft.world.level.storage.SavedFile;
 import net.minecraft.world.phys.AxisAlignedBB;
 import net.minecraft.world.phys.MovingObjectPosition;
@@ -97,6 +99,7 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 import org.bukkit.entity.AbstractArrow;
@@ -228,7 +231,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public Chunk[] getLoadedChunks() {
         Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkSource().chunkMap.visibleChunkMap;
-        return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
+        return chunks.values().stream().map(PlayerChunk::getFullChunkNow).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
     }
 
     @Override
@@ -365,7 +368,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         ChunkMapDistance chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
 
-        if (chunkDistanceManager.addTicketAtLevel(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 31, plugin)) { // keep in-line with force loading, add at level 31
+        if (chunkDistanceManager.addRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 2, plugin)) { // keep in-line with force loading, add at level 31
             this.getChunkAt(x, z); // ensure loaded
             return true;
         }
@@ -378,7 +381,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkNotNull(plugin, "null plugin");
 
         ChunkMapDistance chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
-        return chunkDistanceManager.removeTicketAtLevel(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 31, plugin); // keep in-line with force loading, remove at level 31
+        return chunkDistanceManager.removeRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 2, plugin); // keep in-line with force loading, remove at level 31
     }
 
     @Override
@@ -749,7 +752,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     @Override
-    public void setBiome(int x, int y, int z, BiomeBase bb) {
+    public void setBiome(int x, int y, int z, Holder<BiomeBase> bb) {
         BlockPosition pos = new BlockPosition(x, 0, z);
         if (this.world.hasChunkAt(pos)) {
             net.minecraft.world.level.chunk.Chunk chunk = this.world.getChunkAt(pos);
@@ -770,7 +773,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public double getTemperature(int x, int y, int z) {
         BlockPosition pos = new BlockPosition(x, y, z);
-        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).getTemperature(pos);
+        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).value().getTemperature(pos);
     }
 
     @Override
@@ -780,7 +783,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public double getHumidity(int x, int y, int z) {
-        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).getDownfall();
+        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).value().getDownfall();
     }
 
     @Override
@@ -1142,7 +1145,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Validate.notNull(material, "Material cannot be null");
         Validate.isTrue(material.isBlock(), "Material must be a block");
 
-        EntityFallingBlock entity = new EntityFallingBlock(world, location.getX(), location.getY(), location.getZ(), CraftMagicNumbers.getBlock(material).defaultBlockState());
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, new BlockPosition(location.getX(), location.getY(), location.getZ()), CraftMagicNumbers.getBlock(material).defaultBlockState());
         entity.time = 1;
 
         world.addFreshEntity(entity, SpawnReason.CUSTOM);
@@ -1154,7 +1157,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Validate.notNull(location, "Location cannot be null");
         Validate.notNull(data, "Material cannot be null");
 
-        EntityFallingBlock entity = new EntityFallingBlock(world, location.getX(), location.getY(), location.getZ(), ((CraftBlockData) data).getState());
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, new BlockPosition(location.getX(), location.getY(), location.getZ()), ((CraftBlockData) data).getState());
         entity.time = 1;
 
         world.addFreshEntity(entity, SpawnReason.CUSTOM);
@@ -1774,7 +1777,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public Location locateNearestStructure(Location origin, StructureType structureType, int radius, boolean findUnexplored) {
         BlockPosition originPos = new BlockPosition(origin.getX(), origin.getY(), origin.getZ());
-        BlockPosition nearest = getHandle().getChunkSource().getGenerator().findNearestMapFeature(getHandle(), StructureGenerator.STRUCTURES_REGISTRY.get(structureType.getName()), originPos, radius, findUnexplored);
+        BlockPosition nearest = getHandle().findNearestMapFeature(TagKey.create(IRegistry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY, CraftNamespacedKey.toMinecraft(structureType.getKey())), originPos, radius, findUnexplored);
         return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
     }
 
