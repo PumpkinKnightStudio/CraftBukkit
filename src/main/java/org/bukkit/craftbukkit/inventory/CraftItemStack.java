@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.inventory;
 
 import static org.bukkit.craftbukkit.inventory.CraftMetaItem.*;
+
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -564,6 +566,8 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public boolean setItemMeta(Consumer<ItemMeta> itemMetaConsumer) {
+        Preconditions.checkArgument(itemMetaConsumer != null, "itemMetaConsumer must not be null");
+
         ItemMeta meta = getItemMeta();
         if (meta == null) {
             return false;
