@@ -8,10 +8,14 @@ import org.bukkit.inventory.ItemStack;
 
 public class CraftAdvancementDisplay implements org.bukkit.advancement.AdvancementDisplay {
 
-    private AdvancementDisplay handle;
+    private final AdvancementDisplay handle;
 
     public CraftAdvancementDisplay(AdvancementDisplay handle) {
         this.handle = handle;
+    }
+
+    public AdvancementDisplay getHandle() {
+        return handle;
     }
 
     @Override
@@ -56,6 +60,6 @@ public class CraftAdvancementDisplay implements org.bukkit.advancement.Advanceme
 
     @Override
     public AdvancementType getType() {
-        return AdvancementType.byName(handle.getFrame().getName());
+        return AdvancementType.values()[handle.getFrame().ordinal()];
     }
 }

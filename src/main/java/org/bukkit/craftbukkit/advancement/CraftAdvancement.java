@@ -31,7 +31,9 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 
     @Override
     public AdvancementDisplay getDisplay() {
-        if (handle.getDisplay() == null) return null;
+        if (handle.getDisplay() == null) {
+            return null;
+        }
         return new CraftAdvancementDisplay(handle.getDisplay());
     }
 }
