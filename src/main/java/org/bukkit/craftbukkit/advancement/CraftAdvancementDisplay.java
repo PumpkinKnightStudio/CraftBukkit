@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.advancement;
 
 import net.minecraft.advancements.AdvancementDisplay;
-import org.bukkit.advancement.AdvancementType;
+import org.bukkit.advancement.AdvancementDisplayType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.inventory.ItemStack;
@@ -59,7 +59,7 @@ public class CraftAdvancementDisplay implements org.bukkit.advancement.Advanceme
     }
 
     @Override
-    public AdvancementType getType() {
-        return AdvancementType.values()[handle.getFrame().ordinal()];
+    public AdvancementDisplayType getType() {
+        return AdvancementDisplayType.values()[handle.getFrame().ordinal()];
     }
 }
