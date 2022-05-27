@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.core.EnumDirection;
 import net.minecraft.world.entity.decoration.EntityHanging;
 import org.bukkit.block.BlockFace;
@@ -25,7 +26,7 @@ public class CraftHanging extends CraftEntity implements Hanging {
 
     @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
-        ensureWorldLoaded();
+        Preconditions.checkState(force || !getHandle().isRemoved(), "Cannot set facing direction of a removed entity, set force to true to set anyway");
         EntityHanging hanging = getHandle();
         EnumDirection dir = hanging.getDirection();
         switch (face) {

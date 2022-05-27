@@ -15,7 +15,7 @@ public class CraftLeash extends CraftHanging implements LeashHitch {
     @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
         Preconditions.checkArgument(face == BlockFace.SELF, "%s is not a valid facing direction", face);
-        ensureWorldLoaded();
+        Preconditions.checkState(force || !getHandle().isRemoved(), "Cannot set facing direction of a removed entity, set force to true to set anyway");
 
         return force || getHandle().generation || getHandle().survives();
     }

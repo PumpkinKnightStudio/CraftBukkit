@@ -22,8 +22,8 @@ public class CraftCreeper extends CraftMonster implements Creeper {
     public void setPowered(boolean powered) {
         CreeperPowerEvent.PowerCause cause = powered ? CreeperPowerEvent.PowerCause.SET_ON : CreeperPowerEvent.PowerCause.SET_OFF;
 
-        // only call event when we are not in world generation
-        if (getHandle().generation || !callPowerEvent(cause)) {
+        // only call event when the entity is valid
+        if (!getHandle().valid || !callPowerEvent(cause)) {
             getHandle().setPowered(powered);
         }
     }

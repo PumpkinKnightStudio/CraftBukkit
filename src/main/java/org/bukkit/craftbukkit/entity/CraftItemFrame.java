@@ -22,7 +22,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
-        ensureWorldLoaded();
+        Preconditions.checkState(force || !getHandle().isRemoved(), "Cannot set facing direction of a removed entity, set force to true to set anyway");
         EntityHanging hanging = getHandle();
         EnumDirection oldDir = hanging.getDirection();
         EnumDirection newDir = CraftBlock.blockFaceToNotch(face);
@@ -42,7 +42,10 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     protected void update() {
-        ensureWorldLoaded();
+        if (!getHandle().isAlive()) {
+            return;
+        }
+
         super.update();
 
         // mark dirty, so that the client gets updated with item and rotation
@@ -63,9 +66,8 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setItem(org.bukkit.inventory.ItemStack item, boolean playSound) {
-        ensureWorldLoaded();
-        // only updated redstone and play sound when it is not in generation
-        getHandle().setItem(CraftItemStack.asNMSCopy(item), !getHandle().generation, !getHandle().generation && playSound);
+        // only updated redstone and play sound when it is not in generation and the entity is not removed
+        getHandle().setItem(CraftItemStack.asNMSCopy(item), !getHandle().generation && !getHandle().isRemoved(), !getHandle().generation && !getHandle().isRemoved() && playSound);
     }
 
     @Override

@@ -408,10 +408,6 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
     }
 
-    public void ensureWorldLoaded() {
-        getWorld().getHandle(); // Throws error when world not loaded
-    }
-
     @Override
     public Location getLocation() {
         return new Location(getWorld(), entity.getX(), entity.getY(), entity.getZ(), entity.getBukkitYaw(), entity.getXRot());

@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.decoration.EntityPainting;
 import net.minecraft.world.entity.decoration.Paintings;
 import org.bukkit.Art;
@@ -28,7 +29,7 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     @Override
     public boolean setArt(Art art, boolean force) {
-        ensureWorldLoaded();
+        Preconditions.checkState(force || !getHandle().isRemoved(), "Cannot set art of a removed entity, set force to true to set anyway");
         EntityPainting painting = this.getHandle();
         Paintings oldArt = painting.motive;
         painting.motive = CraftArt.BukkitToNotch(art);
