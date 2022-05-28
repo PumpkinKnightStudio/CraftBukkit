@@ -1,10 +1,13 @@
 package org.bukkit.map;
 
 import java.awt.Color;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.world.level.material.MaterialMapColor;
+import org.bukkit.craftbukkit.map.CraftMapColorCache;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class MapTest {
@@ -57,5 +60,21 @@ public class MapTest {
             }
         }
         Assert.assertFalse(fail);
+    }
+
+    @Ignore("Test takes around 25 seconds, should be run by changes to the map color conversion")
+    @Test
+    public void testMapColorCacheBuilding() throws ExecutionException, InterruptedException {
+        CraftMapColorCache craftMapColorCache = new CraftMapColorCache(logger);
+        craftMapColorCache.initCache().get();
+
+        for (int r = 0; r < 256; r++) {
+            for (int g = 0; g < 256; g++) {
+                for (int b = 0; b < 256; b++) {
+                    Color color = new Color(r, g, b);
+                    Assert.assertEquals(String.format("Incorrect matched color c(%s, %s, %s)", color.getRed(), color.getGreen(), color.getBlue()), MapPalette.matchColor(color), craftMapColorCache.matchColor(color));
+                }
+            }
+        }
     }
 }
