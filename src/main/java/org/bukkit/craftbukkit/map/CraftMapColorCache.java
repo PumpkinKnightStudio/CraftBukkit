@@ -20,8 +20,8 @@ import org.bukkit.map.MapPalette;
 public class CraftMapColorCache implements MapPalette.MapColorCache {
 
     private static final String MD5_CACHE_HASH = "E88EDD068D12D39934B40E8B6B124C83";
-    private final byte[] cache = new byte[16777216]; // Red, Green and Blue have each a range from 0 to 255 each mean we need space for 256 * 256 * 256 values
-    private final File cacheFile = new File("map-color-cache");
+    private static final File CACHE_FILE = new File("map-color-cache.dat");
+    private final byte[] cache = new byte[256 * 256 * 256]; // Red, Green and Blue have each a range from 0 to 255 each mean we need space for 256 * 256 * 256 values
     private final Logger logger;
     private boolean cached = false;
 
@@ -56,10 +56,10 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
     }
 
     public CompletableFuture<Void> initCache() {
-        if (cacheFile.exists()) {
+        if (CACHE_FILE.exists()) {
             byte[] fileContent;
 
-            try (InputStream inputStream = new InflaterInputStream(new FileInputStream(cacheFile))) {
+            try (InputStream inputStream = new InflaterInputStream(new FileInputStream(CACHE_FILE))) {
                 fileContent = inputStream.readAllBytes();
             } catch (IOException e) {
                 logger.warning("Error while reading map color cache");
@@ -107,9 +107,9 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
         return CompletableFuture.runAsync(() -> {
             buildCache();
 
-            if (!cacheFile.exists()) {
+            if (!CACHE_FILE.exists()) {
                 try {
-                    if (!cacheFile.createNewFile()) {
+                    if (!CACHE_FILE.createNewFile()) {
                         cached = true;
                         return;
                     }
@@ -121,7 +121,7 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
                 }
             }
 
-            try (OutputStream outputStream = new DeflaterOutputStream(new FileOutputStream(cacheFile))) {
+            try (OutputStream outputStream = new DeflaterOutputStream(new FileOutputStream(CACHE_FILE))) {
                 outputStream.write(cache);
             } catch (IOException e) {
                 logger.warning("Error while building map color cache");
@@ -136,7 +136,7 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
     }
 
     private int toInt(Color color) {
-        return (((color.getRed() << 8) | color.getGreen()) << 8) | color.getBlue();
+        return color.getRGB() & 0xFFFFFF;
     }
 
     @Override
