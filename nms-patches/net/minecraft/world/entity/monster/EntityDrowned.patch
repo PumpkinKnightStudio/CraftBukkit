@@ -1,19 +1,11 @@
 --- a/net/minecraft/world/entity/monster/EntityDrowned.java
 +++ b/net/minecraft/world/entity/monster/EntityDrowned.java
-@@ -39,6 +39,7 @@
- import net.minecraft.world.entity.npc.EntityVillagerAbstract;
- import net.minecraft.world.entity.player.EntityHuman;
- import net.minecraft.world.entity.projectile.EntityThrownTrident;
-+import net.minecraft.world.entity.projectile.ProjectileHelper;
- import net.minecraft.world.item.ItemStack;
- import net.minecraft.world.item.Items;
- import net.minecraft.world.level.GeneratorAccess;
-@@ -239,7 +240,7 @@
+@@ -239,7 +239,7 @@
  
      @Override
      public void performRangedAttack(EntityLiving entityliving, float f) {
 -        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.level, this, new ItemStack(Items.TRIDENT));
-+        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.level, this, this.getItemInHand(ProjectileHelper.getWeaponHoldingHand(this, Items.TRIDENT))); // CraftBukkit - Use Trident in hand like skeletons (SPIGOT-7025)
++        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.level, this, this.getItemInHand(net.minecraft.world.entity.projectile.ProjectileHelper.getWeaponHoldingHand(this, Items.TRIDENT))); // CraftBukkit - Use Trident in hand like skeletons (SPIGOT-7025)
          double d0 = entityliving.getX() - this.getX();
          double d1 = entityliving.getY(0.3333333333333333D) - entitythrowntrident.getY();
          double d2 = entityliving.getZ() - this.getZ();
