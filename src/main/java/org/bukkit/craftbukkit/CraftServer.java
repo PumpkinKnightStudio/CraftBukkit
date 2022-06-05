@@ -363,9 +363,7 @@ public final class CraftServer implements Server {
 
         // Set map color cache
         if (configuration.getBoolean("settings.use-map-color-cache")) {
-            CraftMapColorCache craftMapColorCache = new CraftMapColorCache(logger);
-            craftMapColorCache.initCache();
-            MapPalette.setMapColorCache(craftMapColorCache);
+            MapPalette.setMapColorCache(new CraftMapColorCache(logger));
         }
     }
 

@@ -21,9 +21,10 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
 
     private static final String MD5_CACHE_HASH = "E88EDD068D12D39934B40E8B6B124C83";
     private static final File CACHE_FILE = new File("map-color-cache.dat");
-    private final byte[] cache = new byte[256 * 256 * 256]; // Red, Green and Blue have each a range from 0 to 255 each mean we need space for 256 * 256 * 256 values
+    private byte[] cache;
     private final Logger logger;
     private boolean cached = false;
+    private boolean running = false;
 
     public CraftMapColorCache(Logger logger) {
         this.logger = logger;
@@ -56,6 +57,9 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
     }
 
     public CompletableFuture<Void> initCache() {
+        Preconditions.checkState(!cached && !running, "Cache is already build or is currently being build");
+
+        cache = new byte[256 * 256 * 256]; // Red, Green and Blue have each a range from 0 to 255 each mean we need space for 256 * 256 * 256 values
         if (CACHE_FILE.exists()) {
             byte[] fileContent;
 
@@ -104,18 +108,21 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
     }
 
     private CompletableFuture<Void> buildAndSaveCache() {
+        running = true;
         return CompletableFuture.runAsync(() -> {
             buildCache();
 
             if (!CACHE_FILE.exists()) {
                 try {
                     if (!CACHE_FILE.createNewFile()) {
+                        running = false;
                         cached = true;
                         return;
                     }
                 } catch (IOException e) {
                     logger.warning("Error while building map color cache");
                     e.printStackTrace();
+                    running = false;
                     cached = true;
                     return;
                 }
@@ -126,10 +133,12 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
             } catch (IOException e) {
                 logger.warning("Error while building map color cache");
                 e.printStackTrace();
+                running = false;
                 cached = true;
                 return;
             }
 
+            running = false;
             cached = true;
             logger.info("Map color cache build successfully");
         }, SystemUtils.backgroundExecutor());
@@ -141,7 +150,7 @@ public class CraftMapColorCache implements MapPalette.MapColorCache {
 
     @Override
     public boolean isCached() {
-        return cached;
+        return cached || (!running && initCache().isDone());
     }
 
     @Override
