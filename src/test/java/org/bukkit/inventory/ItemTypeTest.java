@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -36,7 +35,9 @@ public class ItemTypeTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.ITEM.getKey(item);
 
             try {
-                ItemType itemType = (ItemType) ItemType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
+                Field field = ItemType.class.getField(minecraftKey.getPath().toUpperCase());
+                Assert.assertSame("No Bukkit default itemType for " + minecraftKey, ItemType.class, field.getType());
+                ItemType itemType = (ItemType) field.get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(itemType.getKey()));
             } catch (NoSuchFieldException e) {

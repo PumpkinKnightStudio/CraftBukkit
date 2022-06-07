@@ -35,7 +35,9 @@ public class BlockTypeTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = IRegistry.BLOCK.getKey(block);
 
             try {
-                BlockType<?> blockType = (BlockType<?>) BlockType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
+                Field field = BlockType.class.getField(minecraftKey.getPath().toUpperCase());
+                Assert.assertSame("No Bukkit default blockType for " + minecraftKey, BlockType.class, field.getType());
+                BlockType<?> blockType = (BlockType<?>) field.get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(blockType.getKey()));
             } catch (NoSuchFieldException e) {

@@ -7,6 +7,10 @@ import java.util.logging.Logger;
 import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.FluidType;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
@@ -74,25 +78,38 @@ public final class DummyServer {
                 MinecraftKey key = CraftNamespacedKey.toMinecraft(mock.getArgument(1));
 
                 switch (registry) {
-                    case org.bukkit.Tag.REGISTRY_BLOCKS:
+                    case org.bukkit.Tag.REGISTRY_BLOCKS -> {
                         Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
-
-                        return new CraftBlockTag(IRegistry.BLOCK, TagKey.create(IRegistry.BLOCK_REGISTRY, key));
-                    case org.bukkit.Tag.REGISTRY_ITEMS:
+                        TagKey<Block> blockTagKey = TagKey.create(IRegistry.BLOCK_REGISTRY, key);
+                        if (IRegistry.BLOCK.isKnownTagName(blockTagKey)) {
+                            return new CraftBlockTag(IRegistry.BLOCK, blockTagKey);
+                        }
+                    }
+                    case org.bukkit.Tag.REGISTRY_ITEMS -> {
                         Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
-
-                        return new CraftItemTag(IRegistry.ITEM, TagKey.create(IRegistry.ITEM_REGISTRY, key));
-                    case org.bukkit.Tag.REGISTRY_FLUIDS:
+                        TagKey<Item> itemTagKey = TagKey.create(IRegistry.ITEM_REGISTRY, key);
+                        if (IRegistry.ITEM.isKnownTagName(itemTagKey)) {
+                            return new CraftItemTag(IRegistry.ITEM, itemTagKey);
+                        }
+                    }
+                    case org.bukkit.Tag.REGISTRY_FLUIDS -> {
                         Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace must have fluid type");
-
-                        return new CraftFluidTag(IRegistry.FLUID, TagKey.create(IRegistry.FLUID_REGISTRY, key));
-                    case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
+                        TagKey<FluidType> fluidTagKey = TagKey.create(IRegistry.FLUID_REGISTRY, key);
+                        if (IRegistry.FLUID.isKnownTagName(fluidTagKey)) {
+                            return new CraftFluidTag(IRegistry.FLUID, fluidTagKey);
+                        }
+                    }
+                    case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
                         Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
-
-                        return new CraftEntityTag(IRegistry.ENTITY_TYPE, TagKey.create(IRegistry.ENTITY_TYPE_REGISTRY, key));
-                    default:
-                        throw new IllegalArgumentException();
+                        TagKey<EntityTypes<?>> entityTagKey = TagKey.create(IRegistry.ENTITY_TYPE_REGISTRY, key);
+                        if (IRegistry.ENTITY_TYPE.isKnownTagName(entityTagKey)) {
+                            return new CraftEntityTag(IRegistry.ENTITY_TYPE, entityTagKey);
+                        }
+                    }
+                    default -> throw new IllegalArgumentException();
                 }
+
+                return null;
             });
 
             Bukkit.setServer(instance);

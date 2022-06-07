@@ -1,8 +1,10 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
-import net.minecraft.world.entity.decoration.Paintings;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -12,24 +14,24 @@ public class CraftArt extends Art {
     private static final int UNIT_MULTIPLIER = 16;
     private static int count = 0;
 
-    public static Art minecraftToBukkit(Paintings minecraft) {
+    public static Art minecraftToBukkit(Holder<PaintingVariant> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(IRegistry.MOTIVE.getKey(minecraft)));
+        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(IRegistry.PAINTING_VARIANT.getKey(minecraft.value())));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }
 
-    public static Paintings bukkitToMinecraft(Art bukkit) {
+    public static Holder<PaintingVariant> bukkitToMinecraft(Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
-        return ((CraftArt) bukkit).getHandle();
+        return IRegistry.PAINTING_VARIANT.getHolderOrThrow(ResourceKey.create(IRegistry.PAINTING_VARIANT_REGISTRY, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
     }
 
     private final NamespacedKey key;
-    private final Paintings painting;
+    private final PaintingVariant painting;
     private final String name;
     private final int ordinal;
 
-    public CraftArt(NamespacedKey key, Paintings painting) {
+    public CraftArt(NamespacedKey key, PaintingVariant painting) {
         this.key = key;
         this.painting = painting;
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
@@ -44,7 +46,7 @@ public class CraftArt extends Art {
         this.ordinal = count++;
     }
 
-    public Paintings getHandle() {
+    public PaintingVariant getHandle() {
         return painting;
     }
 

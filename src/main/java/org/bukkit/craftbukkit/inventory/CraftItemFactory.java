@@ -1,5 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.IRegistry;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Item;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -151,7 +158,8 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.CAMPFIRE || material == Material.SOUL_CAMPFIRE
                 || material == Material.JIGSAW || material == Material.LECTERN
                 || material == Material.SMOKER || material == Material.BEEHIVE
-                || material == Material.BEE_NEST || material == Material.SCULK_SENSOR) {
+                || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
+                || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR) {
             return new CraftMetaBlockState(meta, material);
         }
         if (material == Material.TROPICAL_FISH_BUCKET) {
@@ -242,5 +250,24 @@ public final class CraftItemFactory implements ItemFactory {
     @Override
     public Material updateMaterial(ItemMeta meta, Material material) throws IllegalArgumentException {
         return ((CraftMetaItem) meta).updateMaterial(material);
+    }
+
+    @Override
+    public ItemStack createItemStack(String input) throws IllegalArgumentException {
+        try {
+            ArgumentParserItemStack.a arg = ArgumentParserItemStack.parseForItem(HolderLookup.forRegistry(IRegistry.ITEM), new StringReader(input));
+
+            Item item = arg.item().value();
+            net.minecraft.world.item.ItemStack nmsItemStack = new net.minecraft.world.item.ItemStack(item);
+
+            NBTTagCompound nbt = arg.nbt();
+            if (nbt != null) {
+                nmsItemStack.setTag(nbt);
+            }
+
+            return CraftItemStack.asCraftMirror(nmsItemStack);
+        } catch (CommandSyntaxException ex) {
+            throw new IllegalArgumentException("Could not parse ItemStack: " + input, ex);
+        }
     }
 }

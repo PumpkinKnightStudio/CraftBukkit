@@ -10,6 +10,7 @@ import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -422,35 +423,20 @@ public final class CraftItemStack extends ItemStack {
         if (type == Material.FURNACE || type == Material.CHEST
                 || type == Material.TRAPPED_CHEST || type == Material.JUKEBOX
                 || type == Material.DISPENSER || type == Material.DROPPER
-                || type == Material.ACACIA_SIGN || type == Material.ACACIA_WALL_SIGN
-                || type == Material.BIRCH_SIGN || type == Material.BIRCH_WALL_SIGN
-                || type == Material.CRIMSON_SIGN || type == Material.CRIMSON_WALL_SIGN
-                || type == Material.DARK_OAK_SIGN || type == Material.DARK_OAK_WALL_SIGN
-                || type == Material.JUNGLE_SIGN || type == Material.JUNGLE_WALL_SIGN
-                || type == Material.OAK_SIGN || type == Material.OAK_WALL_SIGN
-                || type == Material.SPRUCE_SIGN || type == Material.SPRUCE_WALL_SIGN
-                || type == Material.WARPED_SIGN || type == Material.WARPED_WALL_SIGN
-                || type == Material.SPAWNER || type == Material.BREWING_STAND
-                || type == Material.ENCHANTING_TABLE || type == Material.COMMAND_BLOCK
-                || type == Material.REPEATING_COMMAND_BLOCK || type == Material.CHAIN_COMMAND_BLOCK
-                || type == Material.BEACON || type == Material.DAYLIGHT_DETECTOR
-                || type == Material.HOPPER || type == Material.COMPARATOR
-                || type == Material.SHIELD || type == Material.STRUCTURE_BLOCK
-                || type == Material.SHULKER_BOX || type == Material.WHITE_SHULKER_BOX
-                || type == Material.ORANGE_SHULKER_BOX || type == Material.MAGENTA_SHULKER_BOX
-                || type == Material.LIGHT_BLUE_SHULKER_BOX || type == Material.YELLOW_SHULKER_BOX
-                || type == Material.LIME_SHULKER_BOX || type == Material.PINK_SHULKER_BOX
-                || type == Material.GRAY_SHULKER_BOX || type == Material.LIGHT_GRAY_SHULKER_BOX
-                || type == Material.CYAN_SHULKER_BOX || type == Material.PURPLE_SHULKER_BOX
-                || type == Material.BLUE_SHULKER_BOX || type == Material.BROWN_SHULKER_BOX
-                || type == Material.GREEN_SHULKER_BOX || type == Material.RED_SHULKER_BOX
-                || type == Material.BLACK_SHULKER_BOX || type == Material.ENDER_CHEST
-                || type == Material.BARREL || type == Material.BELL
-                || type == Material.BLAST_FURNACE || type == Material.CAMPFIRE
-                || type == Material.SOUL_CAMPFIRE || type == Material.JIGSAW
-                || type == Material.LECTERN || type == Material.SMOKER
-                || type == Material.BEEHIVE || type == Material.BEE_NEST
-                || type == Material.SCULK_SENSOR) {
+                || Tag.SIGNS.isTagged(type) || type == Material.SPAWNER
+                || type == Material.BREWING_STAND || type == Material.ENCHANTING_TABLE
+                || type == Material.COMMAND_BLOCK || type == Material.REPEATING_COMMAND_BLOCK
+                || type == Material.CHAIN_COMMAND_BLOCK || type == Material.BEACON
+                || type == Material.DAYLIGHT_DETECTOR || type == Material.HOPPER
+                || type == Material.COMPARATOR || type == Material.SHIELD
+                || type == Material.STRUCTURE_BLOCK || Tag.SHULKER_BOXES.isTagged(type)
+                || type == Material.ENDER_CHEST || type == Material.BARREL
+                || type == Material.BELL || type == Material.BLAST_FURNACE
+                || type == Material.CAMPFIRE || type == Material.SOUL_CAMPFIRE
+                || type == Material.JIGSAW || type == Material.LECTERN
+                || type == Material.SMOKER || type == Material.BEEHIVE
+                || type == Material.BEE_NEST || type == Material.SCULK_CATALYST
+                || type == Material.SCULK_SHRIEKER || type == Material.SCULK_SENSOR) {
             return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
         }
         if (type == Material.TROPICAL_FISH_BUCKET) {

@@ -30,7 +30,7 @@ public class CraftPainting extends CraftHanging implements Painting {
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
         Holder<PaintingVariant> oldArt = painting.getVariant();
-        painting.setVariant(CraftArt.minecraftToBukkit(art));
+        painting.setVariant(CraftArt.bukkitToMinecraft(art));
         painting.setDirection(painting.getDirection());
         if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit

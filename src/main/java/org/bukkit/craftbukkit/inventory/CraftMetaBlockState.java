@@ -46,7 +46,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         this.material = material;
 
         if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT);
+            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT).copy();
         } else {
             blockEntityTag = null;
         }
@@ -145,7 +145,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                 || material == Material.CAMPFIRE || material == Material.SOUL_CAMPFIRE
                 || material == Material.JIGSAW || material == Material.LECTERN
                 || material == Material.SMOKER || material == Material.BEEHIVE
-                || material == Material.BEE_NEST || material == Material.SCULK_SENSOR) {
+                || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
+                || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR) {
                 return true;
         }
 
@@ -171,19 +172,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         Material stateMaterial = (material != Material.SHIELD) ? material : shieldToBannerHack(blockEntityTag); // Only actually used for jigsaws
         if (blockEntityTag != null) {
             if (material == Material.SHIELD) {
-                blockEntityTag.putString("id", "banner");
-            } else if (material == Material.SHULKER_BOX || material == Material.WHITE_SHULKER_BOX
-                    || material == Material.ORANGE_SHULKER_BOX || material == Material.MAGENTA_SHULKER_BOX
-                    || material == Material.LIGHT_BLUE_SHULKER_BOX || material == Material.YELLOW_SHULKER_BOX
-                    || material == Material.LIME_SHULKER_BOX || material == Material.PINK_SHULKER_BOX
-                    || material == Material.GRAY_SHULKER_BOX || material == Material.LIGHT_GRAY_SHULKER_BOX
-                    || material == Material.CYAN_SHULKER_BOX || material == Material.PURPLE_SHULKER_BOX
-                    || material == Material.BLUE_SHULKER_BOX || material == Material.BROWN_SHULKER_BOX
-                    || material == Material.GREEN_SHULKER_BOX || material == Material.RED_SHULKER_BOX
-                    || material == Material.BLACK_SHULKER_BOX) {
-                blockEntityTag.putString("id", "shulker_box");
+                blockEntityTag.putString("id", "minecraft:banner");
+            } else if (Tag.SHULKER_BOXES.isTagged(material)) {
+                blockEntityTag.putString("id", "minecraft:shulker_box");
             } else if (material == Material.BEE_NEST || material == Material.BEEHIVE) {
-                blockEntityTag.putString("id", "beehive");
+                blockEntityTag.putString("id", "minecraft:beehive");
             }
         }
 

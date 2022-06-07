@@ -174,7 +174,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public boolean isBurnable() {
-        return ((BlockFire) Blocks.FIRE).flameOdds.getOrDefault(block, 0) > 0;
+        return ((BlockFire) Blocks.FIRE).igniteOdds.getOrDefault(block, 0) > 0;
     }
 
     @Override
