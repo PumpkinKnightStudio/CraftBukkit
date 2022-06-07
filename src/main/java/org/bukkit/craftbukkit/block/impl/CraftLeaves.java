@@ -18,6 +18,8 @@ public final class CraftLeaves extends org.bukkit.craftbukkit.block.data.CraftBl
     private static final net.minecraft.world.level.block.state.properties.BlockStateInteger DISTANCE = getInteger(net.minecraft.world.level.block.BlockLeaves.class, "distance");
     private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean PERSISTENT = getBoolean(net.minecraft.world.level.block.BlockLeaves.class, "persistent");
 
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockLeaves.class, "waterlogged");
+
     @Override
     public boolean isPersistent() {
         return get(PERSISTENT);
@@ -36,5 +38,15 @@ public final class CraftLeaves extends org.bukkit.craftbukkit.block.data.CraftBl
     @Override
     public void setDistance(int distance) {
         set(DISTANCE, distance);
+    }
+
+    @Override
+    public boolean isWaterlogged() {
+        return get(WATERLOGGED);
+    }
+
+    @Override
+    public void setWaterlogged(boolean waterlogged) {
+        set(WATERLOGGED, waterlogged);
     }
 }

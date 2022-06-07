@@ -8,6 +8,8 @@ public class CraftLeaves extends CraftBlockData implements Leaves {
     private static final net.minecraft.world.level.block.state.properties.BlockStateInteger DISTANCE = getInteger("distance");
     private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean PERSISTENT = getBoolean("persistent");
 
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockLeaves.class, "waterlogged");
+
     @Override
     public boolean isPersistent() {
         return get(PERSISTENT);
@@ -26,5 +28,15 @@ public class CraftLeaves extends CraftBlockData implements Leaves {
     @Override
     public void setDistance(int distance) {
         set(DISTANCE, distance);
+    }
+
+    @Override
+    public boolean isWaterlogged() {
+        return get(WATERLOGGED);
+    }
+
+    @Override
+    public void setWaterlogged(boolean waterlogged) {
+        set(WATERLOGGED, waterlogged);
     }
 }
