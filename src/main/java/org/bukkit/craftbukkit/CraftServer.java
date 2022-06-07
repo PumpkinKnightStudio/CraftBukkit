@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -52,10 +51,10 @@ import net.minecraft.commands.CommandDispatcher;
 import net.minecraft.commands.CommandListenerWrapper;
 import net.minecraft.commands.arguments.ArgumentEntity;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerCommand;
 import net.minecraft.server.bossevents.BossBattleCustom;
 import net.minecraft.server.commands.CommandReload;
@@ -97,11 +96,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
 import net.minecraft.world.level.WorldSettings;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.biome.WorldChunkManager;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.dimension.WorldDimension;
-import net.minecraft.world.level.levelgen.ChunkGeneratorAbstract;
 import net.minecraft.world.level.levelgen.GeneratorSettings;
 import net.minecraft.world.level.levelgen.MobSpawnerPatrol;
 import net.minecraft.world.level.levelgen.MobSpawnerPhantom;
@@ -129,6 +125,7 @@ import org.bukkit.UnsafeValues;
 import org.bukkit.Warning.WarningState;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
@@ -155,7 +152,6 @@ import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.generator.CraftWorldInfo;
-import org.bukkit.craftbukkit.generator.CustomWorldChunkManager;
 import org.bukkit.craftbukkit.generator.OldCraftChunkData;
 import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftBlastingRecipe;
@@ -635,7 +631,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean getGenerateStructures() {
-        return this.getProperties().getWorldGenSettings(this.getServer().registryAccess()).generateFeatures();
+        return this.getProperties().getWorldGenSettings(this.getServer().registryAccess()).generateStructures();
     }
 
     @Override
@@ -663,17 +659,17 @@ public final class CraftServer implements Server {
 
     @Override
     public String getResourcePack() {
-        return this.getServer().getResourcePack();
+        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::url).orElse("");
     }
 
     @Override
     public String getResourcePackHash() {
-        return this.getServer().getResourcePackHash().toUpperCase(Locale.ROOT);
+        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::hash).orElse("").toUpperCase(Locale.ROOT);
     }
 
     @Override
     public String getResourcePackPrompt() {
-        return CraftChatMessage.fromComponent(this.getServer().getResourcePackPrompt());
+        return this.getServer().getServerResourcePack().map(MinecraftServer.ServerResourcePackInfo::prompt).map(CraftChatMessage::fromComponent).orElse("");
     }
 
     @Override
@@ -1035,7 +1031,7 @@ public final class CraftServer implements Server {
         if (worlddata == null) {
             DedicatedServerProperties.a properties = new DedicatedServerProperties.a(Objects.toString(creator.seed()), ChatDeserializer.parse((creator.generatorSettings().isEmpty()) ? "{}" : creator.generatorSettings()), creator.generateStructures(), creator.type().name().toLowerCase(Locale.ROOT));
 
-            GeneratorSettings generatorsettings = GeneratorSettings.create(console.registryAccess(), properties);
+            GeneratorSettings generatorsettings = properties.create(console.registryAccess());
             worldSettings = new WorldSettings(name, EnumGamemode.byId(getDefaultGameMode().getValue()), hardcore, EnumDifficulty.EASY, false, new GameRules(), console.datapackconfiguration);
             worlddata = new WorldDataServer(worldSettings, generatorsettings, Lifecycle.stable());
         }
@@ -1052,27 +1048,10 @@ public final class CraftServer implements Server {
         List<MobSpawner> list = ImmutableList.of(new MobSpawnerPhantom(), new MobSpawnerPatrol(), new MobSpawnerCat(), new VillageSiege(), new MobSpawnerTrader(worlddata));
         IRegistry<WorldDimension> iregistry = worlddata.worldGenSettings().dimensions();
         WorldDimension worlddimension = (WorldDimension) iregistry.get(actualDimension);
-        Holder<DimensionManager> holder;
-        net.minecraft.world.level.chunk.ChunkGenerator chunkgenerator;
 
-        if (worlddimension == null) {
-            holder = console.registryHolder.registryOrThrow(IRegistry.DIMENSION_TYPE_REGISTRY).getOrCreateHolder(DimensionManager.OVERWORLD_LOCATION);
-            chunkgenerator = GeneratorSettings.makeDefaultOverworld(console.registryHolder, (new Random()).nextLong());
-        } else {
-            holder = worlddimension.typeHolder();
-            chunkgenerator = worlddimension.generator();
-        }
-
-        WorldInfo worldInfo = new CraftWorldInfo(worlddata, worldSession, creator.environment(), holder.value());
+        WorldInfo worldInfo = new CraftWorldInfo(worlddata, worldSession, creator.environment(), worlddimension.typeHolder().value());
         if (biomeProvider == null && generator != null) {
             biomeProvider = generator.getDefaultBiomeProvider(worldInfo);
-        }
-
-        if (biomeProvider != null) {
-            WorldChunkManager worldChunkManager = new CustomWorldChunkManager(worldInfo, biomeProvider, console.registryHolder.ownedRegistryOrThrow(IRegistry.BIOME_REGISTRY));
-            if (chunkgenerator instanceof ChunkGeneratorAbstract cga) {
-                chunkgenerator = new ChunkGeneratorAbstract(cga.structureSets, cga.noises, worldChunkManager, cga.ringPlacementSeed, cga.settings);
-            }
         }
 
         ResourceKey<net.minecraft.world.level.World> worldKey;
@@ -1085,8 +1064,8 @@ public final class CraftServer implements Server {
             worldKey = ResourceKey.create(IRegistry.DIMENSION_REGISTRY, new MinecraftKey(name.toLowerCase(java.util.Locale.ENGLISH)));
         }
 
-        WorldServer internal = (WorldServer) new WorldServer(console, console.executor, worldSession, worlddata, worldKey, holder, getServer().progressListenerFactory.create(11),
-                chunkgenerator, worlddata.worldGenSettings().isDebug(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator, biomeProvider);
+        WorldServer internal = (WorldServer) new WorldServer(console, console.executor, worldSession, worlddata, worldKey, worlddimension, getServer().progressListenerFactory.create(11),
+                worlddata.worldGenSettings().isDebug(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator, biomeProvider);
 
         if (!(worlds.containsKey(name.toLowerCase(java.util.Locale.ENGLISH)))) {
             return null;
@@ -1181,6 +1160,11 @@ public final class CraftServer implements Server {
             return;
         }
         worlds.put(world.getName().toLowerCase(java.util.Locale.ENGLISH), world);
+    }
+
+    @Override
+    public WorldBorder createWorldBorder() {
+        return new CraftWorldBorder(new net.minecraft.world.level.border.WorldBorder());
     }
 
     @Override
@@ -1279,6 +1263,11 @@ public final class CraftServer implements Server {
             @Override
             public boolean stillValid(EntityHuman entityhuman) {
                 return false;
+            }
+
+            @Override
+            public net.minecraft.world.item.ItemStack quickMoveStack(EntityHuman entityhuman, int i) {
+                return net.minecraft.world.item.ItemStack.EMPTY;
             }
         };
         InventoryCrafting inventoryCrafting = new InventoryCrafting(container, 3, 3);
@@ -2146,56 +2135,73 @@ public final class CraftServer implements Server {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Keyed> org.bukkit.Tag<T> getTag(String registry, NamespacedKey tag, Class<T> clazz) {
+        Validate.notNull(registry, "registry cannot be null");
+        Validate.notNull(tag, "NamespacedKey cannot be null");
+        Validate.notNull(clazz, "Class cannot be null");
         MinecraftKey key = CraftNamespacedKey.toMinecraft(tag);
 
         switch (registry) {
-            case org.bukkit.Tag.REGISTRY_BLOCKS:
+            case org.bukkit.Tag.REGISTRY_BLOCKS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
-
-                return (org.bukkit.Tag<T>) new CraftBlockTag(IRegistry.BLOCK, TagKey.create(IRegistry.BLOCK_REGISTRY, key));
-            case org.bukkit.Tag.REGISTRY_ITEMS:
+                TagKey<Block> blockTagKey = TagKey.create(IRegistry.BLOCK_REGISTRY, key);
+                if (IRegistry.BLOCK.isKnownTagName(blockTagKey)) {
+                    return (org.bukkit.Tag<T>) new CraftBlockTag(IRegistry.BLOCK, blockTagKey);
+                }
+            }
+            case org.bukkit.Tag.REGISTRY_ITEMS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
-
-                return (org.bukkit.Tag<T>) new CraftItemTag(IRegistry.ITEM, TagKey.create(IRegistry.ITEM_REGISTRY, key));
-            case org.bukkit.Tag.REGISTRY_FLUIDS:
+                TagKey<Item> itemTagKey = TagKey.create(IRegistry.ITEM_REGISTRY, key);
+                if (IRegistry.ITEM.isKnownTagName(itemTagKey)) {
+                    return (org.bukkit.Tag<T>) new CraftItemTag(IRegistry.ITEM, itemTagKey);
+                }
+            }
+            case org.bukkit.Tag.REGISTRY_FLUIDS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace must have fluid type");
-
-                return (org.bukkit.Tag<T>) new CraftFluidTag(IRegistry.FLUID, TagKey.create(IRegistry.FLUID_REGISTRY, key));
-            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
+                TagKey<FluidType> fluidTagKey = TagKey.create(IRegistry.FLUID_REGISTRY, key);
+                if (IRegistry.FLUID.isKnownTagName(fluidTagKey)) {
+                    return (org.bukkit.Tag<T>) new CraftFluidTag(IRegistry.FLUID, fluidTagKey);
+                }
+            }
+            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
-
-                return (org.bukkit.Tag<T>) new CraftEntityTag(IRegistry.ENTITY_TYPE, TagKey.create(IRegistry.ENTITY_TYPE_REGISTRY, key));
-            default:
-                throw new IllegalArgumentException();
+                TagKey<EntityTypes<?>> entityTagKey = TagKey.create(IRegistry.ENTITY_TYPE_REGISTRY, key);
+                if (IRegistry.ENTITY_TYPE.isKnownTagName(entityTagKey)) {
+                    return (org.bukkit.Tag<T>) new CraftEntityTag(IRegistry.ENTITY_TYPE, entityTagKey);
+                }
+            }
+            default -> throw new IllegalArgumentException();
         }
+
+        return null;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<T> clazz) {
+        Validate.notNull(registry, "registry cannot be null");
+        Validate.notNull(clazz, "Class cannot be null");
         switch (registry) {
-            case org.bukkit.Tag.REGISTRY_BLOCKS:
+            case org.bukkit.Tag.REGISTRY_BLOCKS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
-
                 IRegistry<Block> blockTags = IRegistry.BLOCK;
                 return blockTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
-            case org.bukkit.Tag.REGISTRY_ITEMS:
+            }
+            case org.bukkit.Tag.REGISTRY_ITEMS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
-
                 IRegistry<Item> itemTags = IRegistry.ITEM;
                 return itemTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
-            case org.bukkit.Tag.REGISTRY_FLUIDS:
+            }
+            case org.bukkit.Tag.REGISTRY_FLUIDS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Fluid namespace must have fluid type");
-
                 IRegistry<FluidType> fluidTags = IRegistry.FLUID;
                 return fluidTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftFluidTag(fluidTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
-            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES:
+            }
+            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
-
                 IRegistry<EntityTypes<?>> entityTags = IRegistry.ENTITY_TYPE;
                 return entityTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftEntityTag(entityTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
-            default:
-                throw new IllegalArgumentException();
+            }
+            default -> throw new IllegalArgumentException();
         }
     }
 

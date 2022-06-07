@@ -22,7 +22,7 @@
 +                    }
 +                    // CraftBukkit end
                  } else if (i < 4) {
-                     j = random.nextInt(4);
+                     j = randomsource.nextInt(4);
                      if (flag1) {
 @@ -97,18 +103,30 @@
                          BlockPosition blockposition2 = blockposition.relative(enumdirection);
@@ -59,3 +59,15 @@
                  }
  
              }
+@@ -245,6 +263,11 @@
+         BlockPosition blockposition = movingobjectpositionblock.getBlockPos();
+ 
+         if (!world.isClientSide && iprojectile.mayInteract(world, blockposition) && iprojectile.getType().is(TagsEntity.IMPACT_PROJECTILES)) {
++            // CraftBukkit start
++            if (CraftEventFactory.callEntityChangeBlockEvent(iprojectile, blockposition, Blocks.AIR.defaultBlockState()).isCancelled()) {
++                return;
++            }
++            // CraftBukkit end
+             world.destroyBlock(blockposition, true, iprojectile);
+         }
+ 
