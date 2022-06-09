@@ -7,24 +7,23 @@ import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.inventory.meta.GoatHornMeta;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.inventory.meta.MusicInstrumentMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
-public class CraftMetaGoatHorn extends CraftMetaItem implements GoatHornMeta {
+public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInstrumentMeta {
     static final ItemMetaKey GOATHORN_INSTRUMENT = new ItemMetaKey("instrument");
     private Instrument instrument;
 
-    CraftMetaGoatHorn(CraftMetaItem meta) {
+    CraftMetaMusicInstrument(CraftMetaItem meta) {
         super(meta);
 
-        if (meta instanceof CraftMetaGoatHorn) {
-            CraftMetaGoatHorn craftMetaGoatHorn = (CraftMetaGoatHorn) meta;
-            this.instrument = craftMetaGoatHorn.instrument;
+        if (meta instanceof CraftMetaMusicInstrument) {
+            CraftMetaMusicInstrument craftMetaMusicInstrument = (CraftMetaMusicInstrument) meta;
+            this.instrument = craftMetaMusicInstrument.instrument;
         }
     }
 
-    CraftMetaGoatHorn(NBTTagCompound tag) {
+    CraftMetaMusicInstrument(NBTTagCompound tag) {
         super(tag);
 
         if (tag.contains(GOATHORN_INSTRUMENT.NBT)) {
@@ -33,7 +32,7 @@ public class CraftMetaGoatHorn extends CraftMetaItem implements GoatHornMeta {
         }
     }
 
-    CraftMetaGoatHorn(Map<String, Object> map) {
+    CraftMetaMusicInstrument(Map<String, Object> map) {
         super(map);
 
         String instrumentString = SerializableMeta.getString(map, GOATHORN_INSTRUMENT.BUKKIT, true);
@@ -91,12 +90,12 @@ public class CraftMetaGoatHorn extends CraftMetaItem implements GoatHornMeta {
             hash = 61 * hash + instrument.ordinal();
         }
 
-        return orginal != hash ? CraftMetaGoatHorn.class.hashCode() ^ hash : hash;
+        return orginal != hash ? CraftMetaMusicInstrument.class.hashCode() ^ hash : hash;
     }
 
     @Override
-    public CraftMetaGoatHorn clone() {
-        CraftMetaGoatHorn meta = (CraftMetaGoatHorn) super.clone();
+    public CraftMetaMusicInstrument clone() {
+        CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) super.clone();
         meta.instrument = this.instrument;
         return meta;
     }
@@ -124,7 +123,7 @@ public class CraftMetaGoatHorn extends CraftMetaItem implements GoatHornMeta {
     }
 
     @Override
-    public void setInstrument(@Nullable Instrument instrument) {
+    public void setInstrument(Instrument instrument) {
         Validate.notNull(instrument, "Instrument cannot be null");
         this.instrument = instrument;
     }

@@ -1419,7 +1419,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         CraftMetaCompass.LODESTONE_POS.NBT,
                         CraftMetaCompass.LODESTONE_TRACKED.NBT,
                         CraftMetaBundle.ITEMS.NBT,
-                        CraftMetaGoatHorn.GOATHORN_INSTRUMENT.NBT
+                        CraftMetaMusicInstrument.GOATHORN_INSTRUMENT.NBT
                 ));
             }
             return HANDLED_TAGS;

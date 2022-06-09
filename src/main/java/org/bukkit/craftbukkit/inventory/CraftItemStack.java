@@ -552,7 +552,7 @@ public final class CraftItemStack extends ItemStack {
             case BUNDLE:
                 return new CraftMetaBundle(item.getTag());
             case GOAT_HORN:
-                return new CraftMetaGoatHorn(item.getTag());
+                return new CraftMetaMusicInstrument(item.getTag());
             default:
                 return new CraftMetaItem(item.getTag());
         }

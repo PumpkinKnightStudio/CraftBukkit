@@ -33,23 +33,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.AxolotlBucketMeta;
-import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.inventory.meta.BlockDataMeta;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BundleMeta;
-import org.bukkit.inventory.meta.CrossbowMeta;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.FireworkEffectMeta;
-import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.GoatHornMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.KnowledgeBookMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.inventory.meta.MapMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.inventory.meta.TropicalFishBucketMeta;
+import org.bukkit.inventory.meta.*;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -364,8 +348,8 @@ public class ItemMetaTest extends AbstractTestingBase {
             },
             new StackProvider(Material.GOAT_HORN) {
                 @Override ItemStack operate(ItemStack cleanStack) {
-                    final CraftMetaGoatHorn meta = (CraftMetaGoatHorn) cleanStack.getItemMeta();
-                    meta.setInstrument(GoatHornMeta.Instrument.ADMIRE);
+                    final CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) cleanStack.getItemMeta();
+                    meta.setInstrument(MusicInstrumentMeta.Instrument.ADMIRE);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
