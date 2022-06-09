@@ -119,7 +119,6 @@ import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;

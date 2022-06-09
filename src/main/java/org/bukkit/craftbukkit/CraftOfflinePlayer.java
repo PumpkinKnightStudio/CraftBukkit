@@ -5,7 +5,13 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.mojang.serialization.DataResult;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.DynamicOpsNBT;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.players.WhiteListEntry;
 import net.minecraft.stats.ServerStatisticManager;
@@ -19,6 +25,7 @@ import org.bukkit.Server;
 import org.bukkit.Statistic;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -245,6 +252,26 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     @Override
     public boolean hasPlayedBefore() {
         return getData() != null;
+    }
+
+    @Override
+    public Location getLastDeathLocation() {
+        if (getData().contains("LastDeathLocation", 10)) {
+            return GlobalPos.CODEC.parse(DynamicOpsNBT.INSTANCE, getData().get("LastDeathLocation")).result().map(CraftMemoryMapper::fromNms).orElse(null);
+        }
+        return null;
+    }
+
+    @Override
+    public void setLastDeathLocation(Location location) {
+        if (location == null) {
+            getData().remove("LastDeathLocation");
+        } else {
+            GlobalPos gpLastDeath = CraftMemoryMapper.toNms(location);
+            GlobalPos.CODEC.encodeStart(DynamicOpsNBT.INSTANCE, gpLastDeath).result().ifPresent(nbtBase -> {
+                getData().put("LastDeathLocation", nbtBase);
+            });
+        }
     }
 
     @Override
