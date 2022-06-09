@@ -158,6 +158,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     .put(CraftMetaEntityTag.class, "ENTITY_TAG")
                     .put(CraftMetaCompass.class, "COMPASS")
                     .put(CraftMetaBundle.class, "BUNDLE")
+                    .put(CraftMetaMusicInstrument.class, "MUSIC_INSTRUMENT")
                     .put(CraftMetaItem.class, "UNSPECIFIC")
                     .build();
 
@@ -1419,7 +1420,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         CraftMetaCompass.LODESTONE_POS.NBT,
                         CraftMetaCompass.LODESTONE_TRACKED.NBT,
                         CraftMetaBundle.ITEMS.NBT,
-                        CraftMetaMusicInstrument.GOATHORN_INSTRUMENT.NBT
+                        CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT.NBT
                 ));
             }
             return HANDLED_TAGS;

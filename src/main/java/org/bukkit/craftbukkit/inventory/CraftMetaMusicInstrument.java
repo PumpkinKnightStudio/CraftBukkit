@@ -11,7 +11,7 @@ import org.bukkit.inventory.meta.MusicInstrumentMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInstrumentMeta {
-    static final ItemMetaKey GOATHORN_INSTRUMENT = new ItemMetaKey("instrument");
+    static final ItemMetaKey GOAT_HORN_INSTRUMENT = new ItemMetaKey("instrument");
     private Instrument instrument;
 
     CraftMetaMusicInstrument(CraftMetaItem meta) {
@@ -26,18 +26,18 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
     CraftMetaMusicInstrument(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.contains(GOATHORN_INSTRUMENT.NBT)) {
-            String string = tag.getString(GOATHORN_INSTRUMENT.NBT);
-            this.instrument = Instrument.valueOf(NamespacedKey.minecraft(string).toString());
+        if (tag.contains(GOAT_HORN_INSTRUMENT.NBT)) {
+            String string = tag.getString(GOAT_HORN_INSTRUMENT.NBT);
+            this.instrument = Instrument.getByKey(NamespacedKey.fromString(string));
         }
     }
 
     CraftMetaMusicInstrument(Map<String, Object> map) {
         super(map);
 
-        String instrumentString = SerializableMeta.getString(map, GOATHORN_INSTRUMENT.BUKKIT, true);
+        String instrumentString = SerializableMeta.getString(map, GOAT_HORN_INSTRUMENT.BUKKIT, true);
         if (instrumentString != null) {
-            this.instrument = Instrument.valueOf(instrumentString.toUpperCase());
+            this.instrument = Instrument.getByKey(NamespacedKey.fromString(instrumentString));
         }
 
     }
@@ -46,7 +46,7 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
     void applyToItem(NBTTagCompound tag) {
         super.applyToItem(tag);
 
-        tag.putString(GOATHORN_INSTRUMENT.NBT, instrument.getKey().toString());
+        tag.putString(GOAT_HORN_INSTRUMENT.NBT, instrument.getKey().toString());
     }
 
     @Override
@@ -61,13 +61,20 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
 
 
     @Override
-    boolean equalsCommon(CraftMetaItem that) {
-        return super.equalsCommon(that);
+    boolean equalsCommon(CraftMetaItem meta) {
+        if (!super.equalsCommon(meta)) {
+            return false;
+        }
+        if (meta instanceof CraftMetaMusicInstrument) {
+            CraftMetaMusicInstrument that = (CraftMetaMusicInstrument) meta;
+            return this.instrument == that.instrument;
+        }
+        return true;
     }
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta);
+        return super.notUncommon(meta) && (meta instanceof CraftMetaMusicInstrument || isInstrumentEmpty());
     }
 
 
@@ -106,7 +113,7 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
         super.serialize(builder);
 
         if (hasInstrument()) {
-            builder.put(GOATHORN_INSTRUMENT.BUKKIT, instrument.getKey().toString());
+            builder.put(GOAT_HORN_INSTRUMENT.BUKKIT, instrument.getKey().toString());
         }
 
         return builder;
