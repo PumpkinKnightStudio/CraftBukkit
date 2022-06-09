@@ -288,6 +288,8 @@ public final class CraftItemFactory implements ItemFactory {
             return meta instanceof CraftMetaCompass ? meta : new CraftMetaCompass(meta);
         case BUNDLE:
             return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
+        case GOAT_HORN:
+            return meta instanceof CraftMetaGoatHorn ? meta : new CraftMetaGoatHorn(meta);
         default:
             return new CraftMetaItem(meta);
         }

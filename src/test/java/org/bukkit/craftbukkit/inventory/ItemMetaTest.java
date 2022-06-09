@@ -43,6 +43,7 @@ import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.GoatHornMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.KnowledgeBookMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -357,6 +358,14 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final BundleMeta meta = (BundleMeta) cleanStack.getItemMeta();
                     meta.addItem(new ItemStack(Material.STONE));
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.GOAT_HORN) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final CraftMetaGoatHorn meta = (CraftMetaGoatHorn) cleanStack.getItemMeta();
+                    meta.setInstrument(GoatHornMeta.Instrument.ADMIRE);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
