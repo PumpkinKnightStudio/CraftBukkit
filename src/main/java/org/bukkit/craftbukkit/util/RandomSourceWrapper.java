@@ -68,11 +68,13 @@ public final class RandomSourceWrapper implements RandomSource {
 
         public RandomWrapper(RandomSource random) {
             this.random = random;
+            setSeed(System.nanoTime());
         }
 
         @Override
         public void setSeed(long l) {
-            random.setSeed(l);
+            if(random != null)
+                random.setSeed(l);
         }
 
         @Override
@@ -116,3 +118,4 @@ public final class RandomSourceWrapper implements RandomSource {
         }
     }
 }
+
