@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.world.entity.monster.warden.AngerLevel;
 import net.minecraft.world.entity.monster.warden.Warden;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
@@ -27,6 +26,11 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
     @Override
     public EntityType getType() {
         return EntityType.WARDEN;
+    }
+
+    @Override
+    public int getAnger() {
+        return getHandle().getAngerManagement().getActiveAnger(getHandle().getTarget());
     }
 
     @Override
@@ -64,11 +68,11 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
     }
 
     @Override
-    public LevelAnger getLevelAnger() {
+    public AngerLevel getLevelAnger() {
         return switch (getHandle().getAngerLevel()) {
-            case CALM -> LevelAnger.CALM;
-            case AGITATED -> LevelAnger.AGITATED;
-            case ANGRY -> LevelAnger.ANGRY;
+            case CALM -> AngerLevel.CALM;
+            case AGITATED -> AngerLevel.AGITATED;
+            case ANGRY -> AngerLevel.ANGRY;
         };
     }
 }
