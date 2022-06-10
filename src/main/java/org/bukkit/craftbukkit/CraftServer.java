@@ -2238,6 +2238,11 @@ public final class CraftServer implements Server {
         return structureManager;
     }
 
+    @Override
+    public boolean isRunning() {
+        return getServer().isRunning();
+    }
+
     @Deprecated
     @Override
     public UnsafeValues getUnsafe() {
