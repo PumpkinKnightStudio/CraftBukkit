@@ -1,7 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.EntityPose;
 import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.monster.warden.WardenAi;
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -65,6 +69,33 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
     @Override
     public LivingEntity getEntityAngryAt() {
         return (LivingEntity) getHandle().getEntityAngryAt().map(net.minecraft.world.entity.Entity::getBukkitEntity).orElse(null);
+    }
+
+    @Override
+    public void setDisturbanceLocation(Location location) {
+        Preconditions.checkArgument(location != null, "Location cannot be null");
+
+        WardenAi.setDisturbanceLocation(getHandle(), new BlockPosition(location.getX(), location.getY(), location.getZ()));
+    }
+
+    @Override
+    public boolean isDigging() {
+        return getHandle().hasPose(EntityPose.DIGGING);
+    }
+
+    @Override
+    public boolean isEmerging() {
+        return getHandle().hasPose(EntityPose.EMERGING);
+    }
+
+    @Override
+    public boolean isRoaring() {
+        return getHandle().hasPose(EntityPose.ROARING);
+    }
+
+    @Override
+    public boolean isSniffing() {
+        return getHandle().hasPose(EntityPose.SNIFFING);
     }
 
     @Override
