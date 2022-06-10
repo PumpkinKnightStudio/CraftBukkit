@@ -2,9 +2,19 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.world.entity.EntityPose;
+import net.minecraft.core.particles.Particles;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.sounds.SoundEffects;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Unit;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityLiving;
+import net.minecraft.world.entity.ai.attributes.GenericAttributes;
+import net.minecraft.world.entity.ai.behavior.warden.SonicBoom;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.warden.WardenAi;
+import net.minecraft.world.phys.Vec3D;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
@@ -76,26 +86,6 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
         Preconditions.checkArgument(location != null, "Location cannot be null");
 
         WardenAi.setDisturbanceLocation(getHandle(), new BlockPosition(location.getX(), location.getY(), location.getZ()));
-    }
-
-    @Override
-    public boolean isDigging() {
-        return getHandle().hasPose(EntityPose.DIGGING);
-    }
-
-    @Override
-    public boolean isEmerging() {
-        return getHandle().hasPose(EntityPose.EMERGING);
-    }
-
-    @Override
-    public boolean isRoaring() {
-        return getHandle().hasPose(EntityPose.ROARING);
-    }
-
-    @Override
-    public boolean isSniffing() {
-        return getHandle().hasPose(EntityPose.SNIFFING);
     }
 
     @Override
