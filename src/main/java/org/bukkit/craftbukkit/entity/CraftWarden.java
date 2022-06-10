@@ -99,7 +99,7 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
     }
 
     @Override
-    public AngerLevel getLevelAnger() {
+    public AngerLevel getAngerLevel() {
         return switch (getHandle().getAngerLevel()) {
             case CALM -> AngerLevel.CALM;
             case AGITATED -> AngerLevel.AGITATED;
