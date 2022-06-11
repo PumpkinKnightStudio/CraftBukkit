@@ -1396,12 +1396,12 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public boolean shouldPreviewChats() {
+    public boolean shouldSendChatPreviews() {
         return this.getServer().previewsChat();
     }
 
     @Override
-    public boolean isEnforceSecureProfile() {
+    public boolean isEnforcingSecureProfiles() {
         return this.getServer().enforceSecureProfile();
     }
 
