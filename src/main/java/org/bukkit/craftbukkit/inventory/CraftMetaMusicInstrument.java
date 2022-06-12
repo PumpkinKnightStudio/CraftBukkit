@@ -94,7 +94,7 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
         int hash = orginal = super.applyHash();
 
         if (hasInstrument()) {
-            hash = 61 * hash + instrument.ordinal();
+            hash = 61 * hash + instrument.hashCode();
         }
 
         return orginal != hash ? CraftMetaMusicInstrument.class.hashCode() ^ hash : hash;
