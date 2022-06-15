@@ -108,56 +108,58 @@ public class CraftEnchantment extends Enchantment {
         case 11:
             return "SOUL_SPEED";
         case 12:
-            return "DAMAGE_ALL";
+            return "SWIFT_SNEAK";
         case 13:
-            return "DAMAGE_UNDEAD";
+            return "DAMAGE_ALL";
         case 14:
-            return "DAMAGE_ARTHROPODS";
+            return "DAMAGE_UNDEAD";
         case 15:
-            return "KNOCKBACK";
+            return "DAMAGE_ARTHROPODS";
         case 16:
-            return "FIRE_ASPECT";
+            return "KNOCKBACK";
         case 17:
-            return "LOOT_BONUS_MOBS";
+            return "FIRE_ASPECT";
         case 18:
-            return "SWEEPING_EDGE";
+            return "LOOT_BONUS_MOBS";
         case 19:
-            return "DIG_SPEED";
+            return "SWEEPING_EDGE";
         case 20:
-            return "SILK_TOUCH";
+            return "DIG_SPEED";
         case 21:
-            return "DURABILITY";
+            return "SILK_TOUCH";
         case 22:
-            return "LOOT_BONUS_BLOCKS";
+            return "DURABILITY";
         case 23:
-            return "ARROW_DAMAGE";
+            return "LOOT_BONUS_BLOCKS";
         case 24:
-            return "ARROW_KNOCKBACK";
+            return "ARROW_DAMAGE";
         case 25:
-            return "ARROW_FIRE";
+            return "ARROW_KNOCKBACK";
         case 26:
-            return "ARROW_INFINITE";
+            return "ARROW_FIRE";
         case 27:
-            return "LUCK";
+            return "ARROW_INFINITE";
         case 28:
-            return "LURE";
+            return "LUCK";
         case 29:
-            return "LOYALTY";
+            return "LURE";
         case 30:
-            return "IMPALING";
+            return "LOYALTY";
         case 31:
-            return "RIPTIDE";
+            return "IMPALING";
         case 32:
-            return "CHANNELING";
+            return "RIPTIDE";
         case 33:
-            return "MULTISHOT";
+            return "CHANNELING";
         case 34:
-            return "QUICK_CHARGE";
+            return "MULTISHOT";
         case 35:
-            return "PIERCING";
+            return "QUICK_CHARGE";
         case 36:
-            return "MENDING";
+            return "PIERCING";
         case 37:
+            return "MENDING";
+        case 38:
             return "VANISHING_CURSE";
         default:
             return "UNKNOWN_ENCHANT_" + IRegistry.ENCHANTMENT.getId(target);

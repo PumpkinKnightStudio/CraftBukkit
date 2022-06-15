@@ -45,7 +45,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         this.material = material;
 
         if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT);
+            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT).copy();
         } else {
             blockEntityTag = null;
         }
@@ -146,6 +146,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case DARK_OAK_WALL_SIGN:
             case JUNGLE_SIGN:
             case JUNGLE_WALL_SIGN:
+            case MANGROVE_SIGN:
+            case MANGROVE_WALL_SIGN:
             case OAK_SIGN:
             case OAK_WALL_SIGN:
             case SPRUCE_SIGN:
@@ -192,6 +194,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             case SMOKER:
             case BEEHIVE:
             case BEE_NEST:
+            case SCULK_CATALYST:
+            case SCULK_SHRIEKER:
             case SCULK_SENSOR:
                 return true;
         }
@@ -218,7 +222,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         if (blockEntityTag != null) {
             switch (material) {
                 case SHIELD:
-                    blockEntityTag.putString("id", "banner");
+                    blockEntityTag.putString("id", "minecraft:banner");
                     break;
                 case SHULKER_BOX:
                 case WHITE_SHULKER_BOX:
@@ -237,11 +241,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                 case GREEN_SHULKER_BOX:
                 case RED_SHULKER_BOX:
                 case BLACK_SHULKER_BOX:
-                    blockEntityTag.putString("id", "shulker_box");
+                    blockEntityTag.putString("id", "minecraft:shulker_box");
                     break;
                 case BEE_NEST:
                 case BEEHIVE:
-                    blockEntityTag.putString("id", "beehive");
+                    blockEntityTag.putString("id", "minecraft:beehive");
                     break;
             }
         }
