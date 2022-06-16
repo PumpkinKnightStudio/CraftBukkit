@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/piston/BlockPiston.java
 +++ b/net/minecraft/world/level/block/piston/BlockPiston.java
-@@ -36,6 +36,14 @@
+@@ -38,6 +38,14 @@
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
  
@@ -14,16 +14,16 @@
 +
  public class BlockPiston extends BlockDirectional {
  
-     public static final BlockStateBoolean EXTENDED = BlockProperties.g;
-@@ -132,6 +140,18 @@
+     public static final BlockStateBoolean EXTENDED = BlockProperties.EXTENDED;
+@@ -138,6 +146,18 @@
                  }
              }
  
 +            // CraftBukkit start
-+            if (!this.sticky) {
++            if (!this.isSticky) {
 +                org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 +                BlockPistonRetractEvent event = new BlockPistonRetractEvent(block, ImmutableList.<org.bukkit.block.Block>of(), CraftBlock.notchToBlockFace(enumdirection));
-+                world.getServer().getPluginManager().callEvent(event);
++                world.getCraftServer().getPluginManager().callEvent(event);
 +
 +                if (event.isCancelled()) {
 +                    return;
@@ -31,18 +31,18 @@
 +            }
 +            // PAIL: checkME - what happened to setTypeAndData?
 +            // CraftBukkit end
-             world.playBlockAction(blockposition, this, b0, enumdirection.c());
+             world.blockEvent(blockposition, this, b0, enumdirection.get3DDataValue());
          }
  
-@@ -308,6 +328,48 @@
+@@ -316,6 +336,48 @@
              IBlockData[] aiblockdata = new IBlockData[list.size() + list2.size()];
-             EnumDirection enumdirection1 = flag ? enumdirection : enumdirection.opposite();
+             EnumDirection enumdirection1 = flag ? enumdirection : enumdirection.getOpposite();
              int j = 0;
 +            // CraftBukkit start
 +            final org.bukkit.block.Block bblock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 +
-+            final List<BlockPosition> moved = pistonextendschecker.getMovedBlocks();
-+            final List<BlockPosition> broken = pistonextendschecker.getBrokenBlocks();
++            final List<BlockPosition> moved = pistonextendschecker.getToPush();
++            final List<BlockPosition> broken = pistonextendschecker.getToDestroy();
 +
 +            List<org.bukkit.block.Block> blocks = new AbstractList<org.bukkit.block.Block>() {
 +
@@ -66,16 +66,16 @@
 +            } else {
 +                event = new BlockPistonRetractEvent(bblock, blocks, CraftBlock.notchToBlockFace(enumdirection1));
 +            }
-+            world.getServer().getPluginManager().callEvent(event);
++            world.getCraftServer().getPluginManager().callEvent(event);
 +
 +            if (event.isCancelled()) {
 +                for (BlockPosition b : broken) {
-+                    world.notify(b, Blocks.AIR.getBlockData(), world.getType(b), 3);
++                    world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
 +                }
 +                for (BlockPosition b : moved) {
-+                    world.notify(b, Blocks.AIR.getBlockData(), world.getType(b), 3);
-+                    b = b.shift(enumdirection1);
-+                    world.notify(b, Blocks.AIR.getBlockData(), world.getType(b), 3);
++                    world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
++                    b = b.relative(enumdirection1);
++                    world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
 +                }
 +                return false;
 +            }

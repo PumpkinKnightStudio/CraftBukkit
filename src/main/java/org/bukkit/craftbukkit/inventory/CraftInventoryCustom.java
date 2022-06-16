@@ -55,7 +55,7 @@ public class CraftInventoryCustom extends CraftInventory {
 
         public MinecraftInventory(InventoryHolder owner, int size, String title) {
             Validate.notNull(title, "Title cannot be null");
-            this.items = NonNullList.a(size, ItemStack.b);
+            this.items = NonNullList.withSize(size, ItemStack.EMPTY);
             this.title = title;
             this.viewers = new ArrayList<HumanEntity>();
             this.owner = owner;
@@ -63,7 +63,7 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         @Override
-        public int getSize() {
+        public int getContainerSize() {
             return items.size();
         }
 
@@ -73,32 +73,32 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         @Override
-        public ItemStack splitStack(int i, int j) {
+        public ItemStack removeItem(int i, int j) {
             ItemStack stack = this.getItem(i);
             ItemStack result;
-            if (stack == ItemStack.b) return stack;
+            if (stack == ItemStack.EMPTY) return stack;
             if (stack.getCount() <= j) {
-                this.setItem(i, ItemStack.b);
+                this.setItem(i, ItemStack.EMPTY);
                 result = stack;
             } else {
                 result = CraftItemStack.copyNMSStack(stack, j);
-                stack.subtract(j);
+                stack.shrink(j);
             }
-            this.update();
+            this.setChanged();
             return result;
         }
 
         @Override
-        public ItemStack splitWithoutUpdate(int i) {
+        public ItemStack removeItemNoUpdate(int i) {
             ItemStack stack = this.getItem(i);
             ItemStack result;
-            if (stack == ItemStack.b) return stack;
+            if (stack == ItemStack.EMPTY) return stack;
             if (stack.getCount() <= 1) {
                 this.setItem(i, null);
                 result = stack;
             } else {
                 result = CraftItemStack.copyNMSStack(stack, 1);
-                stack.subtract(1);
+                stack.shrink(1);
             }
             return result;
         }
@@ -106,7 +106,7 @@ public class CraftInventoryCustom extends CraftInventory {
         @Override
         public void setItem(int i, ItemStack itemstack) {
             items.set(i, itemstack);
-            if (itemstack != ItemStack.b && this.getMaxStackSize() > 0 && itemstack.getCount() > this.getMaxStackSize()) {
+            if (itemstack != ItemStack.EMPTY && this.getMaxStackSize() > 0 && itemstack.getCount() > this.getMaxStackSize()) {
                 itemstack.setCount(this.getMaxStackSize());
             }
         }
@@ -122,10 +122,10 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         @Override
-        public void update() {}
+        public void setChanged() {}
 
         @Override
-        public boolean a(EntityHuman entityhuman) {
+        public boolean stillValid(EntityHuman entityhuman) {
             return true;
         }
 
@@ -159,7 +159,7 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         @Override
-        public boolean b(int i, ItemStack itemstack) {
+        public boolean canPlaceItem(int i, ItemStack itemstack) {
             return true;
         }
 
@@ -169,12 +169,12 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         @Override
-        public void closeContainer(EntityHuman entityHuman) {
+        public void stopOpen(EntityHuman entityHuman) {
 
         }
 
         @Override
-        public void clear() {
+        public void clearContent() {
             items.clear();
         }
 

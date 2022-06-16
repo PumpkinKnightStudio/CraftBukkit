@@ -8,16 +8,16 @@
 +
  public class BlockPressurePlateWeighted extends BlockPressurePlateAbstract {
  
-     public static final BlockStateInteger POWER = BlockProperties.az;
+     public static final BlockStateInteger POWER = BlockProperties.POWER;
 @@ -27,7 +29,31 @@
  
      @Override
-     protected int b(World world, BlockPosition blockposition) {
--        int i = Math.min(world.a(Entity.class, BlockPressurePlateWeighted.c.a(blockposition)).size(), this.weight);
+     protected int getSignalStrength(World world, BlockPosition blockposition) {
+-        int i = Math.min(world.getEntitiesOfClass(Entity.class, BlockPressurePlateWeighted.TOUCH_AABB.move(blockposition)).size(), this.maxWeight);
 +        // CraftBukkit start
-+        // int i = Math.min(world.a(Entity.class, BlockPressurePlateWeighted.c.a(blockposition)).size(), this.weight);
++        // int i = Math.min(world.getEntitiesOfClass(Entity.class, BlockPressurePlateWeighted.TOUCH_AABB.move(blockposition)).size(), this.maxWeight);
 +        int i = 0;
-+        java.util.Iterator iterator = world.a(Entity.class, BlockPressurePlateWeighted.c.a(blockposition)).iterator();
++        java.util.Iterator iterator = world.getEntitiesOfClass(Entity.class, BlockPressurePlateWeighted.TOUCH_AABB.move(blockposition)).iterator();
 +
 +        while (iterator.hasNext()) {
 +            Entity entity = (Entity) iterator.next();
@@ -28,7 +28,7 @@
 +                cancellable = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerInteractEvent((EntityHuman) entity, org.bukkit.event.block.Action.PHYSICAL, blockposition, null, null, null);
 +            } else {
 +                cancellable = new EntityInteractEvent(entity.getBukkitEntity(), world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
-+                world.getServer().getPluginManager().callEvent((EntityInteractEvent) cancellable);
++                world.getCraftServer().getPluginManager().callEvent((EntityInteractEvent) cancellable);
 +            }
 +
 +            // We only want to block turning the plate on if all events are cancelled
@@ -37,8 +37,8 @@
 +            }
 +        }
 +
-+        i = Math.min(i, this.weight);
++        i = Math.min(i, this.maxWeight);
 +        // CraftBukkit end
  
          if (i > 0) {
-             float f = (float) Math.min(this.weight, i) / (float) this.weight;
+             float f = (float) Math.min(this.maxWeight, i) / (float) this.maxWeight;

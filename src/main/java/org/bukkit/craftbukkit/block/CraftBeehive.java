@@ -8,32 +8,27 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.TileEntityBeehive;
 import net.minecraft.world.level.block.entity.TileEntityBeehive.ReleaseStatus;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Beehive;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftBee;
 import org.bukkit.entity.Bee;
 
 public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> implements Beehive {
 
-    public CraftBeehive(final Block block) {
-        super(block, TileEntityBeehive.class);
-    }
-
-    public CraftBeehive(final Material material, final TileEntityBeehive te) {
-        super(material, te);
+    public CraftBeehive(World world, TileEntityBeehive tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
     public Location getFlower() {
-        BlockPosition flower = getSnapshot().flowerPos;
+        BlockPosition flower = getSnapshot().savedFlowerPos;
         return (flower == null) ? null : new Location(getWorld(), flower.getX(), flower.getY(), flower.getZ());
     }
 
     @Override
     public void setFlower(Location location) {
         Preconditions.checkArgument(location == null || this.getWorld().equals(location.getWorld()), "Flower must be in same world");
-        getSnapshot().flowerPos = (location == null) ? null : new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        getSnapshot().savedFlowerPos = (location == null) ? null : new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Override
@@ -48,7 +43,7 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
 
     @Override
     public int getEntityCount() {
-        return getSnapshot().getBeeCount();
+        return getSnapshot().getOccupantCount();
     }
 
     @Override
@@ -65,6 +60,8 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
 
     @Override
     public List<Bee> releaseEntities() {
+        ensureNoWorldGeneration();
+
         List<Bee> bees = new ArrayList<>();
 
         if (isPlaced()) {
@@ -81,6 +78,6 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
     public void addEntity(Bee entity) {
         Preconditions.checkArgument(entity != null, "Entity must not be null");
 
-        getSnapshot().addBee(((CraftBee) entity).getHandle(), false);
+        getSnapshot().addOccupant(((CraftBee) entity).getHandle(), false);
     }
 }

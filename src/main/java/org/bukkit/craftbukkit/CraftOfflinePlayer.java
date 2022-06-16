@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.players.WhiteListEntry;
 import net.minecraft.stats.ServerStatisticManager;
@@ -19,10 +21,13 @@ import org.bukkit.Server;
 import org.bukkit.Statistic;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.profile.PlayerProfile;
 
 @SerializableAs("Player")
 public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
@@ -33,12 +38,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;
         this.profile = profile;
-        this.storage = server.console.worldNBTStorage;
+        this.storage = server.console.playerDataStorage;
 
-    }
-
-    public GameProfile getProfile() {
-        return profile;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NBTTagCompound data = getBukkitData();
 
         if (data != null) {
-            if (data.hasKey("lastKnownName")) {
+            if (data.contains("lastKnownName")) {
                 return data.getString("lastKnownName");
             }
         }
@@ -72,6 +73,11 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     @Override
     public UUID getUniqueId() {
         return profile.getId();
+    }
+
+    @Override
+    public PlayerProfile getPlayerProfile() {
+        return new CraftPlayerProfile(profile);
     }
 
     public Server getServer() {
@@ -90,9 +96,9 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
 
         if (value) {
-            server.getHandle().addOp(profile);
+            server.getHandle().op(profile);
         } else {
-            server.getHandle().removeOp(profile);
+            server.getHandle().deop(profile);
         }
     }
 
@@ -119,15 +125,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isWhitelisted() {
-        return server.getHandle().getWhitelist().isWhitelisted(profile);
+        return server.getHandle().getWhiteList().isWhiteListed(profile);
     }
 
     @Override
     public void setWhitelisted(boolean value) {
         if (value) {
-            server.getHandle().getWhitelist().add(new WhiteListEntry(profile));
+            server.getHandle().getWhiteList().add(new WhiteListEntry(profile));
         } else {
-            server.getHandle().getWhitelist().remove(profile);
+            server.getHandle().getWhiteList().remove(profile);
         }
     }
 
@@ -188,8 +194,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NBTTagCompound result = getData();
 
         if (result != null) {
-            if (!result.hasKey("bukkit")) {
-                result.set("bukkit", new NBTTagCompound());
+            if (!result.contains("bukkit")) {
+                result.put("bukkit", new NBTTagCompound());
             }
             result = result.getCompound("bukkit");
         }
@@ -209,7 +215,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NBTTagCompound data = getBukkitData();
 
         if (data != null) {
-            if (data.hasKey("firstPlayed")) {
+            if (data.contains("firstPlayed")) {
                 return data.getLong("firstPlayed");
             } else {
                 File file = getDataFile();
@@ -228,7 +234,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NBTTagCompound data = getBukkitData();
 
         if (data != null) {
-            if (data.hasKey("lastPlayed")) {
+            if (data.contains("lastPlayed")) {
                 return data.getLong("lastPlayed");
             } else {
                 File file = getDataFile();
@@ -245,11 +251,19 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
+    public Location getLastDeathLocation() {
+        if (getData().contains("LastDeathLocation", 10)) {
+            return GlobalPos.CODEC.parse(DynamicOpsNBT.INSTANCE, getData().get("LastDeathLocation")).result().map(CraftMemoryMapper::fromNms).orElse(null);
+        }
+        return null;
+    }
+
+    @Override
     public Location getBedSpawnLocation() {
         NBTTagCompound data = getData();
         if (data == null) return null;
 
-        if (data.hasKey("SpawnX") && data.hasKey("SpawnY") && data.hasKey("SpawnZ")) {
+        if (data.contains("SpawnX") && data.contains("SpawnY") && data.contains("SpawnZ")) {
             String spawnWorld = data.getString("SpawnWorld");
             if (spawnWorld.equals("")) {
                 spawnWorld = server.getWorlds().get(0).getName();
@@ -276,7 +290,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     private ServerStatisticManager getStatisticManager() {
-        return server.getHandle().getStatisticManager(getUniqueId(), getName());
+        return server.getHandle().getPlayerStats(getUniqueId(), getName());
     }
 
     @Override

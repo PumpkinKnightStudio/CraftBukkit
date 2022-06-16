@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.PlayerInventory;
 import net.minecraft.world.inventory.InventoryCrafting;
 import net.minecraft.world.inventory.InventoryEnderChest;
 import net.minecraft.world.inventory.InventoryMerchant;
+import net.minecraft.world.level.block.BlockComposter;
 import net.minecraft.world.level.block.entity.IHopper;
 import net.minecraft.world.level.block.entity.TileEntityBarrel;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
@@ -41,7 +42,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int getSize() {
-        return getInventory().getSize();
+        return getInventory().getContainerSize();
     }
 
     @Override
@@ -451,7 +452,7 @@ public class CraftInventory implements Inventory {
     public InventoryType getType() {
         // Thanks to Droppers extending Dispensers, Blast Furnaces & Smokers extending Furnace, order is important.
         if (inventory instanceof InventoryCrafting) {
-            return inventory.getSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
+            return inventory.getContainerSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
         } else if (inventory instanceof PlayerInventory) {
             return InventoryType.PLAYER;
         } else if (inventory instanceof TileEntityDropper) {
@@ -496,6 +497,8 @@ public class CraftInventory implements Inventory {
             return InventoryType.GRINDSTONE;
         } else if (this instanceof CraftInventoryStonecutter) {
             return InventoryType.STONECUTTER;
+        } else if (inventory instanceof BlockComposter.ContainerEmpty || inventory instanceof BlockComposter.ContainerInput || inventory instanceof BlockComposter.ContainerOutput) {
+            return InventoryType.COMPOSTER;
         } else {
             return InventoryType.CHEST;
         }

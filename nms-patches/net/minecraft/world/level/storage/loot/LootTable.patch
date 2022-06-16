@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/storage/loot/LootTable.java
 +++ b/net/minecraft/world/level/storage/loot/LootTable.java
-@@ -29,6 +29,13 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -32,6 +32,13 @@
+ import org.apache.commons.lang3.ArrayUtils;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import java.util.stream.Collectors;
@@ -13,26 +13,26 @@
 +
  public class LootTable {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -113,8 +120,21 @@
+     static final Logger LOGGER = LogUtils.getLogger();
+@@ -117,8 +124,21 @@
      }
  
-     public void fillInventory(IInventory iinventory, LootTableInfo loottableinfo) {
+     public void fill(IInventory iinventory, LootTableInfo loottableinfo) {
 +        // CraftBukkit start
 +        this.fillInventory(iinventory, loottableinfo, false);
 +    }
 +
 +    public void fillInventory(IInventory iinventory, LootTableInfo loottableinfo, boolean plugin) {
 +        // CraftBukkit end
-         List<ItemStack> list = this.populateLoot(loottableinfo);
-         Random random = loottableinfo.a();
+         ObjectArrayList<ItemStack> objectarraylist = this.getRandomItems(loottableinfo);
+         RandomSource randomsource = loottableinfo.getRandom();
 +        // CraftBukkit start
-+        LootGenerateEvent event = CraftEventFactory.callLootGenerateEvent(iinventory, this, loottableinfo, list, plugin);
++        LootGenerateEvent event = CraftEventFactory.callLootGenerateEvent(iinventory, this, loottableinfo, objectarraylist, plugin);
 +        if (event.isCancelled()) {
 +            return;
 +        }
-+        list = event.getLoot().stream().map(CraftItemStack::asNMSCopy).collect(Collectors.toList());
++        objectarraylist = event.getLoot().stream().map(CraftItemStack::asNMSCopy).collect(ObjectArrayList.toList());
 +        // CraftBukkit end
-         List<Integer> list1 = this.a(iinventory, random);
+         List<Integer> list = this.getAvailableSlots(iinventory, randomsource);
  
-         this.a(list, list1.size(), random);
+         this.shuffleAndSplitItems(objectarraylist, list.size(), randomsource);

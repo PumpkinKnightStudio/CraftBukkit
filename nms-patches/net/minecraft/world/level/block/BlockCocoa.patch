@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockCocoa.java
 +++ b/net/minecraft/world/level/block/BlockCocoa.java
-@@ -21,6 +21,8 @@
+@@ -20,6 +20,8 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
@@ -8,22 +8,22 @@
 +
  public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePlantElement {
  
-     public static final BlockStateInteger AGE = BlockProperties.af;
-@@ -45,7 +47,7 @@
-             int i = (Integer) iblockdata.get(BlockCocoa.AGE);
+     public static final int MAX_AGE = 2;
+@@ -54,7 +56,7 @@
+             int i = (Integer) iblockdata.getValue(BlockCocoa.AGE);
  
              if (i < 2) {
--                worldserver.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, i + 1), 2);
-+                CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, i + 1), 2); // CraftBukkkit
+-                worldserver.setBlock(blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, i + 1), 2);
++                CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, i + 1), 2); // CraftBukkkit
              }
          }
  
-@@ -115,7 +117,7 @@
+@@ -124,7 +126,7 @@
  
      @Override
-     public void a(WorldServer worldserver, Random random, BlockPosition blockposition, IBlockData iblockdata) {
--        worldserver.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, (Integer) iblockdata.get(BlockCocoa.AGE) + 1), 2);
-+        CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, (Integer) iblockdata.get(BlockCocoa.AGE) + 1), 2); // CraftBukkit
+     public void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata) {
+-        worldserver.setBlock(blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, (Integer) iblockdata.getValue(BlockCocoa.AGE) + 1), 2);
++        CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, (Integer) iblockdata.getValue(BlockCocoa.AGE) + 1), 2); // CraftBukkit
      }
  
      @Override

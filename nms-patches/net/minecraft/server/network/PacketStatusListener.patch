@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/network/PacketStatusListener.java
 +++ b/net/minecraft/server/network/PacketStatusListener.java
-@@ -10,6 +10,18 @@
+@@ -9,6 +9,18 @@
  import net.minecraft.network.protocol.status.PacketStatusOutServerInfo;
  import net.minecraft.server.MinecraftServer;
  
@@ -18,21 +18,21 @@
 +
  public class PacketStatusListener implements PacketStatusInListener {
  
-     private static final IChatBaseComponent a = new ChatMessage("multiplayer.status.request_handled");
-@@ -36,8 +48,96 @@
-             this.networkManager.close(PacketStatusListener.a);
+     private static final IChatBaseComponent DISCONNECT_REASON = IChatBaseComponent.translatable("multiplayer.status.request_handled");
+@@ -35,7 +47,102 @@
+             this.connection.disconnect(PacketStatusListener.DISCONNECT_REASON);
          } else {
-             this.d = true;
--            this.networkManager.sendPacket(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
+             this.hasRequestedStatus = true;
+-            this.connection.send(new PacketStatusOutServerInfo(this.server.getStatus()));
 +            // CraftBukkit start
-+            // this.networkManager.sendPacket(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
-+            final Object[] players = minecraftServer.getPlayerList().players.toArray();
++            // this.connection.send(new PacketStatusOutServerInfo(this.server.getStatus()));
++            final Object[] players = server.getPlayerList().players.toArray();
 +            class ServerListPingEvent extends org.bukkit.event.server.ServerListPingEvent {
 +
-+                CraftIconCache icon = minecraftServer.server.getServerIcon();
++                CraftIconCache icon = server.server.getServerIcon();
 +
 +                ServerListPingEvent() {
-+                    super(((InetSocketAddress) networkManager.getSocketAddress()).getAddress(), minecraftServer.getMotd(), minecraftServer.getPlayerList().getMaxPlayers());
++                    super(((InetSocketAddress) connection.getRemoteAddress()).getAddress(), server.getMotd(), server.getPlayerList().getMaxPlayers());
 +                }
 +
 +                @Override
@@ -92,28 +92,34 @@
 +            }
 +
 +            ServerListPingEvent event = new ServerListPingEvent();
-+            this.minecraftServer.server.getPluginManager().callEvent(event);
++            this.server.server.getPluginManager().callEvent(event);
 +
 +            java.util.List<GameProfile> profiles = new java.util.ArrayList<GameProfile>(players.length);
 +            for (Object player : players) {
 +                if (player != null) {
-+                    profiles.add(((EntityPlayer) player).getProfile());
++                    EntityPlayer entityPlayer = ((EntityPlayer) player);
++                    if (entityPlayer.allowsListing()) {
++                        profiles.add(entityPlayer.getGameProfile());
++                    } else {
++                        profiles.add(MinecraftServer.ANONYMOUS_PLAYER_PROFILE);
++                    }
 +                }
 +            }
 +
 +            ServerPing.ServerPingPlayerSample playerSample = new ServerPing.ServerPingPlayerSample(event.getMaxPlayers(), profiles.size());
-+            playerSample.a(profiles.toArray(new GameProfile[profiles.size()]));
++            if (!this.server.hidesOnlinePlayers()) {
++                playerSample.setSample(profiles.toArray(new GameProfile[profiles.size()]));
++            }
 +
 +            ServerPing ping = new ServerPing();
 +            ping.setFavicon(event.icon.value);
-+            ping.setMOTD(CraftChatMessage.fromString(event.getMotd(), true)[0]);
-+            ping.setPlayerSample(playerSample);
-+            int version = SharedConstants.getGameVersion().getProtocolVersion();
-+            ping.setServerInfo(new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), version));
++            ping.setDescription(CraftChatMessage.fromString(event.getMotd(), true)[0]);
++            ping.setPlayers(playerSample);
++            int version = SharedConstants.getCurrentVersion().getProtocolVersion();
++            ping.setVersion(new ServerPing.ServerData(server.getServerModName() + " " + server.getServerVersion(), version));
 +
-+            this.networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
++            this.connection.send(new PacketStatusOutServerInfo(ping));
++            // CraftBukkit end
          }
-+        // CraftBukkit end
      }
  
-     @Override

@@ -1,32 +1,32 @@
 --- a/net/minecraft/world/level/block/BlockChest.java
 +++ b/net/minecraft/world/level/block/BlockChest.java
-@@ -79,24 +79,7 @@
-         public Optional<ITileInventory> a(final TileEntityChest tileentitychest, final TileEntityChest tileentitychest1) {
+@@ -87,24 +87,7 @@
+         public Optional<ITileInventory> acceptDouble(final TileEntityChest tileentitychest, final TileEntityChest tileentitychest1) {
              final InventoryLargeChest inventorylargechest = new InventoryLargeChest(tileentitychest, tileentitychest1);
  
 -            return Optional.of(new ITileInventory() {
 -                @Nullable
 -                @Override
 -                public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
--                    if (tileentitychest.e(entityhuman) && tileentitychest1.e(entityhuman)) {
--                        tileentitychest.d(playerinventory.player);
--                        tileentitychest1.d(playerinventory.player);
--                        return ContainerChest.b(i, playerinventory, inventorylargechest);
+-                    if (tileentitychest.canOpen(entityhuman) && tileentitychest1.canOpen(entityhuman)) {
+-                        tileentitychest.unpackLootTable(playerinventory.player);
+-                        tileentitychest1.unpackLootTable(playerinventory.player);
+-                        return ContainerChest.sixRows(i, playerinventory, inventorylargechest);
 -                    } else {
 -                        return null;
 -                    }
 -                }
 -
 -                @Override
--                public IChatBaseComponent getScoreboardDisplayName() {
--                    return (IChatBaseComponent) (tileentitychest.hasCustomName() ? tileentitychest.getScoreboardDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getScoreboardDisplayName() : new ChatMessage("container.chestDouble")));
+-                public IChatBaseComponent getDisplayName() {
+-                    return (IChatBaseComponent) (tileentitychest.hasCustomName() ? tileentitychest.getDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getDisplayName() : IChatBaseComponent.translatable("container.chestDouble")));
 -                }
 -            });
 +            return Optional.of(new DoubleInventory(tileentitychest, tileentitychest1, inventorylargechest)); // CraftBukkit
          }
  
-         public Optional<ITileInventory> a(TileEntityChest tileentitychest) {
-@@ -109,6 +92,38 @@
+         public Optional<ITileInventory> acceptSingle(TileEntityChest tileentitychest) {
+@@ -117,6 +100,38 @@
          }
      };
  
@@ -46,31 +46,47 @@
 +        @Nullable
 +        @Override
 +        public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
-+            if (tileentitychest.e(entityhuman) && tileentitychest1.e(entityhuman)) {
-+                tileentitychest.d(playerinventory.player);
-+                tileentitychest1.d(playerinventory.player);
-+                return ContainerChest.b(i, playerinventory, inventorylargechest);
++            if (tileentitychest.canOpen(entityhuman) && tileentitychest1.canOpen(entityhuman)) {
++                tileentitychest.unpackLootTable(playerinventory.player);
++                tileentitychest1.unpackLootTable(playerinventory.player);
++                return ContainerChest.sixRows(i, playerinventory, inventorylargechest);
 +            } else {
 +                return null;
 +            }
 +        }
 +
 +        @Override
-+        public IChatBaseComponent getScoreboardDisplayName() {
-+            return (IChatBaseComponent) (tileentitychest.hasCustomName() ? tileentitychest.getScoreboardDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getScoreboardDisplayName() : new ChatMessage("container.chestDouble")));
++        public IChatBaseComponent getDisplayName() {
++            return (IChatBaseComponent) (tileentitychest.hasCustomName() ? tileentitychest.getDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getDisplayName() : IChatBaseComponent.translatable("container.chestDouble")));
 +        }
 +    };
 +    // CraftBukkit end
 +
      protected BlockChest(BlockBase.Info blockbase_info, Supplier<TileEntityTypes<? extends TileEntityChest>> supplier) {
          super(blockbase_info, supplier);
-         this.j((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockChest.FACING, EnumDirection.NORTH)).set(BlockChest.c, BlockPropertyChestType.SINGLE)).set(BlockChest.d, false));
-@@ -262,7 +277,7 @@
-     }
+         this.registerDefaultState((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.stateDefinition.any()).setValue(BlockChest.FACING, EnumDirection.NORTH)).setValue(BlockChest.TYPE, BlockPropertyChestType.SINGLE)).setValue(BlockChest.WATERLOGGED, false));
+@@ -275,7 +290,7 @@
  
-     public DoubleBlockFinder.Result<? extends TileEntityChest> a(IBlockData iblockdata, World world, BlockPosition blockposition, boolean flag) {
+     @Override
+     public DoubleBlockFinder.Result<? extends TileEntityChest> combine(IBlockData iblockdata, World world, BlockPosition blockposition, boolean flag) {
 -        BiPredicate bipredicate;
 +        BiPredicate<GeneratorAccess, BlockPosition> bipredicate; // CraftBukkit - decompile error
  
          if (flag) {
              bipredicate = (generatoraccess, blockposition1) -> {
+@@ -291,7 +306,14 @@
+     @Nullable
+     @Override
+     public ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition) {
+-        return (ITileInventory) ((Optional) this.combine(iblockdata, world, blockposition, false).apply(BlockChest.MENU_PROVIDER_COMBINER)).orElse((Object) null);
++        // CraftBukkit start
++        return getMenuProvider(iblockdata, world, blockposition, false);
++    }
++
++    @Nullable
++    public ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition, boolean ignoreObstructions) {
++        return (ITileInventory) ((Optional) this.combine(iblockdata, world, blockposition, ignoreObstructions).apply(BlockChest.MENU_PROVIDER_COMBINER)).orElse((Object) null);
++        // CraftBukkit end
+     }
+ 
+     public static DoubleBlockFinder.Combiner<TileEntityChest, Float2FloatFunction> opennessCombiner(final LidBlockEntity lidblockentity) {

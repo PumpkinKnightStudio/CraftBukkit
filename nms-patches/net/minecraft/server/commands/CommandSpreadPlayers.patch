@@ -1,41 +1,41 @@
 --- a/net/minecraft/server/commands/CommandSpreadPlayers.java
 +++ b/net/minecraft/server/commands/CommandSpreadPlayers.java
-@@ -77,7 +77,7 @@
+@@ -90,7 +90,7 @@
              if (entity instanceof EntityHuman) {
-                 set.add(entity.getScoreboardTeam());
+                 set.add(entity.getTeam());
              } else {
 -                set.add((Object) null);
 +                set.add((ScoreboardTeamBase) null); // CraftBukkit - decompile error
              }
          }
  
-@@ -286,7 +286,7 @@
+@@ -299,7 +299,7 @@
  
-             for (boolean flag2 = iblockaccess.getType(blockposition_mutableblockposition).isAir(); blockposition_mutableblockposition.getY() > 0; flag2 = flag1) {
-                 blockposition_mutableblockposition.c(EnumDirection.DOWN);
--                flag1 = iblockaccess.getType(blockposition_mutableblockposition).isAir();
-+                flag1 = getType(iblockaccess, blockposition_mutableblockposition).isAir(); // CraftBukkit
+             for (boolean flag2 = iblockaccess.getBlockState(blockposition_mutableblockposition).isAir(); blockposition_mutableblockposition.getY() > iblockaccess.getMinBuildHeight(); flag2 = flag1) {
+                 blockposition_mutableblockposition.move(EnumDirection.DOWN);
+-                flag1 = iblockaccess.getBlockState(blockposition_mutableblockposition).isAir();
++                flag1 = getBlockState(iblockaccess, blockposition_mutableblockposition).isAir(); // CraftBukkit
                  if (!flag1 && flag2 && flag) {
                      return blockposition_mutableblockposition.getY() + 1;
                  }
-@@ -299,7 +299,7 @@
+@@ -312,7 +312,7 @@
  
-         public boolean b(IBlockAccess iblockaccess, int i) {
-             BlockPosition blockposition = new BlockPosition(this.a, (double) (this.a(iblockaccess, i) - 1), this.b);
--            IBlockData iblockdata = iblockaccess.getType(blockposition);
-+            IBlockData iblockdata = getType(iblockaccess, blockposition); // CraftBukkit
+         public boolean isSafe(IBlockAccess iblockaccess, int i) {
+             BlockPosition blockposition = new BlockPosition(this.x, (double) (this.getSpawnY(iblockaccess, i) - 1), this.z);
+-            IBlockData iblockdata = iblockaccess.getBlockState(blockposition);
++            IBlockData iblockdata = getBlockState(iblockaccess, blockposition); // CraftBukkit
              Material material = iblockdata.getMaterial();
  
              return blockposition.getY() < i && !material.isLiquid() && material != Material.FIRE;
-@@ -309,5 +309,12 @@
-             this.a = MathHelper.a(random, d0, d2);
-             this.b = MathHelper.a(random, d1, d3);
+@@ -322,5 +322,12 @@
+             this.x = MathHelper.nextDouble(randomsource, d0, d2);
+             this.z = MathHelper.nextDouble(randomsource, d1, d3);
          }
 +
-+        // CraftBukkit start - add a version of getType which force loads chunks
-+        private static IBlockData getType(IBlockAccess iblockaccess, BlockPosition position) {
-+            ((WorldServer) iblockaccess).getChunkProvider().getChunkAt(position.getX() >> 4, position.getZ() >> 4, true);
-+            return iblockaccess.getType(position);
++        // CraftBukkit start - add a version of getBlockState which force loads chunks
++        private static IBlockData getBlockState(IBlockAccess iblockaccess, BlockPosition position) {
++            ((WorldServer) iblockaccess).getChunkSource().getChunk(position.getX() >> 4, position.getZ() >> 4, true);
++            return iblockaccess.getBlockState(position);
 +        }
 +        // CraftBukkit end
      }

@@ -1,7 +1,7 @@
 --- a/net/minecraft/commands/ICommandListener.java
 +++ b/net/minecraft/commands/ICommandListener.java
-@@ -23,6 +23,13 @@
-         public boolean shouldBroadcastCommands() {
+@@ -22,6 +22,13 @@
+         public boolean shouldInformAdmins() {
              return false;
          }
 +
@@ -13,11 +13,11 @@
 +        // CraftBukkit end
      };
  
-     void sendMessage(IChatBaseComponent ichatbasecomponent, UUID uuid);
-@@ -32,4 +39,6 @@
-     boolean shouldSendFailure();
- 
-     boolean shouldBroadcastCommands();
+     void sendSystemMessage(IChatBaseComponent ichatbasecomponent);
+@@ -35,4 +42,6 @@
+     default boolean alwaysAccepts() {
+         return false;
+     }
 +
 +    org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper); // CraftBukkit
  }

@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/bossevents/BossBattleCustom.java
 +++ b/net/minecraft/server/bossevents/BossBattleCustom.java
-@@ -18,12 +18,27 @@
+@@ -17,12 +17,27 @@
  import net.minecraft.util.MathHelper;
  import net.minecraft.world.BossBattle;
  
@@ -11,10 +11,10 @@
 +
  public class BossBattleCustom extends BossBattleServer {
  
-     private final MinecraftKey h;
-     private final Set<UUID> i = Sets.newHashSet();
-     private int j;
-     private int k = 100;
+     private final MinecraftKey id;
+     private final Set<UUID> players = Sets.newHashSet();
+     private int value;
+     private int max = 100;
 +    // CraftBukkit start
 +    private KeyedBossBar bossBar;
 +

@@ -48,9 +48,9 @@ public class CraftBossBar implements BossBar {
 
     private void initialize() {
         this.flags = new HashMap<>();
-        this.flags.put(BarFlag.DARKEN_SKY, new FlagContainer(handle::isDarkenSky, handle::setDarkenSky));
-        this.flags.put(BarFlag.PLAY_BOSS_MUSIC, new FlagContainer(handle::isPlayMusic, handle::setPlayMusic));
-        this.flags.put(BarFlag.CREATE_FOG, new FlagContainer(handle::isCreateFog, handle::setCreateFog));
+        this.flags.put(BarFlag.DARKEN_SKY, new FlagContainer(handle::shouldDarkenScreen, handle::setDarkenScreen));
+        this.flags.put(BarFlag.PLAY_BOSS_MUSIC, new FlagContainer(handle::shouldPlayBossMusic, handle::setPlayBossMusic));
+        this.flags.put(BarFlag.CREATE_FOG, new FlagContainer(handle::shouldCreateWorldFog, handle::setCreateWorldFog));
     }
 
     private BarColor convertColor(BossBattle.BarColor color) {
@@ -97,13 +97,13 @@ public class CraftBossBar implements BossBar {
 
     @Override
     public String getTitle() {
-        return CraftChatMessage.fromComponent(handle.title);
+        return CraftChatMessage.fromComponent(handle.name);
     }
 
     @Override
     public void setTitle(String title) {
-        handle.title = CraftChatMessage.fromString(title, true)[0];
-        handle.sendUpdate(PacketPlayOutBoss.Action.UPDATE_NAME);
+        handle.name = CraftChatMessage.fromString(title, true)[0];
+        handle.broadcast(PacketPlayOutBoss::createUpdateNamePacket);
     }
 
     @Override
@@ -114,18 +114,18 @@ public class CraftBossBar implements BossBar {
     @Override
     public void setColor(BarColor color) {
         handle.color = convertColor(color);
-        handle.sendUpdate(PacketPlayOutBoss.Action.UPDATE_STYLE);
+        handle.broadcast(PacketPlayOutBoss::createUpdateStylePacket);
     }
 
     @Override
     public BarStyle getStyle() {
-        return convertStyle(handle.style);
+        return convertStyle(handle.overlay);
     }
 
     @Override
     public void setStyle(BarStyle style) {
-        handle.style = convertStyle(style);
-        handle.sendUpdate(PacketPlayOutBoss.Action.UPDATE_STYLE);
+        handle.overlay = convertStyle(style);
+        handle.broadcast(PacketPlayOutBoss::createUpdateStylePacket);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class CraftBossBar implements BossBar {
     @Override
     public void addPlayer(Player player) {
         Preconditions.checkArgument(player != null, "player == null");
-        Preconditions.checkArgument(((CraftPlayer) player).getHandle().playerConnection != null, "player is not fully connected (wait for PlayerJoinEvent)");
+        Preconditions.checkArgument(((CraftPlayer) player).getHandle().connection != null, "player is not fully connected (wait for PlayerJoinEvent)");
 
         handle.addPlayer(((CraftPlayer) player).getHandle());
     }

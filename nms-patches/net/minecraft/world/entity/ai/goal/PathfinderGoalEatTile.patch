@@ -10,24 +10,24 @@
 +
  public class PathfinderGoalEatTile extends PathfinderGoal {
  
-     private static final Predicate<IBlockData> a = BlockStatePredicate.a(Blocks.GRASS);
-@@ -63,7 +67,8 @@
-             BlockPosition blockposition = this.b.getChunkCoordinates();
+     private static final int EAT_ANIMATION_TICKS = 40;
+@@ -64,7 +68,8 @@
+             BlockPosition blockposition = this.mob.blockPosition();
  
-             if (PathfinderGoalEatTile.a.test(this.c.getType(blockposition))) {
--                if (this.c.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
+             if (PathfinderGoalEatTile.IS_TALL_GRASS.test(this.level.getBlockState(blockposition))) {
+-                if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
 +                // CraftBukkit
-+                if (!CraftEventFactory.callEntityChangeBlockEvent(this.b, blockposition, Blocks.AIR.getBlockData(), !this.c.getGameRules().getBoolean(GameRules.MOB_GRIEFING)).isCancelled()) {
-                     this.c.b(blockposition, false);
++                if (!CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition, Blocks.AIR.defaultBlockState(), !this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)).isCancelled()) {
+                     this.level.destroyBlock(blockposition, false);
                  }
  
-@@ -72,7 +77,8 @@
-                 BlockPosition blockposition1 = blockposition.down();
+@@ -73,7 +78,8 @@
+                 BlockPosition blockposition1 = blockposition.below();
  
-                 if (this.c.getType(blockposition1).a(Blocks.GRASS_BLOCK)) {
--                    if (this.c.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
+                 if (this.level.getBlockState(blockposition1).is(Blocks.GRASS_BLOCK)) {
+-                    if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
 +                    // CraftBukkit
-+                    if (!CraftEventFactory.callEntityChangeBlockEvent(this.b, blockposition, Blocks.AIR.getBlockData(), !this.c.getGameRules().getBoolean(GameRules.MOB_GRIEFING)).isCancelled()) {
-                         this.c.triggerEffect(2001, blockposition1, Block.getCombinedId(Blocks.GRASS_BLOCK.getBlockData()));
-                         this.c.setTypeAndData(blockposition1, Blocks.DIRT.getBlockData(), 2);
++                    if (!CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition1, Blocks.AIR.defaultBlockState(), !this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)).isCancelled()) {
+                         this.level.levelEvent(2001, blockposition1, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
+                         this.level.setBlock(blockposition1, Blocks.DIRT.defaultBlockState(), 2);
                      }

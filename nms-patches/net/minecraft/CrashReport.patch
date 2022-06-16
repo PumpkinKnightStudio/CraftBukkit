@@ -1,10 +1,10 @@
 --- a/net/minecraft/CrashReport.java
 +++ b/net/minecraft/CrashReport.java
-@@ -68,6 +68,7 @@
- 
-             return String.format("%d total; %s", list.size(), list.stream().collect(Collectors.joining(" ")));
-         });
-+        this.d.a("CraftBukkit Information", (CrashReportCallable) new org.bukkit.craftbukkit.CraftCrashReport()); // CraftBukkit
+@@ -32,6 +32,7 @@
+     public CrashReport(String s, Throwable throwable) {
+         this.title = s;
+         this.exception = throwable;
++        this.systemReport.setDetail("CraftBukkit Information", new org.bukkit.craftbukkit.CraftCrashReport()); // CraftBukkit
      }
  
-     public String a() {
+     public String getTitle() {

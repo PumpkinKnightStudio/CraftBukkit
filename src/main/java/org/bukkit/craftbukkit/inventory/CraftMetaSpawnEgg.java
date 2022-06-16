@@ -40,8 +40,8 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
     CraftMetaSpawnEgg(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.hasKey(ENTITY_TAG.NBT)) {
-            entityTag = tag.getCompound(ENTITY_TAG.NBT);
+        if (tag.contains(ENTITY_TAG.NBT)) {
+            entityTag = tag.getCompound(ENTITY_TAG.NBT).copy();
         }
     }
 
@@ -58,7 +58,7 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
     void deserializeInternal(NBTTagCompound tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.hasKey(ENTITY_TAG.NBT)) {
+        if (tag.contains(ENTITY_TAG.NBT)) {
             entityTag = tag.getCompound(ENTITY_TAG.NBT);
 
             if (context instanceof Map) {
@@ -83,8 +83,8 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
             }
 
             // See if we can read a converted ID tag
-            if (entityTag.hasKey(ENTITY_ID.NBT)) {
-                this.spawnedType = EntityType.fromName(new MinecraftKey(entityTag.getString(ENTITY_ID.NBT)).getKey());
+            if (entityTag.contains(ENTITY_ID.NBT)) {
+                this.spawnedType = EntityType.fromName(new MinecraftKey(entityTag.getString(ENTITY_ID.NBT)).getPath());
             }
         }
     }
@@ -105,13 +105,14 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
         }
 
         if (entityTag != null) {
-            tag.set(ENTITY_TAG.NBT, entityTag);
+            tag.put(ENTITY_TAG.NBT, entityTag);
         }
     }
 
     @Override
     boolean applicableTo(Material type) {
         switch (type) {
+            case AXOLOTL_SPAWN_EGG:
             case BAT_SPAWN_EGG:
             case BEE_SPAWN_EGG:
             case BLAZE_SPAWN_EGG:
@@ -130,6 +131,8 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
             case EVOKER_SPAWN_EGG:
             case FOX_SPAWN_EGG:
             case GHAST_SPAWN_EGG:
+            case GLOW_SQUID_SPAWN_EGG:
+            case GOAT_SPAWN_EGG:
             case GUARDIAN_SPAWN_EGG:
             case HOGLIN_SPAWN_EGG:
             case HORSE_SPAWN_EGG:
@@ -142,6 +145,7 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
             case PANDA_SPAWN_EGG:
             case PARROT_SPAWN_EGG:
             case PHANTOM_SPAWN_EGG:
+            case PIGLIN_BRUTE_SPAWN_EGG:
             case PIGLIN_SPAWN_EGG:
             case PIG_SPAWN_EGG:
             case PILLAGER_SPAWN_EGG:
@@ -251,7 +255,7 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
 
         clone.spawnedType = spawnedType;
         if (entityTag != null) {
-            clone.entityTag = entityTag.clone();
+            clone.entityTag = entityTag.copy();
         }
 
         return clone;

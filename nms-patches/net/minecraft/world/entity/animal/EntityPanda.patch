@@ -1,41 +1,43 @@
 --- a/net/minecraft/world/entity/animal/EntityPanda.java
 +++ b/net/minecraft/world/entity/animal/EntityPanda.java
 @@ -64,6 +64,8 @@
- import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.gameevent.GameEvent;
  import net.minecraft.world.phys.Vec3D;
  
 +import org.bukkit.event.entity.EntityTargetEvent; // CraftBukkit
 +
  public class EntityPanda extends EntityAnimal {
  
-     private static final DataWatcherObject<Integer> bp = DataWatcher.a(EntityPanda.class, DataWatcherRegistry.b);
-@@ -500,7 +502,7 @@
+     private static final DataWatcherObject<Integer> UNHAPPY_COUNTER = DataWatcher.defineId(EntityPanda.class, DataWatcherRegistry.INT);
+@@ -526,7 +528,7 @@
  
      @Override
-     protected void b(EntityItem entityitem) {
--        if (this.getEquipment(EnumItemSlot.MAINHAND).isEmpty() && EntityPanda.PICKUP_PREDICATE.test(entityitem)) {
-+        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, entityitem, 0, !(this.getEquipment(EnumItemSlot.MAINHAND).isEmpty() && EntityPanda.PICKUP_PREDICATE.test(entityitem))).isCancelled()) { // CraftBukkit
-             this.a(entityitem);
-             ItemStack itemstack = entityitem.getItemStack();
+     protected void pickUpItem(EntityItem entityitem) {
+-        if (this.getItemBySlot(EnumItemSlot.MAINHAND).isEmpty() && EntityPanda.PANDA_ITEMS.test(entityitem)) {
++        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, entityitem, 0, !(this.getItemBySlot(EnumItemSlot.MAINHAND).isEmpty() && EntityPanda.PANDA_ITEMS.test(entityitem))).isCancelled()) { // CraftBukkit
+             this.onItemPickup(entityitem);
+             ItemStack itemstack = entityitem.getItem();
  
-@@ -721,7 +723,7 @@
+@@ -872,10 +874,10 @@
+         private final EntityPanda panda;
+ 
+         public c(EntityPanda entitypanda, Class<T> oclass, float f, double d0, double d1) {
+-            Predicate predicate = IEntitySelector.NO_SPECTATORS;
++            // Predicate predicate = IEntitySelector.NO_SPECTATORS;
+ 
+-            Objects.requireNonNull(predicate);
+-            super(entitypanda, oclass, f, d0, d1, predicate::test);
++            // Objects.requireNonNull(predicate);
++            super(entitypanda, oclass, f, d0, d1, IEntitySelector.NO_SPECTATORS::test);
+             this.panda = entitypanda;
+         }
+ 
+@@ -1114,7 +1116,7 @@
          @Override
-         protected void a(EntityInsentient entityinsentient, EntityLiving entityliving) {
+         protected void alertOther(EntityInsentient entityinsentient, EntityLiving entityliving) {
              if (entityinsentient instanceof EntityPanda && ((EntityPanda) entityinsentient).isAggressive()) {
--                entityinsentient.setGoalTarget(entityliving);
-+                entityinsentient.setGoalTarget(entityliving, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit
+-                entityinsentient.setTarget(entityliving);
++                entityinsentient.setTarget(entityliving, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit
              }
  
          }
-@@ -825,9 +827,9 @@
-         private final EntityPanda i;
- 
-         public c(EntityPanda entitypanda, Class<T> oclass, float f, double d0, double d1) {
--            Predicate predicate = IEntitySelector.g;
-+            // Predicate predicate = IEntitySelector.g; // CraftBukkit - decompile error
- 
--            super(entitypanda, oclass, f, d0, d1, predicate::test);
-+            super(entitypanda, oclass, f, d0, d1, IEntitySelector.g::test); // CraftBukkit - decompile error
-             this.i = entitypanda;
-         }
- 

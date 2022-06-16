@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/ambient/EntityBat.java
 +++ b/net/minecraft/world/entity/ambient/EntityBat.java
-@@ -30,6 +30,8 @@
+@@ -28,6 +28,8 @@
  import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.phys.Vec3D;
  
@@ -8,16 +8,16 @@
 +
  public class EntityBat extends EntityAmbient {
  
-     private static final DataWatcherObject<Byte> b = DataWatcher.a(EntityBat.class, DataWatcherRegistry.a);
-@@ -130,16 +132,24 @@
+     public static final float FLAP_DEGREES_PER_TICK = 74.48451F;
+@@ -137,16 +139,24 @@
                  }
  
-                 if (this.world.a(EntityBat.c, (EntityLiving) this) != null) {
+                 if (this.level.getNearestPlayer(EntityBat.BAT_RESTING_TARGETING, this) != null) {
 +                    // CraftBukkit Start - Call BatToggleSleepEvent
 +                    if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
-+                        this.setAsleep(false);
++                        this.setResting(false);
 +                        if (!flag) {
-+                            this.world.a((EntityHuman) null, 1025, blockposition, 0);
++                            this.level.levelEvent((EntityHuman) null, 1025, blockposition, 0);
 +                        }
 +                    }
 +                    // CraftBukkit End
@@ -25,43 +25,43 @@
 +            } else {
 +                // CraftBukkit Start - Call BatToggleSleepEvent
 +                if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
-                     this.setAsleep(false);
+                     this.setResting(false);
                      if (!flag) {
-                         this.world.a((EntityHuman) null, 1025, blockposition, 0);
+                         this.level.levelEvent((EntityHuman) null, 1025, blockposition, 0);
                      }
                  }
 -            } else {
--                this.setAsleep(false);
+-                this.setResting(false);
 -                if (!flag) {
--                    this.world.a((EntityHuman) null, 1025, blockposition, 0);
+-                    this.level.levelEvent((EntityHuman) null, 1025, blockposition, 0);
 -                }
 +                // CraftBukkit End - Call BatToggleSleepEvent
              }
          } else {
-             if (this.d != null && (!this.world.isEmpty(this.d) || this.d.getY() < 1)) {
-@@ -163,7 +173,11 @@
-             this.aT = 0.5F;
-             this.yaw += f1;
-             if (this.random.nextInt(100) == 0 && this.world.getType(blockposition1).isOccluding(this.world, blockposition1)) {
--                this.setAsleep(true);
+             if (this.targetPosition != null && (!this.level.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= this.level.getMinBuildHeight())) {
+@@ -170,7 +180,11 @@
+             this.zza = 0.5F;
+             this.setYRot(this.getYRot() + f1);
+             if (this.random.nextInt(100) == 0 && this.level.getBlockState(blockposition1).isRedstoneConductor(this.level, blockposition1)) {
+-                this.setResting(true);
 +                // CraftBukkit Start - Call BatToggleSleepEvent
 +                if (CraftEventFactory.handleBatToggleSleepEvent(this, false)) {
-+                    this.setAsleep(true);
++                    this.setResting(true);
 +                }
 +                // CraftBukkit End
              }
          }
  
-@@ -193,7 +207,11 @@
+@@ -200,7 +214,11 @@
              return false;
          } else {
-             if (!this.world.isClientSide && this.isAsleep()) {
--                this.setAsleep(false);
+             if (!this.level.isClientSide && this.isResting()) {
+-                this.setResting(false);
 +                // CraftBukkit Start - Call BatToggleSleepEvent
 +                if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
-+                    this.setAsleep(false);
++                    this.setResting(false);
 +                }
 +                // CraftBukkit End - Call BatToggleSleepEvent
              }
  
-             return super.damageEntity(damagesource, f);
+             return super.hurt(damagesource, f);

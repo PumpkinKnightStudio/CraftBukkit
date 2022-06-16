@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockRedstoneWire.java
 +++ b/net/minecraft/world/level/block/BlockRedstoneWire.java
-@@ -34,6 +34,8 @@
+@@ -37,6 +37,8 @@
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
  
@@ -8,22 +8,22 @@
 +
  public class BlockRedstoneWire extends Block {
  
-     public static final BlockStateEnum<BlockPropertyRedstoneSide> NORTH = BlockProperties.X;
-@@ -238,7 +240,16 @@
-     private void a(World world, BlockPosition blockposition, IBlockData iblockdata) {
-         int i = this.a(world, blockposition);
+     public static final BlockStateEnum<BlockPropertyRedstoneSide> NORTH = BlockProperties.NORTH_REDSTONE;
+@@ -255,7 +257,16 @@
+     private void updatePowerStrength(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         int i = this.calculateTargetStrength(world, blockposition);
  
--        if ((Integer) iblockdata.get(BlockRedstoneWire.POWER) != i) {
+-        if ((Integer) iblockdata.getValue(BlockRedstoneWire.POWER) != i) {
 +        // CraftBukkit start
-+        int oldPower = (Integer) iblockdata.get(BlockRedstoneWire.POWER);
++        int oldPower = (Integer) iblockdata.getValue(BlockRedstoneWire.POWER);
 +        if (oldPower != i) {
 +            BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), oldPower, i);
-+            world.getServer().getPluginManager().callEvent(event);
++            world.getCraftServer().getPluginManager().callEvent(event);
 +
 +            i = event.getNewCurrent();
 +        }
 +        if (oldPower != i) {
 +            // CraftBukkit end
-             if (world.getType(blockposition) == iblockdata) {
-                 world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockRedstoneWire.POWER, i), 2);
+             if (world.getBlockState(blockposition) == iblockdata) {
+                 world.setBlock(blockposition, (IBlockData) iblockdata.setValue(BlockRedstoneWire.POWER, i), 2);
              }

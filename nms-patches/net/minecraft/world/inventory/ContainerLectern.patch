@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerLectern.java
 +++ b/net/minecraft/world/inventory/ContainerLectern.java
-@@ -5,16 +5,43 @@
+@@ -5,8 +5,33 @@
  import net.minecraft.world.entity.player.EntityHuman;
  import net.minecraft.world.item.ItemStack;
  
@@ -26,13 +26,17 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventoryLectern inventory = new CraftInventoryLectern(this.inventory);
++        CraftInventoryLectern inventory = new CraftInventoryLectern(this.lectern);
 +        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
 +    // CraftBukkit end
-     private final IInventory inventory;
-     private final IContainerProperties containerProperties;
+     private static final int DATA_COUNT = 1;
+     private static final int SLOT_COUNT = 1;
+     public static final int BUTTON_PREV_PAGE = 1;
+@@ -16,11 +41,13 @@
+     private final IInventory lectern;
+     private final IContainerProperties lecternData;
  
 -    public ContainerLectern(int i) {
 -        this(i, new InventorySubcontainer(1), new ContainerProperties(1));
@@ -45,17 +49,17 @@
 +    public ContainerLectern(int i, IInventory iinventory, IContainerProperties icontainerproperties, PlayerInventory playerinventory) {
 +        // CraftBukkit end
          super(Containers.LECTERN, i);
-         a(iinventory, 1);
-         a(icontainerproperties, 1);
-@@ -28,6 +55,7 @@
+         checkContainerSize(iinventory, 1);
+         checkContainerDataCount(icontainerproperties, 1);
+@@ -34,6 +61,7 @@
              }
          });
-         this.a(icontainerproperties);
+         this.addDataSlots(icontainerproperties);
 +        player = (Player) playerinventory.player.getBukkitEntity(); // CraftBukkit
      }
  
      @Override
-@@ -53,6 +81,13 @@
+@@ -59,6 +87,13 @@
                          return false;
                      }
  
@@ -66,15 +70,15 @@
 +                        return false;
 +                    }
 +                    // CraftBukkit end
-                     ItemStack itemstack = this.inventory.splitWithoutUpdate(0);
+                     ItemStack itemstack = this.lectern.removeItemNoUpdate(0);
  
-                     this.inventory.update();
-@@ -75,6 +110,8 @@
+                     this.lectern.setChanged();
+@@ -86,6 +121,8 @@
  
      @Override
-     public boolean canUse(EntityHuman entityhuman) {
-+        if (inventory instanceof LecternInventory && !((LecternInventory) inventory).getLectern().hasBook()) return false; // CraftBukkit
+     public boolean stillValid(EntityHuman entityhuman) {
++        if (lectern instanceof LecternInventory && !((LecternInventory) lectern).getLectern().hasBook()) return false; // CraftBukkit
 +        if (!this.checkReachable) return true; // CraftBukkit
-         return this.inventory.a(entityhuman);
+         return this.lectern.stillValid(entityhuman);
      }
- }
+ 

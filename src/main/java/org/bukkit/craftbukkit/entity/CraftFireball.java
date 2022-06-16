@@ -41,22 +41,23 @@ public class CraftFireball extends AbstractProjectile implements Fireball {
     @Override
     public void setShooter(ProjectileSource shooter) {
         if (shooter instanceof CraftLivingEntity) {
-            getHandle().setShooter(((CraftLivingEntity) shooter).getHandle());
+            getHandle().setOwner(((CraftLivingEntity) shooter).getHandle());
         } else {
-            getHandle().setShooter(null);
+            getHandle().setOwner(null);
         }
         getHandle().projectileSource = shooter;
     }
 
     @Override
     public Vector getDirection() {
-        return new Vector(getHandle().dirX, getHandle().dirY, getHandle().dirZ);
+        return new Vector(getHandle().xPower, getHandle().yPower, getHandle().zPower);
     }
 
     @Override
     public void setDirection(Vector direction) {
         Validate.notNull(direction, "Direction can not be null");
         getHandle().setDirection(direction.getX(), direction.getY(), direction.getZ());
+        update(); // SPIGOT-6579
     }
 
     @Override

@@ -1,51 +1,64 @@
 --- a/net/minecraft/world/entity/animal/EntityDolphin.java
 +++ b/net/minecraft/world/entity/animal/EntityDolphin.java
-@@ -173,7 +173,7 @@
-         this.goalSelector.a(8, new EntityDolphin.d());
-         this.goalSelector.a(8, new PathfinderGoalFollowBoat(this));
-         this.goalSelector.a(9, new PathfinderGoalAvoidTarget<>(this, EntityGuardian.class, 8.0F, 1.0D, 1.0D));
--        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityGuardian.class})).a());
-+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityGuardian.class})).a(new Class[0])); // CraftBukkit - decompile error
+@@ -63,6 +63,12 @@
+ 
+ public class EntityDolphin extends EntityWaterAnimal {
+ 
++    // CraftBukkit start - SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
++    @Override
++    public int getDefaultMaxAirSupply() {
++        return TOTAL_AIR_SUPPLY;
++    }
++    // CraftBukkit end
+     private static final DataWatcherObject<BlockPosition> TREASURE_POS = DataWatcher.defineId(EntityDolphin.class, DataWatcherRegistry.BLOCK_POS);
+     private static final DataWatcherObject<Boolean> GOT_FISH = DataWatcher.defineId(EntityDolphin.class, DataWatcherRegistry.BOOLEAN);
+     private static final DataWatcherObject<Integer> MOISTNESS_LEVEL = DataWatcher.defineId(EntityDolphin.class, DataWatcherRegistry.INT);
+@@ -190,7 +196,7 @@
+ 
+     @Override
+     public int getMaxAirSupply() {
+-        return 4800;
++        return maxAirTicks; // CraftBukkit - SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
      }
  
-     public static AttributeProvider.Builder eM() {
-@@ -240,6 +240,12 @@
-             ItemStack itemstack = entityitem.getItemStack();
+     @Override
+@@ -231,6 +237,12 @@
+             ItemStack itemstack = entityitem.getItem();
  
-             if (this.canPickup(itemstack)) {
+             if (this.canHoldItem(itemstack)) {
 +                // CraftBukkit start - call EntityPickupItemEvent
 +                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, entityitem, 0, false).isCancelled()) {
 +                    return;
 +                }
-+                itemstack = entityitem.getItemStack(); // update ItemStack from event
++                itemstack = entityitem.getItem(); // update ItemStack from event
 +                // CraftBukkit end
-                 this.a(entityitem);
-                 this.setSlot(EnumItemSlot.MAINHAND, itemstack);
-                 this.dropChanceHand[EnumItemSlot.MAINHAND.b()] = 2.0F;
-@@ -387,7 +393,7 @@
+                 this.onItemPickup(entityitem);
+                 this.setItemSlot(EnumItemSlot.MAINHAND, itemstack);
+                 this.setGuaranteedDrop(EnumItemSlot.MAINHAND);
+@@ -389,7 +401,7 @@
  
          @Override
-         public boolean a() {
--            return this.a.gotFish() && this.a.getAirTicks() >= 100;
-+            return this.a.gotFish() && this.a.getAirTicks() >= 100 && this.a.world.getWorld().canGenerateStructures(); // MC-151364, SPIGOT-5494: hangs if generate-structures=false
+         public boolean canUse() {
+-            return this.dolphin.gotFish() && this.dolphin.getAirSupply() >= 100;
++            return this.dolphin.gotFish() && this.dolphin.getAirSupply() >= 100 && this.dolphin.level.getWorld().canGenerateStructures(); // MC-151364, SPIGOT-5494: hangs if generate-structures=false
          }
  
          @Override
-@@ -496,7 +502,7 @@
+@@ -489,7 +501,7 @@
  
          @Override
-         public void c() {
--            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
-+            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
+         public void start() {
+-            this.player.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
++            this.player.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), this.dolphin, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
          }
  
          @Override
-@@ -515,7 +521,7 @@
+@@ -508,7 +520,7 @@
              }
  
-             if (this.c.isSwimming() && this.c.world.random.nextInt(6) == 0) {
--                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
-+                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
+             if (this.player.isSwimming() && this.player.level.random.nextInt(6) == 0) {
+-                this.player.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
++                this.player.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), this.dolphin, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
              }
  
          }

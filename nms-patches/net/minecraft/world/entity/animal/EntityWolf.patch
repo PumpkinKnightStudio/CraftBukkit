@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/entity/animal/EntityWolf.java
 +++ b/net/minecraft/world/entity/animal/EntityWolf.java
-@@ -62,6 +62,11 @@
- import net.minecraft.world.level.block.state.IBlockData;
+@@ -69,6 +69,11 @@
+ import net.minecraft.world.level.pathfinder.PathType;
  import net.minecraft.world.phys.Vec3D;
  
 +// CraftBukkit start
@@ -11,27 +11,18 @@
 +
  public class EntityWolf extends EntityTameableAnimal implements IEntityAngerable {
  
-     private static final DataWatcherObject<Boolean> br = DataWatcher.a(EntityWolf.class, DataWatcherRegistry.i);
-@@ -101,7 +106,7 @@
-         this.goalSelector.a(10, new PathfinderGoalRandomLookaround(this));
-         this.targetSelector.a(1, new PathfinderGoalOwnerHurtByTarget(this));
-         this.targetSelector.a(2, new PathfinderGoalOwnerHurtTarget(this));
--        this.targetSelector.a(3, (new PathfinderGoalHurtByTarget(this, new Class[0])).a());
-+        this.targetSelector.a(3, (new PathfinderGoalHurtByTarget(this, new Class[0])).a(new Class[0])); // CraftBukkit - decompile error
-         this.targetSelector.a(4, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, this::a_));
-         this.targetSelector.a(5, new PathfinderGoalRandomTargetNonTamed<>(this, EntityAnimal.class, false, EntityWolf.bq));
-         this.targetSelector.a(6, new PathfinderGoalRandomTargetNonTamed<>(this, EntityTurtle.class, false, EntityTurtle.bo));
-@@ -113,6 +118,24 @@
-         return EntityInsentient.p().a(GenericAttributes.MOVEMENT_SPEED, 0.30000001192092896D).a(GenericAttributes.MAX_HEALTH, 8.0D).a(GenericAttributes.ATTACK_DAMAGE, 2.0D);
+     private static final DataWatcherObject<Boolean> DATA_INTERESTED_ID = DataWatcher.defineId(EntityWolf.class, DataWatcherRegistry.BOOLEAN);
+@@ -126,6 +131,24 @@
+         return EntityInsentient.createMobAttributes().add(GenericAttributes.MOVEMENT_SPEED, 0.30000001192092896D).add(GenericAttributes.MAX_HEALTH, 8.0D).add(GenericAttributes.ATTACK_DAMAGE, 2.0D);
      }
  
 +    // CraftBukkit - add overriden version
 +    @Override
-+    public boolean setGoalTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fire) {
-+        if (!super.setGoalTarget(entityliving, reason, fire)) {
++    public boolean setTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fire) {
++        if (!super.setTarget(entityliving, reason, fire)) {
 +            return false;
 +        }
-+        entityliving = getGoalTarget();
++        entityliving = getTarget();
 +        /* // PAIL
 +        if (entityliving == null) {
 +            this.setAngry(false);
@@ -44,51 +35,51 @@
 +    // CraftBukkit end
 +
      @Override
-     protected void initDatawatcher() {
-         super.initDatawatcher();
-@@ -259,7 +282,7 @@
-         } else {
+     protected void defineSynchedData() {
+         super.defineSynchedData();
+@@ -298,7 +321,7 @@
              Entity entity = damagesource.getEntity();
  
--            this.setWillSit(false);
-+            // this.setWillSit(false); // CraftBukkit - moved into EntityLiving.damageEntity(DamageSource, float)
-             if (entity != null && !(entity instanceof EntityHuman) && !(entity instanceof EntityArrow)) {
-                 f = (f + 1.0F) / 2.0F;
+             if (!this.level.isClientSide) {
+-                this.setOrderedToSit(false);
++                // this.setOrderedToSit(false); // CraftBukkit - moved into EntityLiving.damageEntity(DamageSource, float)
              }
-@@ -284,7 +307,7 @@
-         super.setTamed(flag);
+ 
+             if (entity != null && !(entity instanceof EntityHuman) && !(entity instanceof EntityArrow)) {
+@@ -325,7 +348,7 @@
+         super.setTame(flag);
          if (flag) {
-             this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(20.0D);
+             this.getAttribute(GenericAttributes.MAX_HEALTH).setBaseValue(20.0D);
 -            this.setHealth(20.0F);
 +            this.setHealth(this.getMaxHealth()); // CraftBukkit - 20.0 -> getMaxHealth()
          } else {
-             this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(8.0D);
+             this.getAttribute(GenericAttributes.MAX_HEALTH).setBaseValue(8.0D);
          }
-@@ -308,7 +331,7 @@
-                         itemstack.subtract(1);
+@@ -349,7 +372,7 @@
+                         itemstack.shrink(1);
                      }
  
--                    this.heal((float) item.getFoodInfo().getNutrition());
-+                    this.heal((float) item.getFoodInfo().getNutrition(), org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.EATING); // CraftBukkit
+-                    this.heal((float) item.getFoodProperties().getNutrition());
++                    this.heal((float) item.getFoodProperties().getNutrition(), org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.EATING); // CraftBukkit
                      return EnumInteractionResult.SUCCESS;
                  }
  
-@@ -319,7 +342,7 @@
-                         this.setWillSit(!this.isWillSit());
+@@ -360,7 +383,7 @@
+                         this.setOrderedToSit(!this.isOrderedToSit());
                          this.jumping = false;
-                         this.navigation.o();
--                        this.setGoalTarget((EntityLiving) null);
-+                        this.setGoalTarget((EntityLiving) null, TargetReason.FORGOT_TARGET, true); // CraftBukkit - reason
+                         this.navigation.stop();
+-                        this.setTarget((EntityLiving) null);
++                        this.setTarget((EntityLiving) null, TargetReason.FORGOT_TARGET, true); // CraftBukkit - reason
                          return EnumInteractionResult.SUCCESS;
                      }
  
-@@ -341,7 +364,8 @@
-                     itemstack.subtract(1);
+@@ -382,7 +405,8 @@
+                     itemstack.shrink(1);
                  }
  
 -                if (this.random.nextInt(3) == 0) {
 +                // CraftBukkit - added event call and isCancelled check.
 +                if (this.random.nextInt(3) == 0 && !CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) {
                      this.tame(entityhuman);
-                     this.navigation.o();
-                     this.setGoalTarget((EntityLiving) null);
+                     this.navigation.stop();
+                     this.setTarget((EntityLiving) null);

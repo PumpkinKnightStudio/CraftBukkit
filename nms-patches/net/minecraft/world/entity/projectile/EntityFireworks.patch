@@ -6,22 +6,22 @@
  
 +import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +
- public class EntityFireworks extends IProjectile {
+ public class EntityFireworks extends IProjectile implements ItemSupplier {
  
-     public static final DataWatcherObject<ItemStack> FIREWORK_ITEM = DataWatcher.a(EntityFireworks.class, DataWatcherRegistry.g);
-@@ -130,7 +132,7 @@
-         MovingObjectPosition movingobjectposition = ProjectileHelper.a((Entity) this, this::a);
+     public static final DataWatcherObject<ItemStack> DATA_ID_FIREWORKS_ITEM = DataWatcher.defineId(EntityFireworks.class, DataWatcherRegistry.ITEM_STACK);
+@@ -144,7 +146,7 @@
+         MovingObjectPosition movingobjectposition = ProjectileHelper.getHitResult(this, this::canHitEntity);
  
-         if (!this.noclip) {
--            this.a(movingobjectposition);
+         if (!this.noPhysics) {
+-            this.onHit(movingobjectposition);
 +            this.preOnHit(movingobjectposition); // CraftBukkit - projectile hit event
-             this.impulse = true;
+             this.hasImpulse = true;
          }
  
-@@ -145,7 +147,11 @@
+@@ -159,7 +161,11 @@
          }
  
-         if (!this.world.isClientSide && this.ticksFlown > this.expectedLifespan) {
+         if (!this.level.isClientSide && this.life > this.lifetime) {
 -            this.explode();
 +            // CraftBukkit start
 +            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
@@ -31,10 +31,10 @@
          }
  
      }
-@@ -160,7 +166,11 @@
-     protected void a(MovingObjectPositionEntity movingobjectpositionentity) {
-         super.a(movingobjectpositionentity);
-         if (!this.world.isClientSide) {
+@@ -175,7 +181,11 @@
+     protected void onHitEntity(MovingObjectPositionEntity movingobjectpositionentity) {
+         super.onHitEntity(movingobjectpositionentity);
+         if (!this.level.isClientSide) {
 -            this.explode();
 +            // CraftBukkit start
 +            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
@@ -44,10 +44,10 @@
          }
      }
  
-@@ -170,7 +180,11 @@
+@@ -185,7 +195,11 @@
  
-         this.world.getType(blockposition).a(this.world, blockposition, (Entity) this);
-         if (!this.world.s_() && this.hasExplosions()) {
+         this.level.getBlockState(blockposition).entityInside(this.level, blockposition, this);
+         if (!this.level.isClientSide() && this.hasExplosion()) {
 -            this.explode();
 +            // CraftBukkit start
 +            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
@@ -56,23 +56,23 @@
 +            // CraftBukkit end
          }
  
-         super.a(movingobjectpositionblock);
-@@ -196,7 +210,9 @@
+         super.onHitBlock(movingobjectpositionblock);
+@@ -211,7 +225,9 @@
  
          if (f > 0.0F) {
-             if (this.ridingEntity != null) {
+             if (this.attachedToEntity != null) {
 +                CraftEventFactory.entityDamage = this; // CraftBukkit
-                 this.ridingEntity.damageEntity(DamageSource.a(this, this.getShooter()), 5.0F + (float) (nbttaglist.size() * 2));
+                 this.attachedToEntity.hurt(DamageSource.fireworks(this, this.getOwner()), 5.0F + (float) (nbttaglist.size() * 2));
 +                CraftEventFactory.entityDamage = null; // CraftBukkit
              }
  
              double d0 = 5.0D;
-@@ -223,7 +239,9 @@
+@@ -238,7 +254,9 @@
                      if (flag) {
-                         float f1 = f * (float) Math.sqrt((5.0D - (double) this.g((Entity) entityliving)) / 5.0D);
+                         float f1 = f * (float) Math.sqrt((5.0D - (double) this.distanceTo(entityliving)) / 5.0D);
  
 +                        CraftEventFactory.entityDamage = this; // CraftBukkit
-                         entityliving.damageEntity(DamageSource.a(this, this.getShooter()), f1);
+                         entityliving.hurt(DamageSource.fireworks(this, this.getOwner()), f1);
 +                        CraftEventFactory.entityDamage = null; // CraftBukkit
                      }
                  }

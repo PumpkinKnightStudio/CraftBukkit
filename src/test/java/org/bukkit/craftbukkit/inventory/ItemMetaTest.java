@@ -30,12 +30,15 @@ import org.bukkit.craftbukkit.inventory.ItemStackTest.CraftWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackWrapper;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.AxolotlBucketMeta;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BundleMeta;
 import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
@@ -159,7 +162,7 @@ public class ItemMetaTest extends AbstractTestingBase {
 
         for (Block block : queue) {
             if (block != null) {
-                ItemStack stack = CraftItemStack.asNewCraftStack(Item.getItemOf(block));
+                ItemStack stack = CraftItemStack.asNewCraftStack(Item.byBlock(block));
 
                 // Command blocks aren't unit testable atm
                 if (stack.getType() == Material.COMMAND_BLOCK || stack.getType() == Material.CHAIN_COMMAND_BLOCK || stack.getType() == Material.REPEATING_COMMAND_BLOCK) {
@@ -300,6 +303,14 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
+            new StackProvider(Material.AXOLOTL_BUCKET) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                     final AxolotlBucketMeta meta = (AxolotlBucketMeta) cleanStack.getItemMeta();
+                     meta.setVariant(Axolotl.Variant.BLUE);
+                     cleanStack.setItemMeta(meta);
+                     return cleanStack;
+                }
+            },
             new StackProvider(Material.CROSSBOW) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CrossbowMeta meta = (CrossbowMeta) cleanStack.getItemMeta();
@@ -312,7 +323,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaArmorStand meta = (CraftMetaArmorStand) cleanStack.getItemMeta();
                     meta.entityTag = new NBTTagCompound();
-                    meta.entityTag.setBoolean("Small", true);
+                    meta.entityTag.putBoolean("Small", true);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
@@ -329,7 +340,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaEntityTag meta = ((CraftMetaEntityTag) cleanStack.getItemMeta());
                     meta.entityTag = new NBTTagCompound();
-                    meta.entityTag.setBoolean("Invisible", true);
+                    meta.entityTag.putBoolean("Invisible", true);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
@@ -338,6 +349,14 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaCompass meta = ((CraftMetaCompass) cleanStack.getItemMeta());
                     meta.setLodestoneTracked(true);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.BUNDLE) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final BundleMeta meta = (BundleMeta) cleanStack.getItemMeta();
+                    meta.addItem(new ItemStack(Material.STONE));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }

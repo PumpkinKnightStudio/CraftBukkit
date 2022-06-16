@@ -12,7 +12,7 @@
 +
  public class ShapelessRecipes implements RecipeCrafting {
  
-     private final MinecraftKey key;
+     private final MinecraftKey id;
 @@ -28,6 +34,20 @@
          this.ingredients = nonnulllist;
      }
@@ -32,5 +32,5 @@
 +    // CraftBukkit end
 +
      @Override
-     public MinecraftKey getKey() {
-         return this.key;
+     public MinecraftKey getId() {
+         return this.id;

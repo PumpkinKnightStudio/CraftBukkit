@@ -26,8 +26,10 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         EnumDirection oldDir = hanging.getDirection();
         EnumDirection newDir = CraftBlock.blockFaceToNotch(face);
 
+        Preconditions.checkArgument(newDir != null, "%s is not a valid facing direction", face);
+
         getHandle().setDirection(newDir);
-        if (!force && !hanging.survives()) {
+        if (!force && !getHandle().generation && !hanging.survives()) {
             hanging.setDirection(oldDir);
             return false;
         }
@@ -42,12 +44,14 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         super.update();
 
         // mark dirty, so that the client gets updated with item and rotation
-        for (DataWatcher.Item<?> dataItem : getHandle().getDataWatcher().c()) {
-            getHandle().getDataWatcher().markDirty(dataItem.a());
+        for (DataWatcher.Item<?> dataItem : getHandle().getEntityData().getAll()) {
+            getHandle().getEntityData().markDirty(dataItem.getAccessor());
         }
 
         // update redstone
-        getHandle().getWorld().updateAdjacentComparators(getHandle().blockPosition, Blocks.AIR);
+        if (!getHandle().generation) {
+            getHandle().getLevel().updateNeighbourForOutputSignal(getHandle().pos, Blocks.AIR);
+        }
     }
 
     @Override
@@ -57,7 +61,8 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setItem(org.bukkit.inventory.ItemStack item, boolean playSound) {
-        getHandle().setItem(CraftItemStack.asNMSCopy(item), true, playSound);
+        // only updated redstone and play sound when it is not in generation
+        getHandle().setItem(CraftItemStack.asNMSCopy(item), !getHandle().generation, !getHandle().generation && playSound);
     }
 
     @Override
@@ -67,13 +72,13 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public float getItemDropChance() {
-        return getHandle().itemDropChance;
+        return getHandle().dropChance;
     }
 
     @Override
     public void setItemDropChance(float chance) {
         Preconditions.checkArgument(0.0 <= chance && chance <= 1.0, "Chance outside range [0, 1]");
-        getHandle().itemDropChance = chance;
+        getHandle().dropChance = chance;
     }
 
     @Override

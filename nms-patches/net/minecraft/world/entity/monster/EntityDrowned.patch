@@ -1,48 +1,11 @@
 --- a/net/minecraft/world/entity/monster/EntityDrowned.java
 +++ b/net/minecraft/world/entity/monster/EntityDrowned.java
-@@ -57,6 +57,11 @@
- import net.minecraft.world.level.pathfinder.PathType;
- import net.minecraft.world.phys.Vec3D;
- 
-+// CraftBukkit start
-+import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.entity.EntityFireTridentEvent;
-+// CraftBukkit end
-+
- public class EntityDrowned extends EntityZombie implements IRangedEntity {
- 
-     private boolean d;
-@@ -238,15 +243,31 @@
+@@ -239,7 +239,7 @@
  
      @Override
-     public void a(EntityLiving entityliving, float f) {
--        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.world, this, new ItemStack(Items.TRIDENT));
-+        // CraftBukkit start -> pull out trident creation from inside the construction
-+        ItemStack trident = new ItemStack(Items.TRIDENT);
-+        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.world, this, trident);
-+        // CraftBukkit end
-         double d0 = entityliving.locX() - this.locX();
-         double d1 = entityliving.e(0.3333333333333333D) - entitythrowntrident.locY();
-         double d2 = entityliving.locZ() - this.locZ();
-         double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
- 
-         entitythrowntrident.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
-+
-+        // CraftBukkit start
-+        EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(this, trident, entitythrowntrident, 0.8f);
-+        if (entityFireTridentEvent.isCancelled()) {
-+            entityFireTridentEvent.getProjectile().remove();
-+            return;
-+        }
-+        // CraftBukkit end
-+
-         this.playSound(SoundEffects.ENTITY_DROWNED_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
--        this.world.addEntity(entitythrowntrident);
-+        // CraftBukkit start
-+        if (entitythrowntrident.getBukkitEntity() == entityFireTridentEvent.getProjectile()) {
-+            this.world.addEntity(entitythrowntrident);
-+        }
-+        // CraftBukkit end
-     }
- 
-     public void t(boolean flag) {
+     public void performRangedAttack(EntityLiving entityliving, float f) {
+-        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.level, this, new ItemStack(Items.TRIDENT));
++        EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.level, this, this.getItemInHand(net.minecraft.world.entity.projectile.ProjectileHelper.getWeaponHoldingHand(this, Items.TRIDENT))); // CraftBukkit - Use Trident in hand like skeletons (SPIGOT-7025)
+         double d0 = entityliving.getX() - this.getX();
+         double d1 = entityliving.getY(0.3333333333333333D) - entitythrowntrident.getY();
+         double d2 = entityliving.getZ() - this.getZ();

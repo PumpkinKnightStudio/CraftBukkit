@@ -17,12 +17,12 @@ public class CraftInventoryMerchant extends CraftInventory implements MerchantIn
 
     @Override
     public int getSelectedRecipeIndex() {
-        return getInventory().selectedIndex;
+        return getInventory().selectionHint;
     }
 
     @Override
     public MerchantRecipe getSelectedRecipe() {
-        net.minecraft.world.item.trading.MerchantRecipe nmsRecipe = getInventory().getRecipe();
+        net.minecraft.world.item.trading.MerchantRecipe nmsRecipe = getInventory().getActiveOffer();
         return (nmsRecipe == null) ? null : nmsRecipe.asBukkit();
     }
 

@@ -48,7 +48,7 @@ public final class CraftRaid implements Raid {
     @Override
     public Location getLocation() {
         BlockPosition pos = handle.getCenter();
-        World world = handle.getWorld();
+        World world = handle.getLevel();
         return new Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -82,12 +82,12 @@ public final class CraftRaid implements Raid {
 
     @Override
     public float getTotalHealth() {
-        return handle.sumMobHealth();
+        return handle.getHealthOfLivingRaiders();
     }
 
     @Override
     public Set<UUID> getHeroes() {
-        return Collections.unmodifiableSet(handle.heroes);
+        return Collections.unmodifiableSet(handle.heroesOfTheVillage);
     }
 
     @Override

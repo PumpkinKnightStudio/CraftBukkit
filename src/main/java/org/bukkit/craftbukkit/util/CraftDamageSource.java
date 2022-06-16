@@ -5,11 +5,11 @@ import net.minecraft.world.damagesource.DamageSource;
 // Util class to create custom DamageSources.
 public final class CraftDamageSource extends DamageSource {
     public static DamageSource copyOf(final DamageSource original) {
-        CraftDamageSource newSource = new CraftDamageSource(original.translationIndex);
+        CraftDamageSource newSource = new CraftDamageSource(original.msgId);
 
         // Check ignoresArmor
-        if (original.ignoresArmor()) {
-            newSource.setIgnoreArmor();
+        if (original.isBypassArmor()) {
+            newSource.bypassArmor();
         }
 
         // Check magic
@@ -18,8 +18,8 @@ public final class CraftDamageSource extends DamageSource {
         }
 
         // Check fire
-        if (original.isExplosion()) {
-            newSource.setExplosion();
+        if (original.isFire()) {
+            newSource.setIsFire();
         }
 
         return newSource;

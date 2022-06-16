@@ -1,35 +1,63 @@
 --- a/net/minecraft/world/level/chunk/ChunkGenerator.java
 +++ b/net/minecraft/world/level/chunk/ChunkGenerator.java
-@@ -246,7 +246,16 @@
-         while (iterator.hasNext()) {
-             Supplier<StructureFeature<?, ?>> supplier = (Supplier) iterator.next();
- 
--            this.a((StructureFeature) supplier.get(), iregistrycustom, structuremanager, ichunkaccess, definedstructuremanager, i, chunkcoordintpair, biomebase);
-+            // CraftBukkit start
-+            StructureFeature<?, ?> structurefeature = (StructureFeature) supplier.get();
-+            if (structurefeature.c == StructureGenerator.STRONGHOLD) {
-+                synchronized (structurefeature) {
-+                    this.a(structurefeature, iregistrycustom, structuremanager, ichunkaccess, definedstructuremanager, i, chunkcoordintpair, biomebase);
-+                }
-+            } else {
-+                this.a(structurefeature, iregistrycustom, structuremanager, ichunkaccess, definedstructuremanager, i, chunkcoordintpair, biomebase);
-+            }
-+            // CraftBukkit end
+@@ -414,7 +414,7 @@
          }
- 
-     }
-@@ -330,9 +339,11 @@
      }
  
-     static {
--        IRegistry.a(IRegistry.CHUNK_GENERATOR, "noise", (Object) ChunkGeneratorAbstract.d);
--        IRegistry.a(IRegistry.CHUNK_GENERATOR, "flat", (Object) ChunkProviderFlat.d);
--        IRegistry.a(IRegistry.CHUNK_GENERATOR, "debug", (Object) ChunkProviderDebug.d);
-+        // CraftBukkit start - decompile errors
-+        IRegistry.a(IRegistry.CHUNK_GENERATOR, "noise", ChunkGeneratorAbstract.d);
-+        IRegistry.a(IRegistry.CHUNK_GENERATOR, "flat", ChunkProviderFlat.d);
-+        IRegistry.a(IRegistry.CHUNK_GENERATOR, "debug", ChunkProviderDebug.d);
+-    public void applyBiomeDecoration(GeneratorAccessSeed generatoraccessseed, IChunkAccess ichunkaccess, StructureManager structuremanager) {
++    public void addVanillaDecorations(GeneratorAccessSeed generatoraccessseed, IChunkAccess ichunkaccess, StructureManager structuremanager) { // CraftBukkit
+         ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
+ 
+         if (!SharedConstants.debugVoidTerrain(chunkcoordintpair)) {
+@@ -436,7 +436,7 @@
+ 
+                 for (int k = 0; k < j; ++k) {
+                     ChunkSection chunksection = achunksection[k];
+-                    PalettedContainerRO palettedcontainerro = chunksection.getBiomes();
++                    PalettedContainerRO<Holder<BiomeBase>> palettedcontainerro = chunksection.getBiomes(); // CraftBukkit - decompile error
+ 
+                     Objects.requireNonNull(set);
+                     palettedcontainerro.getAll(set::add);
+@@ -462,7 +462,7 @@
+                             Structure structure = (Structure) iterator.next();
+ 
+                             seededrandom.setFeatureSeed(i, i1, l);
+-                            Supplier supplier = () -> {
++                            Supplier<String> supplier = () -> { // CraftBukkit - decompile error
+                                 Optional optional = iregistry.getResourceKey(structure).map(Object::toString);
+ 
+                                 Objects.requireNonNull(structure);
+@@ -547,6 +547,33 @@
+         }
+     }
+ 
++    public void applyBiomeDecoration(GeneratorAccessSeed generatoraccessseed, IChunkAccess ichunkaccess, StructureManager structuremanager) {
++        // CraftBukkit start
++        applyBiomeDecoration(generatoraccessseed, ichunkaccess, structuremanager, true);
++    }
++
++    public void applyBiomeDecoration(GeneratorAccessSeed generatoraccessseed, IChunkAccess ichunkaccess, StructureManager structuremanager, boolean vanilla) {
++        if (vanilla) {
++            addVanillaDecorations(generatoraccessseed, ichunkaccess, structuremanager);
++        }
++
++        org.bukkit.World world = generatoraccessseed.getMinecraftWorld().getWorld();
++        // only call when a populator is present (prevents unnecessary entity conversion)
++        if (!world.getPopulators().isEmpty()) {
++            org.bukkit.craftbukkit.generator.CraftLimitedRegion limitedRegion = new org.bukkit.craftbukkit.generator.CraftLimitedRegion(generatoraccessseed, ichunkaccess.getPos());
++            int x = ichunkaccess.getPos().x;
++            int z = ichunkaccess.getPos().z;
++            for (org.bukkit.generator.BlockPopulator populator : world.getPopulators()) {
++                SeededRandom seededrandom = new SeededRandom(new net.minecraft.world.level.levelgen.LegacyRandomSource(generatoraccessseed.getSeed()));
++                seededrandom.setDecorationSeed(generatoraccessseed.getSeed(), x, z);
++                populator.populate(world, new org.bukkit.craftbukkit.util.RandomSourceWrapper.RandomWrapper(seededrandom), x, z, limitedRegion);
++            }
++            limitedRegion.saveEntities();
++            limitedRegion.breakLink();
++        }
 +        // CraftBukkit end
-         a = IRegistry.CHUNK_GENERATOR.dispatchStable(ChunkGenerator::a, Function.identity());
-     }
- }
++    }
++
+     public boolean hasStructureChunkInRange(Holder<StructureSet> holder, RandomState randomstate, long i, int j, int k, int l) {
+         StructureSet structureset = (StructureSet) holder.value();
+ 

@@ -3,9 +3,9 @@
 @@ -38,7 +38,7 @@
  
      @Override
-     public void c() {
--        this.e.setGoalTarget(this.b);
-+        this.e.setGoalTarget(this.b, org.bukkit.event.entity.EntityTargetEvent.TargetReason.OWNER_ATTACKED_TARGET, true); // CraftBukkit - reason
-         EntityLiving entityliving = this.a.getOwner();
+     public void start() {
+-        this.mob.setTarget(this.ownerLastHurt);
++        this.mob.setTarget(this.ownerLastHurt, org.bukkit.event.entity.EntityTargetEvent.TargetReason.OWNER_ATTACKED_TARGET, true); // CraftBukkit - reason
+         EntityLiving entityliving = this.tameAnimal.getOwner();
  
          if (entityliving != null) {

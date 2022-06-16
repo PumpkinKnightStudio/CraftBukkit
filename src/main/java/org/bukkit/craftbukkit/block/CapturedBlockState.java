@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.block;
 
-import java.util.Random;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.EntityBee;
 import net.minecraft.world.level.GeneratorAccessSeed;
@@ -29,10 +29,10 @@ public final class CapturedBlockState extends CraftBlockState {
         if (this.treeBlock && getType() == Material.BEE_NEST) {
             GeneratorAccessSeed generatoraccessseed = this.world.getHandle();
             BlockPosition blockposition1 = this.getPosition();
-            Random random = generatoraccessseed.getRandom();
+            RandomSource random = generatoraccessseed.getRandom();
 
             // Begin copied block from WorldGenFeatureTreeBeehive
-            TileEntity tileentity = generatoraccessseed.getTileEntity(blockposition1);
+            TileEntity tileentity = generatoraccessseed.getBlockEntity(blockposition1);
 
             if (tileentity instanceof TileEntityBeehive) {
                 TileEntityBeehive tileentitybeehive = (TileEntityBeehive) tileentity;
@@ -41,7 +41,7 @@ public final class CapturedBlockState extends CraftBlockState {
                 for (int k = 0; k < j; ++k) {
                     EntityBee entitybee = new EntityBee(EntityTypes.BEE, generatoraccessseed.getMinecraftWorld());
 
-                    tileentitybeehive.a(entitybee, false, random.nextInt(599));
+                    tileentitybeehive.addOccupantWithPresetTicks(entitybee, false, random.nextInt(599));
                 }
             }
             // End copied block

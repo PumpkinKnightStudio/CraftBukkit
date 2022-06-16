@@ -1,75 +1,63 @@
 --- a/net/minecraft/world/entity/EntityLightning.java
 +++ b/net/minecraft/world/entity/EntityLightning.java
-@@ -22,6 +22,11 @@
- import net.minecraft.world.level.block.state.IBlockData;
+@@ -31,6 +31,10 @@
  import net.minecraft.world.phys.AxisAlignedBB;
+ import net.minecraft.world.phys.Vec3D;
  
 +// CraftBukkit start
-+import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +// CraftBukkit end
 +
  public class EntityLightning extends Entity {
  
-     private int lifeTicks;
-@@ -62,7 +67,24 @@
-                 this.a(4);
-             }
- 
--            this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), SoundEffects.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
-+            // CraftBukkit start - Use relative location for far away sounds
-+            // this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), SoundEffects.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
-+            float pitch = 0.8F + this.random.nextFloat() * 0.2F;
-+            int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
-+            for (EntityPlayer player : (List<EntityPlayer>) (List) this.world.getPlayers()) {
-+                double deltaX = this.locX() - player.locX();
-+                double deltaZ = this.locZ() - player.locZ();
-+                double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
-+                if (distanceSquared > viewDistance * viewDistance) {
-+                    double deltaLength = Math.sqrt(distanceSquared);
-+                    double relativeX = player.locX() + (deltaX / deltaLength) * viewDistance;
-+                    double relativeZ = player.locZ() + (deltaZ / deltaLength) * viewDistance;
-+                    player.playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(SoundEffects.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, relativeX, this.locY(), relativeZ, 10000.0F, pitch));
-+                } else {
-+                    player.playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(SoundEffects.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, this.locX(), this.locY(), this.locZ(), 10000.0F, pitch));
-+                }
-+            }
-+            // CraftBukkit end
-             this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), SoundEffects.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F);
-         }
- 
-@@ -78,7 +100,7 @@
+     private static final int START_LIFE = 2;
+@@ -131,7 +135,7 @@
              }
          }
  
--        if (this.lifeTicks >= 0) {
-+        if (this.lifeTicks >= 0 && !this.isEffect) { // CraftBukkit - add !this.isEffect
-             if (!(this.world instanceof WorldServer)) {
-                 this.world.c(2);
-             } else if (!this.isEffect) {
-@@ -106,7 +128,11 @@
-             IBlockData iblockdata = BlockFireAbstract.a((IBlockAccess) this.world, blockposition);
+-        if (this.life >= 0) {
++        if (this.life >= 0 && !this.visualOnly) { // CraftBukkit - add !this.visualOnly
+             if (!(this.level instanceof WorldServer)) {
+                 this.level.setSkyFlashTime(2);
+             } else if (!this.visualOnly) {
+@@ -165,8 +169,12 @@
+             IBlockData iblockdata = BlockFireAbstract.getState(this.level, blockposition);
  
-             if (this.world.getType(blockposition).isAir() && iblockdata.canPlace(this.world, blockposition)) {
--                this.world.setTypeUpdate(blockposition, iblockdata);
-+                // CraftBukkit start - add "!isEffect"
-+                if (!isEffect && !CraftEventFactory.callBlockIgniteEvent(world, blockposition, this).isCancelled()) {
-+                    this.world.setTypeUpdate(blockposition, iblockdata);
+             if (this.level.getBlockState(blockposition).isAir() && iblockdata.canSurvive(this.level, blockposition)) {
+-                this.level.setBlockAndUpdate(blockposition, iblockdata);
+-                ++this.blocksSetOnFire;
++                // CraftBukkit start - add "!visualOnly"
++                if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(level, blockposition, this).isCancelled()) {
++                    this.level.setBlockAndUpdate(blockposition, iblockdata);
++                    ++this.blocksSetOnFire;
 +                }
 +                // CraftBukkit end
              }
  
              for (int j = 0; j < i; ++j) {
-@@ -114,7 +140,11 @@
+@@ -174,8 +182,12 @@
  
-                 iblockdata = BlockFireAbstract.a((IBlockAccess) this.world, blockposition1);
-                 if (this.world.getType(blockposition1).isAir() && iblockdata.canPlace(this.world, blockposition1)) {
--                    this.world.setTypeUpdate(blockposition1, iblockdata);
-+                    // CraftBukkit start - add "!isEffect"
-+                    if (!isEffect && !CraftEventFactory.callBlockIgniteEvent(world, blockposition1, this).isCancelled()) {
-+                        this.world.setTypeUpdate(blockposition1, iblockdata);
+                 iblockdata = BlockFireAbstract.getState(this.level, blockposition1);
+                 if (this.level.getBlockState(blockposition1).isAir() && iblockdata.canSurvive(this.level, blockposition1)) {
+-                    this.level.setBlockAndUpdate(blockposition1, iblockdata);
+-                    ++this.blocksSetOnFire;
++                    // CraftBukkit start - add "!visualOnly"
++                    if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(level, blockposition1, this).isCancelled()) {
++                        this.level.setBlockAndUpdate(blockposition1, iblockdata);
++                        ++this.blocksSetOnFire;
 +                    }
 +                    // CraftBukkit end
                  }
              }
  
+@@ -239,8 +251,9 @@
+             iblockdata = world.getBlockState(blockposition1);
+         } while (!(iblockdata.getBlock() instanceof WeatheringCopper));
+ 
++        BlockPosition blockposition1Final = blockposition1; // CraftBukkit - decompile error
+         WeatheringCopper.getPrevious(iblockdata).ifPresent((iblockdata1) -> {
+-            world.setBlockAndUpdate(blockposition1, iblockdata1);
++            world.setBlockAndUpdate(blockposition1Final, iblockdata1); // CraftBukkit - decompile error
+         });
+         world.levelEvent(3002, blockposition1, -1);
+         return Optional.of(blockposition1);

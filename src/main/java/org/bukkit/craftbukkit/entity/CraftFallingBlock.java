@@ -36,7 +36,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
     @Override
     public BlockData getBlockData() {
-        return CraftBlockData.fromData(getHandle().getBlock());
+        return CraftBlockData.fromData(getHandle().getBlockState());
     }
 
     @Override
@@ -64,6 +64,6 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
         super.setTicksLived(value);
 
         // Second field for EntityFallingBlock
-        getHandle().ticksLived = value;
+        getHandle().time = value;
     }
 }

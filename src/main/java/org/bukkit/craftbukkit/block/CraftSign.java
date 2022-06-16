@@ -1,14 +1,15 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.network.chat.ChatComponentText;
+import com.google.common.base.Preconditions;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.block.entity.TileEntitySign;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.entity.Player;
 
 public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements Sign {
 
@@ -16,12 +17,8 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
     private String[] originalLines = null;
     private String[] lines = null;
 
-    public CraftSign(final Block block) {
-        super(block, TileEntitySign.class);
-    }
-
-    public CraftSign(final Material material, final TileEntitySign te) {
-        super(material, te);
+    public CraftSign(World world, TileEntitySign tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -29,8 +26,8 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
         if (lines == null) {
             // Lazy initialization:
             TileEntitySign sign = this.getSnapshot();
-            lines = new String[sign.lines.length];
-            System.arraycopy(revertComponents(sign.lines), 0, lines, 0, lines.length);
+            lines = new String[sign.messages.length];
+            System.arraycopy(revertComponents(sign.messages), 0, lines, 0, lines.length);
             originalLines = new String[lines.length];
             System.arraycopy(lines, 0, originalLines, 0, originalLines.length);
         }
@@ -58,13 +55,23 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
     }
 
     @Override
+    public boolean isGlowingText() {
+        return getSnapshot().hasGlowingText();
+    }
+
+    @Override
+    public void setGlowingText(boolean glowing) {
+        getSnapshot().setHasGlowingText(glowing);
+    }
+
+    @Override
     public DyeColor getColor() {
-        return DyeColor.getByWoolData((byte) getSnapshot().getColor().getColorIndex());
+        return DyeColor.getByWoolData((byte) getSnapshot().getColor().getId());
     }
 
     @Override
     public void setColor(DyeColor color) {
-        getSnapshot().setColor(EnumColor.fromColorIndex(color.getWoolData()));
+        getSnapshot().setColor(EnumColor.byId(color.getWoolData()));
     }
 
     @Override
@@ -77,9 +84,20 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
                 if (line.equals(originalLines[i])) {
                     continue; // The line contents are still the same, skip.
                 }
-                sign.lines[i] = CraftChatMessage.fromString(line)[0];
+                sign.setMessage(i, CraftChatMessage.fromString(line)[0]);
             }
         }
+    }
+
+    public static void openSign(Sign sign, Player player) {
+        Preconditions.checkArgument(sign != null, "sign == null");
+        Preconditions.checkArgument(sign.isPlaced(), "Sign must be placed");
+        Preconditions.checkArgument(sign.getWorld() == player.getWorld(), "Sign must be in same world as Player");
+
+        TileEntitySign handle = ((CraftSign) sign).getTileEntity();
+        handle.isEditable = true;
+
+        ((CraftPlayer) player).getHandle().openTextEdit(handle);
     }
 
     public static IChatBaseComponent[] sanitizeLines(String[] lines) {
@@ -89,7 +107,7 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
             if (i < lines.length && lines[i] != null) {
                 components[i] = CraftChatMessage.fromString(lines[i])[0];
             } else {
-                components[i] = new ChatComponentText("");
+                components[i] = IChatBaseComponent.empty();
             }
         }
 

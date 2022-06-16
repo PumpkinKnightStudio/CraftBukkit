@@ -1,163 +1,174 @@
 --- a/net/minecraft/world/level/World.java
 +++ b/net/minecraft/world/level/World.java
-@@ -62,6 +62,21 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -67,6 +67,31 @@
+ import net.minecraft.world.phys.AxisAlignedBB;
+ import net.minecraft.world.scores.Scoreboard;
  
 +// CraftBukkit start
 +import java.util.HashMap;
 +import java.util.Map;
-+import net.minecraft.network.protocol.game.PacketPlayOutWorldBorder;
++import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
++import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
++import net.minecraft.network.protocol.game.ClientboundSetBorderSizePacket;
++import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDelayPacket;
++import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDistancePacket;
 +import net.minecraft.server.level.WorldServer;
 +import net.minecraft.world.entity.item.EntityItem;
 +import net.minecraft.world.level.border.IWorldBorderListener;
++import net.minecraft.world.level.dimension.WorldDimension;
 +import org.bukkit.Bukkit;
++import org.bukkit.Location;
 +import org.bukkit.craftbukkit.CraftServer;
 +import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.block.CapturedBlockState;
 +import org.bukkit.craftbukkit.block.data.CraftBlockData;
++import org.bukkit.craftbukkit.util.CraftSpawnCategory;
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++import org.bukkit.entity.SpawnCategory;
 +import org.bukkit.event.block.BlockPhysicsEvent;
++import org.bukkit.event.world.GenericGameEvent;
 +// CraftBukkit end
 +
  public abstract class World implements GeneratorAccess, AutoCloseable {
  
-     protected static final Logger LOGGER = LogManager.getLogger();
-@@ -93,7 +108,49 @@
-     private final BiomeManager biomeManager;
-     private final ResourceKey<World> dimensionKey;
+     public static final Codec<ResourceKey<World>> RESOURCE_KEY_CODEC = ResourceKey.codec(IRegistry.DIMENSION_REGISTRY);
+@@ -108,7 +133,43 @@
+     private final ResourceKey<World> dimension;
+     private long subTickCount;
  
--    protected World(WorldDataMutable worlddatamutable, ResourceKey<World> resourcekey, final DimensionManager dimensionmanager, Supplier<GameProfilerFiller> supplier, boolean flag, boolean flag1, long i) {
+-    protected World(WorldDataMutable worlddatamutable, ResourceKey<World> resourcekey, Holder<DimensionManager> holder, Supplier<GameProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j) {
 +    // CraftBukkit start Added the following
-+    private final ResourceKey<DimensionManager> typeKey;
 +    private final CraftWorld world;
 +    public boolean pvpMode;
 +    public boolean keepSpawnInMemory = true;
 +    public org.bukkit.generator.ChunkGenerator generator;
 +
++    public boolean preventPoiUpdated = false; // CraftBukkit - SPIGOT-5710
 +    public boolean captureBlockStates = false;
 +    public boolean captureTreeGeneration = false;
 +    public Map<BlockPosition, CapturedBlockState> capturedBlockStates = new java.util.LinkedHashMap<>();
 +    public Map<BlockPosition, TileEntity> capturedTileEntities = new HashMap<>();
 +    public List<EntityItem> captureDrops;
-+    public long ticksPerAnimalSpawns;
-+    public long ticksPerMonsterSpawns;
-+    public long ticksPerWaterSpawns;
-+    public long ticksPerWaterAmbientSpawns;
-+    public long ticksPerAmbientSpawns;
++    public final it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<SpawnCategory> ticksPerSpawnCategory = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>();
 +    public boolean populating;
 +
 +    public CraftWorld getWorld() {
 +        return this.world;
 +    }
 +
-+    public CraftServer getServer() {
++    public CraftServer getCraftServer() {
 +        return (CraftServer) Bukkit.getServer();
 +    }
 +
-+    public ResourceKey<DimensionManager> getTypeKey() {
-+        return typeKey;
-+    }
++    public abstract ResourceKey<WorldDimension> getTypeKey();
 +
-+    protected World(WorldDataMutable worlddatamutable, ResourceKey<World> resourcekey, final DimensionManager dimensionmanager, Supplier<GameProfilerFiller> supplier, boolean flag, boolean flag1, long i, org.bukkit.generator.ChunkGenerator gen, org.bukkit.World.Environment env) {
++    protected World(WorldDataMutable worlddatamutable, ResourceKey<World> resourcekey, Holder<DimensionManager> holder, Supplier<GameProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env) {
 +        this.generator = gen;
-+        this.world = new CraftWorld((WorldServer) this, gen, env);
-+        this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
-+        this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
-+        this.ticksPerWaterSpawns = this.getServer().getTicksPerWaterSpawns(); // CraftBukkit
-+        this.ticksPerWaterAmbientSpawns = this.getServer().getTicksPerWaterAmbientSpawns(); // CraftBukkit
-+        this.ticksPerAmbientSpawns = this.getServer().getTicksPerAmbientSpawns(); // CraftBukkit
-+        this.typeKey = (ResourceKey) this.getServer().getHandle().getServer().customRegistry.a().c(dimensionmanager).orElseThrow(() -> {
-+            return new IllegalStateException("Unregistered dimension type: " + dimensionmanager);
-+        });
++        this.world = new CraftWorld((WorldServer) this, gen, biomeProvider, env);
++
++        // CraftBukkit Ticks things
++        for (SpawnCategory spawnCategory : SpawnCategory.values()) {
++            if (CraftSpawnCategory.isValidForLimits(spawnCategory)) {
++                this.ticksPerSpawnCategory.put(spawnCategory, (long) this.getCraftServer().getTicksPerSpawns(spawnCategory));
++            }
++        }
++
 +        // CraftBukkit end
-         this.methodProfiler = supplier;
-         this.worldData = worlddatamutable;
-         this.x = dimensionmanager;
-@@ -103,12 +160,12 @@
+         this.profiler = supplier;
+         this.levelData = worlddatamutable;
+         this.dimensionTypeRegistration = holder;
+@@ -123,12 +184,12 @@
              this.worldBorder = new WorldBorder() {
                  @Override
                  public double getCenterX() {
--                    return super.getCenterX() / dimensionmanager.getCoordinateScale();
+-                    return super.getCenterX() / dimensionmanager.coordinateScale();
 +                    return super.getCenterX(); // CraftBukkit
                  }
  
                  @Override
                  public double getCenterZ() {
--                    return super.getCenterZ() / dimensionmanager.getCoordinateScale();
+-                    return super.getCenterZ() / dimensionmanager.coordinateScale();
 +                    return super.getCenterZ(); // CraftBukkit
                  }
              };
          } else {
-@@ -118,6 +175,35 @@
-         this.serverThread = Thread.currentThread();
-         this.biomeManager = new BiomeManager(this, i, dimensionmanager.getGenLayerZoomer());
-         this.debugWorld = flag1;
+@@ -139,6 +200,42 @@
+         this.biomeManager = new BiomeManager(this, i);
+         this.isDebug = flag1;
+         this.neighborUpdater = new CollectingNeighborUpdater(this, j);
 +        // CraftBukkit start
 +        getWorldBorder().world = (WorldServer) this;
 +        // From PlayerList.setPlayerFileData
-+        getWorldBorder().a(new IWorldBorderListener() {
-+            public void a(WorldBorder worldborder, double d0) {
-+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_SIZE), worldborder.world);
++        getWorldBorder().addListener(new IWorldBorderListener() {
++            @Override
++            public void onBorderSizeSet(WorldBorder worldborder, double d0) {
++                getCraftServer().getHandle().broadcastAll(new ClientboundSetBorderSizePacket(worldborder), worldborder.world);
 +            }
 +
-+            public void a(WorldBorder worldborder, double d0, double d1, long i) {
-+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.LERP_SIZE), worldborder.world);
++            @Override
++            public void onBorderSizeLerping(WorldBorder worldborder, double d0, double d1, long i) {
++                getCraftServer().getHandle().broadcastAll(new ClientboundSetBorderLerpSizePacket(worldborder), worldborder.world);
 +            }
 +
-+            public void a(WorldBorder worldborder, double d0, double d1) {
-+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_CENTER), worldborder.world);
++            @Override
++            public void onBorderCenterSet(WorldBorder worldborder, double d0, double d1) {
++                getCraftServer().getHandle().broadcastAll(new ClientboundSetBorderCenterPacket(worldborder), worldborder.world);
 +            }
 +
-+            public void a(WorldBorder worldborder, int i) {
-+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_TIME), worldborder.world);
++            @Override
++            public void onBorderSetWarningTime(WorldBorder worldborder, int i) {
++                getCraftServer().getHandle().broadcastAll(new ClientboundSetBorderWarningDelayPacket(worldborder), worldborder.world);
 +            }
 +
-+            public void b(WorldBorder worldborder, int i) {
-+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_BLOCKS), worldborder.world);
++            @Override
++            public void onBorderSetWarningBlocks(WorldBorder worldborder, int i) {
++                getCraftServer().getHandle().broadcastAll(new ClientboundSetBorderWarningDistancePacket(worldborder), worldborder.world);
 +            }
 +
-+            public void b(WorldBorder worldborder, double d0) {}
++            @Override
++            public void onBorderSetDamagePerBlock(WorldBorder worldborder, double d0) {}
 +
-+            public void c(WorldBorder worldborder, double d0) {}
++            @Override
++            public void onBorderSetDamageSafeZOne(WorldBorder worldborder, double d0) {}
 +        });
 +        // CraftBukkit end
      }
  
      @Override
-@@ -181,6 +267,17 @@
+@@ -196,6 +293,17 @@
  
      @Override
-     public boolean a(BlockPosition blockposition, IBlockData iblockdata, int i, int j) {
+     public boolean setBlock(BlockPosition blockposition, IBlockData iblockdata, int i, int j) {
 +        // CraftBukkit start - tree generation
 +        if (this.captureTreeGeneration) {
 +            CapturedBlockState blockstate = capturedBlockStates.get(blockposition);
 +            if (blockstate == null) {
 +                blockstate = CapturedBlockState.getTreeBlockState(this, blockposition, i);
-+                this.capturedBlockStates.put(blockposition.immutableCopy(), blockstate);
++                this.capturedBlockStates.put(blockposition.immutable(), blockstate);
 +            }
 +            blockstate.setData(iblockdata);
 +            return true;
 +        }
 +        // CraftBukkit end
-         if (isOutsideWorld(blockposition)) {
+         if (this.isOutsideBuildHeight(blockposition)) {
              return false;
-         } else if (!this.isClientSide && this.isDebugWorld()) {
-@@ -188,9 +285,24 @@
+         } else if (!this.isClientSide && this.isDebug()) {
+@@ -203,9 +311,24 @@
          } else {
-             Chunk chunk = this.getChunkAtWorldCoords(blockposition);
+             Chunk chunk = this.getChunkAt(blockposition);
              Block block = iblockdata.getBlock();
--            IBlockData iblockdata1 = chunk.setType(blockposition, iblockdata, (i & 64) != 0);
+-            IBlockData iblockdata1 = chunk.setBlockState(blockposition, iblockdata, (i & 64) != 0);
 +
 +            // CraftBukkit start - capture blockstates
 +            boolean captured = false;
 +            if (this.captureBlockStates && !this.capturedBlockStates.containsKey(blockposition)) {
 +                CapturedBlockState blockstate = CapturedBlockState.getBlockState(this, blockposition, i);
-+                this.capturedBlockStates.put(blockposition.immutableCopy(), blockstate);
++                this.capturedBlockStates.put(blockposition.immutable(), blockstate);
 +                captured = true;
 +            }
 +            // CraftBukkit end
 +
-+            IBlockData iblockdata1 = chunk.setType(blockposition, iblockdata, (i & 64) != 0, (i & 1024) == 0); // CraftBukkit custom NO_PLACE flag
++            IBlockData iblockdata1 = chunk.setBlockState(blockposition, iblockdata, (i & 64) != 0, (i & 1024) == 0); // CraftBukkit custom NO_PLACE flag
  
              if (iblockdata1 == null) {
 +                // CraftBukkit start - remove blockstate if failed (or the same)
@@ -167,18 +178,18 @@
 +                // CraftBukkit end
                  return false;
              } else {
-                 IBlockData iblockdata2 = this.getType(blockposition);
-@@ -201,6 +313,7 @@
-                     this.getMethodProfiler().exit();
+                 IBlockData iblockdata2 = this.getBlockState(blockposition);
+@@ -216,6 +339,7 @@
+                     this.getProfiler().pop();
                  }
  
 +                /*
                  if (iblockdata2 == iblockdata) {
                      if (iblockdata1 != iblockdata2) {
-                         this.b(blockposition, iblockdata1, iblockdata2);
-@@ -227,12 +340,65 @@
+                         this.setBlocksDirty(blockposition, iblockdata1, iblockdata2);
+@@ -242,12 +366,69 @@
  
-                     this.a(blockposition, iblockdata1, iblockdata2);
+                     this.onBlockStateChange(blockposition, iblockdata1, iblockdata2);
                  }
 +                */
 +
@@ -201,17 +212,17 @@
 +        IBlockData iblockdata2 = actualBlock;
 +        if (iblockdata2 == iblockdata) {
 +            if (iblockdata1 != iblockdata2) {
-+                this.b(blockposition, iblockdata1, iblockdata2);
++                this.setBlocksDirty(blockposition, iblockdata1, iblockdata2);
 +            }
 +
-+            if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && (this.isClientSide || chunk == null || (chunk.getState() != null && chunk.getState().isAtLeast(PlayerChunk.State.TICKING)))) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
-+                this.notify(blockposition, iblockdata1, iblockdata, i);
++            if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && (this.isClientSide || chunk == null || (chunk.getFullStatus() != null && chunk.getFullStatus().isOrAfter(PlayerChunk.State.TICKING)))) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
++                this.sendBlockUpdated(blockposition, iblockdata1, iblockdata, i);
 +            }
 +
 +            if ((i & 1) != 0) {
-+                this.update(blockposition, iblockdata1.getBlock());
-+                if (!this.isClientSide && iblockdata.isComplexRedstone()) {
-+                    this.updateAdjacentComparators(blockposition, newBlock.getBlock());
++                this.blockUpdated(blockposition, iblockdata1.getBlock());
++                if (!this.isClientSide && iblockdata.hasAnalogOutputSignal()) {
++                    this.updateNeighbourForOutputSignal(blockposition, newBlock.getBlock());
 +                }
 +            }
 +
@@ -219,51 +230,37 @@
 +                int k = i & -34;
 +
 +                // CraftBukkit start
-+                iblockdata1.b(this, blockposition, k, j - 1); // Don't call an event for the old block to limit event spam
++                iblockdata1.updateIndirectNeighbourShapes(this, blockposition, k, j - 1); // Don't call an event for the old block to limit event spam
 +                CraftWorld world = ((WorldServer) this).getWorld();
 +                if (world != null) {
 +                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata));
-+                    this.getServer().getPluginManager().callEvent(event);
++                    this.getCraftServer().getPluginManager().callEvent(event);
 +
 +                    if (event.isCancelled()) {
 +                        return;
 +                    }
 +                }
 +                // CraftBukkit end
-+                iblockdata.a((GeneratorAccess) this, blockposition, k, j - 1);
-+                iblockdata.b(this, blockposition, k, j - 1);
++                iblockdata.updateNeighbourShapes(this, blockposition, k, j - 1);
++                iblockdata.updateIndirectNeighbourShapes(this, blockposition, k, j - 1);
 +            }
 +
-+            this.a(blockposition, iblockdata1, iblockdata2);
++            // CraftBukkit start - SPIGOT-5710
++            if (!preventPoiUpdated) {
++                this.onBlockStateChange(blockposition, iblockdata1, iblockdata2);
++            }
++            // CraftBukkit end
 +        }
 +    }
 +    // CraftBukkit end
 +
-     public void a(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {}
+     public void onBlockStateChange(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {}
  
      @Override
-@@ -314,6 +480,17 @@
-             IBlockData iblockdata = this.getType(blockposition);
- 
-             try {
-+                // CraftBukkit start
-+                CraftWorld world = ((WorldServer) this).getWorld();
-+                if (world != null) {
-+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata), world.getBlockAt(blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()));
-+                    this.getServer().getPluginManager().callEvent(event);
-+
-+                    if (event.isCancelled()) {
-+                        return;
-+                    }
-+                }
-+                // CraftBukkit end
-                 iblockdata.doPhysics(this, blockposition, block, blockposition1, false);
-             } catch (Throwable throwable) {
-                 CrashReport crashreport = CrashReport.a(throwable, "Exception while updating neighbours");
-@@ -356,6 +533,14 @@
+@@ -333,6 +514,14 @@
  
      @Override
-     public IBlockData getType(BlockPosition blockposition) {
+     public IBlockData getBlockState(BlockPosition blockposition) {
 +        // CraftBukkit start - tree generation
 +        if (captureTreeGeneration) {
 +            CapturedBlockState previous = capturedBlockStates.get(blockposition);
@@ -272,80 +269,45 @@
 +            }
 +        }
 +        // CraftBukkit end
-         if (isOutsideWorld(blockposition)) {
-             return Blocks.VOID_AIR.getBlockData();
+         if (this.isOutsideBuildHeight(blockposition)) {
+             return Blocks.VOID_AIR.defaultBlockState();
          } else {
-@@ -503,9 +688,11 @@
-                 TileEntity tileentity1 = (TileEntity) this.tileEntityListPending.get(i);
- 
-                 if (!tileentity1.isRemoved()) {
-+                    /* CraftBukkit start - Order matters, moved down
-                     if (!this.tileEntityList.contains(tileentity1)) {
-                         this.a(tileentity1);
-                     }
-+                    // CraftBukkit end */
- 
-                     if (this.isLoaded(tileentity1.getPosition())) {
-                         Chunk chunk = this.getChunkAtWorldCoords(tileentity1.getPosition());
-@@ -513,6 +700,12 @@
- 
-                         chunk.setTileEntity(tileentity1.getPosition(), tileentity1);
-                         this.notify(tileentity1.getPosition(), iblockdata, iblockdata, 3);
-+                        // CraftBukkit start
-+                        // From above, don't screw this up - SPIGOT-1746
-+                        if (!this.tileEntityList.contains(tileentity1)) {
-+                            this.a(tileentity1);
-+                        }
-+                        // CraftBukkit end
-                     }
-                 }
-             }
-@@ -557,12 +750,25 @@
- 
+@@ -470,6 +659,16 @@
      @Nullable
      @Override
-+    // CraftBukkit start
-     public TileEntity getTileEntity(BlockPosition blockposition) {
-+        return getTileEntity(blockposition, true);
+     public TileEntity getBlockEntity(BlockPosition blockposition) {
++        // CraftBukkit start
++        return getBlockEntity(blockposition, true);
 +    }
 +
 +    @Nullable
-+    public TileEntity getTileEntity(BlockPosition blockposition, boolean validate) {
++    public TileEntity getBlockEntity(BlockPosition blockposition, boolean validate) {
++        if (capturedTileEntities.containsKey(blockposition)) {
++            return capturedTileEntities.get(blockposition);
++        }
 +        // CraftBukkit end
-         if (isOutsideWorld(blockposition)) {
-             return null;
-         } else if (!this.isClientSide && Thread.currentThread() != this.serverThread) {
-             return null;
-         } else {
-+            // CraftBukkit start
-+            if (capturedTileEntities.containsKey(blockposition)) {
-+                return capturedTileEntities.get(blockposition);
-+            }
-+            // CraftBukkit end
-+
-             TileEntity tileentity = null;
- 
-             if (this.tickingTileEntities) {
-@@ -597,6 +803,13 @@
-     public void setTileEntity(BlockPosition blockposition, @Nullable TileEntity tileentity) {
-         if (!isOutsideWorld(blockposition)) {
-             if (tileentity != null && !tileentity.isRemoved()) {
-+                // CraftBukkit start
-+                if (captureBlockStates) {
-+                    tileentity.setLocation(this, blockposition);
-+                    capturedTileEntities.put(blockposition.immutableCopy(), tileentity);
-+                    return;
-+                }
-+                // CraftBukkit end
-                 if (this.tickingTileEntities) {
-                     tileentity.setLocation(this, blockposition);
-                     Iterator iterator = this.tileEntityListPending.iterator();
-@@ -621,7 +834,7 @@
+         return this.isOutsideBuildHeight(blockposition) ? null : (!this.isClientSide && Thread.currentThread() != this.thread ? null : this.getChunkAt(blockposition).getBlockEntity(blockposition, Chunk.EnumTileEntityState.IMMEDIATE));
      }
  
-     public void removeTileEntity(BlockPosition blockposition) {
--        TileEntity tileentity = this.getTileEntity(blockposition);
-+        TileEntity tileentity = this.getTileEntity(blockposition, false); // CraftBukkit
+@@ -477,6 +676,12 @@
+         BlockPosition blockposition = tileentity.getBlockPos();
  
-         if (tileentity != null && this.tickingTileEntities) {
-             tileentity.al_();
+         if (!this.isOutsideBuildHeight(blockposition)) {
++            // CraftBukkit start
++            if (captureBlockStates) {
++                capturedTileEntities.put(blockposition.immutable(), tileentity);
++                return;
++            }
++            // CraftBukkit end
+             this.getChunkAt(blockposition).addAndRegisterBlockEntity(tileentity);
+         }
+     }
+@@ -595,7 +800,7 @@
+ 
+                 for (int j = 0; j < i; ++j) {
+                     EntityComplexPart entitycomplexpart = aentitycomplexpart[j];
+-                    T t0 = (Entity) entitytypetest.tryCast(entitycomplexpart);
++                    T t0 = entitytypetest.tryCast(entitycomplexpart); // CraftBukkit - decompile error
+ 
+                     if (t0 != null && predicate.test(t0)) {
+                         list.add(t0);

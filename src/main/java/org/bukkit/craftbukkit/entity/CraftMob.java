@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.entity.EntityInsentient;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -16,19 +18,21 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
 
     @Override
     public void setTarget(LivingEntity target) {
+        Preconditions.checkState(!getHandle().generation, "Cannot set target during world generation");
+
         EntityInsentient entity = getHandle();
         if (target == null) {
-            entity.setGoalTarget(null, null, false);
+            entity.setTarget(null, null, false);
         } else if (target instanceof CraftLivingEntity) {
-            entity.setGoalTarget(((CraftLivingEntity) target).getHandle(), null, false);
+            entity.setTarget(((CraftLivingEntity) target).getHandle(), null, false);
         }
     }
 
     @Override
     public CraftLivingEntity getTarget() {
-        if (getHandle().getGoalTarget() == null) return null;
+        if (getHandle().getTarget() == null) return null;
 
-        return (CraftLivingEntity) getHandle().getGoalTarget().getBukkitEntity();
+        return (CraftLivingEntity) getHandle().getTarget().getBukkitEntity();
     }
 
     @Override
@@ -53,16 +57,12 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
 
     @Override
     public void setLootTable(LootTable table) {
-        getHandle().lootTableKey = (table == null) ? null : CraftNamespacedKey.toMinecraft(table.getKey());
+        getHandle().lootTable = (table == null) ? null : CraftNamespacedKey.toMinecraft(table.getKey());
     }
 
     @Override
     public LootTable getLootTable() {
-        if (getHandle().lootTableKey == null) {
-            getHandle().lootTableKey = getHandle().getLootTable();
-        }
-
-        NamespacedKey key = CraftNamespacedKey.fromMinecraft(getHandle().lootTableKey);
+        NamespacedKey key = CraftNamespacedKey.fromMinecraft(getHandle().getLootTable());
         return Bukkit.getLootTable(key);
     }
 

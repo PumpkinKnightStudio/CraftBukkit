@@ -1,35 +1,26 @@
 --- a/net/minecraft/world/entity/monster/EntitySilverfish.java
 +++ b/net/minecraft/world/entity/monster/EntitySilverfish.java
-@@ -45,7 +45,7 @@
-         this.goalSelector.a(3, this.b);
-         this.goalSelector.a(4, new PathfinderGoalMeleeAttack(this, 1.0D, false));
-         this.goalSelector.a(5, new EntitySilverfish.PathfinderGoalSilverfishHideInBlock(this));
--        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[0])).a());
-+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[0])).a(new Class[0])); // CraftBukkit - decompile error
-         this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
-     }
- 
-@@ -183,6 +183,11 @@
-                 IBlockData iblockdata = world.getType(blockposition);
- 
-                 if (BlockMonsterEggs.h(iblockdata)) {
-+                    // CraftBukkit start
-+                    if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition, BlockMonsterEggs.c(iblockdata.getBlock())).isCancelled()) {
-+                        return;
-+                    }
-+                    // CraftBukkit end
-                     world.setTypeAndData(blockposition, BlockMonsterEggs.c(iblockdata.getBlock()), 3);
-                     this.a.doSpawnEffect();
-                     this.a.die();
-@@ -229,6 +234,11 @@
+@@ -175,6 +175,11 @@
                              Block block = iblockdata.getBlock();
  
                              if (block instanceof BlockMonsterEggs) {
 +                                // CraftBukkit start
-+                                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.silverfish, blockposition1, net.minecraft.world.level.block.Blocks.AIR.getBlockData()).isCancelled()) {
++                                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.silverfish, blockposition1, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()).isCancelled()) {
 +                                    continue;
 +                                }
 +                                // CraftBukkit end
-                                 if (world.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
-                                     world.a(blockposition1, true, this.silverfish);
+                                 if (world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                                     world.destroyBlock(blockposition1, true, this.silverfish);
                                  } else {
+@@ -244,6 +249,11 @@
+                 IBlockData iblockdata = world.getBlockState(blockposition);
+ 
+                 if (BlockMonsterEggs.isCompatibleHostBlock(iblockdata)) {
++                    // CraftBukkit start
++                    if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition, BlockMonsterEggs.infestedStateByHost(iblockdata)).isCancelled()) {
++                        return;
++                    }
++                    // CraftBukkit end
+                     world.setBlock(blockposition, BlockMonsterEggs.infestedStateByHost(iblockdata), 3);
+                     this.mob.spawnAnim();
+                     this.mob.discard();

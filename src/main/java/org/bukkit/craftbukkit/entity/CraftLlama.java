@@ -35,7 +35,7 @@ public class CraftLlama extends CraftChestedHorse implements Llama {
 
     @Override
     public LlamaInventory getInventory() {
-        return new CraftInventoryLlama(getHandle().inventoryChest);
+        return new CraftInventoryLlama(getHandle().inventory);
     }
 
     @Override
@@ -47,8 +47,8 @@ public class CraftLlama extends CraftChestedHorse implements Llama {
     public void setStrength(int strength) {
         Preconditions.checkArgument(1 <= strength && strength <= 5, "strength must be [1,5]");
         if (strength == getStrength()) return;
-        getHandle().setStrength(strength);
-        getHandle().loadChest();
+        getHandle().setStrengthPublic(strength);
+        getHandle().createInventory();
     }
 
     @Override

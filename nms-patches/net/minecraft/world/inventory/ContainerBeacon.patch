@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/inventory/ContainerBeacon.java
 +++ b/net/minecraft/world/inventory/ContainerBeacon.java
-@@ -8,12 +8,21 @@
- import net.minecraft.world.item.ItemStack;
+@@ -11,6 +11,11 @@
+ import net.minecraft.world.level.World;
  import net.minecraft.world.level.block.Blocks;
  
 +// CraftBukkit start
@@ -11,34 +11,35 @@
 +
  public class ContainerBeacon extends Container {
  
-     private final IInventory beacon;
-     private final ContainerBeacon.SlotBeacon d;
-     private final ContainerAccess containerAccess;
-     private final IContainerProperties containerProperties;
+     private static final int PAYMENT_SLOT = 0;
+@@ -24,6 +29,10 @@
+     private final ContainerBeacon.SlotBeacon paymentSlot;
+     private final ContainerAccess access;
+     private final IContainerProperties beaconData;
 +    // CraftBukkit start
 +    private CraftInventoryView bukkitEntity = null;
 +    private PlayerInventory player;
 +    // CraftBukkit end
  
      public ContainerBeacon(int i, IInventory iinventory) {
-         this(i, iinventory, new ContainerProperties(3), ContainerAccess.a);
-@@ -21,6 +30,7 @@
+         this(i, iinventory, new ContainerProperties(3), ContainerAccess.NULL);
+@@ -31,6 +40,7 @@
  
      public ContainerBeacon(int i, IInventory iinventory, IContainerProperties icontainerproperties, ContainerAccess containeraccess) {
          super(Containers.BEACON, i);
 +        player = (PlayerInventory) iinventory; // CraftBukkit - TODO: check this
          this.beacon = new InventorySubcontainer(1) {
              @Override
-             public boolean b(int j, ItemStack itemstack) {
-@@ -70,6 +80,7 @@
+             public boolean canPlaceItem(int j, ItemStack itemstack) {
+@@ -80,6 +90,7 @@
  
      @Override
-     public boolean canUse(EntityHuman entityhuman) {
+     public boolean stillValid(EntityHuman entityhuman) {
 +        if (!this.checkReachable) return true; // CraftBukkit
-         return a(this.containerAccess, entityhuman, Blocks.BEACON);
+         return stillValid(this.access, entityhuman, Blocks.BEACON);
      }
  
-@@ -151,4 +162,17 @@
+@@ -180,4 +191,17 @@
              return 1;
          }
      }

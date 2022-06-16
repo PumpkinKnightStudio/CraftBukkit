@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java
 +++ b/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java
-@@ -29,6 +29,14 @@
- import net.minecraft.world.level.storage.loot.parameters.LootContextParameterSets;
- import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
+@@ -18,6 +18,14 @@
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.World;
  
 +// CraftBukkit start
 +import java.util.List;
@@ -12,10 +12,10 @@
 +import org.bukkit.inventory.InventoryHolder;
 +// CraftBukkit end
 +
- public abstract class EntityMinecartContainer extends EntityMinecartAbstract implements IInventory, ITileInventory {
+ public abstract class EntityMinecartContainer extends EntityMinecartAbstract implements ContainerEntity {
  
-     private NonNullList<ItemStack> items;
-@@ -37,15 +45,56 @@
+     private NonNullList<ItemStack> itemStacks;
+@@ -25,14 +33,55 @@
      public MinecraftKey lootTable;
      public long lootTableSeed;
  
@@ -24,7 +24,7 @@
 +    private int maxStack = MAX_STACK;
 +
 +    public List<ItemStack> getContents() {
-+        return this.items;
++        return this.itemStacks;
 +    }
 +
 +    public void onOpen(CraftHumanEntity who) {
@@ -62,15 +62,14 @@
 +
      protected EntityMinecartContainer(EntityTypes<?> entitytypes, World world) {
          super(entitytypes, world);
--        this.items = NonNullList.a(36, ItemStack.b);
-+        this.items = NonNullList.a(this.getSize(), ItemStack.b); // CraftBukkit - SPIGOT-3513
-         this.c = true;
+-        this.itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
++        this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY); // CraftBukkit - SPIGOT-3513
      }
  
      protected EntityMinecartContainer(EntityTypes<?> entitytypes, double d0, double d1, double d2, World world) {
          super(entitytypes, world, d0, d1, d2);
--        this.items = NonNullList.a(36, ItemStack.b);
-+        this.items = NonNullList.a(this.getSize(), ItemStack.b); // CraftBukkit - SPIGOT-3513
-         this.c = true;
+-        this.itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
++        this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY); // CraftBukkit - SPIGOT-3513
      }
  
+     @Override

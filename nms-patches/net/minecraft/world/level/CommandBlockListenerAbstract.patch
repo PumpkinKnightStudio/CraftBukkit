@@ -3,20 +3,20 @@
 @@ -30,6 +30,10 @@
      private IChatBaseComponent lastOutput;
      private String command = "";
-     private IChatBaseComponent customName;
+     private IChatBaseComponent name;
 +    // CraftBukkit start
 +    @Override
 +    public abstract org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper);
 +    // CraftBukkit end
  
      public CommandBlockListenerAbstract() {
-         this.customName = CommandBlockListenerAbstract.c;
+         this.name = CommandBlockListenerAbstract.DEFAULT_NAME;
 @@ -126,7 +130,7 @@
  
                          });
  
--                        minecraftserver.getCommandDispatcher().a(commandlistenerwrapper, this.command);
-+                        minecraftserver.getCommandDispatcher().dispatchServerCommand(commandlistenerwrapper, this.command); // CraftBukkit
+-                        minecraftserver.getCommands().performPrefixedCommand(commandlistenerwrapper, this.command);
++                        minecraftserver.getCommands().dispatchServerCommand(commandlistenerwrapper, this.command); // CraftBukkit
                      } catch (Throwable throwable) {
-                         CrashReport crashreport = CrashReport.a(throwable, "Executing command block");
-                         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Command to be executed");
+                         CrashReport crashreport = CrashReport.forThrowable(throwable, "Executing command block");
+                         CrashReportSystemDetails crashreportsystemdetails = crashreport.addCategory("Command to be executed");

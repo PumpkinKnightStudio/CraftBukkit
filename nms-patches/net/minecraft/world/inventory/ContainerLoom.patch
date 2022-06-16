@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/inventory/ContainerLoom.java
 +++ b/net/minecraft/world/inventory/ContainerLoom.java
-@@ -16,8 +16,30 @@
- import net.minecraft.world.level.block.Blocks;
+@@ -24,8 +24,30 @@
  import net.minecraft.world.level.block.entity.EnumBannerPatternType;
+ import net.minecraft.world.level.block.entity.TileEntityTypes;
  
 +// CraftBukkit start
 +import org.bukkit.Location;
@@ -23,17 +23,17 @@
 +            return bukkitEntity;
 +        }
 +
-+        CraftInventoryLoom inventory = new CraftInventoryLoom(this.craftInventory, this.resultInventory);
++        CraftInventoryLoom inventory = new CraftInventoryLoom(this.inputContainer, this.outputContainer);
 +        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
 +    // CraftBukkit end
-     private final ContainerAccess containerAccess;
-     private final ContainerProperty d;
-     private Runnable e;
-@@ -45,6 +67,13 @@
-                 ContainerLoom.this.a((IInventory) this);
-                 ContainerLoom.this.e.run();
+     private static final int PATTERN_NOT_SET = -1;
+     private static final int INV_SLOT_START = 4;
+     private static final int INV_SLOT_END = 31;
+@@ -60,6 +82,13 @@
+                 ContainerLoom.this.slotsChanged(this);
+                 ContainerLoom.this.slotUpdateListener.run();
              }
 +
 +            // CraftBukkit start
@@ -43,11 +43,11 @@
 +            }
 +            // CraftBukkit end
          };
-         this.resultInventory = new InventorySubcontainer(1) {
+         this.outputContainer = new InventorySubcontainer(1) {
              @Override
-@@ -52,6 +81,13 @@
-                 super.update();
-                 ContainerLoom.this.e.run();
+@@ -67,6 +96,13 @@
+                 super.setChanged();
+                 ContainerLoom.this.slotUpdateListener.run();
              }
 +
 +            // CraftBukkit start
@@ -57,30 +57,30 @@
 +            }
 +            // CraftBukkit end
          };
-         this.containerAccess = containeraccess;
-         this.f = this.a(new Slot(this.craftInventory, 0, 13, 26) {
-@@ -112,10 +148,12 @@
+         this.access = containeraccess;
+         this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
+@@ -127,10 +163,12 @@
          }
  
-         this.a(this.d);
+         this.addDataSlot(this.selectedBannerPatternIndex);
 +        player = (Player) playerinventory.player.getBukkitEntity(); // CraftBukkit
      }
  
      @Override
-     public boolean canUse(EntityHuman entityhuman) {
+     public boolean stillValid(EntityHuman entityhuman) {
 +        if (!this.checkReachable) return true; // CraftBukkit
-         return a(this.containerAccess, entityhuman, Blocks.LOOM);
+         return stillValid(this.access, entityhuman, Blocks.LOOM);
      }
  
-@@ -234,6 +272,11 @@
+@@ -304,6 +342,11 @@
  
-                 if (nbttagcompound.hasKeyOfType("Patterns", 9)) {
-                     nbttaglist = nbttagcompound.getList("Patterns", 10);
-+                    // CraftBukkit start
-+                    while (nbttaglist.size() > 20) {
-+                        nbttaglist.remove(20);
-+                    }
-+                    // CraftBukkit end
-                 } else {
-                     nbttaglist = new NBTTagList();
-                     nbttagcompound.set("Patterns", nbttaglist);
+             if (nbttagcompound != null && nbttagcompound.contains("Patterns", 9)) {
+                 nbttaglist = nbttagcompound.getList("Patterns", 10);
++                // CraftBukkit start
++                while (nbttaglist.size() > 20) {
++                    nbttaglist.remove(20);
++                }
++                // CraftBukkit end
+             } else {
+                 nbttaglist = new NBTTagList();
+                 if (nbttagcompound == null) {

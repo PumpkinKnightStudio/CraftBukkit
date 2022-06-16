@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/network/HandshakeListener.java
 +++ b/net/minecraft/server/network/HandshakeListener.java
-@@ -11,8 +11,17 @@
+@@ -10,8 +10,17 @@
  import net.minecraft.network.protocol.login.PacketLoginOutDisconnect;
  import net.minecraft.server.MinecraftServer;
  
@@ -15,25 +15,25 @@
 +    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
 +    private static int throttleCounter = 0;
 +    // CraftBukkit end
-     private static final IChatBaseComponent a = new ChatComponentText("Ignoring status request");
-     private final MinecraftServer b;
-     private final NetworkManager c;
-@@ -27,6 +36,40 @@
-         switch (packethandshakinginsetprotocol.b()) {
+     private static final IChatBaseComponent IGNORE_STATUS_REASON = IChatBaseComponent.literal("Ignoring status request");
+     private final MinecraftServer server;
+     private final NetworkManager connection;
+@@ -26,6 +35,40 @@
+         switch (packethandshakinginsetprotocol.getIntention()) {
              case LOGIN:
-                 this.c.setProtocol(EnumProtocol.LOGIN);
+                 this.connection.setProtocol(EnumProtocol.LOGIN);
 +                // CraftBukkit start - Connection throttle
 +                try {
 +                    long currentTime = System.currentTimeMillis();
-+                    long connectionThrottle = this.b.server.getConnectionThrottle();
-+                    InetAddress address = ((java.net.InetSocketAddress) this.c.getSocketAddress()).getAddress();
++                    long connectionThrottle = this.server.server.getConnectionThrottle();
++                    InetAddress address = ((java.net.InetSocketAddress) this.connection.getRemoteAddress()).getAddress();
 +
 +                    synchronized (throttleTracker) {
 +                        if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
 +                            throttleTracker.put(address, currentTime);
-+                            ChatMessage chatmessage = new ChatMessage("Connection throttled! Please wait before reconnecting.");
-+                            this.c.sendPacket(new PacketLoginOutDisconnect(chatmessage));
-+                            this.c.close(chatmessage);
++                            IChatMutableComponent chatmessage = IChatBaseComponent.literal("Connection throttled! Please wait before reconnecting.");
++                            this.connection.send(new PacketLoginOutDisconnect(chatmessage));
++                            this.connection.disconnect(chatmessage);
 +                            return;
 +                        }
 +
@@ -56,14 +56,14 @@
 +                    org.apache.logging.log4j.LogManager.getLogger().debug("Failed to check connection throttle", t);
 +                }
 +                // CraftBukkit end
-                 if (packethandshakinginsetprotocol.c() != SharedConstants.getGameVersion().getProtocolVersion()) {
-                     ChatMessage chatmessage;
+                 if (packethandshakinginsetprotocol.getProtocolVersion() != SharedConstants.getCurrentVersion().getProtocolVersion()) {
+                     IChatMutableComponent ichatmutablecomponent;
  
-@@ -40,6 +83,7 @@
-                     this.c.close(chatmessage);
+@@ -39,6 +82,7 @@
+                     this.connection.disconnect(ichatmutablecomponent);
                  } else {
-                     this.c.setPacketListener(new LoginListener(this.b, this.c));
-+                    ((LoginListener) this.c.j()).hostname = packethandshakinginsetprotocol.hostname + ":" + packethandshakinginsetprotocol.port; // CraftBukkit - set hostname
+                     this.connection.setListener(new LoginListener(this.server, this.connection));
++                    ((LoginListener) this.connection.getPacketListener()).hostname = packethandshakinginsetprotocol.hostName + ":" + packethandshakinginsetprotocol.port; // CraftBukkit - set hostname
                  }
                  break;
              case STATUS:

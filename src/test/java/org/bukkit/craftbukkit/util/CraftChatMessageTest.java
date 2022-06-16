@@ -1,9 +1,10 @@
 package org.bukkit.craftbukkit.util;
 
 import static org.junit.Assert.*;
-import net.minecraft.network.chat.ChatComponentText;
+import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.IChatMutableComponent;
+import net.minecraft.network.chat.contents.LiteralContents;
 import org.junit.Test;
 
 public class CraftChatMessageTest {
@@ -61,9 +62,9 @@ public class CraftChatMessageTest {
     }
 
     private IChatBaseComponent create(String txt, String... rest) {
-        IChatMutableComponent cmp = CraftChatMessage.fromString(txt, false)[0].mutableCopy();
+        IChatMutableComponent cmp = CraftChatMessage.fromString(txt, false)[0].copy();
         for (String s : rest) {
-            cmp.addSibling(CraftChatMessage.fromString(s, true)[0]);
+            cmp.append(CraftChatMessage.fromString(s, true)[0]);
         }
 
         return cmp;
@@ -96,7 +97,7 @@ public class CraftChatMessageTest {
 
     private boolean containsNonPlainComponent(IChatBaseComponent component) {
         for (IChatBaseComponent c : component) {
-            if (!(c instanceof ChatComponentText)) {
+            if (c.getContents() != ComponentContents.EMPTY && !(c.getContents() instanceof LiteralContents)) {
                 return true;
             }
         }
