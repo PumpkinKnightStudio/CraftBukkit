@@ -1,6 +1,18 @@
 --- a/net/minecraft/world/item/ItemTrident.java
 +++ b/net/minecraft/world/item/ItemTrident.java
-@@ -68,9 +68,12 @@
+@@ -26,6 +26,11 @@
+ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.phys.Vec3D;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EntityFireTridentEvent;
++// CraftBukkit end
++
+ public class ItemTrident extends Item implements ItemVanishable {
+ 
+     public static final int THROW_THRESHOLD_TIME = 10;
+@@ -68,27 +73,60 @@
  
                  if (k <= 0 || entityhuman.isInWaterOrRain()) {
                      if (!world.isClientSide) {
@@ -12,14 +24,22 @@
 +                        */
                          if (k == 0) {
                              EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
++                            // CraftBukkit start
++                            EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(entityhuman, itemstack, entitythrowntrident, 0.8f);
++                            if (entityFireTridentEvent.isCancelled()) {
++                                entityFireTridentEvent.getProjectile().remove();
++                                return;
++                            }
++                            // CraftBukkit end
  
-@@ -79,16 +82,39 @@
+                             entitythrowntrident.shootFromRotation(entityhuman, entityhuman.getXRot(), entityhuman.getYRot(), 0.0F, 2.5F + (float) k * 0.5F, 1.0F);
+                             if (entityhuman.getAbilities().instabuild) {
                                  entitythrowntrident.pickup = EntityArrow.PickupStatus.CREATIVE_ONLY;
                              }
  
 -                            world.addFreshEntity(entitythrowntrident);
 +                            // CraftBukkit start
-+                            if (!world.addFreshEntity(entitythrowntrident)) {
++                            if (entitythrowntrident.getBukkitEntity() == entityFireTridentEvent.getProjectile() && !world.addFreshEntity(entitythrowntrident)) {
 +                                if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
 +                                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                                }
