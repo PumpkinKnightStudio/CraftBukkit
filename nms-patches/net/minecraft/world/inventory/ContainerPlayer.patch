@@ -46,22 +46,30 @@
          this.addSlot(new SlotResult(playerinventory.player, this.craftSlots, this.resultSlots, 0, 154, 28));
  
          int i;
-@@ -168,12 +189,14 @@
-                     return ItemStack.EMPTY;
-                 }
-             } else if (i >= 5 && i < 9) {
-+                CraftEventFactory.callEntityEquipArmorEvent(this.owner, itemstack1, ItemStack.EMPTY, EntityArmorChangeEvent.ChangeReason.UNEQUIP, enumitemslot); // CraftBukkit
+@@ -171,12 +192,22 @@
                  if (!this.moveItemStackTo(itemstack1, 9, 45, false)) {
                      return ItemStack.EMPTY;
                  }
++                //CraftBukkit start
++                else{
++                    CraftEventFactory.callEntityEquipArmorEvent(this.owner, itemstack1, ItemStack.EMPTY, EntityArmorChangeEvent.ChangeReason.UNEQUIP, enumitemslot);
++                }
++                //CraftBukkit end
              } else if (enumitemslot.getType() == EnumItemSlot.Function.ARMOR && !((Slot) this.slots.get(8 - enumitemslot.getIndex())).hasItem()) {
                  int j = 8 - enumitemslot.getIndex();
  
-+                CraftEventFactory.callEntityEquipArmorEvent(this.owner, ItemStack.EMPTY, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, enumitemslot); // CraftBukkit
                  if (!this.moveItemStackTo(itemstack1, j, j + 1, false)) {
                      return ItemStack.EMPTY;
                  }
-@@ -250,4 +273,17 @@
++                //CraftBukkit start
++                else{
++                    CraftEventFactory.callEntityEquipArmorEvent(this.owner, ItemStack.EMPTY, itemstack, EntityArmorChangeEvent.ChangeReason.EQUIP, enumitemslot); // CraftBukkit
++                }
++                //CraftBukkit end
+             } else if (enumitemslot == EnumItemSlot.OFFHAND && !((Slot) this.slots.get(45)).hasItem()) {
+                 if (!this.moveItemStackTo(itemstack1, 45, 46, false)) {
+                     return ItemStack.EMPTY;
+@@ -250,4 +281,17 @@
      public boolean shouldMoveToInventory(int i) {
          return i != this.getResultSlotIndex();
      }

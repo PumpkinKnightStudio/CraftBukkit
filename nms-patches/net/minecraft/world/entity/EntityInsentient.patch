@@ -188,11 +188,11 @@
              case ARMOR:
 +                boolean previousItemNotAir = !this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem());
 +                boolean newItemNotAir = !itemstack.getItem().equals(ItemStack.EMPTY.getItem());
+                 this.onEquipItem(enumitemslot, (ItemStack) this.armorItems.set(enumitemslot.getIndex(), itemstack), itemstack);
 +                EntityArmorChangeEvent.ChangeReason changeReason = newItemNotAir ?
 +                    (previousItemNotAir ? EntityArmorChangeEvent.ChangeReason.SWITCH : EntityArmorChangeEvent.ChangeReason.EQUIP) :
 +                    (itemBreak ? EntityArmorChangeEvent.ChangeReason.BREAK : EntityArmorChangeEvent.ChangeReason.UNEQUIP);
 +                CraftEventFactory.callEntityEquipArmorEvent(this, this.armorItems.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot);
-                 this.onEquipItem(enumitemslot, (ItemStack) this.armorItems.set(enumitemslot.getIndex(), itemstack), itemstack);
          }
  
      }

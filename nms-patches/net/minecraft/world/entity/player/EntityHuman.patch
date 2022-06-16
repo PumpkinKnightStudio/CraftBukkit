@@ -510,9 +510,9 @@
          } else if (enumitemslot.getType() == EnumItemSlot.Function.ARMOR) {
 -            this.onEquipItem(enumitemslot, (ItemStack) this.inventory.armor.set(enumitemslot.getIndex(), itemstack), itemstack);
 +            // CraftBukkit start
++            this.onEquipItem(enumitemslot, (ItemStack) this.inventory.armor.set(enumitemslot.getIndex(), itemstack), itemstack, silent);
 +            EntityArmorChangeEvent.ChangeReason changeReason = this.inventory.armor.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem()) ? EntityArmorChangeEvent.ChangeReason.EQUIP : EntityArmorChangeEvent.ChangeReason.SWITCH;
 +            CraftEventFactory.callEntityEquipArmorEvent(this, this.inventory.armor.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot); // We call this here instead of in the #equipEventAndSound method as we can't guarantee that every call for that method in the future will be replacing an EMPTY itemstack with a new item
-+            this.onEquipItem(enumitemslot, (ItemStack) this.inventory.armor.set(enumitemslot.getIndex(), itemstack), itemstack, silent);
 +            // CraftBukkit end
          }
  
