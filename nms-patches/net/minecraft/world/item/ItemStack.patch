@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -71,6 +71,40 @@
+@@ -71,6 +71,42 @@
  import net.minecraft.world.level.block.state.pattern.ShapeDetectorBlock;
  import org.slf4j.Logger;
  
@@ -30,10 +30,12 @@
 +import org.bukkit.block.BlockState;
 +import org.bukkit.craftbukkit.block.CraftBlock;
 +import org.bukkit.craftbukkit.block.CraftBlockState;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.block.BlockFertilizeEvent;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.player.PlayerItemDamageEvent;
 +import org.bukkit.event.world.StructureGrowEvent;
 +// CraftBukkit end
@@ -41,7 +43,7 @@
  public final class ItemStack {
  
      public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create((instance) -> {
-@@ -146,16 +180,30 @@
+@@ -146,16 +182,30 @@
          this.updateEmptyCacheFlag();
      }
  
@@ -74,7 +76,7 @@
              this.getItem().verifyTagAfterLoad(this.tag);
          }
  
-@@ -163,6 +211,11 @@
+@@ -163,6 +213,11 @@
              this.setDamageValue(this.getDamageValue());
          }
  
@@ -86,7 +88,7 @@
          this.updateEmptyCacheFlag();
      }
  
-@@ -216,7 +269,7 @@
+@@ -216,7 +271,7 @@
          return this.getItem().builtInRegistryHolder().tags();
      }
  
@@ -95,7 +97,7 @@
          EntityHuman entityhuman = itemactioncontext.getPlayer();
          BlockPosition blockposition = itemactioncontext.getClickedPos();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getLevel(), blockposition, false);
-@@ -224,12 +277,157 @@
+@@ -224,12 +279,157 @@
          if (entityhuman != null && !entityhuman.getAbilities().mayBuild && !this.hasAdventureModePlaceTagForBlock(itemactioncontext.getLevel().registryAccess().registryOrThrow(IRegistry.BLOCK_REGISTRY), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
@@ -254,7 +256,7 @@
  
              return enuminteractionresult;
          }
-@@ -310,6 +508,21 @@
+@@ -310,6 +510,21 @@
                  }
  
                  i -= k;
@@ -276,7 +278,7 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -331,6 +544,11 @@
+@@ -331,6 +546,19 @@
                  if (this.hurt(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
@@ -284,11 +286,19 @@
 +                    if (this.count == 1 && t0 instanceof EntityHuman) {
 +                        org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
 +                    }
++                    if (this.count == 1) {
++                        if (t0 instanceof EntityHuman) {
++                            CraftEventFactory.callPlayerItemBreakEvent((EntityHuman) t0, this);
++                        }
++                        if (item instanceof ItemArmor) {
++                            CraftEventFactory.callEntityEquipArmorEvent(t0, this, ItemStack.EMPTY, EntityArmorChangeEvent.ChangeReason.BREAK, ((ItemArmor) item).getSlot());
++                        }
++                    }
 +                    // CraftBukkit end
  
                      this.shrink(1);
                      if (t0 instanceof EntityHuman) {
-@@ -486,6 +704,17 @@
+@@ -486,6 +714,17 @@
          return this.tag;
      }
  
@@ -306,7 +316,7 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -782,7 +1011,7 @@
+@@ -782,7 +1021,7 @@
  
      private static Collection<IChatBaseComponent> expandBlockState(String s) {
          try {
@@ -315,7 +325,7 @@
                  return Lists.newArrayList(new IChatBaseComponent[]{argumentblock_a.blockState().getBlock().getName().withStyle(EnumChatFormat.DARK_GRAY)});
              }, (argumentblock_b) -> {
                  return (List) argumentblock_b.tag().stream().map((holder) -> {
-@@ -848,6 +1077,12 @@
+@@ -848,6 +1087,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -328,7 +338,7 @@
          this.getOrCreateTag().putInt("RepairCost", i);
      }
  
-@@ -897,6 +1132,13 @@
+@@ -897,6 +1142,13 @@
          nbttaglist.add(nbttagcompound);
      }
  

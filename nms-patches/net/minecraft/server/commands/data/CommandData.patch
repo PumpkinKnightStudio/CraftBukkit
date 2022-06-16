@@ -1,0 +1,72 @@
+--- a/net/minecraft/server/commands/data/CommandData.java
++++ b/net/minecraft/server/commands/data/CommandData.java
+@@ -32,6 +32,17 @@
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.util.MathHelper;
+ 
++//CraftBukkit start
++import java.util.Optional;
++
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.item.ItemStack;
++
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++//CraftBukkit end
++
+ public class CommandData {
+ 
+     private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(IChatBaseComponent.translatable("commands.data.merge.failed"));
+@@ -187,10 +198,10 @@
+                     CommandData.c commanddata_c1 = (CommandData.c) iterator1.next();
+ 
+                     biconsumer.accept(argumentbuilder1, (commanddata_a) -> {
++
+                         return commanddata_c1.wrap(net.minecraft.commands.CommandDispatcher.literal("from"), (argumentbuilder2) -> {
+                             return argumentbuilder2.executes((commandcontext) -> {
+                                 List<NBTBase> list = Collections.singletonList(commanddata_c1.access(commandcontext).getData());
+-
+                                 return manipulateData(commandcontext, commanddata_c, commanddata_a, list);
+                             }).then(net.minecraft.commands.CommandDispatcher.argument("sourcePath", ArgumentNBTKey.nbtPath()).executes((commandcontext) -> {
+                                 CommandDataAccessor commanddataaccessor = commanddata_c1.access(commandcontext);
+@@ -221,12 +232,39 @@
+         CommandDataAccessor commanddataaccessor = commanddata_c.access(commandcontext);
+         ArgumentNBTKey.g argumentnbtkey_g = ArgumentNBTKey.getPath(commandcontext, "targetPath");
+         NBTTagCompound nbttagcompound = commanddataaccessor.getData();
++
++        Optional<NBTTagList> armorCopy = nbttagcompound.contains("ArmorItems", 9) ? Optional.of(nbttagcompound.getList("ArmorItems", 10).copy()) : Optional.empty(); //CraftBukkit
++
+         int i = commanddata_a.modify(commandcontext, nbttagcompound, argumentnbtkey_g, list);
+ 
+         if (i == 0) {
+             throw CommandData.ERROR_MERGE_UNCHANGED.create();
+         } else {
+             commanddataaccessor.setData(nbttagcompound);
++
++            //CraftBukkit start
++            if (commanddataaccessor instanceof CommandDataAccessorEntity) {
++
++                Entity entity = ((CommandDataAccessorEntity) commanddataaccessor).entity;
++
++                if (entity instanceof EntityLiving && armorCopy.isPresent() && nbttagcompound.contains("ArmorItems", 9)) {
++
++                    NBTTagList unmodifiedArmorList = armorCopy.get();
++                    NBTTagList modifiedArmorList = nbttagcompound.getList("ArmorItems", 10);
++
++                    for (int j = 0; j < unmodifiedArmorList.size(); j++) {
++
++                        ItemStack unmodifiedItem = ItemStack.of(unmodifiedArmorList.getCompound(j));
++                        ItemStack modifiedItem = ItemStack.of(modifiedArmorList.getCompound(j));
++
++                        if (!CraftItemStack.asBukkitCopy(unmodifiedItem).equals(CraftItemStack.asBukkitCopy(modifiedItem))) {
++                            CraftEventFactory.callEntityEquipArmorEvent((EntityLiving) entity, unmodifiedItem, modifiedItem, 8 - j);
++                        }
++                    }
++                }
++            }
++            //CraftBukkit end
++
+             ((CommandListenerWrapper) commandcontext.getSource()).sendSuccess(commanddataaccessor.getModifiedSuccess(), true);
+             return i;
+         }

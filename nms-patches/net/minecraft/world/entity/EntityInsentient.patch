@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/EntityInsentient.java
 +++ b/net/minecraft/world/entity/EntityInsentient.java
-@@ -75,6 +75,19 @@
+@@ -75,6 +75,20 @@
  import net.minecraft.world.level.pathfinder.PathType;
  import net.minecraft.world.level.storage.loot.LootTableInfo;
  
@@ -9,6 +9,7 @@
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 +import org.bukkit.event.entity.CreatureSpawnEvent;
++import org.bukkit.event.entity.EntityArmorChangeEvent;
 +import org.bukkit.event.entity.EntityCombustByEntityEvent;
 +import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 +import org.bukkit.event.entity.EntityTargetEvent;
@@ -20,7 +21,7 @@
  public abstract class EntityInsentient extends EntityLiving {
  
      private static final DataWatcherObject<Byte> DATA_MOB_FLAGS_ID = DataWatcher.defineId(EntityInsentient.class, DataWatcherRegistry.BYTE);
-@@ -121,6 +134,8 @@
+@@ -121,6 +135,8 @@
      private BlockPosition restrictCenter;
      private float restrictRadius;
  
@@ -29,7 +30,7 @@
      protected EntityInsentient(EntityTypes<? extends EntityInsentient> entitytypes, World world) {
          super(entitytypes, world);
          this.handItems = NonNullList.withSize(2, ItemStack.EMPTY);
-@@ -146,6 +161,12 @@
+@@ -146,6 +162,12 @@
  
      }
  
@@ -42,7 +43,7 @@
      protected void registerGoals() {}
  
      public static AttributeProvider.Builder createMobAttributes() {
-@@ -224,7 +245,38 @@
+@@ -224,7 +246,38 @@
      }
  
      public void setTarget(@Nullable EntityLiving entityliving) {
@@ -81,7 +82,7 @@
      }
  
      @Override
-@@ -453,16 +505,26 @@
+@@ -453,16 +506,26 @@
              nbttagcompound.putBoolean("NoAI", this.isNoAi());
          }
  
@@ -110,7 +111,7 @@
          NBTTagList nbttaglist;
          int i;
  
-@@ -509,6 +571,11 @@
+@@ -509,6 +572,11 @@
          }
  
          this.setNoAi(nbttagcompound.getBoolean("NoAI"));
@@ -122,7 +123,7 @@
      }
  
      @Override
-@@ -577,7 +644,7 @@
+@@ -577,7 +645,7 @@
      protected void pickUpItem(EntityItem entityitem) {
          ItemStack itemstack = entityitem.getItem();
  
@@ -131,7 +132,7 @@
              this.onItemPickup(entityitem);
              this.take(entityitem, itemstack.getCount());
              entityitem.discard();
-@@ -586,15 +653,29 @@
+@@ -586,15 +654,29 @@
      }
  
      public boolean equipItemIfPossible(ItemStack itemstack) {
@@ -162,7 +163,7 @@
              }
  
              this.setItemSlotAndDropWhenKilled(enumitemslot, itemstack);
-@@ -732,6 +813,7 @@
+@@ -732,6 +814,7 @@
      @Override
      protected final void serverAiStep() {
          ++this.noActionTime;
@@ -170,7 +171,48 @@
          this.level.getProfiler().push("sensing");
          this.sensing.tick();
          this.level.getProfiler().pop();
-@@ -1125,6 +1207,12 @@
+@@ -886,16 +969,28 @@
+ 
+     @Override
+     public void setItemSlot(EnumItemSlot enumitemslot, ItemStack itemstack) {
++        setItemSlot(enumitemslot, itemstack, false); //CraftBukkit
++    }
++
++    // CraftBukkit start
++    public void setItemSlot(EnumItemSlot enumitemslot, ItemStack itemstack, boolean itemBreak) {
+         this.verifyEquippedItem(itemstack);
+         switch (enumitemslot.getType()) {
+             case HAND:
+                 this.onEquipItem(enumitemslot, (ItemStack) this.handItems.set(enumitemslot.getIndex(), itemstack), itemstack);
+                 break;
+             case ARMOR:
++                boolean previousItemNotAir = !this.armorItems.get(enumitemslot.getIndex()).getItem().equals(ItemStack.EMPTY.getItem());
++                boolean newItemNotAir = !itemstack.getItem().equals(ItemStack.EMPTY.getItem());
++                EntityArmorChangeEvent.ChangeReason changeReason = newItemNotAir ?
++                    (previousItemNotAir ? EntityArmorChangeEvent.ChangeReason.SWITCH : EntityArmorChangeEvent.ChangeReason.EQUIP) :
++                    (itemBreak ? EntityArmorChangeEvent.ChangeReason.BREAK : EntityArmorChangeEvent.ChangeReason.UNEQUIP);
++                CraftEventFactory.callEntityEquipArmorEvent(this, this.armorItems.get(enumitemslot.getIndex()), itemstack, changeReason, enumitemslot);
+                 this.onEquipItem(enumitemslot, (ItemStack) this.armorItems.set(enumitemslot.getIndex(), itemstack), itemstack);
+         }
+ 
+     }
++     // CraftBukkit end
+ 
+     @Override
+     protected void dropCustomDeathLoot(DamageSource damagesource, int i, boolean flag) {
+@@ -1067,7 +1162,10 @@
+         ItemStack itemstack = this.getItemBySlot(enumitemslot);
+ 
+         if (!itemstack.isEmpty() && randomsource.nextFloat() < 0.5F * f) {
+-            this.setItemSlot(enumitemslot, EnchantmentManager.enchantItem(randomsource, itemstack, (int) (5.0F + f * (float) randomsource.nextInt(18)), false));
++            // CraftBukkit start - We are passing in a copy to account for an edge case in the EntityArmorChangeEvent, where this method would cause a "SWITCH", but the old and new armor would be identical
++            ItemStack toEnchant = itemstack.copy();
++            this.setItemSlot(enumitemslot, EnchantmentManager.enchantItem(randomsource, toEnchant, (int) (5.0F + f * (float) randomsource.nextInt(18)), false));
++            // CraftBukkit end
+         }
+ 
+     }
+@@ -1125,6 +1223,12 @@
          if (!this.isAlive()) {
              return EnumInteractionResult.PASS;
          } else if (this.getLeashHolder() == entityhuman) {
@@ -183,7 +225,7 @@
              this.dropLeash(true, !entityhuman.getAbilities().instabuild);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
          } else {
-@@ -1148,6 +1236,12 @@
+@@ -1148,6 +1252,12 @@
          ItemStack itemstack = entityhuman.getItemInHand(enumhand);
  
          if (itemstack.is(Items.LEAD) && this.canBeLeashed(entityhuman)) {
@@ -196,7 +238,7 @@
              this.setLeashedTo(entityhuman, true);
              itemstack.shrink(1);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
-@@ -1163,7 +1257,7 @@
+@@ -1163,7 +1273,7 @@
              if (itemstack.getItem() instanceof ItemMonsterEgg) {
                  if (this.level instanceof WorldServer) {
                      ItemMonsterEgg itemmonsteregg = (ItemMonsterEgg) itemstack.getItem();
@@ -205,7 +247,7 @@
  
                      optional.ifPresent((entityinsentient) -> {
                          this.onOffspringSpawnedFromEgg(entityhuman, entityinsentient);
-@@ -1213,12 +1307,19 @@
+@@ -1213,12 +1323,19 @@
          return this.restrictRadius != -1.0F;
      }
  
@@ -226,7 +268,7 @@
  
              t0.copyPosition(this);
              t0.setBaby(this.isBaby());
-@@ -1250,7 +1351,12 @@
+@@ -1250,7 +1367,12 @@
                  }
              }
  
@@ -240,7 +282,7 @@
              if (this.isPassenger()) {
                  Entity entity = this.getVehicle();
  
-@@ -1270,6 +1376,7 @@
+@@ -1270,6 +1392,7 @@
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -248,7 +290,7 @@
                  this.dropLeash(true, true);
              }
  
-@@ -1281,7 +1388,9 @@
+@@ -1281,7 +1404,9 @@
              this.leashHolder = null;
              this.leashInfoTag = null;
              if (!this.level.isClientSide && flag1) {
@@ -258,7 +300,7 @@
              }
  
              if (!this.level.isClientSide && flag && this.level instanceof WorldServer) {
-@@ -1331,6 +1440,7 @@
+@@ -1331,6 +1456,7 @@
          boolean flag1 = super.startRiding(entity, flag);
  
          if (flag1 && this.isLeashed()) {
@@ -266,7 +308,7 @@
              this.dropLeash(true, true);
          }
  
-@@ -1355,7 +1465,9 @@
+@@ -1355,7 +1481,9 @@
              }
  
              if (this.tickCount > 100) {
@@ -276,7 +318,7 @@
                  this.leashInfoTag = null;
              }
          }
-@@ -1432,7 +1544,14 @@
+@@ -1432,7 +1560,14 @@
          int i = EnchantmentManager.getFireAspect(this);
  
          if (i > 0) {
@@ -292,7 +334,7 @@
          }
  
          boolean flag = entity.hurt(DamageSource.mobAttack(this), f);
-@@ -1500,9 +1619,10 @@
+@@ -1500,9 +1635,10 @@
      @Override
      protected void removeAfterChangingDimensions() {
          super.removeAfterChangingDimensions();
