@@ -1,0 +1,26 @@
+--- a/net/minecraft/world/entity/ai/goal/PathfinderGoalCrossbowAttack.java
++++ b/net/minecraft/world/entity/ai/goal/PathfinderGoalCrossbowAttack.java
+@@ -118,8 +118,10 @@
+ 
+                 if (i >= ItemCrossbow.getChargeDuration(itemstack)) {
+                     this.mob.releaseUsingItem();
++                    if (ItemCrossbow.isCharged(itemstack)) { // CraftBukkit - Check for charged state
+                     this.crossbowState = PathfinderGoalCrossbowAttack.State.CHARGED;
+                     this.attackDelay = 20 + this.mob.getRandom().nextInt(20);
++                    } // CraftBukkit
+                     ((ICrossbow) this.mob).setChargingCrossbow(false);
+                 }
+             } else if (this.crossbowState == PathfinderGoalCrossbowAttack.State.CHARGED) {
+@@ -131,8 +133,12 @@
+                 ((IRangedEntity) this.mob).performRangedAttack(entityliving, 1.0F);
+                 ItemStack itemstack1 = this.mob.getItemInHand(ProjectileHelper.getWeaponHoldingHand(this.mob, Items.CROSSBOW));
+ 
++                // CraftBukkit start - Check for projectiles actually being launched
++                if (ItemCrossbow.getChargedProjectiles(itemstack1).isEmpty()) {
+                 ItemCrossbow.setCharged(itemstack1, false);
+                 this.crossbowState = PathfinderGoalCrossbowAttack.State.UNCHARGED;
++                }
++                // CraftBukkit end
+             }
+ 
+         }
