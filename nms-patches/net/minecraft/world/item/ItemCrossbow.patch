@@ -21,8 +21,8 @@
          }
  
 +        // CraftBukkit start
-+        if (entityliving instanceof EntityPlayer) {
-+            ((EntityPlayer) entityliving).getBukkitEntity().updateInventory();
++        if (entityliving instanceof EntityPlayer entityPlayer) {
++            entityPlayer.getBukkitEntity().updateInventory();
 +        }
 +        // CraftBukkit end
      }
@@ -37,7 +37,7 @@
 +        if (entityLoadCrossbowEvent instanceof PlayerLoadCrossbowEvent && ((PlayerLoadCrossbowEvent) entityLoadCrossbowEvent).isCancelled()) {
 +            return false;
 +        }
-+        j = Math.min(entityLoadCrossbowEvent.getNumberOfCopies(), 3);
++        j = Math.min(entityLoadCrossbowEvent.getProjectileCount(), 3);
 +        // CraftBukkit end
 +
          for (int k = 0; k < j; ++k) {
@@ -109,12 +109,12 @@
 +        }
 +        EntityShootCrossbowEvent event = CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, enumhand, projectileList, f);
 +        if (event.isCancelled()) {
-+            if (entityliving instanceof EntityPlayer){
-+                ((EntityPlayer) entityliving).getBukkitEntity().updateInventory();
++            if (entityliving instanceof EntityPlayer entityPlayer){
++                entityPlayer.getBukkitEntity().updateInventory();
 +            }
 +            return;
 +        }
-+        List<IProjectile> originals = (List<IProjectile>) ((ArrayList<IProjectile>) projectileList).clone();
++        List<IProjectile> originals = new ArrayList<>(projectileList);
 +        projectileList = event.getProjectiles().stream().map(projectile -> ((IProjectile) ((org.bukkit.craftbukkit.entity.AbstractProjectile) projectile).getHandle())).collect(Collectors.toList());
 +        // CraftBukkit end
          float[] afloat = getShotPitches(entityliving.getRandom());

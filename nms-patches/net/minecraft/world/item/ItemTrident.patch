@@ -1,10 +1,12 @@
 --- a/net/minecraft/world/item/ItemTrident.java
 +++ b/net/minecraft/world/item/ItemTrident.java
-@@ -26,6 +26,11 @@
+@@ -26,6 +26,13 @@
  import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.phys.Vec3D;
  
 +// CraftBukkit start
++import net.minecraft.server.level.EntityPlayer;
++
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.EntityFireTridentEvent;
 +// CraftBukkit end
@@ -12,7 +14,7 @@
  public class ItemTrident extends Item implements ItemVanishable {
  
      public static final int THROW_THRESHOLD_TIME = 10;
-@@ -68,27 +73,60 @@
+@@ -68,27 +75,60 @@
  
                  if (k <= 0 || entityhuman.isInWaterOrRain()) {
                      if (!world.isClientSide) {
@@ -40,8 +42,8 @@
 -                            world.addFreshEntity(entitythrowntrident);
 +                            // CraftBukkit start
 +                            if (entitythrowntrident.getBukkitEntity() == entityFireTridentEvent.getProjectile() && !world.addFreshEntity(entitythrowntrident)) {
-+                                if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
-+                                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                                if (entityhuman instanceof EntityPlayer entityPlayer) {
++                                    entityPlayer.getBukkitEntity().updateInventory();
 +                                }
 +                                return;
 +                            }
