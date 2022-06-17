@@ -5,7 +5,7 @@
          };
      };
 -    private final Entity entity;
-+    public final Entity entity; //CraftBukkit
++    public final Entity entity; // PAIL private -> public
  
      public CommandDataAccessorEntity(Entity entity) {
          this.entity = entity;

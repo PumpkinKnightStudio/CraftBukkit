@@ -5,7 +5,7 @@
                      if (itemstack.getDamageValue() >= itemstack.getMaxDamage()) {
                          this.broadcastBreakEvent(EnumItemSlot.HEAD);
 -                        this.setItemSlot(EnumItemSlot.HEAD, ItemStack.EMPTY);
-+                        this.setItemSlot(EnumItemSlot.HEAD, ItemStack.EMPTY, true);
++                        this.setItemSlot(EnumItemSlot.HEAD, ItemStack.EMPTY, true); // CraftBukkit
                      }
                  }
  

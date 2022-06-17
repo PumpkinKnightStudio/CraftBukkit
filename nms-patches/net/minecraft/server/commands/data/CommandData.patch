@@ -1,16 +1,14 @@
 --- a/net/minecraft/server/commands/data/CommandData.java
 +++ b/net/minecraft/server/commands/data/CommandData.java
-@@ -32,6 +32,17 @@
+@@ -32,6 +32,15 @@
  import net.minecraft.network.chat.IChatBaseComponent;
  import net.minecraft.util.MathHelper;
  
 +//CraftBukkit start
 +import java.util.Optional;
-+
 +import net.minecraft.world.entity.Entity;
 +import net.minecraft.world.entity.EntityLiving;
 +import net.minecraft.world.item.ItemStack;
-+
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +//CraftBukkit end
@@ -18,7 +16,7 @@
  public class CommandData {
  
      private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(IChatBaseComponent.translatable("commands.data.merge.failed"));
-@@ -187,10 +198,10 @@
+@@ -187,10 +196,10 @@
                      CommandData.c commanddata_c1 = (CommandData.c) iterator1.next();
  
                      biconsumer.accept(argumentbuilder1, (commanddata_a) -> {
@@ -30,7 +28,7 @@
                                  return manipulateData(commandcontext, commanddata_c, commanddata_a, list);
                              }).then(net.minecraft.commands.CommandDispatcher.argument("sourcePath", ArgumentNBTKey.nbtPath()).executes((commandcontext) -> {
                                  CommandDataAccessor commanddataaccessor = commanddata_c1.access(commandcontext);
-@@ -221,12 +232,39 @@
+@@ -221,12 +230,39 @@
          CommandDataAccessor commanddataaccessor = commanddata_c.access(commandcontext);
          ArgumentNBTKey.g argumentnbtkey_g = ArgumentNBTKey.getPath(commandcontext, "targetPath");
          NBTTagCompound nbttagcompound = commanddataaccessor.getData();
