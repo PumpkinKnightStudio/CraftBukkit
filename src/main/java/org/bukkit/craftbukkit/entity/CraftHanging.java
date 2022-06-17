@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityHanging;
-import net.minecraft.server.EnumDirection;
+import net.minecraft.core.EnumDirection;
+import net.minecraft.world.entity.decoration.EntityHanging;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -29,7 +29,6 @@ public class CraftHanging extends CraftEntity implements Hanging {
         EnumDirection dir = hanging.getDirection();
         switch (face) {
             case SOUTH:
-            default:
                 getHandle().setDirection(EnumDirection.SOUTH);
                 break;
             case WEST:
@@ -41,8 +40,10 @@ public class CraftHanging extends CraftEntity implements Hanging {
             case EAST:
                 getHandle().setDirection(EnumDirection.EAST);
                 break;
+            default:
+                throw new IllegalArgumentException(String.format("%s is not a valid facing direction", face));
         }
-        if (!force && !hanging.survives()) {
+        if (!force && !getHandle().generation && !hanging.survives()) {
             // Revert since it doesn't fit
             hanging.setDirection(dir);
             return false;

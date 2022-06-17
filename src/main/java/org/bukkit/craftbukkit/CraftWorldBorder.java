@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BlockPosition;
+import net.minecraft.core.BlockPosition;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -9,11 +9,21 @@ import org.bukkit.WorldBorder;
 public class CraftWorldBorder implements WorldBorder {
 
     private final World world;
-    private final net.minecraft.server.WorldBorder handle;
+    private final net.minecraft.world.level.border.WorldBorder handle;
 
     public CraftWorldBorder(CraftWorld world) {
         this.world = world;
         this.handle = world.getHandle().getWorldBorder();
+    }
+
+    public CraftWorldBorder(net.minecraft.world.level.border.WorldBorder handle) {
+        this.world = null;
+        this.handle = handle;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
     }
 
     @Override
@@ -43,7 +53,7 @@ public class CraftWorldBorder implements WorldBorder {
         time = Math.min(9223372036854775L, Math.max(0L, time));
 
         if (time > 0L) {
-            this.handle.transitionSizeBetween(this.handle.getSize(), newSize, time * 1000L);
+            this.handle.lerpSizeBetween(this.handle.getSize(), newSize, time * 1000L);
         } else {
             this.handle.setSize(newSize);
         }
@@ -73,22 +83,22 @@ public class CraftWorldBorder implements WorldBorder {
 
     @Override
     public double getDamageBuffer() {
-        return this.handle.getDamageBuffer();
+        return this.handle.getDamageSafeZone();
     }
 
     @Override
     public void setDamageBuffer(double blocks) {
-        this.handle.setDamageBuffer(blocks);
+        this.handle.setDamageSafeZone(blocks);
     }
 
     @Override
     public double getDamageAmount() {
-        return this.handle.getDamageAmount();
+        return this.handle.getDamagePerBlock();
     }
 
     @Override
     public void setDamageAmount(double damage) {
-        this.handle.setDamageAmount(damage);
+        this.handle.setDamagePerBlock(damage);
     }
 
     @Override
@@ -103,18 +113,26 @@ public class CraftWorldBorder implements WorldBorder {
 
     @Override
     public int getWarningDistance() {
-        return this.handle.getWarningDistance();
+        return this.handle.getWarningBlocks();
     }
 
     @Override
     public void setWarningDistance(int distance) {
-        this.handle.setWarningDistance(distance);
+        this.handle.setWarningBlocks(distance);
     }
 
     @Override
     public boolean isInside(Location location) {
         Preconditions.checkArgument(location != null, "location");
 
-        return location.getWorld().equals(this.world) && this.handle.a(new BlockPosition(location.getX(), location.getY(), location.getZ()));
+        return (world == null || location.getWorld().equals(this.world)) && this.handle.isWithinBounds(new BlockPosition(location.getX(), location.getY(), location.getZ()));
+    }
+
+    public net.minecraft.world.level.border.WorldBorder getHandle() {
+        return handle;
+    }
+
+    public boolean isVirtual() {
+        return world == null;
     }
 }

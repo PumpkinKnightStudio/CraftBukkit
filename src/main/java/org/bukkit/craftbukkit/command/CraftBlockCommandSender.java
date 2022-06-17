@@ -1,9 +1,8 @@
 package org.bukkit.craftbukkit.command;
 
-import net.minecraft.server.CommandListenerWrapper;
-import net.minecraft.server.IChatBaseComponent;
-import net.minecraft.server.SystemUtils;
-import net.minecraft.server.TileEntity;
+import net.minecraft.commands.CommandListenerWrapper;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.world.level.block.entity.TileEntity;
 import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -24,18 +23,18 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
 
     @Override
     public Block getBlock() {
-        return CraftBlock.at(tile.getWorld(), tile.getPosition());
+        return CraftBlock.at(tile.getLevel(), tile.getBlockPos());
     }
 
     @Override
     public void sendMessage(String message) {
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            block.base.sendMessage(component, SystemUtils.b);
+            block.source.sendSystemMessage(component);
         }
     }
 
     @Override
-    public void sendMessage(String[] messages) {
+    public void sendMessage(String... messages) {
         for (String message : messages) {
             sendMessage(message);
         }
@@ -43,7 +42,7 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
 
     @Override
     public String getName() {
-        return block.getName();
+        return block.getTextName();
     }
 
     @Override

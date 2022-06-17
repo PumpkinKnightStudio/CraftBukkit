@@ -1,14 +1,17 @@
 package org.bukkit.craftbukkit.generator;
 
-import java.util.HashSet;
-import java.util.Set;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.Blocks;
-import net.minecraft.server.ChunkSection;
-import net.minecraft.server.IBlockData;
+import java.lang.ref.WeakReference;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ITileEntity;
+import net.minecraft.world.level.block.entity.TileEntity;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.chunk.IChunkAccess;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -19,24 +22,46 @@ import org.bukkit.material.MaterialData;
  */
 public final class CraftChunkData implements ChunkGenerator.ChunkData {
     private final int maxHeight;
-    private final ChunkSection[] sections;
-    private Set<BlockPosition> tiles;
+    private final int minHeight;
+    private final WeakReference<IChunkAccess> weakChunk;
 
-    public CraftChunkData(World world) {
-        this(world.getMaxHeight());
+    public CraftChunkData(World world, IChunkAccess chunkAccess) {
+        this(world.getMaxHeight(), world.getMinHeight(), chunkAccess);
     }
 
-    /* pp for tests */ CraftChunkData(int maxHeight) {
-        if (maxHeight > 256) {
-            throw new IllegalArgumentException("World height exceeded max chunk height");
-        }
+    CraftChunkData(int maxHeight, int minHeight, IChunkAccess chunkAccess) {
         this.maxHeight = maxHeight;
-        sections = new ChunkSection[maxHeight >> 4];
+        this.minHeight = minHeight;
+        this.weakChunk = new WeakReference<>(chunkAccess);
+    }
+
+    public IChunkAccess getHandle() {
+        IChunkAccess access = weakChunk.get();
+
+        if (access == null) {
+            throw new IllegalStateException("IChunkAccess no longer present, are you using it in a different tick?");
+        }
+
+        return access;
+    }
+
+    public void breakLink() {
+        weakChunk.clear();
     }
 
     @Override
     public int getMaxHeight() {
         return maxHeight;
+    }
+
+    @Override
+    public int getMinHeight() {
+        return minHeight;
+    }
+
+    @Override
+    public Biome getBiome(int x, int y, int z) {
+        return CraftBlock.biomeBaseToBiome(getHandle().biomeRegistry, getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override
@@ -92,8 +117,8 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
         if (xMin < 0) {
             xMin = 0;
         }
-        if (yMin < 0) {
-            yMin = 0;
+        if (yMin < minHeight) {
+            yMin = minHeight;
         }
         if (zMin < 0) {
             zMin = 0;
@@ -111,26 +136,21 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
             return;
         }
         for (int y = yMin; y < yMax; y++) {
-            ChunkSection section = getChunkSection(y, true);
-            int offsetBase = y & 0xf;
             for (int x = xMin; x < xMax; x++) {
                 for (int z = zMin; z < zMax; z++) {
-                    section.setType(x, offsetBase, z, type);
+                    setBlock(x, y, z, type);
                 }
             }
         }
     }
 
     public IBlockData getTypeId(int x, int y, int z) {
-        if (x != (x & 0xf) || y < 0 || y >= maxHeight || z != (z & 0xf)) {
-            return Blocks.AIR.getBlockData();
+        if (x != (x & 0xf) || y < minHeight || y >= maxHeight || z != (z & 0xf)) {
+            return Blocks.AIR.defaultBlockState();
         }
-        ChunkSection section = getChunkSection(y, false);
-        if (section == null) {
-            return Blocks.AIR.getBlockData();
-        } else {
-            return section.getType(x, y & 0xf, z);
-        }
+
+        IChunkAccess access = getHandle();
+        return access.getBlockState(new BlockPosition(access.getPos().getMinBlockX() + x, y, access.getPos().getMinBlockZ() + z));
     }
 
     @Override
@@ -139,34 +159,25 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     private void setBlock(int x, int y, int z, IBlockData type) {
-        if (x != (x & 0xf) || y < 0 || y >= maxHeight || z != (z & 0xf)) {
+        if (x != (x & 0xf) || y < minHeight || y >= maxHeight || z != (z & 0xf)) {
             return;
         }
-        ChunkSection section = getChunkSection(y, true);
-        section.setType(x, y & 0xf, z, type);
 
-        if (type.getBlock().isTileEntity()) {
-            if (tiles == null) {
-                tiles = new HashSet<>();
+        IChunkAccess access = getHandle();
+        BlockPosition blockPosition = new BlockPosition(access.getPos().getMinBlockX() + x, y, access.getPos().getMinBlockZ() + z);
+        IBlockData oldBlockData = access.setBlockState(blockPosition, type, false);
+
+        if (type.hasBlockEntity()) {
+            TileEntity tileEntity = ((ITileEntity) type.getBlock()).newBlockEntity(blockPosition, type);
+
+            // createTile can return null, currently only the case with material MOVING_PISTON
+            if (tileEntity == null) {
+                access.removeBlockEntity(blockPosition);
+            } else {
+                access.setBlockEntity(tileEntity);
             }
-
-            tiles.add(new BlockPosition(x, y, z));
+        } else if (oldBlockData != null && oldBlockData.hasBlockEntity()) {
+            access.removeBlockEntity(blockPosition);
         }
-    }
-
-    private ChunkSection getChunkSection(int y, boolean create) {
-        ChunkSection section = sections[y >> 4];
-        if (create && section == null) {
-            sections[y >> 4] = section = new ChunkSection(y >> 4 << 4);
-        }
-        return section;
-    }
-
-    ChunkSection[] getRawChunkData() {
-        return sections;
-    }
-
-    Set<BlockPosition> getTiles() {
-        return tiles;
     }
 }

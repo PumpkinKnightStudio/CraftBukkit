@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityBee;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.animal.EntityBee;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Bee;
@@ -43,14 +43,14 @@ public class CraftBee extends CraftAnimals implements Bee {
 
     @Override
     public Location getFlower() {
-        BlockPosition flower = getHandle().getFlowerPos();
+        BlockPosition flower = getHandle().getSavedFlowerPos();
         return (flower == null) ? null : new Location(getWorld(), flower.getX(), flower.getY(), flower.getZ());
     }
 
     @Override
     public void setFlower(Location location) {
         Preconditions.checkArgument(location == null || this.getWorld().equals(location.getWorld()), "Flower must be in same world");
-        getHandle().setFlowerPos(location == null ? null : new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        getHandle().setSavedFlowerPos(location == null ? null : new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
     }
 
     @Override
@@ -75,21 +75,21 @@ public class CraftBee extends CraftAnimals implements Bee {
 
     @Override
     public int getAnger() {
-        return getHandle().getAnger();
+        return getHandle().getRemainingPersistentAngerTime();
     }
 
     @Override
     public void setAnger(int anger) {
-        getHandle().setAnger(anger);
+        getHandle().setRemainingPersistentAngerTime(anger);
     }
 
     @Override
     public int getCannotEnterHiveTicks() {
-        return getHandle().cannotEnterHiveTicks;
+        return getHandle().stayOutOfHiveCountdown;
     }
 
     @Override
     public void setCannotEnterHiveTicks(int ticks) {
-        getHandle().setCannotEnterHiveTicks(ticks);
+        getHandle().setStayOutOfHiveCountdown(ticks);
     }
 }

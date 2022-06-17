@@ -1,12 +1,12 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.server.BlockChest;
-import net.minecraft.server.Blocks;
-import net.minecraft.server.ITileInventory;
-import net.minecraft.server.SoundEffects;
-import net.minecraft.server.TileEntityChest;
+import net.minecraft.world.ITileInventory;
+import net.minecraft.world.level.block.BlockChest;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TileEntityChest;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -15,12 +15,8 @@ import org.bukkit.inventory.Inventory;
 
 public class CraftChest extends CraftLootable<TileEntityChest> implements Chest {
 
-    public CraftChest(final Block block) {
-        super(block, TileEntityChest.class);
-    }
-
-    public CraftChest(final Material material, final TileEntityChest te) {
-        super(material, te);
+    public CraftChest(World world, TileEntityChest tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -40,7 +36,7 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
     @Override
     public Inventory getInventory() {
         CraftInventory inventory = (CraftInventory) this.getBlockInventory();
-        if (!isPlaced()) {
+        if (!isPlaced() || isWorldGeneration()) {
             return inventory;
         }
 
@@ -48,7 +44,7 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
         CraftWorld world = (CraftWorld) this.getWorld();
 
         BlockChest blockChest = (BlockChest) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
-        ITileInventory nms = blockChest.getInventory(data, world.getHandle(), this.getPosition());
+        ITileInventory nms = blockChest.getMenuProvider(data, world.getHandle(), this.getPosition(), true);
 
         if (nms instanceof BlockChest.DoubleInventory) {
             inventory = new CraftInventoryDoubleChest((BlockChest.DoubleInventory) nms);
@@ -59,22 +55,26 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
     @Override
     public void open() {
         requirePlaced();
-        if (!getTileEntity().opened) {
-            net.minecraft.server.Block block = getTileEntity().getBlock().getBlock();
-            getTileEntity().getWorld().playBlockAction(getTileEntity().getPosition(), block, 1, getTileEntity().viewingCount + 1);
-            getTileEntity().playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
+        if (!getTileEntity().openersCounter.opened && getWorldHandle() instanceof net.minecraft.world.level.World) {
+            IBlockData block = getTileEntity().getBlockState();
+            int openCount = getTileEntity().openersCounter.getOpenerCount();
+
+            getTileEntity().openersCounter.onAPIOpen((net.minecraft.world.level.World) getWorldHandle(), getPosition(), block);
+            getTileEntity().openersCounter.openerAPICountChanged((net.minecraft.world.level.World) getWorldHandle(), getPosition(), block, openCount, openCount + 1);
         }
-        getTileEntity().opened = true;
+        getTileEntity().openersCounter.opened = true;
     }
 
     @Override
     public void close() {
         requirePlaced();
-        if (getTileEntity().opened) {
-            net.minecraft.server.Block block = getTileEntity().getBlock().getBlock();
-            getTileEntity().getWorld().playBlockAction(getTileEntity().getPosition(), block, 1, 0);
-            getTileEntity().playOpenSound(SoundEffects.BLOCK_CHEST_CLOSE);
+        if (getTileEntity().openersCounter.opened && getWorldHandle() instanceof net.minecraft.world.level.World) {
+            IBlockData block = getTileEntity().getBlockState();
+            int openCount = getTileEntity().openersCounter.getOpenerCount();
+
+            getTileEntity().openersCounter.onAPIClose((net.minecraft.world.level.World) getWorldHandle(), getPosition(), block);
+            getTileEntity().openersCounter.openerAPICountChanged((net.minecraft.world.level.World) getWorldHandle(), getPosition(), block, openCount, 0);
         }
-        getTileEntity().opened = false;
+        getTileEntity().openersCounter.opened = false;
     }
 }

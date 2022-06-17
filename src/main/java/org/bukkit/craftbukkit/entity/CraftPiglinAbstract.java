@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityPiglinAbstract;
+import net.minecraft.world.entity.monster.piglin.EntityPiglinAbstract;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.PiglinAbstract;
 
@@ -24,16 +24,16 @@ public class CraftPiglinAbstract extends CraftMonster implements PiglinAbstract 
     @Override
     public int getConversionTime() {
         Preconditions.checkState(isConverting(), "Entity not converting");
-        return getHandle().conversionTicks;
+        return getHandle().timeInOverworld;
     }
 
     @Override
     public void setConversionTime(int time) {
         if (time < 0) {
-            getHandle().conversionTicks = -1;
+            getHandle().timeInOverworld = -1;
             getHandle().setImmuneToZombification(false);
         } else {
-            getHandle().conversionTicks = time;
+            getHandle().timeInOverworld = time;
         }
     }
 

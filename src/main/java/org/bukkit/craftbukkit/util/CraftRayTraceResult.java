@@ -1,11 +1,11 @@
 package org.bukkit.craftbukkit.util;
 
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.MovingObjectPosition;
-import net.minecraft.server.MovingObjectPosition.EnumMovingObjectType;
-import net.minecraft.server.MovingObjectPositionBlock;
-import net.minecraft.server.MovingObjectPositionEntity;
-import net.minecraft.server.Vec3D;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.phys.MovingObjectPosition;
+import net.minecraft.world.phys.MovingObjectPosition.EnumMovingObjectType;
+import net.minecraft.world.phys.MovingObjectPositionBlock;
+import net.minecraft.world.phys.MovingObjectPositionEntity;
+import net.minecraft.world.phys.Vec3D;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,7 +21,7 @@ public final class CraftRayTraceResult {
     public static RayTraceResult fromNMS(World world, MovingObjectPosition nmsHitResult) {
         if (nmsHitResult == null || nmsHitResult.getType() == EnumMovingObjectType.MISS) return null;
 
-        Vec3D nmsHitPos = nmsHitResult.getPos();
+        Vec3D nmsHitPos = nmsHitResult.getLocation();
         Vector hitPosition = new Vector(nmsHitPos.x, nmsHitPos.y, nmsHitPos.z);
         BlockFace hitBlockFace = null;
 
@@ -35,7 +35,7 @@ public final class CraftRayTraceResult {
         if (nmsHitResult.getType() == EnumMovingObjectType.BLOCK) {
             MovingObjectPositionBlock blockHitResult = (MovingObjectPositionBlock) nmsHitResult;
             hitBlockFace = CraftBlock.notchToBlockFace(blockHitResult.getDirection());
-            nmsBlockPos = blockHitResult.getBlockPosition();
+            nmsBlockPos = blockHitResult.getBlockPos();
         }
         if (nmsBlockPos != null && world != null) {
             hitBlock = world.getBlockAt(nmsBlockPos.getX(), nmsBlockPos.getY(), nmsBlockPos.getZ());

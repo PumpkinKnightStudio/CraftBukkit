@@ -1,9 +1,11 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.server.BlockDispenser;
-import net.minecraft.server.Blocks;
-import net.minecraft.server.TileEntityDispenser;
+import com.google.common.base.Preconditions;
+import net.minecraft.world.level.block.BlockDispenser;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TileEntityDispenser;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -14,12 +16,8 @@ import org.bukkit.projectiles.BlockProjectileSource;
 
 public class CraftDispenser extends CraftLootable<TileEntityDispenser> implements Dispenser {
 
-    public CraftDispenser(final Block block) {
-        super(block, TileEntityDispenser.class);
-    }
-
-    public CraftDispenser(final Material material, final TileEntityDispenser te) {
-        super(material, te);
+    public CraftDispenser(World world, TileEntityDispenser tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -49,13 +47,13 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
 
     @Override
     public boolean dispense() {
+        ensureNoWorldGeneration();
         Block block = getBlock();
-
         if (block.getType() == Material.DISPENSER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDispenser dispense = (BlockDispenser) Blocks.DISPENSER;
 
-            dispense.dispense(world.getHandle(), this.getPosition());
+            dispense.dispenseFrom(world.getHandle(), this.getPosition());
             return true;
         } else {
             return false;

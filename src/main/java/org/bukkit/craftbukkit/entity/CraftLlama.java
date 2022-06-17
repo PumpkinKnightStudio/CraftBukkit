@@ -1,12 +1,13 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityLlama;
+import net.minecraft.world.entity.animal.horse.EntityLlama;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLlama;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Llama;
+import org.bukkit.entity.Llama.Color;
 import org.bukkit.inventory.LlamaInventory;
 
 public class CraftLlama extends CraftChestedHorse implements Llama {
@@ -34,7 +35,7 @@ public class CraftLlama extends CraftChestedHorse implements Llama {
 
     @Override
     public LlamaInventory getInventory() {
-        return new CraftInventoryLlama(getHandle().inventoryChest);
+        return new CraftInventoryLlama(getHandle().inventory);
     }
 
     @Override
@@ -46,8 +47,8 @@ public class CraftLlama extends CraftChestedHorse implements Llama {
     public void setStrength(int strength) {
         Preconditions.checkArgument(1 <= strength && strength <= 5, "strength must be [1,5]");
         if (strength == getStrength()) return;
-        getHandle().setStrength(strength);
-        getHandle().loadChest();
+        getHandle().setStrengthPublic(strength);
+        getHandle().createInventory();
     }
 
     @Override

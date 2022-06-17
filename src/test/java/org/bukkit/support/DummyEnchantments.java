@@ -1,10 +1,10 @@
 package org.bukkit.support;
 
-import net.minecraft.server.Enchantments;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 public class DummyEnchantments {
     static {
-        Enchantments.DAMAGE_ALL.getClass();
+        Enchantments.SHARPNESS.getClass();
         org.bukkit.enchantments.Enchantment.stopAcceptingRegistrations();
     }
 

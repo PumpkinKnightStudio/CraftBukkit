@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityPhantom;
+import net.minecraft.world.entity.monster.EntityPhantom;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Phantom;
@@ -18,12 +18,12 @@ public class CraftPhantom extends CraftFlying implements Phantom {
 
     @Override
     public int getSize() {
-        return getHandle().getSize();
+        return getHandle().getPhantomSize();
     }
 
     @Override
     public void setSize(int sz) {
-        getHandle().setSize(sz);
+        getHandle().setPhantomSize(sz);
     }
 
     @Override

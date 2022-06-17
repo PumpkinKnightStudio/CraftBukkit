@@ -3,13 +3,13 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import net.minecraft.server.Block;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.IRegistry;
-import net.minecraft.server.Item;
-import net.minecraft.server.MinecraftKey;
-import net.minecraft.server.ServerStatisticManager;
-import net.minecraft.server.StatisticList;
+import net.minecraft.core.IRegistry;
+import net.minecraft.resources.MinecraftKey;
+import net.minecraft.stats.ServerStatisticManager;
+import net.minecraft.stats.StatisticList;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
@@ -30,11 +30,12 @@ public enum CraftStatistic {
     DROP_COUNT(StatisticList.DROP),
     DROP(new MinecraftKey("dropped")),
     PICKUP(new MinecraftKey("picked_up")),
-    PLAY_ONE_MINUTE(StatisticList.PLAY_ONE_MINUTE),
+    PLAY_ONE_MINUTE(StatisticList.PLAY_TIME),
+    TOTAL_WORLD_TIME(StatisticList.TOTAL_WORLD_TIME),
     WALK_ONE_CM(StatisticList.WALK_ONE_CM),
     WALK_ON_WATER_ONE_CM(StatisticList.WALK_ON_WATER_ONE_CM),
     FALL_ONE_CM(StatisticList.FALL_ONE_CM),
-    SNEAK_TIME(StatisticList.SNEAK_TIME),
+    SNEAK_TIME(StatisticList.CROUCH_TIME),
     CLIMB_ONE_CM(StatisticList.CLIMB_ONE_CM),
     FLY_ONE_CM(StatisticList.FLY_ONE_CM),
     WALK_UNDER_WATER_ONE_CM(StatisticList.WALK_UNDER_WATER_ONE_CM),
@@ -120,45 +121,45 @@ public enum CraftStatistic {
         Preconditions.checkState(bukkit != null, "Bukkit statistic %s does not exist", this.name());
     }
 
-    public static org.bukkit.Statistic getBukkitStatistic(net.minecraft.server.Statistic<?> statistic) {
-        IRegistry statRegistry = statistic.getWrapper().getRegistry();
-        MinecraftKey nmsKey = IRegistry.STATS.getKey(statistic.getWrapper());
+    public static org.bukkit.Statistic getBukkitStatistic(net.minecraft.stats.Statistic<?> statistic) {
+        IRegistry statRegistry = statistic.getType().getRegistry();
+        MinecraftKey nmsKey = IRegistry.STAT_TYPE.getKey(statistic.getType());
 
         if (statRegistry == IRegistry.CUSTOM_STAT) {
-            nmsKey = (MinecraftKey) statistic.b();
+            nmsKey = (MinecraftKey) statistic.getValue();
         }
 
         return statistics.get(nmsKey);
     }
 
-    public static net.minecraft.server.Statistic getNMSStatistic(org.bukkit.Statistic bukkit) {
+    public static net.minecraft.stats.Statistic getNMSStatistic(org.bukkit.Statistic bukkit) {
         Preconditions.checkArgument(bukkit.getType() == Statistic.Type.UNTYPED, "This method only accepts untyped statistics");
 
-        net.minecraft.server.Statistic<MinecraftKey> nms = StatisticList.CUSTOM.b(statistics.inverse().get(bukkit));
+        net.minecraft.stats.Statistic<MinecraftKey> nms = StatisticList.CUSTOM.get(statistics.inverse().get(bukkit));
         Preconditions.checkArgument(nms != null, "NMS Statistic %s does not exist", bukkit);
 
         return nms;
     }
 
-    public static net.minecraft.server.Statistic getMaterialStatistic(org.bukkit.Statistic stat, Material material) {
+    public static net.minecraft.stats.Statistic getMaterialStatistic(org.bukkit.Statistic stat, Material material) {
         try {
             if (stat == Statistic.MINE_BLOCK) {
-                return StatisticList.BLOCK_MINED.b(CraftMagicNumbers.getBlock(material));
+                return StatisticList.BLOCK_MINED.get(CraftMagicNumbers.getBlock(material));
             }
             if (stat == Statistic.CRAFT_ITEM) {
-                return StatisticList.ITEM_CRAFTED.b(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_CRAFTED.get(CraftMagicNumbers.getItem(material));
             }
             if (stat == Statistic.USE_ITEM) {
-                return StatisticList.ITEM_USED.b(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_USED.get(CraftMagicNumbers.getItem(material));
             }
             if (stat == Statistic.BREAK_ITEM) {
-                return StatisticList.ITEM_BROKEN.b(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_BROKEN.get(CraftMagicNumbers.getItem(material));
             }
             if (stat == Statistic.PICKUP) {
-                return StatisticList.ITEM_PICKED_UP.b(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_PICKED_UP.get(CraftMagicNumbers.getItem(material));
             }
             if (stat == Statistic.DROP) {
-                return StatisticList.ITEM_DROPPED.b(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_DROPPED.get(CraftMagicNumbers.getItem(material));
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;
@@ -166,31 +167,31 @@ public enum CraftStatistic {
         return null;
     }
 
-    public static net.minecraft.server.Statistic getEntityStatistic(org.bukkit.Statistic stat, EntityType entity) {
+    public static net.minecraft.stats.Statistic getEntityStatistic(org.bukkit.Statistic stat, EntityType entity) {
         if (entity.getName() != null) {
             EntityTypes<?> nmsEntity = IRegistry.ENTITY_TYPE.get(new MinecraftKey(entity.getName()));
 
             if (stat == org.bukkit.Statistic.KILL_ENTITY) {
-                return net.minecraft.server.StatisticList.ENTITY_KILLED.b(nmsEntity);
+                return net.minecraft.stats.StatisticList.ENTITY_KILLED.get(nmsEntity);
             }
             if (stat == org.bukkit.Statistic.ENTITY_KILLED_BY) {
-                return net.minecraft.server.StatisticList.ENTITY_KILLED_BY.b(nmsEntity);
+                return net.minecraft.stats.StatisticList.ENTITY_KILLED_BY.get(nmsEntity);
             }
         }
         return null;
     }
 
-    public static EntityType getEntityTypeFromStatistic(net.minecraft.server.Statistic<EntityTypes<?>> statistic) {
-        MinecraftKey name = EntityTypes.getName(statistic.b());
-        return EntityType.fromName(name.getKey());
+    public static EntityType getEntityTypeFromStatistic(net.minecraft.stats.Statistic<EntityTypes<?>> statistic) {
+        MinecraftKey name = EntityTypes.getKey(statistic.getValue());
+        return EntityType.fromName(name.getPath());
     }
 
-    public static Material getMaterialFromStatistic(net.minecraft.server.Statistic<?> statistic) {
-        if (statistic.b() instanceof Item) {
-            return CraftMagicNumbers.getMaterial((Item) statistic.b());
+    public static Material getMaterialFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
+        if (statistic.getValue() instanceof Item) {
+            return CraftMagicNumbers.getMaterial((Item) statistic.getValue());
         }
-        if (statistic.b() instanceof Block) {
-            return CraftMagicNumbers.getMaterial((Block) statistic.b());
+        if (statistic.getValue() instanceof Block) {
+            return CraftMagicNumbers.getMaterial((Block) statistic.getValue());
         }
         return null;
     }
@@ -206,7 +207,7 @@ public enum CraftStatistic {
     public static int getStatistic(ServerStatisticManager manager, Statistic statistic) {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.isTrue(statistic.getType() == Type.UNTYPED, "Must supply additional paramater for this statistic");
-        return manager.getStatisticValue(CraftStatistic.getNMSStatistic(statistic));
+        return manager.getValue(CraftStatistic.getNMSStatistic(statistic));
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, int amount) {
@@ -223,8 +224,8 @@ public enum CraftStatistic {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.isTrue(statistic.getType() == Type.UNTYPED, "Must supply additional paramater for this statistic");
         Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
-        net.minecraft.server.Statistic nmsStatistic = CraftStatistic.getNMSStatistic(statistic);
-        manager.setStatistic(null, nmsStatistic, newValue);;
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getNMSStatistic(statistic);
+        manager.setValue(null, nmsStatistic, newValue);;
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material) {
@@ -239,9 +240,9 @@ public enum CraftStatistic {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.notNull(material, "Material cannot be null");
         Validate.isTrue(statistic.getType() == Type.BLOCK || statistic.getType() == Type.ITEM, "This statistic does not take a Material parameter");
-        net.minecraft.server.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
         Validate.notNull(nmsStatistic, "The supplied Material does not have a corresponding statistic");
-        return manager.getStatisticValue(nmsStatistic);
+        return manager.getValue(nmsStatistic);
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material, int amount) {
@@ -259,9 +260,9 @@ public enum CraftStatistic {
         Validate.notNull(material, "Material cannot be null");
         Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
         Validate.isTrue(statistic.getType() == Type.BLOCK || statistic.getType() == Type.ITEM, "This statistic does not take a Material parameter");
-        net.minecraft.server.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
         Validate.notNull(nmsStatistic, "The supplied Material does not have a corresponding statistic");
-        manager.setStatistic(null, nmsStatistic, newValue);
+        manager.setValue(null, nmsStatistic, newValue);
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType entityType) {
@@ -276,9 +277,9 @@ public enum CraftStatistic {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.notNull(entityType, "EntityType cannot be null");
         Validate.isTrue(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
-        net.minecraft.server.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
         Validate.notNull(nmsStatistic, "The supplied EntityType does not have a corresponding statistic");
-        return manager.getStatisticValue(nmsStatistic);
+        return manager.getValue(nmsStatistic);
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType entityType, int amount) {
@@ -296,8 +297,8 @@ public enum CraftStatistic {
         Validate.notNull(entityType, "EntityType cannot be null");
         Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
         Validate.isTrue(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
-        net.minecraft.server.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
         Validate.notNull(nmsStatistic, "The supplied EntityType does not have a corresponding statistic");
-        manager.setStatistic(null, nmsStatistic, newValue);
+        manager.setValue(null, nmsStatistic, newValue);
     }
 }

@@ -1,28 +1,23 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.MinecraftKey;
-import net.minecraft.server.TileEntityMobSpawner;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import java.util.Optional;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.block.entity.TileEntityMobSpawner;
+import org.bukkit.World;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 
 public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpawner> implements CreatureSpawner {
 
-    public CraftCreatureSpawner(final Block block) {
-        super(block, TileEntityMobSpawner.class);
-    }
-
-    public CraftCreatureSpawner(final Material material, TileEntityMobSpawner te) {
-        super(material, te);
+    public CraftCreatureSpawner(World world, TileEntityMobSpawner tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
     public EntityType getSpawnedType() {
-        MinecraftKey key = this.getSnapshot().getSpawner().getMobName();
-        return (key == null) ? EntityType.PIG : EntityType.fromName(key.getKey());
+        Optional<EntityTypes<?>> type = EntityTypes.by(this.getSnapshot().getSpawner().nextSpawnData.getEntityToSpawn());
+        return (type.isEmpty()) ? EntityType.PIG : EntityType.fromName(EntityTypes.getKey(type.get()).getPath());
     }
 
     @Override
@@ -31,12 +26,13 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
             throw new IllegalArgumentException("Can't spawn EntityType " + entityType + " from mobspawners!");
         }
 
-        this.getSnapshot().getSpawner().setMobName(EntityTypes.a(entityType.getName()).get());
+        this.getSnapshot().getSpawner().setEntityId(EntityTypes.byString(entityType.getName()).get());
     }
 
     @Override
     public String getCreatureTypeName() {
-        return this.getSnapshot().getSpawner().getMobName().getKey();
+        Optional<EntityTypes<?>> type = EntityTypes.by(this.getSnapshot().getSpawner().nextSpawnData.getEntityToSpawn());
+        return (type.isEmpty()) ? "" : EntityTypes.getKey(type.get()).getPath();
     }
 
     @Override

@@ -3,13 +3,14 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagInt;
-import net.minecraft.server.NBTTagString;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagString;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.MapMeta;
@@ -47,22 +48,22 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
     CraftMetaMap(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.hasKeyOfType(MAP_ID.NBT, CraftMagicNumbers.NBT.TAG_ANY_NUMBER)) {
+        if (tag.contains(MAP_ID.NBT, CraftMagicNumbers.NBT.TAG_ANY_NUMBER)) {
             this.mapId = tag.getInt(MAP_ID.NBT);
         }
 
-        if (tag.hasKey(MAP_SCALING.NBT)) {
+        if (tag.contains(MAP_SCALING.NBT)) {
             this.scaling = tag.getBoolean(MAP_SCALING.NBT) ? SCALING_TRUE : SCALING_FALSE;
         }
 
-        if (tag.hasKey(DISPLAY.NBT)) {
+        if (tag.contains(DISPLAY.NBT)) {
             NBTTagCompound display = tag.getCompound(DISPLAY.NBT);
 
-            if (display.hasKey(MAP_LOC_NAME.NBT)) {
+            if (display.contains(MAP_LOC_NAME.NBT)) {
                 locName = display.getString(MAP_LOC_NAME.NBT);
             }
 
-            if (display.hasKey(MAP_COLOR.NBT)) {
+            if (display.contains(MAP_COLOR.NBT)) {
                 try {
                     color = Color.fromRGB(display.getInt(MAP_COLOR.NBT));
                 } catch (IllegalArgumentException ex) {
@@ -101,19 +102,19 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
         super.applyToItem(tag);
 
         if (hasMapId()) {
-            tag.setInt(MAP_ID.NBT, getMapId());
+            tag.putInt(MAP_ID.NBT, getMapId());
         }
 
         if (hasScaling()) {
-            tag.setBoolean(MAP_SCALING.NBT, isScaling());
+            tag.putBoolean(MAP_SCALING.NBT, isScaling());
         }
 
         if (hasLocationName()) {
-            setDisplayTag(tag, MAP_LOC_NAME.NBT, NBTTagString.a(getLocationName()));
+            setDisplayTag(tag, MAP_LOC_NAME.NBT, NBTTagString.valueOf(getLocationName()));
         }
 
         if (hasColor()) {
-            setDisplayTag(tag, MAP_COLOR.NBT, NBTTagInt.a(color.asRGB()));
+            setDisplayTag(tag, MAP_COLOR.NBT, NBTTagInt.valueOf(color.asRGB()));
         }
     }
 

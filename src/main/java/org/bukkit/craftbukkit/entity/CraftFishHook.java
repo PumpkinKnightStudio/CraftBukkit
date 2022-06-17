@@ -1,13 +1,14 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityFishingHook;
-import net.minecraft.server.MathHelper;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.entity.projectile.EntityFishingHook;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
+import org.bukkit.entity.FishHook.HookState;
 
 public class CraftFishHook extends CraftProjectile implements FishHook {
     private double biteChance = -1;
@@ -70,7 +71,7 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
         EntityFishingHook hook = getHandle();
 
         if (this.biteChance == -1) {
-            if (hook.world.isRainingAt(new BlockPosition(MathHelper.floor(hook.locX()), MathHelper.floor(hook.locY()) + 1, MathHelper.floor(hook.locZ())))) {
+            if (hook.level.isRainingAt(new BlockPosition(MathHelper.floor(hook.getX()), MathHelper.floor(hook.getY()) + 1, MathHelper.floor(hook.getZ())))) {
                 return 1 / 300.0;
             }
             return 1 / 500.0;
@@ -86,12 +87,12 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
 
     @Override
     public boolean isInOpenWater() {
-        return getHandle().isInOpenWater();
+        return getHandle().isOpenWaterFishing();
     }
 
     @Override
     public Entity getHookedEntity() {
-        net.minecraft.server.Entity hooked = getHandle().hooked;
+        net.minecraft.world.entity.Entity hooked = getHandle().hookedIn;
         return (hooked != null) ? hooked.getBukkitEntity() : null;
     }
 
@@ -99,23 +100,23 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
     public void setHookedEntity(Entity entity) {
         EntityFishingHook hook = getHandle();
 
-        hook.hooked = (entity != null) ? ((CraftEntity) entity).getHandle() : null;
-        hook.getDataWatcher().set(EntityFishingHook.HOOKED_ENTITY, hook.hooked != null ? hook.hooked.getId() + 1 : 0);
+        hook.hookedIn = (entity != null) ? ((CraftEntity) entity).getHandle() : null;
+        hook.getEntityData().set(EntityFishingHook.DATA_HOOKED_ENTITY, hook.hookedIn != null ? hook.hookedIn.getId() + 1 : 0);
     }
 
     @Override
     public boolean pullHookedEntity() {
         EntityFishingHook hook = getHandle();
-        if (hook.hooked == null) {
+        if (hook.hookedIn == null) {
             return false;
         }
 
-        hook.reel();
+        hook.pullEntity(hook.hookedIn);
         return true;
     }
 
     @Override
     public HookState getState() {
-        return HookState.values()[getHandle().hookState.ordinal()];
+        return HookState.values()[getHandle().currentState.ordinal()];
     }
 }

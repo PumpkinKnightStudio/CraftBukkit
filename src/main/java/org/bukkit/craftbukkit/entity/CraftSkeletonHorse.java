@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityHorseSkeleton;
+import net.minecraft.world.entity.animal.horse.EntityHorseSkeleton;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse.Variant;
@@ -25,5 +25,30 @@ public class CraftSkeletonHorse extends CraftAbstractHorse implements SkeletonHo
     @Override
     public Variant getVariant() {
         return Variant.SKELETON_HORSE;
+    }
+
+    @Override
+    public EntityHorseSkeleton getHandle() {
+        return (EntityHorseSkeleton) entity;
+    }
+
+    @Override
+    public boolean isTrapped() {
+        return getHandle().isTrap();
+    }
+
+    @Override
+    public void setTrapped(boolean trapped) {
+        getHandle().setTrap(trapped);
+    }
+
+    @Override
+    public int getTrapTime() {
+        return getHandle().trapTime;
+    }
+
+    @Override
+    public void setTrapTime(int trapTime) {
+        getHandle().trapTime = trapTime;
     }
 }

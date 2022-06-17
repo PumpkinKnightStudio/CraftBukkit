@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityShulkerBullet;
+import com.google.common.base.Preconditions;
+import net.minecraft.world.entity.projectile.EntityShulkerBullet;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -21,9 +22,9 @@ public class CraftShulkerBullet extends AbstractProjectile implements ShulkerBul
     @Override
     public void setShooter(ProjectileSource shooter) {
         if (shooter instanceof Entity) {
-            getHandle().setShooter(((CraftEntity) shooter).getHandle());
+            getHandle().setOwner(((CraftEntity) shooter).getHandle());
         } else {
-            getHandle().setShooter(null);
+            getHandle().setOwner(null);
         }
         getHandle().projectileSource = shooter;
     }
@@ -35,6 +36,8 @@ public class CraftShulkerBullet extends AbstractProjectile implements ShulkerBul
 
     @Override
     public void setTarget(org.bukkit.entity.Entity target) {
+        Preconditions.checkState(!getHandle().generation, "Cannot set target during world generation");
+
         getHandle().setTarget(target == null ? null : ((CraftEntity) target).getHandle());
     }
 

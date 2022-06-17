@@ -1,14 +1,12 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityPainting;
-import net.minecraft.server.EntityTypes;
-import net.minecraft.server.Paintings;
-import net.minecraft.server.WorldServer;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.decoration.EntityPainting;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftArt;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Painting;
 
@@ -20,7 +18,7 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     @Override
     public Art getArt() {
-        Paintings art = getHandle().art;
+        Holder<PaintingVariant> art = getHandle().getVariant();
         return CraftArt.NotchToBukkit(art);
     }
 
@@ -32,12 +30,12 @@ public class CraftPainting extends CraftHanging implements Painting {
     @Override
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
-        Paintings oldArt = painting.art;
-        painting.art = CraftArt.BukkitToNotch(art);
+        Holder<PaintingVariant> oldArt = painting.getVariant();
+        painting.setVariant(CraftArt.BukkitToNotch(art));
         painting.setDirection(painting.getDirection());
-        if (!force && !painting.survives()) {
+        if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit
-            painting.art = oldArt;
+            painting.setVariant(oldArt);
             painting.setDirection(painting.getDirection());
             return false;
         }
@@ -53,18 +51,6 @@ public class CraftPainting extends CraftHanging implements Painting {
         }
 
         return false;
-    }
-
-    private void update() {
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        EntityPainting painting = EntityTypes.PAINTING.a(world);
-        painting.blockPosition = getHandle().blockPosition;
-        painting.art = getHandle().art;
-        painting.setDirection(getHandle().getDirection());
-        getHandle().die();
-        getHandle().velocityChanged = true; // because this occurs when the painting is broken, so it might be important
-        world.addEntity(painting);
-        this.entity = painting;
     }
 
     @Override

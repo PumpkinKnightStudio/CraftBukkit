@@ -1,7 +1,8 @@
 package org.bukkit.block.banner;
 
 import junit.framework.Assert;
-import net.minecraft.server.EnumBannerPatternType;
+import net.minecraft.core.IRegistry;
+import net.minecraft.world.level.block.entity.EnumBannerPatternType;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
 
@@ -9,10 +10,10 @@ public class PatternTypeTest extends AbstractTestingBase {
 
     @Test
     public void testToBukkit() {
-        for (EnumBannerPatternType nms : EnumBannerPatternType.values()) {
-            PatternType bukkit = PatternType.getByIdentifier(nms.b());
+        for (EnumBannerPatternType nms : IRegistry.BANNER_PATTERN) {
+            PatternType bukkit = PatternType.getByIdentifier(nms.getHashname());
 
-            Assert.assertNotNull("No Bukkit banner for " + nms + " " + nms.b(), bukkit);
+            Assert.assertNotNull("No Bukkit banner for " + nms + " " + nms.getHashname(), bukkit);
         }
     }
 
@@ -20,8 +21,8 @@ public class PatternTypeTest extends AbstractTestingBase {
     public void testToNMS() {
         for (PatternType bukkit : PatternType.values()) {
             EnumBannerPatternType found = null;
-            for (EnumBannerPatternType nms : EnumBannerPatternType.values()) {
-                if (bukkit.getIdentifier().equals(nms.b())) {
+            for (EnumBannerPatternType nms : IRegistry.BANNER_PATTERN) {
+                if (bukkit.getIdentifier().equals(nms.getHashname())) {
                     found = nms;
                     break;
                 }

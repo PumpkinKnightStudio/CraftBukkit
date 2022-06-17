@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityCreeper;
+import net.minecraft.world.entity.monster.EntityCreeper;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
@@ -20,36 +20,43 @@ public class CraftCreeper extends CraftMonster implements Creeper {
 
     @Override
     public void setPowered(boolean powered) {
-        CraftServer server = this.server;
-        Creeper entity = (Creeper) this.getHandle().getBukkitEntity();
+        CreeperPowerEvent.PowerCause cause = powered ? CreeperPowerEvent.PowerCause.SET_ON : CreeperPowerEvent.PowerCause.SET_OFF;
 
-        if (powered) {
-            CreeperPowerEvent event = new CreeperPowerEvent(entity, CreeperPowerEvent.PowerCause.SET_ON);
-            server.getPluginManager().callEvent(event);
-
-            if (!event.isCancelled()) {
-                getHandle().setPowered(true);
-            }
-        } else {
-            CreeperPowerEvent event = new CreeperPowerEvent(entity, CreeperPowerEvent.PowerCause.SET_OFF);
-            server.getPluginManager().callEvent(event);
-
-            if (!event.isCancelled()) {
-                getHandle().setPowered(false);
-            }
+        // only call event when we are not in world generation
+        if (getHandle().generation || !callPowerEvent(cause)) {
+            getHandle().setPowered(powered);
         }
+    }
+
+    private boolean callPowerEvent(CreeperPowerEvent.PowerCause cause) {
+        CreeperPowerEvent event = new CreeperPowerEvent((Creeper) getHandle().getBukkitEntity(), cause);
+        server.getPluginManager().callEvent(event);
+        return event.isCancelled();
     }
 
     @Override
     public void setMaxFuseTicks(int ticks) {
         Preconditions.checkArgument(ticks >= 0, "ticks < 0");
 
-        getHandle().maxFuseTicks = ticks;
+        getHandle().maxSwell = ticks;
     }
 
     @Override
     public int getMaxFuseTicks() {
-        return getHandle().maxFuseTicks;
+        return getHandle().maxSwell;
+    }
+
+    @Override
+    public void setFuseTicks(int ticks) {
+        Preconditions.checkArgument(ticks >= 0, "ticks < 0");
+        Preconditions.checkArgument(ticks <= getMaxFuseTicks(), "ticks > maxFuseTicks");
+
+        getHandle().swell = ticks;
+    }
+
+    @Override
+    public int getFuseTicks() {
+        return getHandle().swell;
     }
 
     @Override
@@ -66,7 +73,7 @@ public class CraftCreeper extends CraftMonster implements Creeper {
 
     @Override
     public void explode() {
-        getHandle().explode();
+        getHandle().explodeCreeper();
     }
 
     @Override

@@ -1,17 +1,15 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityHanging;
-import net.minecraft.server.EntityItemFrame;
-import net.minecraft.server.EnumDirection;
-import net.minecraft.server.ItemStack;
-import net.minecraft.server.WorldServer;
+import net.minecraft.core.EnumDirection;
+import net.minecraft.network.syncher.DataWatcher;
+import net.minecraft.world.entity.decoration.EntityHanging;
+import net.minecraft.world.entity.decoration.EntityItemFrame;
+import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Rotation;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
@@ -28,8 +26,10 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         EnumDirection oldDir = hanging.getDirection();
         EnumDirection newDir = CraftBlock.blockFaceToNotch(face);
 
+        Preconditions.checkArgument(newDir != null, "%s is not a valid facing direction", face);
+
         getHandle().setDirection(newDir);
-        if (!force && !hanging.survives()) {
+        if (!force && !getHandle().generation && !hanging.survives()) {
             hanging.setDirection(oldDir);
             return false;
         }
@@ -39,20 +39,19 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         return true;
     }
 
-    private void update() {
-        EntityItemFrame old = this.getHandle();
+    @Override
+    protected void update() {
+        super.update();
 
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        BlockPosition position = old.getBlockPosition();
-        EnumDirection direction = old.getDirection();
-        ItemStack item = old.getItem() != null ? old.getItem().cloneItemStack() : null;
+        // mark dirty, so that the client gets updated with item and rotation
+        for (DataWatcher.Item<?> dataItem : getHandle().getEntityData().getAll()) {
+            getHandle().getEntityData().markDirty(dataItem.getAccessor());
+        }
 
-        old.die();
-
-        EntityItemFrame frame = new EntityItemFrame(world, position, direction);
-        frame.setItem(item);
-        world.addEntity(frame);
-        this.entity = frame;
+        // update redstone
+        if (!getHandle().generation) {
+            getHandle().getLevel().updateNeighbourForOutputSignal(getHandle().pos, Blocks.AIR);
+        }
     }
 
     @Override
@@ -62,7 +61,8 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setItem(org.bukkit.inventory.ItemStack item, boolean playSound) {
-        getHandle().setItem(CraftItemStack.asNMSCopy(item), true, playSound);
+        // only updated redstone and play sound when it is not in generation
+        getHandle().setItem(CraftItemStack.asNMSCopy(item), !getHandle().generation, !getHandle().generation && playSound);
     }
 
     @Override
@@ -72,13 +72,13 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public float getItemDropChance() {
-        return getHandle().itemDropChance;
+        return getHandle().dropChance;
     }
 
     @Override
     public void setItemDropChance(float chance) {
         Preconditions.checkArgument(0.0 <= chance && chance <= 1.0, "Chance outside range [0, 1]");
-        getHandle().itemDropChance = chance;
+        getHandle().dropChance = chance;
     }
 
     @Override

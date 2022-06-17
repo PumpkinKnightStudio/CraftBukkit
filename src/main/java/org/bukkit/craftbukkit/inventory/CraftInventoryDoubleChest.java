@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.server.BlockChest;
-import net.minecraft.server.ITileInventory;
-import net.minecraft.server.InventoryLargeChest;
+import net.minecraft.world.ITileInventory;
+import net.minecraft.world.InventoryLargeChest;
+import net.minecraft.world.level.block.BlockChest;
 import org.bukkit.Location;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.DoubleChestInventory;
@@ -17,21 +17,21 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
     public CraftInventoryDoubleChest(BlockChest.DoubleInventory block) {
         super(block.inventorylargechest);
         this.tile = block;
-        this.left = new CraftInventory(block.inventorylargechest.left);
-        this.right = new CraftInventory(block.inventorylargechest.right);
+        this.left = new CraftInventory(block.inventorylargechest.container1);
+        this.right = new CraftInventory(block.inventorylargechest.container2);
     }
 
     public CraftInventoryDoubleChest(InventoryLargeChest largeChest) {
         super(largeChest);
-        if (largeChest.left instanceof InventoryLargeChest) {
-            left = new CraftInventoryDoubleChest((InventoryLargeChest) largeChest.left);
+        if (largeChest.container1 instanceof InventoryLargeChest) {
+            left = new CraftInventoryDoubleChest((InventoryLargeChest) largeChest.container1);
         } else {
-            left = new CraftInventory(largeChest.left);
+            left = new CraftInventory(largeChest.container1);
         }
-        if (largeChest.right instanceof InventoryLargeChest) {
-            right = new CraftInventoryDoubleChest((InventoryLargeChest) largeChest.right);
+        if (largeChest.container2 instanceof InventoryLargeChest) {
+            right = new CraftInventoryDoubleChest((InventoryLargeChest) largeChest.container2);
         } else {
-            right = new CraftInventory(largeChest.right);
+            right = new CraftInventory(largeChest.container2);
         }
     }
 
@@ -47,8 +47,8 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
 
     @Override
     public void setContents(ItemStack[] items) {
-        if (getInventory().getSize() < items.length) {
-            throw new IllegalArgumentException("Invalid inventory size; expected " + getInventory().getSize() + " or less");
+        if (getInventory().getContainerSize() < items.length) {
+            throw new IllegalArgumentException("Invalid inventory size; expected " + getInventory().getContainerSize() + " or less");
         }
         ItemStack[] leftItems = new ItemStack[left.getSize()], rightItems = new ItemStack[right.getSize()];
         System.arraycopy(items, 0, leftItems, 0, Math.min(left.getSize(), items.length));

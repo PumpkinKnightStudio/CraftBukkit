@@ -5,16 +5,16 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftBed extends CraftBlockData implements Bed {
 
-    private static final net.minecraft.server.BlockStateEnum<?> PART = getEnum("part");
-    private static final net.minecraft.server.BlockStateBoolean OCCUPIED = getBoolean("occupied");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateEnum<?> PART = getEnum("part");
+    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean OCCUPIED = getBoolean("occupied");
 
     @Override
-    public Part getPart() {
-        return get(PART, Part.class);
+    public org.bukkit.block.data.type.Bed.Part getPart() {
+        return get(PART, org.bukkit.block.data.type.Bed.Part.class);
     }
 
     @Override
-    public void setPart(Part part) {
+    public void setPart(org.bukkit.block.data.type.Bed.Part part) {
         set(PART, part);
     }
 

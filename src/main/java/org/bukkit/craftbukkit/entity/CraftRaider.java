@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityRaider;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.raid.EntityRaider;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -26,7 +26,7 @@ public abstract class CraftRaider extends CraftMonster implements Raider {
 
     @Override
     public Block getPatrolTarget() {
-        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at(getHandle().world, getHandle().getPatrolTarget());
+        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at(getHandle().level, getHandle().getPatrolTarget());
     }
 
     @Override
@@ -52,7 +52,7 @@ public abstract class CraftRaider extends CraftMonster implements Raider {
 
     @Override
     public boolean isCanJoinRaid() {
-        return getHandle().isCanJoinRaid();
+        return getHandle().canJoinRaid();
     }
 
     @Override

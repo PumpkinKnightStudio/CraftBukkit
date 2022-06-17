@@ -3,37 +3,34 @@ package org.bukkit.craftbukkit.block;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TileEntitySkull;
+import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
-import org.bukkit.block.Block;
+import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
+import org.bukkit.profile.PlayerProfile;
 
 public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implements Skull {
 
     private static final int MAX_OWNER_LENGTH = 16;
     private GameProfile profile;
 
-    public CraftSkull(final Block block) {
-        super(block, TileEntitySkull.class);
-    }
-
-    public CraftSkull(final Material material, final TileEntitySkull te) {
-        super(material, te);
+    public CraftSkull(World world, TileEntitySkull tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
     public void load(TileEntitySkull skull) {
         super.load(skull);
 
-        profile = skull.gameProfile;
+        profile = skull.owner;
     }
 
     static int getSkullType(SkullType type) {
@@ -70,7 +67,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             return false;
         }
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+        GameProfile profile = MinecraftServer.getServer().getProfileCache().get(name).orElse(null);
         if (profile == null) {
             return false;
         }
@@ -102,6 +99,24 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             this.profile = ((CraftPlayer) player).getProfile();
         } else {
             this.profile = new GameProfile(player.getUniqueId(), player.getName());
+        }
+    }
+
+    @Override
+    public PlayerProfile getOwnerProfile() {
+        if (!hasOwner()) {
+            return null;
+        }
+
+        return new CraftPlayerProfile(profile);
+    }
+
+    @Override
+    public void setOwnerProfile(PlayerProfile profile) {
+        if (profile == null) {
+            this.profile = null;
+        } else {
+            this.profile = CraftPlayerProfile.validateSkullProfile(((CraftPlayerProfile) profile).buildGameProfile());
         }
     }
 
@@ -158,7 +173,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
         super.applyTo(skull);
 
         if (getSkullType() == SkullType.PLAYER) {
-            skull.setGameProfile(profile);
+            skull.setOwner(profile);
         }
     }
 }

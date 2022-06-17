@@ -1,5 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.IRegistry;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Item;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -122,6 +129,7 @@ public final class CraftItemFactory implements ItemFactory {
         case YELLOW_BANNER:
         case YELLOW_WALL_BANNER:
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
+        case AXOLOTL_SPAWN_EGG:
         case BAT_SPAWN_EGG:
         case BEE_SPAWN_EGG:
         case BLAZE_SPAWN_EGG:
@@ -140,6 +148,8 @@ public final class CraftItemFactory implements ItemFactory {
         case EVOKER_SPAWN_EGG:
         case FOX_SPAWN_EGG:
         case GHAST_SPAWN_EGG:
+        case GLOW_SQUID_SPAWN_EGG:
+        case GOAT_SPAWN_EGG:
         case GUARDIAN_SPAWN_EGG:
         case HOGLIN_SPAWN_EGG:
         case HORSE_SPAWN_EGG:
@@ -152,6 +162,7 @@ public final class CraftItemFactory implements ItemFactory {
         case PANDA_SPAWN_EGG:
         case PARROT_SPAWN_EGG:
         case PHANTOM_SPAWN_EGG:
+        case PIGLIN_BRUTE_SPAWN_EGG:
         case PIGLIN_SPAWN_EGG:
         case PIG_SPAWN_EGG:
         case PILLAGER_SPAWN_EGG:
@@ -206,6 +217,8 @@ public final class CraftItemFactory implements ItemFactory {
         case DARK_OAK_WALL_SIGN:
         case JUNGLE_SIGN:
         case JUNGLE_WALL_SIGN:
+        case MANGROVE_SIGN:
+        case MANGROVE_WALL_SIGN:
         case OAK_SIGN:
         case OAK_WALL_SIGN:
         case SPRUCE_SIGN:
@@ -252,9 +265,14 @@ public final class CraftItemFactory implements ItemFactory {
         case SMOKER:
         case BEEHIVE:
         case BEE_NEST:
+        case SCULK_CATALYST:
+        case SCULK_SHRIEKER:
+        case SCULK_SENSOR:
             return new CraftMetaBlockState(meta, material);
         case TROPICAL_FISH_BUCKET:
             return meta instanceof CraftMetaTropicalFishBucket ? meta : new CraftMetaTropicalFishBucket(meta);
+        case AXOLOTL_BUCKET:
+            return meta instanceof CraftMetaAxolotlBucket ? meta : new CraftMetaAxolotlBucket(meta);
         case CROSSBOW:
             return meta instanceof CraftMetaCrossbow ? meta : new CraftMetaCrossbow(meta);
         case SUSPICIOUS_STEW:
@@ -263,10 +281,13 @@ public final class CraftItemFactory implements ItemFactory {
         case PUFFERFISH_BUCKET:
         case SALMON_BUCKET:
         case ITEM_FRAME:
+        case GLOW_ITEM_FRAME:
         case PAINTING:
             return meta instanceof CraftMetaEntityTag ? meta : new CraftMetaEntityTag(meta);
         case COMPASS:
             return meta instanceof CraftMetaCompass ? meta : new CraftMetaCompass(meta);
+        case BUNDLE:
+            return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
         default:
             return new CraftMetaItem(meta);
         }
@@ -328,6 +349,25 @@ public final class CraftItemFactory implements ItemFactory {
     @Override
     public Color getDefaultLeatherColor() {
         return DEFAULT_LEATHER_COLOR;
+    }
+
+    @Override
+    public ItemStack createItemStack(String input) throws IllegalArgumentException {
+        try {
+            ArgumentParserItemStack.a arg = ArgumentParserItemStack.parseForItem(HolderLookup.forRegistry(IRegistry.ITEM), new StringReader(input));
+
+            Item item = arg.item().value();
+            net.minecraft.world.item.ItemStack nmsItemStack = new net.minecraft.world.item.ItemStack(item);
+
+            NBTTagCompound nbt = arg.nbt();
+            if (nbt != null) {
+                nmsItemStack.setTag(nbt);
+            }
+
+            return CraftItemStack.asCraftMirror(nmsItemStack);
+        } catch (CommandSyntaxException ex) {
+            throw new IllegalArgumentException("Could not parse ItemStack: " + input, ex);
+        }
     }
 
     @Override

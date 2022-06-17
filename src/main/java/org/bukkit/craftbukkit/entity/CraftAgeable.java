@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntityAgeable;
+import net.minecraft.world.entity.EntityAgeable;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Ageable;
 
@@ -16,7 +16,7 @@ public class CraftAgeable extends CraftCreature implements Ageable {
 
     @Override
     public void setAge(int age) {
-        getHandle().setAgeRaw(age);
+        getHandle().setAge(age);
     }
 
     @Override

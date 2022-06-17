@@ -2,10 +2,11 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
-import net.minecraft.server.NBTBase;
-import net.minecraft.server.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaEntityTag extends CraftMetaItem {
@@ -27,8 +28,8 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     CraftMetaEntityTag(NBTTagCompound tag) {
         super(tag);
 
-        if (tag.hasKey(ENTITY_TAG.NBT)) {
-            entityTag = tag.getCompound(ENTITY_TAG.NBT);
+        if (tag.contains(ENTITY_TAG.NBT)) {
+            entityTag = tag.getCompound(ENTITY_TAG.NBT).copy();
         }
     }
 
@@ -40,7 +41,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     void deserializeInternal(NBTTagCompound tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.hasKey(ENTITY_TAG.NBT)) {
+        if (tag.contains(ENTITY_TAG.NBT)) {
             entityTag = tag.getCompound(ENTITY_TAG.NBT);
         }
     }
@@ -57,7 +58,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
         super.applyToItem(tag);
 
         if (entityTag != null) {
-            tag.set(ENTITY_TAG.NBT, entityTag);
+            tag.put(ENTITY_TAG.NBT, entityTag);
         }
     }
 
@@ -68,6 +69,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
             case PUFFERFISH_BUCKET:
             case SALMON_BUCKET:
             case ITEM_FRAME:
+            case GLOW_ITEM_FRAME:
             case PAINTING:
                 return true;
             default:
@@ -126,7 +128,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
         CraftMetaEntityTag clone = (CraftMetaEntityTag) super.clone();
 
         if (entityTag != null) {
-            clone.entityTag = entityTag.clone();
+            clone.entityTag = entityTag.copy();
         }
 
         return clone;

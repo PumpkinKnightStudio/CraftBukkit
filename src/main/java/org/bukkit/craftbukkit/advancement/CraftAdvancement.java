@@ -2,8 +2,9 @@ package org.bukkit.craftbukkit.advancement;
 
 import java.util.Collection;
 import java.util.Collections;
-import net.minecraft.server.Advancement;
+import net.minecraft.advancements.Advancement;
 import org.bukkit.NamespacedKey;
+import org.bukkit.advancement.AdvancementDisplay;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftAdvancement implements org.bukkit.advancement.Advancement {
@@ -20,11 +21,20 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 
     @Override
     public NamespacedKey getKey() {
-        return CraftNamespacedKey.fromMinecraft(handle.getName());
+        return CraftNamespacedKey.fromMinecraft(handle.getId());
     }
 
     @Override
     public Collection<String> getCriteria() {
         return Collections.unmodifiableCollection(handle.getCriteria().keySet());
+    }
+
+    @Override
+    public AdvancementDisplay getDisplay() {
+        if (handle.getDisplay() == null) {
+            return null;
+        }
+
+        return new CraftAdvancementDisplay(handle.getDisplay());
     }
 }

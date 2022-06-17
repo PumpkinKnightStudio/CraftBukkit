@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.BlockPosition;
-import net.minecraft.server.EntityEnderCrystal;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.world.entity.boss.enderdragon.EntityEnderCrystal;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EnderCrystal;
@@ -14,12 +14,12 @@ public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
 
     @Override
     public boolean isShowingBottom() {
-        return getHandle().isShowingBottom();
+        return getHandle().showsBottom();
     }
 
     @Override
     public void setShowingBottom(boolean showing) {
-        getHandle().setShowingBottom(showing);
+        getHandle().setShowBottom(showing);
     }
 
     @Override

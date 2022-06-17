@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.server.EntitySheep;
-import net.minecraft.server.EnumColor;
+import net.minecraft.world.entity.animal.EntitySheep;
+import net.minecraft.world.item.EnumColor;
 import org.bukkit.DyeColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -14,12 +14,12 @@ public class CraftSheep extends CraftAnimals implements Sheep {
 
     @Override
     public DyeColor getColor() {
-        return DyeColor.getByWoolData((byte) getHandle().getColor().getColorIndex());
+        return DyeColor.getByWoolData((byte) getHandle().getColor().getId());
     }
 
     @Override
     public void setColor(DyeColor color) {
-        getHandle().setColor(EnumColor.fromColorIndex(color.getWoolData()));
+        getHandle().setColor(EnumColor.byId(color.getWoolData()));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.EntityStrider;
+import net.minecraft.world.entity.monster.EntityStrider;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -15,51 +15,51 @@ public class CraftStrider extends CraftAnimals implements Strider {
 
     @Override
     public boolean isShivering() {
-        return getHandle().isShivering();
+        return getHandle().isSuffocating();
     }
 
     @Override
     public void setShivering(boolean shivering) {
-        this.getHandle().setShivering(shivering);
+        this.getHandle().setSuffocating(shivering);
     }
 
     @Override
     public boolean hasSaddle() {
-        return getHandle().hasSaddle();
+        return getHandle().isSaddled();
     }
 
     @Override
     public void setSaddle(boolean saddled) {
-        getHandle().saddleStorage.setSaddle(saddled);
+        getHandle().steering.setSaddle(saddled);
     }
 
     @Override
     public int getBoostTicks() {
-        return getHandle().saddleStorage.boosting ? getHandle().saddleStorage.boostTicks : 0;
+        return getHandle().steering.boosting ? getHandle().steering.boostTimeTotal : 0;
     }
 
     @Override
     public void setBoostTicks(int ticks) {
         Preconditions.checkArgument(ticks >= 0, "ticks must be >= 0");
 
-        getHandle().saddleStorage.setBoostTicks(ticks);
+        getHandle().steering.setBoostTicks(ticks);
     }
 
     @Override
     public int getCurrentBoostTicks() {
-        return getHandle().saddleStorage.boosting ? getHandle().saddleStorage.currentBoostTicks : 0;
+        return getHandle().steering.boosting ? getHandle().steering.boostTime : 0;
     }
 
     @Override
     public void setCurrentBoostTicks(int ticks) {
-        if (!getHandle().saddleStorage.boosting) {
+        if (!getHandle().steering.boosting) {
             return;
         }
 
-        int max = getHandle().saddleStorage.boostTicks;
+        int max = getHandle().steering.boostTimeTotal;
         Preconditions.checkArgument(ticks >= 0 && ticks <= max, "boost ticks must not exceed 0 or %d (inclusive)", max);
 
-        this.getHandle().saddleStorage.currentBoostTicks = ticks;
+        this.getHandle().steering.boostTime = ticks;
     }
 
     @Override

@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.server.AdvancementDataPlayer;
-import net.minecraft.server.CriterionProgress;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 
@@ -13,9 +13,9 @@ public class CraftAdvancementProgress implements AdvancementProgress {
 
     private final CraftAdvancement advancement;
     private final AdvancementDataPlayer playerData;
-    private final net.minecraft.server.AdvancementProgress handle;
+    private final net.minecraft.advancements.AdvancementProgress handle;
 
-    public CraftAdvancementProgress(CraftAdvancement advancement, AdvancementDataPlayer player, net.minecraft.server.AdvancementProgress handle) {
+    public CraftAdvancementProgress(CraftAdvancement advancement, AdvancementDataPlayer player, net.minecraft.advancements.AdvancementProgress handle) {
         this.advancement = advancement;
         this.playerData = player;
         this.handle = handle;
@@ -33,18 +33,18 @@ public class CraftAdvancementProgress implements AdvancementProgress {
 
     @Override
     public boolean awardCriteria(String criteria) {
-        return playerData.grantCriteria(advancement.getHandle(), criteria);
+        return playerData.award(advancement.getHandle(), criteria);
     }
 
     @Override
     public boolean revokeCriteria(String criteria) {
-        return playerData.revokeCritera(advancement.getHandle(), criteria);
+        return playerData.revoke(advancement.getHandle(), criteria);
     }
 
     @Override
     public Date getDateAwarded(String criteria) {
-        CriterionProgress criterion = handle.getCriterionProgress(criteria);
-        return (criterion == null) ? null : criterion.getDate();
+        CriterionProgress criterion = handle.getCriterion(criteria);
+        return (criterion == null) ? null : criterion.getObtained();
     }
 
     @Override
@@ -54,6 +54,6 @@ public class CraftAdvancementProgress implements AdvancementProgress {
 
     @Override
     public Collection<String> getAwardedCriteria() {
-        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getAwardedCriteria()));
+        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getCompletedCriteria()));
     }
 }

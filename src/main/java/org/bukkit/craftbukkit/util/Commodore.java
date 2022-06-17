@@ -128,7 +128,7 @@ public class Commodore
         ClassReader cr = new ClassReader( b );
         ClassWriter cw = new ClassWriter( cr, 0 );
 
-        cr.accept( new ClassVisitor( Opcodes.ASM8, cw )
+        cr.accept( new ClassVisitor( Opcodes.ASM9, cw )
         {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions)
@@ -146,6 +146,39 @@ public class Commodore
                                 case "NETHER":
                                     super.visitFieldInsn( opcode, owner, "NETHER_WASTES", desc );
                                     return;
+                                case "TALL_BIRCH_FOREST":
+                                    super.visitFieldInsn( opcode, owner, "OLD_GROWTH_BIRCH_FOREST", desc );
+                                    return;
+                                case "GIANT_TREE_TAIGA":
+                                    super.visitFieldInsn( opcode, owner, "OLD_GROWTH_PINE_TAIGA", desc );
+                                    return;
+                                case "GIANT_SPRUCE_TAIGA":
+                                    super.visitFieldInsn( opcode, owner, "OLD_GROWTH_SPRUCE_TAIGA", desc );
+                                    return;
+                                case "SNOWY_TUNDRA":
+                                    super.visitFieldInsn( opcode, owner, "SNOWY_PLAINS", desc );
+                                    return;
+                                case "JUNGLE_EDGE":
+                                    super.visitFieldInsn( opcode, owner, "SPARSE_JUNGLE", desc );
+                                    return;
+                                case "STONE_SHORE":
+                                    super.visitFieldInsn( opcode, owner, "STONY_SHORE", desc );
+                                    return;
+                                case "MOUNTAINS":
+                                    super.visitFieldInsn( opcode, owner, "WINDSWEPT_HILLS", desc );
+                                    return;
+                                case "WOODED_MOUNTAINS":
+                                    super.visitFieldInsn( opcode, owner, "WINDSWEPT_FOREST", desc );
+                                    return;
+                                case "GRAVELLY_MOUNTAINS":
+                                    super.visitFieldInsn( opcode, owner, "WINDSWEPT_GRAVELLY_HILLS", desc );
+                                    return;
+                                case "SHATTERED_SAVANNA":
+                                    super.visitFieldInsn( opcode, owner, "WINDSWEPT_SAVANNA", desc );
+                                    return;
+                                case "WOODED_BADLANDS_PLATEAU":
+                                    super.visitFieldInsn( opcode, owner, "WOODED_BADLANDS", desc );
+                                    return;
                             }
                         }
 
@@ -154,6 +187,16 @@ public class Commodore
                             switch ( name )
                             {
                                 case "PIG_ZOMBIE":
+                                    super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
+                                    return;
+                            }
+                        }
+
+                        if ( owner.equals( "org/bukkit/loot/LootTables" ) )
+                        {
+                            switch ( name )
+                            {
+                                case "ZOMBIE_PIGMAN":
                                     super.visitFieldInsn( opcode, owner, "ZOMBIFIED_PIGLIN", desc );
                                     return;
                             }
@@ -182,6 +225,9 @@ public class Commodore
                                         break;
                                     case "ZOMBIE_PIGMAN_SPAWN_EGG":
                                         name = "ZOMBIFIED_PIGLIN_SPAWN_EGG";
+                                        break;
+                                    case "GRASS_PATH":
+                                        name = "DIRT_PATH";
                                         break;
                                 }
                             }
@@ -344,6 +390,18 @@ public class Commodore
                         }
 
                         super.visitMethodInsn( opcode, owner, name, desc, itf );
+                    }
+
+                    @Override
+                    public void visitLdcInsn(Object value)
+                    {
+                        if ( value instanceof String && ( (String) value ).equals( "com.mysql.jdbc.Driver" ) )
+                        {
+                            super.visitLdcInsn( "com.mysql.cj.jdbc.Driver" );
+                            return;
+                        }
+
+                        super.visitLdcInsn( value );
                     }
                 };
             }

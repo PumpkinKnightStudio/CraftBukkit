@@ -2,8 +2,8 @@ package org.bukkit.craftbukkit.scoreboard;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.server.IScoreboardCriteria;
-import net.minecraft.server.ScoreboardObjective;
+import net.minecraft.world.scores.ScoreboardObjective;
+import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 
 final class CraftCriteria {
     static final Map<String, CraftCriteria> DEFAULTS;
@@ -12,9 +12,9 @@ final class CraftCriteria {
     static {
         ImmutableMap.Builder<String, CraftCriteria> defaults = ImmutableMap.builder();
 
-        for (Map.Entry<?, ?> entry : ((Map<?, ?>) IScoreboardCriteria.criteria).entrySet()) {
-            String name = entry.getKey().toString();
-            IScoreboardCriteria criteria = (IScoreboardCriteria) entry.getValue();
+        for (Map.Entry<String, IScoreboardCriteria> entry : IScoreboardCriteria.CRITERIA_CACHE.entrySet()) {
+            String name = entry.getKey();
+            IScoreboardCriteria criteria = entry.getValue();
 
             defaults.put(name, new CraftCriteria(criteria));
         }

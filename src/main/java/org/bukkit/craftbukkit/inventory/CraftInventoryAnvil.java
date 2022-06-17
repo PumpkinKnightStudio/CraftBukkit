@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.ContainerAnvil;
-import net.minecraft.server.IInventory;
+import net.minecraft.world.IInventory;
+import net.minecraft.world.inventory.ContainerAnvil;
 import org.bukkit.Location;
 import org.bukkit.inventory.AnvilInventory;
 
@@ -24,17 +24,27 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
 
     @Override
     public String getRenameText() {
-        return container.renameText;
+        return container.itemName;
+    }
+
+    @Override
+    public int getRepairCostAmount() {
+        return container.repairItemCountCost;
+    }
+
+    @Override
+    public void setRepairCostAmount(int amount) {
+        container.repairItemCountCost = amount;
     }
 
     @Override
     public int getRepairCost() {
-        return container.levelCost.get();
+        return container.cost.get();
     }
 
     @Override
     public void setRepairCost(int i) {
-        container.levelCost.set(i);
+        container.cost.set(i);
     }
 
     @Override

@@ -1,15 +1,14 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.server.ChatComponentText;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.IChatBaseComponent;
-import net.minecraft.server.IMerchant;
-import net.minecraft.server.ItemStack;
-import net.minecraft.server.MerchantRecipe;
-import net.minecraft.server.MerchantRecipeList;
-import net.minecraft.server.SoundEffect;
-import net.minecraft.server.SoundEffects;
-import net.minecraft.server.World;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.sounds.SoundEffect;
+import net.minecraft.sounds.SoundEffects;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.IMerchant;
+import net.minecraft.world.item.trading.MerchantRecipe;
+import net.minecraft.world.item.trading.MerchantRecipeList;
+import net.minecraft.world.level.World;
 import org.apache.commons.lang.Validate;
 
 public class CraftMerchantCustom extends CraftMerchant {
@@ -39,7 +38,7 @@ public class CraftMerchantCustom extends CraftMerchant {
 
         public MinecraftMerchant(String title) {
             Validate.notNull(title, "Title cannot be null");
-            this.title = new ChatComponentText(title);
+            this.title = IChatBaseComponent.literal(title);
         }
 
         @Override
@@ -51,12 +50,12 @@ public class CraftMerchantCustom extends CraftMerchant {
         public void setTradingPlayer(EntityHuman entityhuman) {
             this.tradingPlayer = entityhuman;
             if (entityhuman != null) {
-                this.tradingWorld = entityhuman.world;
+                this.tradingWorld = entityhuman.level;
             }
         }
 
         @Override
-        public EntityHuman getTrader() {
+        public EntityHuman getTradingPlayer() {
             return this.tradingPlayer;
         }
 
@@ -66,13 +65,13 @@ public class CraftMerchantCustom extends CraftMerchant {
         }
 
         @Override
-        public void a(MerchantRecipe merchantrecipe) {
+        public void notifyTrade(MerchantRecipe merchantrecipe) {
             // increase recipe's uses
             merchantrecipe.increaseUses();
         }
 
         @Override
-        public void k(ItemStack itemstack) {
+        public void notifyTradeUpdated(ItemStack itemstack) {
         }
 
         public IChatBaseComponent getScoreboardDisplayName() {
@@ -80,27 +79,31 @@ public class CraftMerchantCustom extends CraftMerchant {
         }
 
         @Override
-        public World getWorld() {
-            return this.tradingWorld;
-        }
-
-        @Override
-        public int getExperience() {
+        public int getVillagerXp() {
             return 0; // xp
         }
 
         @Override
-        public void setForcedExperience(int i) {
+        public void overrideXp(int i) {
         }
 
         @Override
-        public boolean isRegularVillager() {
+        public boolean showProgressBar() {
             return false; // is-regular-villager flag (hides some gui elements: xp bar, name suffix)
         }
 
         @Override
-        public SoundEffect getTradeSound() {
-            return SoundEffects.ENTITY_VILLAGER_YES;
+        public SoundEffect getNotifyTradeSound() {
+            return SoundEffects.VILLAGER_YES;
+        }
+
+        @Override
+        public void overrideOffers(MerchantRecipeList merchantrecipelist) {
+        }
+
+        @Override
+        public boolean isClientSide() {
+            return false;
         }
     }
 }

@@ -1,21 +1,23 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.server.BlockFurnace;
-import net.minecraft.server.TileEntityFurnace;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+import net.minecraft.resources.MinecraftKey;
+import net.minecraft.world.level.block.BlockFurnace;
+import net.minecraft.world.level.block.entity.TileEntityFurnace;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.block.Furnace;
 import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Recipe;
 
 public abstract class CraftFurnace<T extends TileEntityFurnace> extends CraftContainer<T> implements Furnace {
 
-    public CraftFurnace(Block block, Class<T> tileEntityClass) {
-        super(block, tileEntityClass);
-    }
-
-    public CraftFurnace(final Material material, final T te) {
-        super(material, te);
+    public CraftFurnace(World world, T tileEntity) {
+        super(world, tileEntity);
     }
 
     @Override
@@ -34,33 +36,46 @@ public abstract class CraftFurnace<T extends TileEntityFurnace> extends CraftCon
 
     @Override
     public short getBurnTime() {
-        return (short) this.getSnapshot().burnTime;
+        return (short) this.getSnapshot().litTime;
     }
 
     @Override
     public void setBurnTime(short burnTime) {
-        this.getSnapshot().burnTime = burnTime;
+        this.getSnapshot().litTime = burnTime;
         // SPIGOT-844: Allow lighting and relighting using this API
-        this.data = this.data.set(BlockFurnace.LIT, burnTime > 0);
+        this.data = this.data.setValue(BlockFurnace.LIT, burnTime > 0);
     }
 
     @Override
     public short getCookTime() {
-        return (short) this.getSnapshot().cookTime;
+        return (short) this.getSnapshot().cookingProgress;
     }
 
     @Override
     public void setCookTime(short cookTime) {
-        this.getSnapshot().cookTime = cookTime;
+        this.getSnapshot().cookingProgress = cookTime;
     }
 
     @Override
     public int getCookTimeTotal() {
-        return this.getSnapshot().cookTimeTotal;
+        return this.getSnapshot().cookingTotalTime;
     }
 
     @Override
     public void setCookTimeTotal(int cookTimeTotal) {
-        this.getSnapshot().cookTimeTotal = cookTimeTotal;
+        this.getSnapshot().cookingTotalTime = cookTimeTotal;
+    }
+
+    @Override
+    public Map<CookingRecipe<?>, Integer> getRecipesUsed() {
+        ImmutableMap.Builder<CookingRecipe<?>, Integer> recipesUsed = ImmutableMap.builder();
+        for (Map.Entry<MinecraftKey, Integer> entrySet : this.getSnapshot().getRecipesUsed().object2IntEntrySet()) {
+            Recipe recipe = Bukkit.getRecipe(CraftNamespacedKey.fromMinecraft(entrySet.getKey()));
+            if (recipe instanceof CookingRecipe<?> cookingRecipe) {
+                recipesUsed.put(cookingRecipe, entrySet.getValue());
+            }
+        }
+
+        return recipesUsed.build();
     }
 }
