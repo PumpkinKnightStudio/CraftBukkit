@@ -86,10 +86,7 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
         TileEntity tileEntity = this.getTileEntityFromWorld();
         if (!(tileEntity instanceof TileEntityJukeBox)) return false;
 
-        TileEntityJukeBox jukebox = (TileEntityJukeBox) tileEntity;
-        boolean result = !jukebox.getRecord().isEmpty();
         CraftWorld world = (CraftWorld) this.getWorld();
-        ((BlockJukeBox) Blocks.JUKEBOX).dropRecording(world.getHandle(), getPosition());
-        return result;
+        return ((BlockJukeBox) Blocks.JUKEBOX).dropRecording(world.getHandle(), getPosition());
     }
 }

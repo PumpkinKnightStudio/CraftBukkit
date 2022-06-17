@@ -1,6 +1,39 @@
 --- a/net/minecraft/world/level/block/BlockJukeBox.java
 +++ b/net/minecraft/world/level/block/BlockJukeBox.java
-@@ -62,7 +62,13 @@
+@@ -25,6 +25,14 @@
+ import net.minecraft.world.level.gameevent.GameEvent;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
+ 
++// CraftBukkit start
++import net.minecraft.server.level.EntityPlayer;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.event.block.JukeboxDropRecordEvent;
++import org.bukkit.event.player.PlayerJukeboxInsertRecordEvent;
++// CraftBukkit end
++
+ public class BlockJukeBox extends BlockTileEntity {
+ 
+     public static final BlockStateBoolean HAS_RECORD = BlockProperties.HAS_RECORD;
+@@ -48,7 +56,11 @@
+     @Override
+     public EnumInteractionResult use(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman, EnumHand enumhand, MovingObjectPositionBlock movingobjectpositionblock) {
+         if ((Boolean) iblockdata.getValue(BlockJukeBox.HAS_RECORD)) {
+-            this.dropRecording(world, blockposition);
++            // CraftBukkit start
++            if(!this.dropRecording(world, blockposition)){
++                return EnumInteractionResult.PASS;
++            }
++            // CraftBukkit end
+             iblockdata = (IBlockData) iblockdata.setValue(BlockJukeBox.HAS_RECORD, false);
+             world.setBlock(blockposition, iblockdata, 2);
+             world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(entityhuman, iblockdata));
+@@ -58,17 +70,32 @@
+         }
+     }
+ 
+-    public void setRecord(@Nullable Entity entity, GeneratorAccess generatoraccess, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack) {
++    public boolean setRecord(@Nullable Entity entity, GeneratorAccess generatoraccess, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack) { // PAIL -> change return from void to boolean
          TileEntity tileentity = generatoraccess.getBlockEntity(blockposition);
  
          if (tileentity instanceof TileEntityJukeBox) {
@@ -10,8 +43,50 @@
 +            if (!itemstack.isEmpty()) {
 +                itemstack.setCount(1);
 +            }
++            if (entity instanceof EntityPlayer entityPlayer) {
++                PlayerJukeboxInsertRecordEvent playerJukeboxInsertRecordEvent = CraftEventFactory.callPlayerJukeboxInsertRecordEvent(entityPlayer, (TileEntityJukeBox) tileentity, itemstack);
++                if(playerJukeboxInsertRecordEvent.isCancelled()){
++                    return false;
++                }
++                itemstack = CraftItemStack.asNMSCopy(playerJukeboxInsertRecordEvent.getRecord());
++            }
 +            ((TileEntityJukeBox) tileentity).setRecord(itemstack);
 +            // CraftBukkit end
              generatoraccess.setBlock(blockposition, (IBlockData) iblockdata.setValue(BlockJukeBox.HAS_RECORD, true), 2);
              generatoraccess.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(entity, iblockdata));
++            return true; // CraftBukkit add return
          }
++        return false; // CraftBukkit add return
+     }
+ 
+-    public void dropRecording(World world, BlockPosition blockposition) {
++    public boolean dropRecording(World world, BlockPosition blockposition) { // PAIL -> change return from void to boolean
+         if (!world.isClientSide) {
+             TileEntity tileentity = world.getBlockEntity(blockposition);
+ 
+@@ -77,6 +104,13 @@
+                 ItemStack itemstack = tileentityjukebox.getRecord();
+ 
+                 if (!itemstack.isEmpty()) {
++                    // CraftBukkit start
++                    JukeboxDropRecordEvent jukeboxDropRecordEvent = CraftEventFactory.callJukeboxDropRecordEvent(world, blockposition, itemstack);
++                    if (jukeboxDropRecordEvent.isCancelled()) {
++                        return false;
++                    }
++                    itemstack = CraftItemStack.asNMSCopy(jukeboxDropRecordEvent.getRecord());
++                    // CraftBukkit end
+                     world.levelEvent(1010, blockposition, 0);
+                     tileentityjukebox.clearContent();
+                     float f = 0.7F;
+@@ -88,9 +122,11 @@
+ 
+                     entityitem.setDefaultPickUpDelay();
+                     world.addFreshEntity(entityitem);
++                    return true; // CraftBukkit add return statement
+                 }
+             }
+         }
++        return false; // CraftBukkit add return statement
+     }
+ 
+     @Override

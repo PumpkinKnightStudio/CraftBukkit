@@ -60,6 +60,7 @@ import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.entity.TileEntityJukeBox;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.properties.BlockPropertyInstrument;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -144,6 +145,7 @@ import org.bukkit.event.block.BlockShearEntityEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.FluidLevelChangeEvent;
+import org.bukkit.event.block.JukeboxDropRecordEvent;
 import org.bukkit.event.block.MoistureChangeEvent;
 import org.bukkit.event.block.NotePlayEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
@@ -211,6 +213,7 @@ import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
+import org.bukkit.event.player.PlayerJukeboxInsertRecordEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
@@ -290,6 +293,33 @@ public class CraftEventFactory {
         }
 
         return nmsBedResult;
+    }
+
+    /**
+     * Jukebox Insert Record Event
+     */
+    public static PlayerJukeboxInsertRecordEvent callPlayerJukeboxInsertRecordEvent(EntityPlayer entityPlayer, TileEntityJukeBox tileEntityJukeBox, ItemStack itemStack){
+        Player bukkitPlayer = entityPlayer.getBukkitEntity();
+        Block block = entityPlayer.getLevel().getWorld().getBlockAt(entityPlayer.getBukkitEntity().getLocation());
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(itemStack);
+
+        PlayerJukeboxInsertRecordEvent playerJukeboxInsertRecordEvent = new PlayerJukeboxInsertRecordEvent(bukkitPlayer, block, bukkitItem);
+        Bukkit.getPluginManager().callEvent(playerJukeboxInsertRecordEvent);
+
+        return playerJukeboxInsertRecordEvent;
+    }
+
+    /**
+     * Jukebox Drop Record Event
+     */
+    public static JukeboxDropRecordEvent callJukeboxDropRecordEvent(World world, BlockPosition blockPosition, ItemStack itemStack){
+        Block block = world.getWorld().getBlockAt(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
+        org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(itemStack);
+
+        JukeboxDropRecordEvent jukeboxDropRecordEvent = new JukeboxDropRecordEvent(block, bukkitItem);
+        Bukkit.getPluginManager().callEvent(jukeboxDropRecordEvent);
+
+        return jukeboxDropRecordEvent;
     }
 
     /**
