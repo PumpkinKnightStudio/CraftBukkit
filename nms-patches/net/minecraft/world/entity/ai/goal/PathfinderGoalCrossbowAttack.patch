@@ -11,12 +11,11 @@
                      ((ICrossbow) this.mob).setChargingCrossbow(false);
                  }
              } else if (this.crossbowState == PathfinderGoalCrossbowAttack.State.CHARGED) {
-@@ -131,8 +133,12 @@
+@@ -131,8 +133,11 @@
                  ((IRangedEntity) this.mob).performRangedAttack(entityliving, 1.0F);
                  ItemStack itemstack1 = this.mob.getItemInHand(ProjectileHelper.getWeaponHoldingHand(this.mob, Items.CROSSBOW));
  
-+                // CraftBukkit start - Check for projectiles actually being launched
-+                if (ItemCrossbow.getChargedProjectiles(itemstack1).isEmpty()) {
++                if (ItemCrossbow.getChargedProjectiles(itemstack1).isEmpty()) { // CraftBukkit start - Check for projectiles actually being launched
                  ItemCrossbow.setCharged(itemstack1, false);
                  this.crossbowState = PathfinderGoalCrossbowAttack.State.UNCHARGED;
 +                }
