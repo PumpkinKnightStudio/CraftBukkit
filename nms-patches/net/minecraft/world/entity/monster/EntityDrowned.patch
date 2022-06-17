@@ -6,7 +6,7 @@
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.entity.EntityFireTridentEvent;
++import org.bukkit.event.entity.EntityThrowTridentEvent;
 +// CraftBukkit end
 +
  public class EntityDrowned extends EntityZombie implements IRangedEntity {
@@ -28,7 +28,7 @@
  
          entitythrowntrident.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.level.getDifficulty().getId() * 4));
 +        // CraftBukkit start
-+        EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(this, trident, entitythrowntrident, 0.8f);
++        EntityThrowTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(this, trident, entitythrowntrident, 0.8f);
 +        if (entityFireTridentEvent.isCancelled()) {
 +            entityFireTridentEvent.getProjectile().remove();
 +            return;

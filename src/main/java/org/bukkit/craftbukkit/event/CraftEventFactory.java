@@ -165,7 +165,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
-import org.bukkit.event.entity.EntityFireTridentEvent;
 import org.bukkit.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
@@ -177,6 +176,7 @@ import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.EntityThrowTridentEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
@@ -192,7 +192,6 @@ import org.bukkit.event.entity.PigZapEvent;
 import org.bukkit.event.entity.PiglinBarterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PlayerLeashEntityEvent;
-import org.bukkit.event.entity.PlayerLoadCrossbowEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -310,12 +309,12 @@ public class CraftEventFactory {
     /**
      * Trident event
      */
-    public static EntityFireTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force) {
+    public static EntityThrowTridentEvent callEntityFireTridentEvent(EntityLiving entityLiving, ItemStack trident, EntityThrownTrident entityThrownTrident, float force) {
         LivingEntity bukkitLivingEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(trident);
         Trident bukkitTrident = (Trident) entityThrownTrident.getBukkitEntity();
 
-        EntityFireTridentEvent entityFireTridentEvent = new EntityFireTridentEvent(bukkitLivingEntity, bukkitItem, bukkitTrident, force);
+        EntityThrowTridentEvent entityFireTridentEvent = new EntityThrowTridentEvent(bukkitLivingEntity, bukkitItem, bukkitTrident, force);
         Bukkit.getPluginManager().callEvent(entityFireTridentEvent);
 
         return entityFireTridentEvent;
@@ -328,12 +327,7 @@ public class CraftEventFactory {
         LivingEntity bukkitEntity = (LivingEntity) entityLiving.getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitItem = CraftItemStack.asCraftMirror(crossbow);
 
-        EntityLoadCrossbowEvent entityLoadCrossbowEvent;
-        if (bukkitEntity instanceof Player) {
-             entityLoadCrossbowEvent = new PlayerLoadCrossbowEvent((Player) bukkitEntity, bukkitItem, numberOfCopies);
-        } else {
-            entityLoadCrossbowEvent = new EntityLoadCrossbowEvent(bukkitEntity, bukkitItem, numberOfCopies);
-        }
+        EntityLoadCrossbowEvent entityLoadCrossbowEvent = new EntityLoadCrossbowEvent(bukkitEntity, bukkitItem, numberOfCopies);
         Bukkit.getPluginManager().callEvent(entityLoadCrossbowEvent);
 
         return entityLoadCrossbowEvent;

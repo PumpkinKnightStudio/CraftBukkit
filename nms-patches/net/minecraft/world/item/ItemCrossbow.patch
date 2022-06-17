@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/ItemCrossbow.java
 +++ b/net/minecraft/world/item/ItemCrossbow.java
-@@ -31,6 +31,15 @@
+@@ -31,6 +31,14 @@
  import net.minecraft.world.level.World;
  import net.minecraft.world.phys.Vec3D;
  
@@ -10,13 +10,12 @@
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.EntityLoadCrossbowEvent;
 +import org.bukkit.event.entity.EntityShootCrossbowEvent;
-+import org.bukkit.event.entity.PlayerLoadCrossbowEvent;
 +// CraftBukkit end
 +
  public class ItemCrossbow extends ItemProjectileWeapon implements ItemVanishable {
  
      private static final String TAG_CHARGED = "Charged";
-@@ -95,6 +104,11 @@
+@@ -95,6 +103,11 @@
              world.playSound((EntityHuman) null, entityliving.getX(), entityliving.getY(), entityliving.getZ(), SoundEffects.CROSSBOW_LOADING_END, soundcategory, 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
          }
  
@@ -28,13 +27,13 @@
      }
  
      private static boolean tryLoadProjectiles(EntityLiving entityliving, ItemStack itemstack) {
-@@ -104,6 +118,14 @@
+@@ -104,6 +117,14 @@
          ItemStack itemstack1 = entityliving.getProjectile(itemstack);
          ItemStack itemstack2 = itemstack1.copy();
  
 +        // CraftBukkit start
 +        EntityLoadCrossbowEvent entityLoadCrossbowEvent = CraftEventFactory.callEntityLoadCrossbowEvent(entityliving, itemstack, j);
-+        if (entityLoadCrossbowEvent instanceof PlayerLoadCrossbowEvent && ((PlayerLoadCrossbowEvent) entityLoadCrossbowEvent).isCancelled()) {
++        if (entityLoadCrossbowEvent.isCancelled()) {
 +            return false;
 +        }
 +        j = Math.min(entityLoadCrossbowEvent.getProjectileCount(), 3);
@@ -43,7 +42,7 @@
          for (int k = 0; k < j; ++k) {
              if (k > 0) {
                  itemstack1 = itemstack2.copy();
-@@ -112,6 +134,10 @@
+@@ -112,6 +133,10 @@
              if (itemstack1.isEmpty() && flag) {
                  itemstack1 = new ItemStack(Items.ARROW);
                  itemstack2 = itemstack1.copy();
@@ -54,7 +53,16 @@
              }
  
              if (!loadProjectile(entityliving, itemstack, itemstack1, k > 0, flag)) {
-@@ -209,8 +235,9 @@
+@@ -172,7 +197,7 @@
+         nbttagcompound.put("ChargedProjectiles", nbttaglist);
+     }
+ 
+-    private static List<ItemStack> getChargedProjectiles(ItemStack itemstack) {
++    public static List<ItemStack> getChargedProjectiles(ItemStack itemstack) { // PAIL private -> public
+         List<ItemStack> list = Lists.newArrayList();
+         NBTTagCompound nbttagcompound = itemstack.getTag();
+ 
+@@ -209,8 +234,9 @@
          });
      }
  
@@ -66,7 +74,7 @@
              boolean flag1 = itemstack1.is(Items.FIREWORK_ROCKET);
              Object object;
  
-@@ -222,7 +249,13 @@
+@@ -222,7 +248,13 @@
                      ((EntityArrow) object).pickup = EntityArrow.PickupStatus.CREATIVE_ONLY;
                  }
              }
@@ -80,7 +88,7 @@
              if (entityliving instanceof ICrossbow) {
                  ICrossbow icrossbow = (ICrossbow) entityliving;
  
-@@ -237,10 +270,14 @@
+@@ -237,10 +269,14 @@
                  ((IProjectile) object).shoot((double) vector3fa.x(), (double) vector3fa.y(), (double) vector3fa.z(), f1, f2);
              }
  
@@ -97,7 +105,7 @@
              world.playSound((EntityHuman) null, entityliving.getX(), entityliving.getY(), entityliving.getZ(), SoundEffects.CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, f);
          }
      }
-@@ -266,21 +303,39 @@
+@@ -266,21 +302,39 @@
  
      public static void performShooting(World world, EntityLiving entityliving, EnumHand enumhand, ItemStack itemstack, float f, float f1) {
          List<ItemStack> list = getChargedProjectiles(itemstack);
@@ -107,6 +115,7 @@
 +        for (int i = 0; i < list.size(); i ++) {
 +            projectileList.add(createProjectile(world, entityliving, itemstack, list.get(i), flag, i));
 +        }
++        List<IProjectile> originals = new ArrayList<>(projectileList);
 +        EntityShootCrossbowEvent event = CraftEventFactory.callEntityShootCrossbowEvent(entityliving, itemstack, enumhand, projectileList, f);
 +        if (event.isCancelled()) {
 +            if (entityliving instanceof EntityPlayer entityPlayer){
@@ -114,7 +123,6 @@
 +            }
 +            return;
 +        }
-+        List<IProjectile> originals = new ArrayList<>(projectileList);
 +        projectileList = event.getProjectiles().stream().map(projectile -> ((IProjectile) ((org.bukkit.craftbukkit.entity.AbstractProjectile) projectile).getHandle())).collect(Collectors.toList());
 +        // CraftBukkit end
          float[] afloat = getShotPitches(entityliving.getRandom());
@@ -125,7 +133,7 @@
 +        // CraftBukkit start
 +        for (int i = 0; i < projectileList.size(); ++i) {
 +            IProjectile projectile = projectileList.get(i);
-+            boolean needsSpawned = originals.size() > i && projectile.getBukkitEntity() == originals.get(i).getBukkitEntity();
++            boolean needsSpawned = originals.size() > i && projectile.getUUID().equals(originals.get(i).getUUID());
  
 -            if (!itemstack1.isEmpty()) {
 +            //if (!itemstack1.isEmpty()) {

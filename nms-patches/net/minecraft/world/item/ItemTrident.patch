@@ -8,7 +8,7 @@
 +import net.minecraft.server.level.EntityPlayer;
 +
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
-+import org.bukkit.event.entity.EntityFireTridentEvent;
++import org.bukkit.event.entity.EntityThrowTridentEvent;
 +// CraftBukkit end
 +
  public class ItemTrident extends Item implements ItemVanishable {
@@ -27,7 +27,7 @@
                          if (k == 0) {
                              EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
 +                            // CraftBukkit start
-+                            EntityFireTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(entityhuman, itemstack, entitythrowntrident, 0.8f);
++                            EntityThrowTridentEvent entityFireTridentEvent = CraftEventFactory.callEntityFireTridentEvent(entityhuman, itemstack, entitythrowntrident, 0.8f);
 +                            if (entityFireTridentEvent.isCancelled()) {
 +                                entityFireTridentEvent.getProjectile().remove();
 +                                return;
@@ -41,7 +41,7 @@
  
 -                            world.addFreshEntity(entitythrowntrident);
 +                            // CraftBukkit start
-+                            if (entitythrowntrident.getBukkitEntity() == entityFireTridentEvent.getProjectile() && !world.addFreshEntity(entitythrowntrident)) {
++                            if (entitythrowntrident.getUUID().equals(entityFireTridentEvent.getProjectile().getUniqueId()) && !world.addFreshEntity(entitythrowntrident)) {
 +                                if (entityhuman instanceof EntityPlayer entityPlayer) {
 +                                    entityPlayer.getBukkitEntity().updateInventory();
 +                                }
