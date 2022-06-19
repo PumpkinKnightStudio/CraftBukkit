@@ -30,10 +30,7 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketDataSerializer;
-import net.minecraft.network.chat.ChatMessageType;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
@@ -84,7 +81,6 @@ import net.minecraft.world.level.border.IWorldBorderListener;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
-import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -235,6 +231,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendRawMessage(UUID sender, String message) {
+        Preconditions.checkArgument(message != null, "message cannot be null");
         if (getHandle().connection == null) return;
 
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
@@ -366,6 +363,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setCompassTarget(Location loc) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
         if (getHandle().connection == null) return;
 
         // Do not directly assign here, from the packethandler we'll assign it.
@@ -379,6 +377,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void chat(String msg) {
+        Preconditions.checkArgument(msg != null, "msg cannot be null");
         if (getHandle().connection == null) return;
 
         getHandle().connection.chat(msg, false);
@@ -386,11 +385,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean performCommand(String command) {
+        Preconditions.checkArgument(command != null, "command cannot be null");
         return server.dispatchCommand(this, command);
     }
 
     @Override
     public void playNote(Location loc, byte instrument, byte note) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
         if (getHandle().connection == null) return;
 
         String instrumentName = null;
@@ -433,6 +434,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playNote(Location loc, Instrument instrument, Note note) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(instrument != null, "Instrument cannot be null");
+        Preconditions.checkArgument(note != null, "Note cannot be null");
         if (getHandle().connection == null) return;
 
         String instrumentName = null;
@@ -505,7 +509,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(sound != null, "Sound cannot be null");
+        Preconditions.checkArgument(category != null, "Category cannot be null");
+        if (getHandle().connection == null) return;
 
         PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
@@ -513,7 +520,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(sound != null, "sound cannot be null");
+        Preconditions.checkArgument(category != null, "Category cannot be null");
+        if (getHandle().connection == null) return;
 
         PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), new Vec3D(loc.getX(), loc.getY(), loc.getZ()), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
@@ -526,9 +536,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
+        Preconditions.checkArgument(entity != null, "Entity cannot be null");
+        Preconditions.checkArgument(sound != null, "Sound cannot be null");
+        Preconditions.checkArgument(category != null, "Category cannot be null");
+        if (getHandle().connection == null) return;
 
-        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), ((CraftEntity) entity).getHandle(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -544,11 +557,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void stopSound(Sound sound, org.bukkit.SoundCategory category) {
+        Preconditions.checkArgument(sound != null, "Sound cannot be null");
         stopSound(sound.getKey().getKey(), category);
     }
 
     @Override
     public void stopSound(String sound, org.bukkit.SoundCategory category) {
+        Preconditions.checkArgument(sound != null, "Sound cannot be null");
         if (getHandle().connection == null) return;
 
         getHandle().connection.send(new PacketPlayOutStopSound(new MinecraftKey(sound), category == null ? net.minecraft.sounds.SoundCategory.MASTER : net.minecraft.sounds.SoundCategory.valueOf(category.name())));
@@ -563,6 +578,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playEffect(Location loc, Effect effect, int data) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(effect != null, "Effect cannot be null");
         if (getHandle().connection == null) return;
 
         int packetData = effect.getId();
@@ -572,11 +589,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public <T> void playEffect(Location loc, Effect effect, T data) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(effect != null, "Effect cannot be null");
         if (data != null) {
-            Validate.isTrue(effect.getData() != null && effect.getData().isAssignableFrom(data.getClass()), "Wrong kind of data for this effect!");
+            Preconditions.checkArgument(effect.getData() != null && effect.getData().isAssignableFrom(data.getClass()), "Wrong kind of data for this effect!");
         } else {
             // Special case: the axis is optional for ELECTRIC_SPARK
-            Validate.isTrue(effect.getData() == null || effect == Effect.ELECTRIC_SPARK, "Wrong kind of data for this effect!");
+            Preconditions.checkArgument(effect.getData() == null || effect == Effect.ELECTRIC_SPARK, "Wrong kind of data for this effect!");
         }
 
         int datavalue = CraftEffect.getDataValue(effect, data);
@@ -593,6 +612,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendBlockChange(Location loc, Material material, byte data) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         if (getHandle().connection == null) return;
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), CraftMagicNumbers.getBlock(material, data));
@@ -601,6 +622,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendBlockChange(Location loc, BlockData block) {
+        Preconditions.checkArgument(loc != null, "Location cannot be null");
+        Preconditions.checkArgument(block != null, "BlockData cannot be null");
         if (getHandle().connection == null) return;
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), ((CraftBlockData) block).getState());
@@ -639,8 +662,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             lines = new String[4];
         }
 
-        Validate.notNull(loc, "Location can not be null");
-        Validate.notNull(dyeColor, "DyeColor can not be null");
+        Preconditions.checkArgument(loc != null, "Location can not be null");
+        Preconditions.checkArgument(dyeColor != null, "DyeColor can not be null");
         if (lines.length < 4) {
             throw new IllegalArgumentException("Must have at least 4 lines");
         }
@@ -749,6 +772,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendMap(MapView map) {
+        Preconditions.checkArgument(map != null, "MapView cannot be null");
         if (getHandle().connection == null) return;
 
         RenderData data = ((CraftMapView) map).render(this);
@@ -770,8 +794,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause) {
-        Preconditions.checkArgument(location != null, "location");
-        Preconditions.checkArgument(location.getWorld() != null, "location.world");
+        Preconditions.checkArgument(location != null, "Location cannot be null");
+        Preconditions.checkArgument(location.getWorld() != null, "The world in Location cannot be null");
         location.checkFinite();
 
         EntityPlayer entity = getHandle();
@@ -1046,6 +1070,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerWeather(WeatherType type) {
+        Preconditions.checkArgument(type != null, "WeatherType cannot be null");
         getHandle().setPlayerWeather(type, true);
     }
 
@@ -1080,11 +1105,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setGameMode(GameMode mode) {
+        Preconditions.checkArgument(mode != null, "GameMode cannot be null");
         if (getHandle().connection == null) return;
-
-        if (mode == null) {
-            throw new IllegalArgumentException("Mode cannot be null");
-        }
 
         getHandle().setGameMode(EnumGamemode.byId(mode.getValue()));
     }
@@ -1182,14 +1204,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void hideEntity(Plugin plugin, org.bukkit.entity.Entity entity) {
-        Validate.notNull(plugin, "Plugin cannot be null");
-        Validate.isTrue(plugin.isEnabled(), "Plugin attempted to hide player while disabled");
+        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
+        Preconditions.checkArgument(plugin.isEnabled(), "Plugin attempted to hide player while disabled");
 
         hideEntity0(plugin, entity);
     }
 
     private void hideEntity0(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
-        Validate.notNull(entity, "hidden entity cannot be null");
+        Preconditions.checkArgument(entity != null, "hidden entity cannot be null");
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
@@ -1213,8 +1235,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         // Remove the hidden entity from this player user list, if they're on it
-        if (other instanceof EntityPlayer) {
-            EntityPlayer otherPlayer = (EntityPlayer) other;
+        if (other instanceof EntityPlayer otherPlayer) {
             if (otherPlayer.sentListPacket) {
                 getHandle().connection.send(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, otherPlayer));
             }
@@ -1236,14 +1257,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void showEntity(Plugin plugin, org.bukkit.entity.Entity entity) {
-        Validate.notNull(plugin, "Plugin cannot be null");
+        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
         // Don't require that plugin be enabled. A plugin must be allowed to call
         // showPlayer during its onDisable() method.
         showEntity0(plugin, entity);
     }
 
     private void showEntity0(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
-        Validate.notNull(entity, "shown entity cannot be null");
+        Preconditions.checkArgument(entity != null, "shown entity cannot be null");
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
@@ -1260,8 +1281,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
 
-        if (other instanceof EntityPlayer) {
-            EntityPlayer otherPlayer = (EntityPlayer) other;
+        if (other instanceof EntityPlayer otherPlayer) {
             getHandle().connection.send(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, otherPlayer));
         }
 
@@ -1312,7 +1332,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String toString() {
-        return "CraftPlayer{" + "name=" + getName() + '}';
+        return "CraftPlayer{" + "name=" + getName() + ",uuid=" + getUniqueId() + "}";
     }
 
     @Override
@@ -1444,10 +1464,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setResourcePack(String url, byte[] hash, String prompt, boolean force) {
-        Validate.notNull(url, "Resource pack URL cannot be null");
+        Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
 
         if (hash != null) {
-            Validate.isTrue(hash.length == 20, "Resource pack hash should be 20 bytes long but was " + hash.length);
+            Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was " + hash.length);
 
             getHandle().sendTexturePack(url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true));
         } else {
@@ -1640,7 +1660,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setScoreboard(Scoreboard scoreboard) {
-        Validate.notNull(scoreboard, "Scoreboard cannot be null");
+        Preconditions.checkArgument(scoreboard != null, "Scoreboard cannot be null");
         PlayerConnection playerConnection = getHandle().connection;
         if (playerConnection == null) {
             throw new IllegalStateException("Cannot set scoreboard yet");
@@ -1654,7 +1674,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setHealthScale(double value) {
-        Validate.isTrue((float) value > 0F, "Must be greater than 0");
+        Preconditions.checkArgument((float) value > 0F, "Must be greater than 0");
         healthScale = value;
         scaledHealth = true;
         updateScaledHealth();
@@ -1870,8 +1890,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void openBook(ItemStack book) {
-        Validate.isTrue(book != null, "book == null");
-        Validate.isTrue(book.getType() == Material.WRITTEN_BOOK, "Book must be Material.WRITTEN_BOOK");
+        Preconditions.checkArgument(book != null, "ItemStack cannot be null");
+        Preconditions.checkArgument(book.getType() == Material.WRITTEN_BOOK, "Book must be Material.WRITTEN_BOOK");
 
         ItemStack hand = getInventory().getItemInMainHand();
         getInventory().setItemInMainHand(book);
