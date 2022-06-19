@@ -1695,10 +1695,10 @@ public class CraftWorld extends CraftRegionAccessor implements World {
             return null;
         }
 
-        if (value instanceof GameRules.GameRuleBoolean) {
-            return rule.getType().cast(((GameRules.GameRuleBoolean) value).get());
-        } else if (value instanceof GameRules.GameRuleInt) {
-            return rule.getType().cast(value.getCommandResult());
+        if (value instanceof GameRules.GameRuleBoolean gameRuleBoolean) {
+            return rule.getType().cast(gameRuleBoolean.get());
+        } else if (value instanceof GameRules.GameRuleInt gameRuleInt) {
+            return rule.getType().cast(gameRuleInt.getCommandResult());
         } else {
             throw new IllegalArgumentException("Invalid GameRule type (" + value + ") for GameRule " + rule.getName());
         }
@@ -1838,8 +1838,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     public void readBukkitValues(NBTBase c) {
-        if (c instanceof NBTTagCompound) {
-            this.persistentDataContainer.putAll((NBTTagCompound) c);
+        if (c instanceof NBTTagCompound nbtTagCompound) {
+            this.persistentDataContainer.putAll(nbtTagCompound);
         }
     }
 }
