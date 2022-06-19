@@ -1790,56 +1790,39 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         // Manually map the mess of the old StructureType to the new StructureType and normal Structure
         if (org.bukkit.StructureType.MINESHAFT == structureType) {
             result = locateNearestStructure(origin, StructureType.MINESHAFT, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.VILLAGE == structureType) {
+        } else if (org.bukkit.StructureType.VILLAGE == structureType) {
             result = locateNearestStructure(origin, List.of(Structure.VILLAGE_DESERT, Structure.VILLAGE_PLAINS, Structure.VILLAGE_SAVANNA, Structure.VILLAGE_SNOWY, Structure.VILLAGE_TAIGA), radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.NETHER_FORTRESS == structureType) {
+        } else if (org.bukkit.StructureType.NETHER_FORTRESS == structureType) {
             result = locateNearestStructure(origin, StructureType.FORTRESS, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.STRONGHOLD == structureType) {
+        } else if (org.bukkit.StructureType.STRONGHOLD == structureType) {
             result = locateNearestStructure(origin, StructureType.STRONGHOLD, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.JUNGLE_PYRAMID == structureType) {
+        } else if (org.bukkit.StructureType.JUNGLE_PYRAMID == structureType) {
             result = locateNearestStructure(origin, StructureType.JUNGLE_TEMPLE, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.OCEAN_RUIN == structureType) {
+        } else if (org.bukkit.StructureType.OCEAN_RUIN == structureType) {
             result = locateNearestStructure(origin, StructureType.OCEAN_RUIN, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.DESERT_PYRAMID == structureType) {
+        } else if (org.bukkit.StructureType.DESERT_PYRAMID == structureType) {
             result = locateNearestStructure(origin, StructureType.DESERT_PYRAMID, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.IGLOO == structureType) {
+        } else if (org.bukkit.StructureType.IGLOO == structureType) {
             result = locateNearestStructure(origin, StructureType.IGLOO, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.SWAMP_HUT == structureType) {
+        } else if (org.bukkit.StructureType.SWAMP_HUT == structureType) {
             result = locateNearestStructure(origin, StructureType.SWAMP_HUT, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.OCEAN_MONUMENT == structureType) {
+        } else if (org.bukkit.StructureType.OCEAN_MONUMENT == structureType) {
             result = locateNearestStructure(origin, StructureType.OCEAN_MONUMENT, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.END_CITY == structureType) {
+        } else if (org.bukkit.StructureType.END_CITY == structureType) {
             result = locateNearestStructure(origin, StructureType.END_CITY, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.WOODLAND_MANSION == structureType) {
+        } else if (org.bukkit.StructureType.WOODLAND_MANSION == structureType) {
             result = locateNearestStructure(origin, StructureType.WOODLAND_MANSION, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.BURIED_TREASURE == structureType) {
+        } else if (org.bukkit.StructureType.BURIED_TREASURE == structureType) {
             result = locateNearestStructure(origin, StructureType.BURIED_TREASURE, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.SHIPWRECK == structureType) {
+        } else if (org.bukkit.StructureType.SHIPWRECK == structureType) {
             result = locateNearestStructure(origin, StructureType.SHIPWRECK, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.PILLAGER_OUTPOST == structureType) {
+        } else if (org.bukkit.StructureType.PILLAGER_OUTPOST == structureType) {
             result = locateNearestStructure(origin, Structure.PILLAGER_OUTPOST, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.NETHER_FOSSIL == structureType) {
+        } else if (org.bukkit.StructureType.NETHER_FOSSIL == structureType) {
             result = locateNearestStructure(origin, StructureType.NETHER_FOSSIL, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.RUINED_PORTAL == structureType) {
+        } else if (org.bukkit.StructureType.RUINED_PORTAL == structureType) {
             result = locateNearestStructure(origin, StructureType.RUINED_PORTAL, radius, findUnexplored);
-        }
-        if (org.bukkit.StructureType.BASTION_REMNANT == structureType) {
+        } else if (org.bukkit.StructureType.BASTION_REMNANT == structureType) {
             result = locateNearestStructure(origin, Structure.BASTION_REMNANT, radius, findUnexplored);
         }
 
