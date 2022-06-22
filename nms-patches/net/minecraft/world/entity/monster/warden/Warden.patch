@@ -1,0 +1,97 @@
+--- a/net/minecraft/world/entity/monster/warden/Warden.java
++++ b/net/minecraft/world/entity/monster/warden/Warden.java
+@@ -13,6 +13,7 @@
+ import net.minecraft.core.particles.ParticleParamBlock;
+ import net.minecraft.core.particles.Particles;
+ import net.minecraft.nbt.DynamicOpsNBT;
++import net.minecraft.nbt.NBTBase;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.game.PacketDebug;
+@@ -68,7 +69,6 @@
+ import net.minecraft.world.level.pathfinder.Pathfinder;
+ import net.minecraft.world.level.pathfinder.PathfinderNormal;
+ import net.minecraft.world.phys.Vec3D;
+-import org.jetbrains.annotations.Contract;
+ import org.slf4j.Logger;
+ 
+ public class Warden extends EntityMonster implements VibrationListener.b {
+@@ -370,7 +370,7 @@
+ 
+     @Override
+     public BehaviorController<Warden> getBrain() {
+-        return super.getBrain();
++        return (BehaviorController<Warden>) super.getBrain(); // CraftBukkit - decompile error
+     }
+ 
+     @Override
+@@ -401,7 +401,7 @@
+         return true;
+     }
+ 
+-    @Contract("null->false")
++    //@Contract("null->false") // CraftBukkit - decompile error
+     public boolean canTargetEntity(@Nullable Entity entity) {
+         boolean flag;
+ 
+@@ -421,13 +421,13 @@
+     public static void applyDarknessAround(WorldServer worldserver, Vec3D vec3d, @Nullable Entity entity, int i) {
+         MobEffect mobeffect = new MobEffect(MobEffects.DARKNESS, 260, 0, false, false);
+ 
+-        MobEffectUtil.addEffectToPlayersAround(worldserver, entity, vec3d, (double) i, mobeffect, 200);
++        MobEffectUtil.addEffectToPlayersAround(worldserver, entity, vec3d, i, mobeffect, 200, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.WARDEN); // CraftBukkit - Add EntityPotionEffectEvent.Cause
+     }
+ 
+     @Override
+     public void addAdditionalSaveData(NBTTagCompound nbttagcompound) {
+         super.addAdditionalSaveData(nbttagcompound);
+-        DataResult dataresult = AngerManagement.codec(this::canTargetEntity).encodeStart(DynamicOpsNBT.INSTANCE, this.angerManagement);
++        DataResult<NBTBase> dataresult = AngerManagement.codec(this::canTargetEntity).encodeStart(DynamicOpsNBT.INSTANCE, this.angerManagement); // CraftBukkit - decompile error
+         Logger logger = Warden.LOGGER;
+ 
+         Objects.requireNonNull(logger);
+@@ -445,7 +445,7 @@
+     @Override
+     public void readAdditionalSaveData(NBTTagCompound nbttagcompound) {
+         super.readAdditionalSaveData(nbttagcompound);
+-        DataResult dataresult;
++        DataResult<NBTBase> dataresult; // CraftBukkit - decompile error
+         Logger logger;
+ 
+         if (nbttagcompound.contains("anger")) {
+@@ -453,7 +453,7 @@
+             logger = Warden.LOGGER;
+             Objects.requireNonNull(logger);
+             dataresult.resultOrPartial(logger::error).ifPresent((angermanagement) -> {
+-                this.angerManagement = angermanagement;
++                this.angerManagement = (AngerManagement) angermanagement; // CraftBukkit - decompile error
+             });
+             this.syncClientAngerLevel();
+         }
+@@ -463,7 +463,7 @@
+             logger = Warden.LOGGER;
+             Objects.requireNonNull(logger);
+             dataresult.resultOrPartial(logger::error).ifPresent((vibrationlistener) -> {
+-                this.dynamicGameEventListener.updateListener(vibrationlistener, this.level);
++                this.dynamicGameEventListener.updateListener((VibrationListener) vibrationlistener, this.level); // CraftBukkit - decompile error
+             });
+         }
+ 
+@@ -496,7 +496,7 @@
+     public void increaseAngerAt(@Nullable Entity entity, int i, boolean flag) {
+         if (!this.isNoAi() && this.canTargetEntity(entity)) {
+             WardenAi.setDigCooldown(this);
+-            boolean flag1 = !(this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object) null) instanceof EntityHuman);
++            boolean flag1 = !(this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) instanceof EntityHuman); // CraftBukkit - decompile error
+             int j = this.angerManagement.increaseAnger(entity, i);
+ 
+             if (entity instanceof EntityHuman && flag1 && AngerLevel.byAnger(j).isAngry()) {
+@@ -517,7 +517,7 @@
+     @Nullable
+     @Override
+     public EntityLiving getTarget() {
+-        return (EntityLiving) this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object) null);
++        return this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null); // CraftBukkit - decompile error
+     }
+ 
+     @Override
