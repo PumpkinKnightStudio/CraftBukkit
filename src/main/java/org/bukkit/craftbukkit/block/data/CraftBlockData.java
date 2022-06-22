@@ -10,10 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.commands.arguments.blocks.ArgumentBlock;
+import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
 import net.minecraft.core.IRegistry;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.INamable;
+import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
@@ -24,9 +26,11 @@ import net.minecraft.world.level.block.state.properties.IBlockState;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockSupport;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockSupport;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
 public class CraftBlockData implements BlockData {
@@ -540,5 +544,21 @@ public class CraftBlockData implements BlockData {
     @Override
     public SoundGroup getSoundGroup() {
         return CraftSoundGroup.getSoundGroup(state.getSoundType());
+    }
+
+    @Override
+    public boolean isSupported(org.bukkit.block.Block block) {
+        Preconditions.checkArgument(block != null, "block must not be null");
+
+        CraftBlock craftBlock = (CraftBlock) block;
+        return state.canSurvive(craftBlock.getCraftWorld().getHandle(), craftBlock.getPosition());
+    }
+
+    @Override
+    public boolean isFaceSturdy(BlockFace face, BlockSupport support) {
+        Preconditions.checkArgument(face != null, "face must not be null");
+        Preconditions.checkArgument(support != null, "support must not be null");
+
+        return state.isFaceSturdy(BlockAccessAir.INSTANCE, BlockPosition.ZERO, CraftBlock.blockFaceToNotch(face), CraftBlockSupport.toNMS(support));
     }
 }
