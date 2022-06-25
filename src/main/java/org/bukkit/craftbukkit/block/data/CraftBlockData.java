@@ -23,12 +23,15 @@ import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
 import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftSoundGroup;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -552,6 +555,15 @@ public class CraftBlockData implements BlockData {
 
         CraftBlock craftBlock = (CraftBlock) block;
         return state.canSurvive(craftBlock.getCraftWorld().getHandle(), craftBlock.getPosition());
+    }
+
+    @Override
+    public boolean isSupported(Location location) {
+        Preconditions.checkArgument(location != null, "location must not be null");
+
+        CraftWorld world = (CraftWorld) location.getWorld();
+        BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        return state.canSurvive(world.getHandle(), position);
     }
 
     @Override
