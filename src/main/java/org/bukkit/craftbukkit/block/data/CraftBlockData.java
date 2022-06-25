@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
 import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
