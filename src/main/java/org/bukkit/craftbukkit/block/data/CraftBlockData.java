@@ -561,6 +561,8 @@ public class CraftBlockData implements BlockData {
         Preconditions.checkArgument(location != null, "location must not be null");
 
         CraftWorld world = (CraftWorld) location.getWorld();
+        Preconditions.checkArgument(world != null, "location must not have a null world");
+
         BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         return state.canSurvive(world.getHandle(), position);
     }
