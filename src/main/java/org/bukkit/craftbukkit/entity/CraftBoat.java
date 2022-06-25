@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.vehicle.EntityBoat;
 import org.bukkit.TreeSpecies;
 import org.bukkit.craftbukkit.CraftServer;
@@ -20,6 +21,17 @@ public class CraftBoat extends CraftVehicle implements Boat {
     @Override
     public void setWoodType(TreeSpecies species) {
         getHandle().setType(getBoatType(species));
+    }
+
+    @Override
+    public WoodenType getWoodenType() {
+        return WoodenType.valueOf(getHandle().getBoatType().getName().toUpperCase());
+    }
+
+    @Override
+    public void setWoodenType(WoodenType woodenType) {
+        Preconditions.checkArgument(woodenType != null, "WoodenType cannot be null");
+        getHandle().setType(EntityBoat.EnumBoatType.byName(woodenType.toString().toLowerCase()));
     }
 
     @Override
@@ -64,6 +76,11 @@ public class CraftBoat extends CraftVehicle implements Boat {
     @Override
     public void setWorkOnLand(boolean workOnLand) {
         getHandle().landBoats = workOnLand;
+    }
+
+    @Override
+    public Status getStatus() {
+        return Status.valueOf(getHandle().status.toString());
     }
 
     @Override

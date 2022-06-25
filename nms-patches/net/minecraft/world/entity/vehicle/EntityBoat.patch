@@ -16,6 +16,15 @@
  public class EntityBoat extends Entity {
  
      private static final DataWatcherObject<Integer> DATA_ID_HURT = DataWatcher.defineId(EntityBoat.class, DataWatcherRegistry.INT);
+@@ -82,7 +91,7 @@
+     private boolean inputDown;
+     private double waterLevel;
+     private float landFriction;
+-    private EntityBoat.EnumStatus status;
++    public EntityBoat.EnumStatus status; // CraftBukkit - PAIL private -> public
+     private EntityBoat.EnumStatus oldStatus;
+     private double lastYd;
+     private boolean isAboveBubbleColumn;
 @@ -91,6 +100,14 @@
      private float bubbleAngle;
      private float bubbleAngleO;
@@ -128,22 +137,39 @@
          this.tickBubbleColumn();
  
          for (int i = 0; i <= 1; ++i) {
-@@ -809,6 +885,11 @@
+@@ -809,19 +885,25 @@
  
                      this.causeFallDamage(this.fallDistance, 1.0F, DamageSource.FALL);
                      if (!this.level.isClientSide && !this.isRemoved()) {
-+                    // CraftBukkit start
-+                    Vehicle vehicle = (Vehicle) this.getBukkitEntity();
-+                    VehicleDestroyEvent destroyEvent = new VehicleDestroyEvent(vehicle, null);
-+                    this.level.getCraftServer().getPluginManager().callEvent(destroyEvent);
-+                    if (!destroyEvent.isCancelled()) {
-                         this.kill();
-                         if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                             int i;
-@@ -822,6 +903,7 @@
+-                        this.kill();
+-                        if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+-                            int i;
+-
+-                            for (i = 0; i < 3; ++i) {
+-                                this.spawnAtLocation((IMaterial) this.getBoatType().getPlanks());
+-                            }
+-
+-                            for (i = 0; i < 2; ++i) {
+-                                this.spawnAtLocation((IMaterial) Items.STICK);
++                        // CraftBukkit start
++                        Vehicle vehicle = (Vehicle) this.getBukkitEntity();
++                        VehicleDestroyEvent destroyEvent = new VehicleDestroyEvent(vehicle, null);
++                        this.level.getCraftServer().getPluginManager().callEvent(destroyEvent);
++                        if (!destroyEvent.isCancelled()) {
++                            this.kill();
++                            if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
++                                int i;
++
++                                for (i = 0; i < 3; ++i) {
++                                    this.spawnAtLocation((IMaterial) this.getBoatType().getPlanks());
++                                }
++
++                                for (i = 0; i < 2; ++i) {
++                                    this.spawnAtLocation((IMaterial) Items.STICK);
++                                }
                              }
                          }
-                     }
+-                    }
 +                    } // CraftBukkit end
                  }
  
