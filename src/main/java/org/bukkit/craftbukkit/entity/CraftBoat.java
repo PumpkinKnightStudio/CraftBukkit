@@ -24,14 +24,14 @@ public class CraftBoat extends CraftVehicle implements Boat {
     }
 
     @Override
-    public WoodenType getWoodenType() {
-        return WoodenType.valueOf(getHandle().getBoatType().getName().toUpperCase());
+    public Type getBoatType() {
+        return Type.valueOf(getHandle().getBoatType().getName().toUpperCase());
     }
 
     @Override
-    public void setWoodenType(WoodenType woodenType) {
-        Preconditions.checkArgument(woodenType != null, "WoodenType cannot be null");
-        getHandle().setType(EntityBoat.EnumBoatType.byName(woodenType.toString().toLowerCase()));
+    public void setBoatType(Type type) {
+        Preconditions.checkArgument(type != null, "Boat.Type cannot be null");
+        getHandle().setType(EntityBoat.EnumBoatType.byName(type.toString().toLowerCase()));
     }
 
     @Override
@@ -98,6 +98,7 @@ public class CraftBoat extends CraftVehicle implements Boat {
         return EntityType.BOAT;
     }
 
+    @Deprecated
     public static TreeSpecies getTreeSpecies(EntityBoat.EnumBoatType boatType) {
         switch (boatType) {
             case SPRUCE:
@@ -116,6 +117,7 @@ public class CraftBoat extends CraftVehicle implements Boat {
         }
     }
 
+    @Deprecated
     public static EntityBoat.EnumBoatType getBoatType(TreeSpecies species) {
         switch (species) {
             case REDWOOD:
