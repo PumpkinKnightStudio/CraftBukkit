@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorFindAdmirableItem.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorFindAdmirableItem.java
-@@ -35,6 +35,26 @@
+@@ -35,6 +35,25 @@
  
      @Override
      protected void start(WorldServer worldserver, E e0, long i) {
@@ -13,8 +13,7 @@
 +            }
 +            if (event.getTarget() == null) {
 +                e0.getBrain().eraseMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM);
-+            }
-+            if (event.getTarget() != null && event.getTarget() instanceof org.bukkit.entity.Item) { // Silent make only Item can be set
++            } else if (event.getTarget() instanceof org.bukkit.entity.Item) { // Silent make only Item can be set
 +                java.util.Optional<net.minecraft.world.entity.item.EntityItem> optionalItem = java.util.Optional.of(event.getTarget()).map(entity -> ((org.bukkit.craftbukkit.entity.CraftItem) entity)).map(org.bukkit.craftbukkit.entity.CraftEntity::getHandle).map(entityLiving -> ((net.minecraft.world.entity.item.EntityItem) entityLiving));
 +                if (optionalItem.isPresent()) {
 +                    e0.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, optionalItem);
