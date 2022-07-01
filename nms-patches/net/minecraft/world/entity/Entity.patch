@@ -724,30 +724,35 @@
                      IBlockData iblockdata = this.level.getBlockState(this.portalEntrancePos);
                      EnumDirection.EnumAxis enumdirection_enumaxis;
                      Vec3D vec3d;
-@@ -2464,8 +2876,8 @@
+@@ -2464,19 +2876,26 @@
                          vec3d = new Vec3D(0.5D, 0.0D, 0.0D);
                      }
  
 -                    return BlockPortalShape.createPortalInfo(worldserver, blockutil_rectangle, enumdirection_enumaxis, vec3d, this.getDimensions(this.getPose()), this.getDeltaMovement(), this.getYRot(), this.getXRot());
 -                }).orElse((Object) null);
 +                    return BlockPortalShape.createPortalInfo(worldserverFinal, blockutil_rectangle, enumdirection_enumaxis, vec3d, this.getDimensions(this.getPose()), this.getDeltaMovement(), this.getYRot(), this.getXRot(), event); // CraftBukkit
-+                }).orElse(null); // CraftBuukkit - decompile error
++                }).orElse(null); // CraftBukkit - decompile error
              }
          } else {
-             BlockPosition blockposition1;
-@@ -2475,8 +2887,15 @@
+-            BlockPosition blockposition1;
++            BlockPosition blockPosition1;
+ 
+             if (flag1) {
+-                blockposition1 = WorldServer.END_SPAWN_POINT;
++                blockPosition1 = WorldServer.END_SPAWN_POINT;
              } else {
-                 blockposition1 = worldserver.getHeightmapPos(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, worldserver.getSharedSpawnPos());
+-                blockposition1 = worldserver.getHeightmapPos(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, worldserver.getSharedSpawnPos());
++                blockPosition1 = worldserver.getHeightmapPos(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, worldserver.getSharedSpawnPos());
              }
 +            // CraftBukkit start
-+            CraftPortalEvent event = callPortalEvent(this, worldserver, blockposition1, PlayerTeleportEvent.TeleportCause.END_PORTAL, 0, 0);
++            CraftPortalEvent event = callPortalEvent(this, worldserver, blockPosition1, PlayerTeleportEvent.TeleportCause.END_PORTAL, 0, 0);
 +            if (event == null) {
 +                return null;
 +            }
-+            blockposition1 = new BlockPosition(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ());
++            Position position1 = new Position(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ());
  
 -            return new ShapeDetectorShape(new Vec3D((double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D), this.getDeltaMovement(), this.getYRot(), this.getXRot());
-+            return new ShapeDetectorShape(new Vec3D((double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D), this.getDeltaMovement(), this.getYRot(), this.getXRot(), ((CraftWorld) event.getTo().getWorld()).getHandle(), event);
++            return new ShapeDetectorShape(new Vec3D(position1.x() + 0.5D, position1.y(), position1.z() + 0.5D), this.getDeltaMovement(), this.getYRot(), this.getXRot(), ((CraftWorld) event.getTo().getWorld()).getHandle(), event);
 +            // CraftBukkit end
          }
      }
