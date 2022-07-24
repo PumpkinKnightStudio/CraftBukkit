@@ -24,19 +24,20 @@
              return TemptingSensor.TEMPT_TARGETING.test(entitycreature, entityplayer);
          }).filter((entityplayer) -> {
              return entitycreature.closerThan(entityplayer, 10.0D);
-@@ -41,7 +49,16 @@
+@@ -41,7 +49,17 @@
          if (!list.isEmpty()) {
              EntityHuman entityhuman = (EntityHuman) list.get(0);
  
 -            behaviorcontroller.setMemory(MemoryModuleType.TEMPTING_PLAYER, (Object) entityhuman);
 +            // CraftBukkit start
 +            EntityTargetLivingEntityEvent event = CraftEventFactory.callEntityTargetLivingEvent(entitycreature, entityhuman, EntityTargetEvent.TargetReason.TEMPT);
-+            if (event.isCancelled() || event.getTarget() == null) {
-+                behaviorcontroller.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
++            if (event.isCancelled()) {
 +                return;
 +            }
-+            if (event.getTarget() instanceof HumanEntity) { // the memory only accept humans
++            if (event.getTarget() instanceof HumanEntity) {
 +                behaviorcontroller.setMemory(MemoryModuleType.TEMPTING_PLAYER, ((CraftHumanEntity) event.getTarget()).getHandle());
++            } else {
++                behaviorcontroller.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
 +            }
 +            // CraftBukkit end
          } else {
