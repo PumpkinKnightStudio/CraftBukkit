@@ -99,7 +99,7 @@
      }
  
 -    private void duplicateAllay() {
-+    private Allay duplicateAllay() { // CraftBukkit - return allay
++    public Allay duplicateAllay() { // CraftBukkit - return allay and private -> public
          Allay allay = (Allay) EntityTypes.ALLAY.create(this.level);
  
          if (allay != null) {
@@ -108,7 +108,7 @@
              allay.resetDuplicationCooldown();
              this.resetDuplicationCooldown();
 -            this.level.addFreshEntity(allay);
-+            this.level.addFreshEntity(allay, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DUPLICATION); // CraftBukkit - add spawn reason
++            this.level.addFreshEntity(allay, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - another mystery of the life
          }
 -
 +        return allay; // CraftBukkit
