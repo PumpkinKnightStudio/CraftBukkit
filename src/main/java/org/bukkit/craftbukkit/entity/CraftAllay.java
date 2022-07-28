@@ -83,6 +83,7 @@ public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay
         getHandle().setJukeboxPlaying(null, false);
     }
 
+    @Override
     public org.bukkit.entity.Allay duplicateAllay() {
         return (org.bukkit.entity.Allay) Optional.ofNullable(getHandle().duplicateAllay()).map(Entity::getBukkitEntity).orElse(null);
     }
