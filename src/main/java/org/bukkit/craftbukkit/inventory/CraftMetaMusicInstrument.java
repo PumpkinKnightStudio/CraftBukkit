@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -131,7 +131,7 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
 
     @Override
     public void setInstrument(Instrument instrument) {
-        Validate.notNull(instrument, "Instrument cannot be null");
+        Preconditions.checkArgument(instrument != null, "Instrument cannot be null");
         this.instrument = instrument;
     }
 
