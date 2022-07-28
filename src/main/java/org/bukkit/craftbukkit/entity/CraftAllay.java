@@ -1,9 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import java.util.Optional;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.allay.Allay;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,7 +9,6 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
-import org.jetbrains.annotations.Nullable;
 
 public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay {
 
