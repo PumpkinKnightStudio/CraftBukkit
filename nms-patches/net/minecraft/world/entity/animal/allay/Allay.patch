@@ -39,7 +39,7 @@
      }
  
      public static AttributeProvider.Builder createAttributes() {
-@@ -303,9 +310,14 @@
+@@ -303,7 +310,12 @@
          ItemStack itemstack1 = this.getItemInHand(EnumHand.MAIN_HAND);
  
          if (this.isDancing() && this.isDuplicationItem(itemstack) && this.canDuplicate()) {
@@ -51,11 +51,8 @@
 +            }
 +            // CraftBukkit end
              this.level.broadcastEntityEvent(this, (byte) 18);
--            this.level.playSound(entityhuman, (Entity) this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
-+            this.level.playSound(entityhuman, this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
+             this.level.playSound(entityhuman, (Entity) this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
              this.removeInteractionItem(entityhuman, itemstack);
-             return EnumInteractionResult.SUCCESS;
-         } else if (itemstack1.isEmpty() && !itemstack.isEmpty()) {
 @@ -315,7 +327,7 @@
              this.setItemInHand(EnumHand.MAIN_HAND, itemstack2);
              this.removeInteractionItem(entityhuman, itemstack);
