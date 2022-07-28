@@ -39,26 +39,24 @@
      }
  
      public static AttributeProvider.Builder createAttributes() {
-@@ -303,10 +310,14 @@
+@@ -303,9 +310,14 @@
          ItemStack itemstack1 = this.getItemInHand(EnumHand.MAIN_HAND);
  
          if (this.isDancing() && this.isDuplicationItem(itemstack) && this.canDuplicate()) {
 -            this.duplicateAllay();
--            this.level.broadcastEntityEvent(this, (byte) 18);
--            this.level.playSound(entityhuman, (Entity) this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
--            this.removeInteractionItem(entityhuman, itemstack);
 +            // CraftBukkit start - handle cancel duplication
 +            Allay allay = this.duplicateAllay();
-+            if (allay != null) {
-+                this.level.broadcastEntityEvent(this, (byte) 18);
-+                this.level.playSound(entityhuman, this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
-+                this.removeInteractionItem(entityhuman, itemstack);
++            if (allay == null) {
++                return EnumInteractionResult.SUCCESS;
 +            }
 +            // CraftBukkit end
+             this.level.broadcastEntityEvent(this, (byte) 18);
+-            this.level.playSound(entityhuman, (Entity) this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
++            this.level.playSound(entityhuman, this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
+             this.removeInteractionItem(entityhuman, itemstack);
              return EnumInteractionResult.SUCCESS;
          } else if (itemstack1.isEmpty() && !itemstack.isEmpty()) {
-             ItemStack itemstack2 = itemstack.copy();
-@@ -315,7 +326,7 @@
+@@ -315,7 +327,7 @@
              this.setItemInHand(EnumHand.MAIN_HAND, itemstack2);
              this.removeInteractionItem(entityhuman, itemstack);
              this.level.playSound(entityhuman, (Entity) this, SoundEffects.ALLAY_ITEM_GIVEN, SoundCategory.NEUTRAL, 2.0F, 1.0F);
@@ -67,7 +65,7 @@
              return EnumInteractionResult.SUCCESS;
          } else if (!itemstack1.isEmpty() && enumhand == EnumHand.MAIN_HAND && itemstack.isEmpty()) {
              this.setItemSlot(EnumItemSlot.MAINHAND, ItemStack.EMPTY);
-@@ -407,7 +418,7 @@
+@@ -407,7 +419,7 @@
      }
  
      private boolean shouldStopDancing() {
@@ -76,7 +74,7 @@
      }
  
      public float getHoldingItemAnimationProgress(float f) {
-@@ -446,7 +457,7 @@
+@@ -446,7 +458,7 @@
      public void addAdditionalSaveData(NBTTagCompound nbttagcompound) {
          super.addAdditionalSaveData(nbttagcompound);
          nbttagcompound.put("Inventory", this.inventory.createTag());
@@ -85,7 +83,7 @@
          Logger logger = Allay.LOGGER;
  
          Objects.requireNonNull(logger);
-@@ -462,7 +473,7 @@
+@@ -462,7 +474,7 @@
          super.readAdditionalSaveData(nbttagcompound);
          this.inventory.fromTag(nbttagcompound.getList("Inventory", 10));
          if (nbttagcompound.contains("listener", 10)) {
@@ -94,7 +92,7 @@
              Logger logger = Allay.LOGGER;
  
              Objects.requireNonNull(logger);
-@@ -508,7 +519,7 @@
+@@ -508,7 +520,7 @@
          return Allay.DUPLICATION_ITEM.test(itemstack);
      }
  
@@ -103,7 +101,7 @@
          Allay allay = (Allay) EntityTypes.ALLAY.create(this.level);
  
          if (allay != null) {
-@@ -516,17 +527,17 @@
+@@ -516,17 +528,17 @@
              allay.setPersistenceRequired();
              allay.resetDuplicationCooldown();
              this.resetDuplicationCooldown();
