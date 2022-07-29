@@ -102,7 +102,7 @@
              allay.resetDuplicationCooldown();
              this.resetDuplicationCooldown();
 -            this.level.addFreshEntity(allay);
-+            this.level.addFreshEntity(allay, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - another mystery of the life
++            this.level.addFreshEntity(allay, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DUPLICATION); // CraftBukkit - reason for duplicated allay
          }
 -
 +        return allay; // CraftBukkit
