@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -479,6 +480,11 @@ public final class CraftServer implements Server {
                         clone.addChild(child);
                     }
                     node = clone;
+                }
+
+                if (label.equals("execute")) {
+                    node.removeCommand("run");
+                    node.addChild(LiteralArgumentBuilder.<CommandListenerWrapper>literal("run").redirect(dispatcher.getDispatcher().getRoot()).build());
                 }
 
                 dispatcher.getDispatcher().getRoot().addChild(node);

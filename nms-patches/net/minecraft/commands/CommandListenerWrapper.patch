@@ -50,13 +50,16 @@
                      entityplayer.sendSystemMessage(ichatmutablecomponent);
                  }
              }
-@@ -368,4 +385,10 @@
+@@ -368,4 +385,13 @@
      public IRegistryCustom registryAccess() {
          return this.server.registryAccess();
      }
 +
 +    // CraftBukkit start
 +    public org.bukkit.command.CommandSender getBukkitSender() {
++        if (entity != null)
++            return entity.getBukkitSender(this);
++
 +        return source.getBukkitSender(this);
 +    }
 +    // CraftBukkit end
