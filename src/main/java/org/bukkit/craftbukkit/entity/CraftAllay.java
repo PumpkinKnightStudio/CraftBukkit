@@ -42,6 +42,11 @@ public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay
     }
 
     @Override
+    public void canDuplicate(boolean canDuplicate) {
+        getHandle().setCanDuplicate(canDuplicate);
+    }
+
+    @Override
     public long getDuplicationCooldown() {
         return getHandle().duplicationCooldown;
     }

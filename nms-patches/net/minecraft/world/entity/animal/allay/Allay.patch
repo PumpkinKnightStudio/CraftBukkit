@@ -23,7 +23,7 @@
  
 +    // CraftBukkit start
 +    public void setCanDuplicate(boolean canDuplicate) {
-+        this.entityData.define(Allay.DATA_CAN_DUPLICATE, canDuplicate);
++        this.entityData.set(Allay.DATA_CAN_DUPLICATE, canDuplicate);
 +    }
 +    // CraftBukkit end
 +
