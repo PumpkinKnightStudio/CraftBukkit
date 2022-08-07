@@ -56,7 +56,7 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
     }
 
     @Override
-    public Criteria getObjectiveCriteria() throws IllegalStateException {
+    public Criteria getTrackedCriteria() throws IllegalStateException {
         CraftScoreboard scoreboard = checkState();
 
         return criteria;
