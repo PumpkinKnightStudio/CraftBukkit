@@ -1,10 +1,7 @@
 --- a/net/minecraft/server/level/EntityPlayer.java
 +++ b/net/minecraft/server/level/EntityPlayer.java
-@@ -146,8 +146,38 @@
- import net.minecraft.world.scores.ScoreboardTeam;
- import net.minecraft.world.scores.ScoreboardTeamBase;
+@@ -148,6 +148,36 @@
  import net.minecraft.world.scores.criteria.IScoreboardCriteria;
-+import org.bukkit.event.player.PlayerSpawnChangeEvent;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -31,6 +28,7 @@
 +import org.bukkit.event.player.PlayerChangedWorldEvent;
 +import org.bukkit.event.player.PlayerLocaleChangeEvent;
 +import org.bukkit.event.player.PlayerPortalEvent;
++import org.bukkit.event.player.PlayerSpawnChangeEvent;
 +import org.bukkit.event.player.PlayerTeleportEvent;
 +import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 +import org.bukkit.inventory.MainHand;
@@ -591,7 +589,7 @@
                  return Either.left(EntityHuman.EnumBedResult.OBSTRUCTED);
              } else {
 -                this.setRespawnPosition(this.level.dimension(), blockposition, this.getYRot(), false, true);
-+                this.setRespawnPosition(this.level.dimension(), blockposition, this.getYRot(), false, true, PlayerSpawnChangeEvent.Cause.BED);
++                this.setRespawnPosition(this.level.dimension(), blockposition, this.getYRot(), false, true, PlayerSpawnChangeEvent.Cause.BED); // CraftBukkit - set PlayerSpawnChangeEvent.Cause
                  if (this.level.isDay()) {
                      return Either.left(EntityHuman.EnumBedResult.NOT_POSSIBLE_NOW);
                  } else {
@@ -875,7 +873,7 @@
  
      }
  
-@@ -1553,7 +1936,21 @@
+@@ -1553,9 +1936,25 @@
          return this.respawnForced;
      }
  
@@ -890,14 +888,19 @@
 +        Location oldSpawn = (this.respawnPosition != null) ? new Location((oldWorld != null) ? oldWorld.getWorld() : null, this.respawnPosition.getX(), this.respawnPosition.getY(), this.respawnPosition.getZ(), this.respawnAngle, 0) : null;
 +        Location newSpawn = (blockposition != null) ? new Location((newWorld != null) ? newWorld.getWorld() : null, blockposition.getX(), blockposition.getY(), blockposition.getZ(), f, 0) : null;
 +        PlayerSpawnChangeEvent event = new PlayerSpawnChangeEvent(this.getBukkitEntity(), oldSpawn, newSpawn, flag, cause);
++        Bukkit.getServer().getPluginManager().callEvent(event);
 +        resourcekey = (event.getNewSpawn() != null) ? ((event.getNewSpawn().getWorld() != null) ? ((CraftWorld) event.getNewSpawn().getWorld()).getHandle().dimension() : null) : null;
 +        blockposition = (event.getNewSpawn() != null) ? new BlockPosition(event.getNewSpawn().getX(), event.getNewSpawn().getY(), event.getNewSpawn().getZ()) : null;
 +        f = (event.getNewSpawn() != null) ? event.getNewSpawn().getYaw() : 0.0F;
++        flag = event.isForced();
 +        // CraftBukkit end
          if (blockposition != null) {
-             boolean flag2 = blockposition.equals(this.respawnPosition) && resourcekey.equals(this.respawnDimension);
+-            boolean flag2 = blockposition.equals(this.respawnPosition) && resourcekey.equals(this.respawnDimension);
++            boolean flag2 = blockposition.equals(this.respawnPosition) && resourcekey == this.respawnDimension; // CraftBukkit - avoid equals if null
  
-@@ -1702,4 +2099,146 @@
+             if (flag1 && !flag2) {
+                 this.sendSystemMessage(IChatBaseComponent.translatable("block.minecraft.set_spawn"));
+@@ -1702,4 +2101,146 @@
          }
  
      }
