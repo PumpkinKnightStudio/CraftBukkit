@@ -1,18 +1,19 @@
 --- a/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/net/minecraft/server/level/PlayerChunkMap.java
-@@ -98,6 +98,11 @@
+@@ -103,6 +103,12 @@
  import org.apache.commons.lang3.mutable.MutableObject;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.world.level.levelgen.GeneratorSettings;
++import org.bukkit.craftbukkit.generator.CustomChunkGenerator;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
 +
  public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.e {
  
      private static final byte CHUNK_TYPE_REPLACEABLE = -1;
-@@ -139,6 +144,27 @@
+@@ -145,6 +151,27 @@
      private final Queue<Runnable> unloadQueue;
      int viewDistance;
  
@@ -37,10 +38,22 @@
 +    };
 +    // CraftBukkit end
 +
-     public PlayerChunkMap(WorldServer worldserver, Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, DefinedStructureManager definedstructuremanager, Executor executor, IAsyncTaskHandler<Runnable> iasynctaskhandler, ILightAccess ilightaccess, ChunkGenerator chunkgenerator, WorldLoadListener worldloadlistener, ChunkStatusUpdateListener chunkstatusupdatelistener, Supplier<WorldPersistentData> supplier, int i, boolean flag) {
+     public PlayerChunkMap(WorldServer worldserver, Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, StructureTemplateManager structuretemplatemanager, Executor executor, IAsyncTaskHandler<Runnable> iasynctaskhandler, ILightAccess ilightaccess, ChunkGenerator chunkgenerator, WorldLoadListener worldloadlistener, ChunkStatusUpdateListener chunkstatusupdatelistener, Supplier<WorldPersistentData> supplier, int i, boolean flag) {
          super(convertable_conversionsession.getDimensionPath(worldserver.dimension()).resolve("region"), datafixer, flag);
          this.visibleChunkMap = this.updatingChunkMap.clone();
-@@ -296,9 +322,12 @@
+@@ -163,6 +190,11 @@
+         this.storageName = path.getFileName().toString();
+         this.level = worldserver;
+         this.generator = chunkgenerator;
++        // CraftBukkit start - SPIGOT-7051: It's a rigged game! Use delegate for random state creation, otherwise it is not so random.
++        if (chunkgenerator instanceof CustomChunkGenerator) {
++            chunkgenerator = ((CustomChunkGenerator) chunkgenerator).getDelegate();
++        }
++        // CraftBukkit end
+         if (chunkgenerator instanceof ChunkGeneratorAbstract) {
+             ChunkGeneratorAbstract chunkgeneratorabstract = (ChunkGeneratorAbstract) chunkgenerator;
+ 
+@@ -314,9 +346,12 @@
          CompletableFuture<List<Either<IChunkAccess, PlayerChunk.Failure>>> completablefuture1 = SystemUtils.sequence(list);
          CompletableFuture<Either<List<IChunkAccess>, PlayerChunk.Failure>> completablefuture2 = completablefuture1.thenApply((list2) -> {
              List<IChunkAccess> list3 = Lists.newArrayList();
@@ -55,7 +68,7 @@
                  final Either<IChunkAccess, PlayerChunk.Failure> either = (Either) iterator.next();
  
                  if (either == null) {
-@@ -503,7 +532,7 @@
+@@ -521,7 +556,7 @@
  
      private void scheduleUnload(long i, PlayerChunk playerchunk) {
          CompletableFuture<IChunkAccess> completablefuture = playerchunk.getChunkToSave();
@@ -64,7 +77,19 @@
              CompletableFuture<IChunkAccess> completablefuture1 = playerchunk.getChunkToSave();
  
              if (completablefuture1 != completablefuture) {
-@@ -683,7 +712,21 @@
+@@ -610,9 +645,9 @@
+                 ProtoChunk protochunk = ChunkRegionLoader.read(this.level, this.poiManager, chunkcoordintpair, (NBTTagCompound) optional.get());
+ 
+                 this.markPosition(chunkcoordintpair, protochunk.getStatus().getChunkType());
+-                return Either.left(protochunk);
++                return Either.<IChunkAccess, PlayerChunk.Failure>left(protochunk); // CraftBukkit - decompile error
+             } else {
+-                return Either.left(this.createEmptyChunk(chunkcoordintpair));
++                return Either.<IChunkAccess, PlayerChunk.Failure>left(this.createEmptyChunk(chunkcoordintpair)); // CraftBukkit - decompile error
+             }
+         }, this.mainThreadExecutor).exceptionallyAsync((throwable) -> {
+             return this.handleChunkLoadFailure(throwable, chunkcoordintpair);
+@@ -718,7 +753,21 @@
  
      private static void postLoadProtoChunk(WorldServer worldserver, List<NBTTagCompound> list) {
          if (!list.isEmpty()) {
@@ -87,7 +112,7 @@
          }
  
      }
-@@ -782,7 +825,7 @@
+@@ -817,7 +866,7 @@
          if (!playerchunk.wasAccessibleSinceLastSave()) {
              return false;
          } else {
@@ -96,7 +121,7 @@
  
              if (!(ichunkaccess instanceof ProtoChunkExtension) && !(ichunkaccess instanceof Chunk)) {
                  return false;
-@@ -944,7 +987,8 @@
+@@ -979,7 +1028,8 @@
                  return ichunkaccess instanceof Chunk ? Optional.of((Chunk) ichunkaccess) : Optional.empty();
              });
  
@@ -106,7 +131,7 @@
                  return chunk.getBlockEntities().size();
              }).orElse(0), tickingtracker.getTicketDebugString(i), tickingtracker.getLevel(i), optional1.map((chunk) -> {
                  return chunk.getBlockTicks().count();
-@@ -957,7 +1001,7 @@
+@@ -992,7 +1042,7 @@
  
      private static String printFuture(CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture) {
          try {
@@ -115,16 +140,25 @@
  
              return either != null ? (String) either.map((chunk) -> {
                  return "done";
-@@ -975,7 +1019,7 @@
-     private NBTTagCompound readChunk(ChunkCoordIntPair chunkcoordintpair) throws IOException {
-         NBTTagCompound nbttagcompound = this.read(chunkcoordintpair);
+@@ -1008,12 +1058,14 @@
  
--        return nbttagcompound == null ? null : this.upgradeChunkTag(this.level.dimension(), this.overworldDataStorage, nbttagcompound, this.generator.getTypeNameForDataFixer());
-+        return nbttagcompound == null ? null : this.upgradeChunkTag(this.level.getTypeKey(), this.overworldDataStorage, nbttagcompound, this.generator.getTypeNameForDataFixer(), chunkcoordintpair, level); // CraftBukkit
+     private CompletableFuture<Optional<NBTTagCompound>> readChunk(ChunkCoordIntPair chunkcoordintpair) {
+         return this.read(chunkcoordintpair).thenApplyAsync((optional) -> {
+-            return optional.map(this::upgradeChunkTag);
++            return optional.map((nbttagcompound) -> upgradeChunkTag(nbttagcompound, chunkcoordintpair)); // CraftBukkit
+         }, SystemUtils.backgroundExecutor());
+     }
+ 
+-    private NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound) {
+-        return this.upgradeChunkTag(this.level.dimension(), this.overworldDataStorage, nbttagcompound, this.generator.getTypeNameForDataFixer());
++    // CraftBukkit start
++    private NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound, ChunkCoordIntPair chunkcoordintpair) {
++        return this.upgradeChunkTag(this.level.getTypeKey(), this.overworldDataStorage, nbttagcompound, this.generator.getTypeNameForDataFixer(), chunkcoordintpair, level);
++        // CraftBukkit end
      }
  
      boolean anyPlayerCloseEnoughForSpawning(ChunkCoordIntPair chunkcoordintpair) {
-@@ -1396,7 +1440,7 @@
+@@ -1434,7 +1486,7 @@
          public final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
  
          public EntityTracker(Entity entity, int i, int j, boolean flag) {
@@ -132,15 +166,8 @@
 +            this.serverEntity = new EntityTrackerEntry(PlayerChunkMap.this.level, entity, j, flag, this::broadcast, seenBy); // CraftBukkit
              this.entity = entity;
              this.range = i;
-             this.lastSectionPos = SectionPosition.of(entity);
-@@ -1449,12 +1493,17 @@
- 
-         public void updatePlayer(EntityPlayer entityplayer) {
-             if (entityplayer != this.entity) {
--                Vec3D vec3d = entityplayer.position().subtract(this.serverEntity.sentPos());
-+                Vec3D vec3d = entityplayer.position().subtract(this.entity.position()); // MC-155077, SPIGOT-5113
-                 double d0 = (double) Math.min(this.getEffectiveRange(), (PlayerChunkMap.this.viewDistance - 1) * 16);
-                 double d1 = vec3d.x * vec3d.x + vec3d.z * vec3d.z;
+             this.lastSectionPos = SectionPosition.of((EntityAccess) entity);
+@@ -1493,6 +1545,11 @@
                  double d2 = d0 * d0;
                  boolean flag = d1 <= d2 && this.entity.broadcastToPlayer(entityplayer);
  

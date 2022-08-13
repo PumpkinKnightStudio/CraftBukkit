@@ -237,7 +237,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "eaeedbff51b16ead3170906872fda334";
+        return "69c84c88aeb92ce9fa9525438b93f4fe";
     }
 
     @Override
@@ -303,7 +303,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return file.delete();
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18");
+    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19");
 
     @Override
     public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {

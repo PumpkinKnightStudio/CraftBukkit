@@ -1,8 +1,9 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.decoration.EntityPainting;
-import net.minecraft.world.entity.decoration.Paintings;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftArt;
@@ -18,7 +19,7 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     @Override
     public Art getArt() {
-        Paintings art = getHandle().motive;
+        Holder<PaintingVariant> art = getHandle().getVariant();
         return CraftArt.NotchToBukkit(art);
     }
 
@@ -31,12 +32,12 @@ public class CraftPainting extends CraftHanging implements Painting {
     public boolean setArt(Art art, boolean force) {
         Preconditions.checkState(force || !getHandle().isRemoved(), "Cannot set art of a removed entity, set force to true to set anyway");
         EntityPainting painting = this.getHandle();
-        Paintings oldArt = painting.motive;
-        painting.motive = CraftArt.BukkitToNotch(art);
+        Holder<PaintingVariant> oldArt = painting.getVariant();
+        painting.setVariant(CraftArt.BukkitToNotch(art));
         painting.setDirection(painting.getDirection());
         if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit
-            painting.motive = oldArt;
+            painting.setVariant(oldArt);
             painting.setDirection(painting.getDirection());
             return false;
         }

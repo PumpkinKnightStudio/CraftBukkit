@@ -768,6 +768,7 @@ public class CraftEventFactory {
         return handleBlockSpreadEvent(world, source, target, block, 2);
     }
 
+    public static BlockPosition sourceBlockOverride = null; // SPIGOT-7068: Add source block override, not the most elegant way but better than passing down a BlockPosition up to five methods deep.
     public static boolean handleBlockSpreadEvent(GeneratorAccess world, BlockPosition source, BlockPosition target, IBlockData block, int flag) {
         // Suppress during worldgen
         if (!(world instanceof World)) {
@@ -778,7 +779,7 @@ public class CraftEventFactory {
         CraftBlockState state = CraftBlockStates.getBlockState(world, target, flag);
         state.setData(block);
 
-        BlockSpreadEvent event = new BlockSpreadEvent(state.getBlock(), CraftBlock.at(world, source), state);
+        BlockSpreadEvent event = new BlockSpreadEvent(state.getBlock(), CraftBlock.at(world, sourceBlockOverride != null ? sourceBlockOverride : source), state);
         Bukkit.getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
@@ -834,8 +835,8 @@ public class CraftEventFactory {
     /**
      * Server methods
      */
-    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, int numPlayers, int maxPlayers) {
-        ServerListPingEvent event = new ServerListPingEvent(address, motd, numPlayers, maxPlayers);
+    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, boolean shouldSendChatPreviews, int numPlayers, int maxPlayers) {
+        ServerListPingEvent event = new ServerListPingEvent(address, motd, shouldSendChatPreviews, numPlayers, maxPlayers);
         craftServer.getPluginManager().callEvent(event);
         return event;
     }
@@ -885,6 +886,8 @@ public class CraftEventFactory {
                 }
             } else if ("thorns".equals(source.msgId)) {
                 cause = DamageCause.THORNS;
+            } else if ("sonic_boom".equals(source.msgId)) {
+                cause = DamageCause.SONIC_BOOM;
             }
 
             return callEntityDamageEvent(damager, entity, cause, modifiers, modifierFunctions, cancelled);
