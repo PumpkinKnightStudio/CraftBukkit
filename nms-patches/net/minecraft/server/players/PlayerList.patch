@@ -479,7 +479,7 @@
 +                        f1 = (float) MathHelper.wrapDegrees(MathHelper.atan2(vec3d1.z, vec3d1.x) * 57.2957763671875D - 90.0D);
 +                    }
 +
-+                    entityplayer1.setRespawnPosition(worldserver1.dimension(), blockposition, f, flag1, false);
++                    // entityplayer1.setRespawnPosition(worldserver1.dimension(), blockposition, f, flag1, false); CraftBukkit - don't need set again the respawn position because CB not create a new EntityPlayer
 +                    flag2 = !flag && flag3;
 +                    isBedSpawn = true;
 +                    location = new Location(worldserver1.getWorld(), vec3d.x, vec3d.y, vec3d.z, f1, 0.0F);

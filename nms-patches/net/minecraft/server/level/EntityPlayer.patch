@@ -873,7 +873,7 @@
  
      }
  
-@@ -1553,9 +1936,25 @@
+@@ -1553,9 +1936,28 @@
          return this.respawnForced;
      }
  
@@ -889,6 +889,9 @@
 +        Location newSpawn = (blockposition != null) ? new Location((newWorld != null) ? newWorld.getWorld() : null, blockposition.getX(), blockposition.getY(), blockposition.getZ(), f, 0) : null;
 +        PlayerSpawnChangeEvent event = new PlayerSpawnChangeEvent(this.getBukkitEntity(), oldSpawn, newSpawn, flag, cause);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
++        if (event.isCancelled()) {
++            return;
++        }
 +        resourcekey = (event.getNewSpawn() != null) ? ((event.getNewSpawn().getWorld() != null) ? ((CraftWorld) event.getNewSpawn().getWorld()).getHandle().dimension() : null) : null;
 +        blockposition = (event.getNewSpawn() != null) ? new BlockPosition(event.getNewSpawn().getX(), event.getNewSpawn().getY(), event.getNewSpawn().getZ()) : null;
 +        f = (event.getNewSpawn() != null) ? event.getNewSpawn().getYaw() : 0.0F;
@@ -900,7 +903,7 @@
  
              if (flag1 && !flag2) {
                  this.sendSystemMessage(IChatBaseComponent.translatable("block.minecraft.set_spawn"));
-@@ -1702,4 +2101,146 @@
+@@ -1702,4 +2104,146 @@
          }
  
      }
