@@ -1,0 +1,54 @@
+--- a/net/minecraft/world/item/ItemFireworks.java
++++ b/net/minecraft/world/item/ItemFireworks.java
+@@ -54,27 +54,47 @@
+         return EnumInteractionResult.sidedSuccess(world.isClientSide);
+     }
+ 
+-    @Override
+-    public InteractionResultWrapper<ItemStack> use(World world, EntityHuman entityhuman, EnumHand enumhand) {
++    // CraftBukkit start - break method into parts to extract the EntityFireworks rocket
++    private ItemStack getItemStack(EntityHuman entityhuman, EnumHand enumhand) {
+         if (entityhuman.isFallFlying()) {
+             ItemStack itemstack = entityhuman.getItemInHand(enumhand);
++            return itemstack;
++        }
+ 
++        return null;
++    }
++
++    public static EntityFireworks boost(World world, EntityHuman entityhuman, ItemStack itemstack) {
++        {
+             if (!world.isClientSide) {
+                 EntityFireworks entityfireworks = new EntityFireworks(world, itemstack, entityhuman);
+ 
+-                world.addFreshEntity(entityfireworks);
++                boolean success = world.addFreshEntity(entityfireworks); // CraftBukkit - extract success
+                 if (!entityhuman.getAbilities().instabuild) {
+                     itemstack.shrink(1);
+                 }
+ 
+-                entityhuman.awardStat(StatisticList.ITEM_USED.get(this));
++                entityhuman.awardStat(StatisticList.ITEM_USED.get(itemstack.getItem())); // CraftBukkit - use ItemStack type instead of "this" so method can be static
++                if (success) {
++                    return entityfireworks;
++                }
+             }
++        }
++
++        return null;
++    }
+ 
++    @Override
++    public InteractionResultWrapper<ItemStack> use(World world, EntityHuman entityhuman, EnumHand enumhand) {
++        ItemStack itemstack = getItemStack(entityhuman, enumhand);
++        if (itemstack != null) {
++            boost(world, entityhuman, itemstack);
+             return InteractionResultWrapper.sidedSuccess(entityhuman.getItemInHand(enumhand), world.isClientSide());
+         } else {
+             return InteractionResultWrapper.pass(entityhuman.getItemInHand(enumhand));
+         }
+     }
++    // CraftBukkit end
+ 
+     @Override
+     public void appendHoverText(ItemStack itemstack, @Nullable World world, List<IChatBaseComponent> list, TooltipFlag tooltipflag) {
