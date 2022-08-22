@@ -22,7 +22,6 @@ import net.minecraft.world.entity.projectile.EntityFireworks;
 import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.Containers;
 import net.minecraft.world.item.ItemCooldown;
-import net.minecraft.world.item.ItemFireworks;
 import net.minecraft.world.item.crafting.CraftingManager;
 import net.minecraft.world.item.crafting.IRecipe;
 import net.minecraft.world.item.trading.IMerchant;
@@ -54,6 +53,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -670,7 +670,8 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         Preconditions.checkArgument(fireworkItemStack != null, "fireworkItemStack must not be null");
         Preconditions.checkArgument(fireworkItemStack.getType() == Material.FIREWORK_ROCKET, "fireworkItemStack must be of type %s", Material.FIREWORK_ROCKET);
 
-        EntityFireworks fireworks = ItemFireworks.boost(getHandle().level, getHandle(), CraftItemStack.asNMSCopy(fireworkItemStack));
-        return (fireworks != null) ? (Firework) fireworks.getBukkitEntity() : null;
+        EntityFireworks fireworks = new EntityFireworks(getHandle().level, CraftItemStack.asNMSCopy(fireworkItemStack), getHandle());
+        boolean success = getHandle().level.addFreshEntity(fireworks, SpawnReason.CUSTOM);
+        return success ? (Firework) fireworks.getBukkitEntity() : null;
     }
 }
