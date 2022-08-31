@@ -309,8 +309,7 @@ public class CraftEventFactory {
     public static PlayerHarvestBlockEvent callPlayerHarvestBlockEvent(World world, BlockPosition blockposition, EntityHuman who, EnumHand enumhand, List<ItemStack> itemsToHarvest) {
         List<org.bukkit.inventory.ItemStack> bukkitItemsToHarvest = new ArrayList<>(itemsToHarvest.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()));
         Player player = (Player) who.getBukkitEntity();
-        EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-        PlayerHarvestBlockEvent playerHarvestBlockEvent = new PlayerHarvestBlockEvent(player, CraftBlock.at(world, blockposition), hand, bukkitItemsToHarvest);
+        PlayerHarvestBlockEvent playerHarvestBlockEvent = new PlayerHarvestBlockEvent(player, CraftBlock.at(world, blockposition), CraftEquipmentSlot.getHand(enumhand), bukkitItemsToHarvest);
         Bukkit.getPluginManager().callEvent(playerHarvestBlockEvent);
         return playerHarvestBlockEvent;
     }
@@ -320,7 +319,7 @@ public class CraftEventFactory {
      */
     public static PlayerBucketEntityEvent callPlayerFishBucketEvent(EntityLiving fish, EntityHuman entityHuman, ItemStack originalBucket, ItemStack entityBucket, EnumHand enumhand) {
         Player player = (Player) entityHuman.getBukkitEntity();
-        EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        EquipmentSlot hand = CraftEquipmentSlot.getHand(enumhand);
 
         PlayerBucketEntityEvent event;
         if (fish instanceof EntityFish) {
@@ -414,12 +413,12 @@ public class CraftEventFactory {
         return callEntityPlaceEvent(itemactioncontext.getLevel(), itemactioncontext.getClickedPos(), itemactioncontext.getClickedFace(), itemactioncontext.getPlayer(), entity, itemactioncontext.getHand());
     }
 
-    public static EntityPlaceEvent callEntityPlaceEvent(World world, BlockPosition clickPosition, EnumDirection clickedFace, EntityHuman human, Entity entity, EnumHand hand) {
+    public static EntityPlaceEvent callEntityPlaceEvent(World world, BlockPosition clickPosition, EnumDirection clickedFace, EntityHuman human, Entity entity, EnumHand enumhand) {
         Player who = (human == null) ? null : (Player) human.getBukkitEntity();
         org.bukkit.block.Block blockClicked = CraftBlock.at(world, clickPosition);
         org.bukkit.block.BlockFace blockFace = org.bukkit.craftbukkit.block.CraftBlock.notchToBlockFace(clickedFace);
 
-        EntityPlaceEvent event = new EntityPlaceEvent(entity.getBukkitEntity(), who, blockClicked, blockFace, (hand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+        EntityPlaceEvent event = new EntityPlaceEvent(entity.getBukkitEntity(), who, blockClicked, blockFace, CraftEquipmentSlot.getHand(enumhand));
         entity.level.getCraftServer().getPluginManager().callEvent(event);
 
         return event;
@@ -446,7 +445,7 @@ public class CraftEventFactory {
         Block block = CraftBlock.at(world, changed);
         Block blockClicked = CraftBlock.at(world, clicked);
         BlockFace blockFace = CraftBlock.notchToBlockFace(clickedFace);
-        EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+        EquipmentSlot hand = CraftEquipmentSlot.getHand(enumhand);
 
         PlayerEvent event;
         if (isFilling) {
@@ -1386,15 +1385,13 @@ public class CraftEventFactory {
     }
 
     public static PlayerUnleashEntityEvent callPlayerUnleashEntityEvent(EntityInsentient entity, EntityHuman player, EnumHand enumhand) {
-        EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-        PlayerUnleashEntityEvent event = new PlayerUnleashEntityEvent(entity.getBukkitEntity(), (Player) player.getBukkitEntity(), hand);
+        PlayerUnleashEntityEvent event = new PlayerUnleashEntityEvent(entity.getBukkitEntity(), (Player) player.getBukkitEntity(), CraftEquipmentSlot.getHand(enumhand));
         entity.level.getCraftServer().getPluginManager().callEvent(event);
         return event;
     }
 
     public static PlayerLeashEntityEvent callPlayerLeashEntityEvent(EntityInsentient entity, Entity leashHolder, EntityHuman player, EnumHand enumhand) {
-        EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-        PlayerLeashEntityEvent event = new PlayerLeashEntityEvent(entity.getBukkitEntity(), leashHolder.getBukkitEntity(), (Player) player.getBukkitEntity(), hand);
+        PlayerLeashEntityEvent event = new PlayerLeashEntityEvent(entity.getBukkitEntity(), leashHolder.getBukkitEntity(), (Player) player.getBukkitEntity(), CraftEquipmentSlot.getHand(enumhand));
         entity.level.getCraftServer().getPluginManager().callEvent(event);
         return event;
     }

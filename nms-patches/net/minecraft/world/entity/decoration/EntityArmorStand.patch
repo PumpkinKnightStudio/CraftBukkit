@@ -65,7 +65,7 @@
 +            ArmorStand self = (ArmorStand) this.getBukkitEntity();
 +
 +            EquipmentSlot slot = CraftEquipmentSlot.getSlot(enumitemslot);
-+            EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
++            EquipmentSlot hand = CraftEquipmentSlot.getHand(enumhand);
 +            PlayerArmorStandManipulateEvent armorStandManipulateEvent = new PlayerArmorStandManipulateEvent(player,self,playerHeldItem,armorStandItem,slot,hand);
 +            this.level.getCraftServer().getPluginManager().callEvent(armorStandManipulateEvent);
 +

@@ -6,13 +6,13 @@
  
 +// CraftBukkit start
 +import org.bukkit.event.player.PlayerFishEvent;
-+import org.bukkit.inventory.EquipmentSlot;
++import org.bukkit.craftbukkit.CraftEquipmentSlot;
 +// CraftBukkit end
 +
  public class ItemFishingRod extends Item implements ItemVanishable {
  
      public ItemFishingRod(Item.Info item_info) {
-@@ -33,12 +38,24 @@
+@@ -33,12 +38,23 @@
              world.playSound((EntityHuman) null, entityhuman.getX(), entityhuman.getY(), entityhuman.getZ(), SoundEffects.FISHING_BOBBER_RETRIEVE, SoundCategory.NEUTRAL, 1.0F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
              entityhuman.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
          } else {
@@ -25,8 +25,7 @@
 -                world.addFreshEntity(new EntityFishingHook(entityhuman, world, j, i));
 +                // CraftBukkit start
 +                EntityFishingHook entityfishinghook = new EntityFishingHook(entityhuman, world, j, i);
-+                EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-+                PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), null, (org.bukkit.entity.FishHook) entityfishinghook.getBukkitEntity(), hand, PlayerFishEvent.State.FISHING);
++                PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), null, (org.bukkit.entity.FishHook) entityfishinghook.getBukkitEntity(), CraftEquipmentSlot.getHand(enumhand), PlayerFishEvent.State.FISHING);
 +                world.getCraftServer().getPluginManager().callEvent(playerFishEvent);
 +
 +                if (playerFishEvent.isCancelled()) {

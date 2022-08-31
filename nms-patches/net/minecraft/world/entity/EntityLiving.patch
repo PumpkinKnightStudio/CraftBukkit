@@ -454,7 +454,7 @@
  
 -            if (itemstack != null) {
 -                if (this instanceof EntityPlayer) {
-+            org.bukkit.inventory.EquipmentSlot handSlot = (hand != null) ? (hand == EnumHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND) : null;
++            org.bukkit.inventory.EquipmentSlot handSlot = (hand != null) ? org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(hand) : null;
 +            EntityResurrectEvent event = new EntityResurrectEvent((LivingEntity) this.getBukkitEntity(), handSlot);
 +            event.setCancelled(itemstack == null);
 +            this.level.getCraftServer().getPluginManager().callEvent(event);
@@ -859,7 +859,7 @@
 +                    ItemStack itemstack;
 +                    if (this instanceof EntityPlayer) {
 +                        org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(this.useItem);
-+                        org.bukkit.inventory.EquipmentSlot hand = (enumhand == EnumHand.MAIN_HAND) ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND;
++                        org.bukkit.inventory.EquipmentSlot hand = org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(enumhand);
 +                        PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) this.getBukkitEntity(), craftItem, hand);
 +                        level.getCraftServer().getPluginManager().callEvent(event);
 +
