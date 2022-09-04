@@ -701,6 +701,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public boolean canBreatheUnderwater() {
+        return getHandle().canBreatheUnderwater();
+    }
+
+    @Override
     public Sound getHurtSound() {
         SoundEffect sound = getHandle().getHurtSound0(DamageSource.GENERIC);
         return (sound != null) ? CraftSound.getBukkit(sound) : null;
