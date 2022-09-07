@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -85,6 +86,7 @@ import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
+import org.bukkit.BlockChangeDelegate;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
@@ -107,6 +109,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
+import org.bukkit.craftbukkit.CraftBlockChangeDelegate;
 import org.bukkit.craftbukkit.CraftEffect;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
@@ -611,6 +614,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), ((CraftBlockData) block).getState());
         getHandle().connection.send(packet);
+    }
+
+    @Override
+    public void sendBlockChanges(boolean suppressLightUpdates, Consumer<BlockChangeDelegate> change) {
+        if (getHandle().connection == null) return;
+
+        CraftBlockChangeDelegate delegate = new CraftBlockChangeDelegate(getWorld(), suppressLightUpdates);
+        change.accept(delegate);
+
+        delegate.createUpdatePackets().forEach(getHandle().connection::send);
     }
 
     @Override
