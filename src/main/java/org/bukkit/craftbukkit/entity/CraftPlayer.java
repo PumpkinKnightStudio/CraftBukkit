@@ -6,6 +6,8 @@ import com.google.common.io.BaseEncoding;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.shorts.ShortArraySet;
+import it.unimi.dsi.fastutil.shorts.ShortSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -23,12 +25,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.SectionPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.ChatMessageContent;
@@ -52,6 +54,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
 import net.minecraft.network.protocol.game.PacketPlayOutExperience;
 import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.network.protocol.game.PacketPlayOutMultiBlockChange;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter;
@@ -80,13 +83,13 @@ import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntitySign;
+import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.border.IWorldBorderListener;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
-import org.bukkit.BlockChangeDelegate;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
@@ -103,13 +106,13 @@ import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
-import org.bukkit.craftbukkit.CraftBlockChangeDelegate;
 import org.bukkit.craftbukkit.CraftEffect;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
@@ -617,13 +620,59 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendBlockChanges(boolean suppressLightUpdates, Consumer<BlockChangeDelegate> change) {
-        if (getHandle().connection == null) return;
+    public void sendBlockChanges(Collection<BlockState> blocks, boolean suppressLightUpdates) {
+        Preconditions.checkArgument(blocks != null, "blocks must not be null");
 
-        CraftBlockChangeDelegate delegate = new CraftBlockChangeDelegate(getWorld(), suppressLightUpdates);
-        change.accept(delegate);
+        if (getHandle().connection == null || blocks.isEmpty()) {
+            return;
+        }
 
-        delegate.createUpdatePackets().forEach(getHandle().connection::send);
+        Map<SectionPosition, ChunkSectionChanges> changes = new HashMap<>();
+        for (BlockState state : blocks) {
+            BlockData blockData = state.getBlockData();
+
+            // The coordinates of the block in the world
+            int worldX = state.getX();
+            int worldY = state.getY();
+            int worldZ = state.getZ();
+
+            // The coordinates of the chunk section in which the block is located, aka chunk x, y, and z
+            SectionPosition sectionPosition = SectionPosition.of(
+                SectionPosition.blockToSectionCoord(worldX),
+                SectionPosition.blockToSectionCoord(worldY),
+                SectionPosition.blockToSectionCoord(worldZ)
+            );
+
+            // The coordinates of the block relative to the chunk section (i.e. x, y, and z in the range of 0 - 15)
+            int blockLocalX = toChunkRelativeCoordinate(worldX);
+            int blockLocalY = toChunkRelativeCoordinate(worldY);
+            int blockLocalZ = toChunkRelativeCoordinate(worldZ);
+
+            // Push the block change position and block data to the final change map
+            ChunkSectionChanges sectionChanges = changes.computeIfAbsent(sectionPosition, ignore -> new ChunkSectionChanges());
+
+            short packedBlockLocalCoordinates = (short) (blockLocalX << 8 | blockLocalZ << 4 | blockLocalY);
+            sectionChanges.positions().add(packedBlockLocalCoordinates);
+            sectionChanges.blockData().add(((CraftBlockData) blockData).getState());
+        }
+
+        // Construct the packets using the data allocated above and send then to the players
+        for (Map.Entry<SectionPosition, ChunkSectionChanges> entry : changes.entrySet()) {
+            ChunkSectionChanges chunkChanges = entry.getValue();
+            PacketPlayOutMultiBlockChange packet = new PacketPlayOutMultiBlockChange(entry.getKey(), chunkChanges.positions(), chunkChanges.blockData().toArray(IBlockData[]::new), suppressLightUpdates);
+            getHandle().connection.send(packet);
+        }
+    }
+
+    private int toChunkRelativeCoordinate(int coordinate) {
+        int localCoordinate = coordinate % 16;
+
+        // If the local coordinate is negative, we add 16 to it to make it positive, but still in the same chunk relative position
+        if (localCoordinate < 0) {
+            localCoordinate += 16;
+        }
+
+        return localCoordinate;
     }
 
     @Override
@@ -1913,5 +1962,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public boolean isAllowingServerListings() {
         return getHandle().allowsListing();
+    }
+
+    private record ChunkSectionChanges(ShortSet positions, List<IBlockData> blockData) {
+
+        public ChunkSectionChanges() {
+            this(new ShortArraySet(), new ArrayList<>());
+        }
+
     }
 }
