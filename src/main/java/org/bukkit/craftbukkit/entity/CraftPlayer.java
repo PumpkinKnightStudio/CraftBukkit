@@ -86,6 +86,7 @@ import net.minecraft.world.phys.Vec3D;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
@@ -1900,5 +1901,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public boolean isAllowingServerListings() {
         return getHandle().allowsListing();
+    }
+
+    @Override
+    public void setServerBrand(String value) {
+        Validate.isTrue(value != null, "brand == null");
+        if (getHandle().connection == null) return;
+
+        // Prevent colours interfering with the rest of the line
+        if (!value.endsWith(ChatColor.RESET.toString())) {
+            value = value + ChatColor.RESET;
+        }
+
+        getHandle().connection.send(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.BRAND, (new PacketDataSerializer(Unpooled.buffer())).writeUtf(value)));
     }
 }
