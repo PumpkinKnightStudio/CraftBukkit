@@ -1913,6 +1913,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             value = value + ChatColor.RESET;
         }
 
+        value = value + " | " + getHandle().server.getServerModName();
+
         getHandle().connection.send(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.BRAND, (new PacketDataSerializer(Unpooled.buffer())).writeUtf(value)));
     }
 }
