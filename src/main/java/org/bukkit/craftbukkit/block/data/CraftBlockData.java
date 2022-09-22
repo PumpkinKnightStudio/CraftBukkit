@@ -28,6 +28,8 @@ import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.block.RandomBlockOffset;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -546,6 +548,31 @@ public class CraftBlockData implements BlockData {
     @Override
     public SoundGroup getSoundGroup() {
         return CraftSoundGroup.getSoundGroup(state.getSoundType());
+    }
+
+    @Override
+    public int getLightEmission() {
+        return state.getLightEmission();
+    }
+
+    @Override
+    public boolean isOccluding() {
+        return state.canOcclude();
+    }
+
+    @Override
+    public boolean requiresCorrectToolForDrops() {
+        return state.requiresCorrectToolForDrops();
+    }
+
+    @Override
+    public PistonMoveReaction getPistonMoveReaction() {
+        return PistonMoveReaction.getById(state.getPistonPushReaction().ordinal());
+    }
+
+    @Override
+    public RandomBlockOffset getRandomBlockOffset() {
+        return RandomBlockOffset.values()[state.getOffsetType().ordinal()];
     }
 
     @Override
