@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -72,6 +72,40 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -71,6 +71,40 @@
+ import net.minecraft.world.level.block.state.pattern.ShapeDetectorBlock;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import com.mojang.serialization.Dynamic;
@@ -41,7 +41,7 @@
  public final class ItemStack {
  
      public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create((instance) -> {
-@@ -139,16 +173,30 @@
+@@ -146,16 +180,30 @@
          this.updateEmptyCacheFlag();
      }
  
@@ -74,7 +74,7 @@
              this.getItem().verifyTagAfterLoad(this.tag);
          }
  
-@@ -156,6 +204,11 @@
+@@ -163,6 +211,11 @@
              this.setDamageValue(this.getDamageValue());
          }
  
@@ -86,8 +86,8 @@
          this.updateEmptyCacheFlag();
      }
  
-@@ -193,7 +246,7 @@
-         return this.getItem() == item;
+@@ -216,7 +269,7 @@
+         return this.getItem().builtInRegistryHolder().tags();
      }
  
 -    public EnumInteractionResult useOn(ItemActionContext itemactioncontext) {
@@ -95,8 +95,8 @@
          EntityHuman entityhuman = itemactioncontext.getPlayer();
          BlockPosition blockposition = itemactioncontext.getClickedPos();
          ShapeDetectorBlock shapedetectorblock = new ShapeDetectorBlock(itemactioncontext.getLevel(), blockposition, false);
-@@ -201,12 +254,157 @@
-         if (entityhuman != null && !entityhuman.getAbilities().mayBuild && !this.hasAdventureModePlaceTagForBlock(itemactioncontext.getLevel().getTagManager(), shapedetectorblock)) {
+@@ -224,12 +277,157 @@
+         if (entityhuman != null && !entityhuman.getAbilities().mayBuild && !this.hasAdventureModePlaceTagForBlock(itemactioncontext.getLevel().registryAccess().registryOrThrow(IRegistry.BLOCK_REGISTRY), shapedetectorblock)) {
              return EnumInteractionResult.PASS;
          } else {
 +            // CraftBukkit start - handle all block place event logic here
@@ -207,7 +207,7 @@
 +                    // Special case juke boxes as they update their tile entity. Copied from ItemRecord.
 +                    // PAIL: checkme on updates.
 +                    if (this.item instanceof ItemRecord) {
-+                        ((BlockJukeBox) Blocks.JUKEBOX).setRecord(world, blockposition, world.getBlockState(blockposition), this);
++                        ((BlockJukeBox) Blocks.JUKEBOX).setRecord(entityhuman, world, blockposition, world.getBlockState(blockposition), this);
 +                        world.levelEvent((EntityHuman) null, 1010, blockposition, Item.getId(this.item));
 +                        this.shrink(1);
 +                        entityhuman.awardStat(StatisticList.PLAY_RECORD);
@@ -254,7 +254,7 @@
  
              return enuminteractionresult;
          }
-@@ -287,6 +485,21 @@
+@@ -310,6 +508,21 @@
                  }
  
                  i -= k;
@@ -276,7 +276,7 @@
                  if (i <= 0) {
                      return false;
                  }
-@@ -308,6 +521,11 @@
+@@ -331,6 +544,11 @@
                  if (this.hurt(i, t0.getRandom(), t0 instanceof EntityPlayer ? (EntityPlayer) t0 : null)) {
                      consumer.accept(t0);
                      Item item = this.getItem();
@@ -288,7 +288,7 @@
  
                      this.shrink(1);
                      if (t0 instanceof EntityHuman) {
-@@ -463,6 +681,17 @@
+@@ -486,6 +704,17 @@
          return this.tag;
      }
  
@@ -306,7 +306,16 @@
      public NBTTagCompound getOrCreateTag() {
          if (this.tag == null) {
              this.setTag(new NBTTagCompound());
-@@ -843,6 +1072,12 @@
+@@ -782,7 +1011,7 @@
+ 
+     private static Collection<IChatBaseComponent> expandBlockState(String s) {
+         try {
+-            return (Collection) ArgumentBlock.parseForTesting((IRegistry) IRegistry.BLOCK, s, true).map((argumentblock_a) -> {
++            return (Collection) ArgumentBlock.parseForTesting(IRegistry.BLOCK, s, true).map((argumentblock_a) -> { // CraftBukkit - decompile error
+                 return Lists.newArrayList(new IChatBaseComponent[]{argumentblock_a.blockState().getBlock().getName().withStyle(EnumChatFormat.DARK_GRAY)});
+             }, (argumentblock_b) -> {
+                 return (List) argumentblock_b.tag().stream().map((holder) -> {
+@@ -848,6 +1077,12 @@
      }
  
      public void setRepairCost(int i) {
@@ -319,7 +328,7 @@
          this.getOrCreateTag().putInt("RepairCost", i);
      }
  
-@@ -892,6 +1127,13 @@
+@@ -897,6 +1132,13 @@
          nbttaglist.add(nbttagcompound);
      }
  
@@ -331,5 +340,5 @@
 +    // CraftBukkit end
 +
      public IChatBaseComponent getDisplayName() {
-         IChatMutableComponent ichatmutablecomponent = (new ChatComponentText("")).append(this.getHoverName());
+         IChatMutableComponent ichatmutablecomponent = IChatBaseComponent.empty().append(this.getHoverName());
  

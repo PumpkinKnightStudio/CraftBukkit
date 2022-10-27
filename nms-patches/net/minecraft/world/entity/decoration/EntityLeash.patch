@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/decoration/EntityLeash.java
 +++ b/net/minecraft/world/entity/decoration/EntityLeash.java
-@@ -25,6 +25,12 @@
+@@ -24,6 +24,12 @@
  import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
  
@@ -13,12 +13,12 @@
  public class EntityLeash extends EntityHanging {
  
      public static final double OFFSET_Y = 0.375D;
-@@ -96,22 +102,42 @@
+@@ -95,22 +101,42 @@
              while (iterator.hasNext()) {
                  entityinsentient = (EntityInsentient) iterator.next();
                  if (entityinsentient.getLeashHolder() == entityhuman) {
 +                    // CraftBukkit start
-+                    if (CraftEventFactory.callPlayerLeashEntityEvent(entityinsentient, this, entityhuman).isCancelled()) {
++                    if (CraftEventFactory.callPlayerLeashEntityEvent(entityinsentient, this, entityhuman, enumhand).isCancelled()) {
 +                        ((EntityPlayer) entityhuman).connection.send(new PacketPlayOutAttachEntity(entityinsentient, entityinsentient.getLeashHolder()));
 +                        continue;
 +                    }
@@ -43,7 +43,7 @@
                          if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == this) {
 -                            entityinsentient.dropLeash(true, false);
 +                            // CraftBukkit start
-+                            if (CraftEventFactory.callPlayerUnleashEntityEvent(entityinsentient, entityhuman).isCancelled()) {
++                            if (CraftEventFactory.callPlayerUnleashEntityEvent(entityinsentient, entityhuman, enumhand).isCancelled()) {
 +                                die = false;
 +                                continue;
 +                            }

@@ -5,13 +5,14 @@ import java.util.Random;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistryCustom;
-import net.minecraft.core.SectionPosition;
 import net.minecraft.core.particles.ParticleParam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.sounds.SoundCategory;
 import net.minecraft.sounds.SoundEffect;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyDamageScaler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.EntityHuman;
@@ -30,14 +31,14 @@ import net.minecraft.world.level.dimension.DimensionManager;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.HeightMap;
-import net.minecraft.world.level.levelgen.feature.StructureGenerator;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.material.FluidTypes;
 import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.phys.AxisAlignedBB;
+import net.minecraft.world.phys.Vec3D;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.TickListEmpty;
 
@@ -50,11 +51,6 @@ public class DummyGeneratorAccess implements GeneratorAccessSeed {
 
     @Override
     public long getSeed() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<? extends StructureStart<?>> startsForFeature(SectionPosition sp, StructureGenerator<?> sg) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -104,7 +100,7 @@ public class DummyGeneratorAccess implements GeneratorAccessSeed {
     }
 
     @Override
-    public Random getRandom() {
+    public RandomSource getRandom() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -124,7 +120,7 @@ public class DummyGeneratorAccess implements GeneratorAccessSeed {
     }
 
     @Override
-    public void gameEvent(Entity entity, GameEvent gameevent, BlockPosition blockposition) {
+    public void gameEvent(GameEvent gameevent, Vec3D vec3d, GameEvent.a gameevent_a) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -169,7 +165,7 @@ public class DummyGeneratorAccess implements GeneratorAccessSeed {
     }
 
     @Override
-    public BiomeBase getUncachedNoiseBiome(int i, int i1, int i2) {
+    public Holder<BiomeBase> getUncachedNoiseBiome(int i, int i1, int i2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

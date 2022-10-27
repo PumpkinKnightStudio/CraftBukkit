@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -20,9 +21,14 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
@@ -37,6 +43,7 @@ import net.minecraft.server.level.Ticket;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.sounds.SoundCategory;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ArraySetSorted;
 import net.minecraft.util.Unit;
 import net.minecraft.world.EnumDifficulty;
@@ -56,7 +63,6 @@ import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
-import net.minecraft.world.level.levelgen.feature.StructureGenerator;
 import net.minecraft.world.level.storage.SavedFile;
 import net.minecraft.world.phys.AxisAlignedBB;
 import net.minecraft.world.phys.MovingObjectPosition;
@@ -71,10 +77,11 @@ import org.bukkit.Effect;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Raid;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
-import org.bukkit.StructureType;
 import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -89,12 +96,17 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.generator.strucutre.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
+import org.bukkit.craftbukkit.util.CraftStructureSearchResult;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -113,9 +125,12 @@ import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.structure.Structure;
+import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.PotionData;
@@ -123,10 +138,12 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 
 public class CraftWorld extends CraftRegionAccessor implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
+    private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
     private final WorldServer world;
     private WorldBorder worldBorder;
@@ -137,6 +154,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     private final List<BlockPopulator> populators = new ArrayList<BlockPopulator>();
     private final BlockMetadataStore blockMetadata = new BlockMetadataStore(this);
     private final Object2IntOpenHashMap<SpawnCategory> spawnCategoryLimit = new Object2IntOpenHashMap<>();
+    private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
     private static final Random rand = new Random();
 
@@ -161,7 +179,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public Location getSpawnLocation() {
         BlockPosition spawn = world.getSharedSpawnPos();
-        return new Location(this, spawn.getX(), spawn.getY(), spawn.getZ());
+        float yaw = world.getSharedSpawnAngle();
+        return new Location(this, spawn.getX(), spawn.getY(), spawn.getZ(), yaw, 0);
     }
 
     @Override
@@ -212,8 +231,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public boolean isChunkGenerated(int x, int z) {
         try {
-            return isChunkLoaded(x, z) || world.getChunkSource().chunkMap.read(new ChunkCoordIntPair(x, z)) != null;
-        } catch (IOException ex) {
+            return isChunkLoaded(x, z) || world.getChunkSource().chunkMap.read(new ChunkCoordIntPair(x, z)).get().isPresent();
+        } catch (InterruptedException | ExecutionException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -221,7 +240,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public Chunk[] getLoadedChunks() {
         Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkSource().chunkMap.visibleChunkMap;
-        return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
+        return chunks.values().stream().map(PlayerChunk::getFullChunkNow).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
     }
 
     @Override
@@ -358,7 +377,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         ChunkMapDistance chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
 
-        if (chunkDistanceManager.addTicketAtLevel(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 31, plugin)) { // keep in-line with force loading, add at level 31
+        if (chunkDistanceManager.addRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 2, plugin)) { // keep in-line with force loading, add at level 31
             this.getChunkAt(x, z); // ensure loaded
             return true;
         }
@@ -371,7 +390,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkNotNull(plugin, "null plugin");
 
         ChunkMapDistance chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
-        return chunkDistanceManager.removeTicketAtLevel(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 31, plugin); // keep in-line with force loading, remove at level 31
+        return chunkDistanceManager.removeRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkCoordIntPair(x, z), 2, plugin); // keep in-line with force loading, remove at level 31
     }
 
     @Override
@@ -572,6 +591,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     @Override
+    public NamespacedKey getKey() {
+        return CraftNamespacedKey.fromMinecraft(world.dimension().location());
+    }
+
+    @Override
     public String toString() {
         return "CraftWorld{name=" + getName() + '}';
     }
@@ -742,7 +766,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     @Override
-    public void setBiome(int x, int y, int z, BiomeBase bb) {
+    public void setBiome(int x, int y, int z, Holder<BiomeBase> bb) {
         BlockPosition pos = new BlockPosition(x, 0, z);
         if (this.world.hasChunkAt(pos)) {
             net.minecraft.world.level.chunk.Chunk chunk = this.world.getChunkAt(pos);
@@ -763,7 +787,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public double getTemperature(int x, int y, int z) {
         BlockPosition pos = new BlockPosition(x, y, z);
-        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).getTemperature(pos);
+        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).value().getTemperature(pos);
     }
 
     @Override
@@ -773,7 +797,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public double getHumidity(int x, int y, int z) {
-        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).getDownfall();
+        return this.world.getNoiseBiome(x >> 2, y >> 2, z >> 2).value().getDownfall();
     }
 
     @Override
@@ -1135,22 +1159,16 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Validate.notNull(material, "Material cannot be null");
         Validate.isTrue(material.isBlock(), "Material must be a block");
 
-        EntityFallingBlock entity = new EntityFallingBlock(world, location.getX(), location.getY(), location.getZ(), CraftMagicNumbers.getBlock(material).defaultBlockState());
-        entity.time = 1;
-
-        world.addFreshEntity(entity, SpawnReason.CUSTOM);
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, new BlockPosition(location.getX(), location.getY(), location.getZ()), CraftMagicNumbers.getBlock(material).defaultBlockState(), SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
     }
 
     @Override
     public FallingBlock spawnFallingBlock(Location location, BlockData data) throws IllegalArgumentException {
         Validate.notNull(location, "Location cannot be null");
-        Validate.notNull(data, "Material cannot be null");
+        Validate.notNull(data, "BlockData cannot be null");
 
-        EntityFallingBlock entity = new EntityFallingBlock(world, location.getX(), location.getY(), location.getZ(), ((CraftBlockData) data).getState());
-        entity.time = 1;
-
-        world.addFreshEntity(entity, SpawnReason.CUSTOM);
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, new BlockPosition(location.getX(), location.getY(), location.getZ()), ((CraftBlockData) data).getState(), SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
     }
 
@@ -1303,7 +1321,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean canGenerateStructures() {
-        return world.serverLevelData.worldGenSettings().generateFeatures();
+        return world.serverLevelData.worldGenSettings().generateStructures();
     }
 
     @Override
@@ -1545,7 +1563,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         double y = loc.getY();
         double z = loc.getZ();
 
-        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), SoundCategory.valueOf(category.name()), new Vec3D(x, y, z), volume, pitch);
+        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), SoundCategory.valueOf(category.name()), new Vec3D(x, y, z), volume, pitch, getHandle().getRandom().nextLong());
         world.getServer().getPlayerList().broadcast(null, x, y, z, volume > 1.0F ? 16.0F * volume : 16.0D, this.world.dimension(), packet);
     }
 
@@ -1558,7 +1576,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public void playSound(Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (!(entity instanceof CraftEntity craftEntity) || entity.getWorld() != this || sound == null || category == null) return;
 
-        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch);
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
         PlayerChunkMap.EntityTracker entityTracker = getHandle().getChunkSource().chunkMap.entityMap.get(entity.getEntityId());
         if (entityTracker != null) {
             entityTracker.broadcastAndSend(packet);
@@ -1764,11 +1782,84 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     }
 
+    @Deprecated
     @Override
-    public Location locateNearestStructure(Location origin, StructureType structureType, int radius, boolean findUnexplored) {
+    public Location locateNearestStructure(Location origin, org.bukkit.StructureType structureType, int radius, boolean findUnexplored) {
+        StructureSearchResult result = null;
+
+        // Manually map the mess of the old StructureType to the new StructureType and normal Structure
+        if (org.bukkit.StructureType.MINESHAFT == structureType) {
+            result = locateNearestStructure(origin, StructureType.MINESHAFT, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.VILLAGE == structureType) {
+            result = locateNearestStructure(origin, List.of(Structure.VILLAGE_DESERT, Structure.VILLAGE_PLAINS, Structure.VILLAGE_SAVANNA, Structure.VILLAGE_SNOWY, Structure.VILLAGE_TAIGA), radius, findUnexplored);
+        } else if (org.bukkit.StructureType.NETHER_FORTRESS == structureType) {
+            result = locateNearestStructure(origin, StructureType.FORTRESS, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.STRONGHOLD == structureType) {
+            result = locateNearestStructure(origin, StructureType.STRONGHOLD, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.JUNGLE_PYRAMID == structureType) {
+            result = locateNearestStructure(origin, StructureType.JUNGLE_TEMPLE, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.OCEAN_RUIN == structureType) {
+            result = locateNearestStructure(origin, StructureType.OCEAN_RUIN, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.DESERT_PYRAMID == structureType) {
+            result = locateNearestStructure(origin, StructureType.DESERT_PYRAMID, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.IGLOO == structureType) {
+            result = locateNearestStructure(origin, StructureType.IGLOO, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.SWAMP_HUT == structureType) {
+            result = locateNearestStructure(origin, StructureType.SWAMP_HUT, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.OCEAN_MONUMENT == structureType) {
+            result = locateNearestStructure(origin, StructureType.OCEAN_MONUMENT, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.END_CITY == structureType) {
+            result = locateNearestStructure(origin, StructureType.END_CITY, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.WOODLAND_MANSION == structureType) {
+            result = locateNearestStructure(origin, StructureType.WOODLAND_MANSION, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.BURIED_TREASURE == structureType) {
+            result = locateNearestStructure(origin, StructureType.BURIED_TREASURE, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.SHIPWRECK == structureType) {
+            result = locateNearestStructure(origin, StructureType.SHIPWRECK, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.PILLAGER_OUTPOST == structureType) {
+            result = locateNearestStructure(origin, Structure.PILLAGER_OUTPOST, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.NETHER_FOSSIL == structureType) {
+            result = locateNearestStructure(origin, StructureType.NETHER_FOSSIL, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.RUINED_PORTAL == structureType) {
+            result = locateNearestStructure(origin, StructureType.RUINED_PORTAL, radius, findUnexplored);
+        } else if (org.bukkit.StructureType.BASTION_REMNANT == structureType) {
+            result = locateNearestStructure(origin, Structure.BASTION_REMNANT, radius, findUnexplored);
+        }
+
+        return (result == null) ? null : result.getLocation();
+    }
+
+    @Override
+    public StructureSearchResult locateNearestStructure(Location origin, StructureType structureType, int radius, boolean findUnexplored) {
+        List<Structure> structures = new ArrayList<>();
+        for (Structure structure : Registry.STRUCTURE) {
+            if (structure.getStructureType() == structureType) {
+                structures.add(structure);
+            }
+        }
+
+        return locateNearestStructure(origin, structures, radius, findUnexplored);
+    }
+
+    @Override
+    public StructureSearchResult locateNearestStructure(Location origin, Structure structure, int radius, boolean findUnexplored) {
+        return locateNearestStructure(origin, List.of(structure), radius, findUnexplored);
+    }
+
+    public StructureSearchResult locateNearestStructure(Location origin, List<Structure> structures, int radius, boolean findUnexplored) {
         BlockPosition originPos = new BlockPosition(origin.getX(), origin.getY(), origin.getZ());
-        BlockPosition nearest = getHandle().getChunkSource().getGenerator().findNearestMapFeature(getHandle(), StructureGenerator.STRUCTURES_REGISTRY.get(structureType.getName()), originPos, radius, findUnexplored);
-        return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
+        List<Holder<net.minecraft.world.level.levelgen.structure.Structure>> holders = new ArrayList<>();
+
+        for (Structure structure : structures) {
+            holders.add(Holder.direct(CraftStructure.bukkitToMinecraft(structure)));
+        }
+
+        Pair<BlockPosition, Holder<net.minecraft.world.level.levelgen.structure.Structure>> found = getHandle().getChunkSource().getGenerator().findNearestMapStructure(getHandle(), HolderSet.direct(holders), originPos, radius, findUnexplored);
+        if (found == null) {
+            return null;
+        }
+
+        return new CraftStructureSearchResult(CraftStructure.minecraftToBukkit(found.getSecond().value(), getHandle().registryAccess()), new Location(this, found.getFirst().getX(), found.getFirst().getY(), found.getFirst().getZ()));
     }
 
     @Override
@@ -1790,5 +1881,22 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public DragonBattle getEnderDragonBattle() {
         return (getHandle().dragonFight() == null) ? null : new CraftDragonBattle(getHandle().dragonFight());
+    }
+
+    @Override
+    public PersistentDataContainer getPersistentDataContainer() {
+        return persistentDataContainer;
+    }
+
+    public void storeBukkitValues(NBTTagCompound c) {
+        if (!this.persistentDataContainer.isEmpty()) {
+            c.put("BukkitValues", this.persistentDataContainer.toTagCompound());
+        }
+    }
+
+    public void readBukkitValues(NBTBase c) {
+        if (c instanceof NBTTagCompound) {
+            this.persistentDataContainer.putAll((NBTTagCompound) c);
+        }
     }
 }

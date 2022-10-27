@@ -42,7 +42,7 @@ import net.minecraft.nbt.NBTCompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.network.chat.ChatComponentText;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.item.ItemBlock;
 import org.apache.commons.lang.Validate;
@@ -349,7 +349,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             customModelData = tag.getInt(CUSTOM_MODEL_DATA.NBT);
         }
         if (tag.contains(BLOCK_DATA.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            blockData = tag.getCompound(BLOCK_DATA.NBT);
+            blockData = tag.getCompound(BLOCK_DATA.NBT).copy();
         }
 
         this.enchantments = buildEnchantments(tag, ENCHANTMENTS);
@@ -372,14 +372,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             NBTTagCompound compound = tag.getCompound(BUKKIT_CUSTOM_TAG.NBT);
             Set<String> keys = compound.getAllKeys();
             for (String key : keys) {
-                persistentDataContainer.put(key, compound.get(key));
+                persistentDataContainer.put(key, compound.get(key).copy());
             }
         }
 
         Set<String> keys = tag.getAllKeys();
         for (String key : keys) {
             if (!getHandledTags().contains(key)) {
-                unhandledTags.put(key, tag.get(key));
+                unhandledTags.put(key, tag.get(key).copy());
             }
         }
     }
@@ -1058,6 +1058,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
+    public String getAsString() {
+        NBTTagCompound tag = new NBTTagCompound();
+        applyToItem(tag);
+        return tag.toString();
+    }
+
+    @Override
     public CustomItemTagContainer getCustomTagContainer() {
         return new DeprecatedCustomTagContainer(this.getPersistentDataContainer());
     }
@@ -1322,7 +1329,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
                 }
 
-                addTo.add(CraftChatMessage.toJSON(new ChatComponentText("")));
+                addTo.add(CraftChatMessage.toJSON(IChatBaseComponent.empty()));
             } else {
                 String entry = object.toString();
 

@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Position;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.level.PlayerChunkMap;
 import net.minecraft.server.level.WorldServer;
+import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -54,7 +56,10 @@ import net.minecraft.world.entity.animal.EntityTropicalFish;
 import net.minecraft.world.entity.animal.EntityTurtle;
 import net.minecraft.world.entity.animal.EntityWaterAnimal;
 import net.minecraft.world.entity.animal.EntityWolf;
+import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.frog.Frog;
+import net.minecraft.world.entity.animal.frog.Tadpole;
 import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.animal.horse.EntityHorse;
 import net.minecraft.world.entity.animal.horse.EntityHorseAbstract;
@@ -118,6 +123,7 @@ import net.minecraft.world.entity.monster.hoglin.EntityHoglin;
 import net.minecraft.world.entity.monster.piglin.EntityPiglin;
 import net.minecraft.world.entity.monster.piglin.EntityPiglinAbstract;
 import net.minecraft.world.entity.monster.piglin.EntityPiglinBrute;
+import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.EntityVillager;
 import net.minecraft.world.entity.npc.EntityVillagerAbstract;
 import net.minecraft.world.entity.npc.EntityVillagerTrader;
@@ -143,6 +149,7 @@ import net.minecraft.world.entity.projectile.EntityThrownExpBottle;
 import net.minecraft.world.entity.projectile.EntityThrownTrident;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.projectile.EntityWitherSkull;
+import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.entity.vehicle.EntityBoat;
 import net.minecraft.world.entity.vehicle.EntityMinecartAbstract;
 import net.minecraft.world.entity.vehicle.EntityMinecartChest;
@@ -156,10 +163,12 @@ import net.minecraft.world.phys.AxisAlignedBB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
@@ -218,6 +227,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
                     else if (entity instanceof EntityPufferFish) { return new CraftPufferFish(server, (EntityPufferFish) entity); }
                     else if (entity instanceof EntitySalmon) { return new CraftSalmon(server, (EntitySalmon) entity); }
                     else if (entity instanceof EntityTropicalFish) { return new CraftTropicalFish(server, (EntityTropicalFish) entity); }
+                    else if (entity instanceof Tadpole) { return new CraftTadpole(server, (Tadpole) entity); }
                     else { return new CraftFish(server, (EntityFish) entity); }
                 }
                 else if (entity instanceof EntityDolphin) { return new CraftDolphin(server, (EntityDolphin) entity); }
@@ -259,6 +269,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
                     else if (entity instanceof EntityStrider) { return new CraftStrider(server, (EntityStrider) entity); }
                     else if (entity instanceof Axolotl) { return new CraftAxolotl(server, (Axolotl) entity); }
                     else if (entity instanceof Goat) { return new CraftGoat(server, (Goat) entity); }
+                    else if (entity instanceof Frog) { return new CraftFrog(server, (Frog) entity); }
                     else  { return new CraftAnimals(server, (EntityAnimal) entity); }
                 }
                 // Monsters
@@ -309,6 +320,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
                         else { return new CraftPiglinAbstract(server, (EntityPiglinAbstract) entity); }
                     }
                     else if (entity instanceof EntityZoglin) { return new CraftZoglin(server, (EntityZoglin) entity); }
+                    else if (entity instanceof Warden) { return new CraftWarden(server, (Warden) entity); }
 
                     else  { return new CraftMonster(server, (EntityMonster) entity); }
                 }
@@ -322,6 +334,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
                     else if (entity instanceof EntityVillagerTrader) { return new CraftWanderingTrader(server, (EntityVillagerTrader) entity); }
                     else { return new CraftAbstractVillager(server, (EntityVillagerAbstract) entity); }
                 }
+                else if (entity instanceof Allay) { return new CraftAllay(server, (Allay) entity); }
                 else { return new CraftCreature(server, (EntityCreature) entity); }
             }
             // Slimes are a special (and broken) case
@@ -358,7 +371,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             if (entity instanceof EntityThrownTrident) { return new CraftTrident(server, (EntityThrownTrident) entity); }
             else { return new CraftArrow(server, (EntityArrow) entity); }
         }
-        else if (entity instanceof EntityBoat) { return new CraftBoat(server, (EntityBoat) entity); }
+        else if (entity instanceof EntityBoat) {
+            if (entity instanceof ChestBoat) { return new CraftChestBoat(server, (ChestBoat) entity); }
+            else { return new CraftBoat(server, (EntityBoat) entity); }
+        }
         else if (entity instanceof EntityProjectile) {
             if (entity instanceof EntityEgg) { return new CraftEgg(server, (EntityEgg) entity); }
             else if (entity instanceof EntitySnowball) { return new CraftSnowball(server, (EntitySnowball) entity); }
@@ -496,7 +512,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public boolean teleport(Location location, TeleportCause cause) {
-        Preconditions.checkArgument(location != null, "location");
+        Preconditions.checkArgument(location != null, "location cannot be null");
         location.checkFinite();
 
         if (entity.isVehicle() || entity.isRemoved()) {
@@ -507,10 +523,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         entity.stopRiding();
 
         // Let the server handle cross world teleports
-        if (!location.getWorld().equals(getWorld())) {
+        if (location.getWorld() != null && !location.getWorld().equals(getWorld())) {
             // Prevent teleportation to an other world during world generation
             Preconditions.checkState(!entity.generation, "Cannot teleport entity to an other world during world generation");
-            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), new BlockPosition(location.getX(), location.getY(), location.getZ()));
+            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), new Position(location.getX(), location.getY(), location.getZ()));
             return true;
         }
 
@@ -742,6 +758,21 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         if (type.getApplicable().isInstance(this)) {
             this.getHandle().level.broadcastEntityEvent(getHandle(), type.getData());
         }
+    }
+
+    @Override
+    public Sound getSwimSound() {
+        return CraftSound.getBukkit(getHandle().getSwimSound0());
+    }
+
+    @Override
+    public Sound getSwimSplashSound() {
+        return CraftSound.getBukkit(getHandle().getSwimSplashSound0());
+    }
+
+    @Override
+    public Sound getSwimHighSpeedSplashSound() {
+        return CraftSound.getBukkit(getHandle().getSwimHighSpeedSplashSound0());
     }
 
     public void setHandle(final Entity entity) {

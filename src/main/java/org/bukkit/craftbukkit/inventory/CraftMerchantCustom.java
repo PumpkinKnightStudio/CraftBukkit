@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.network.chat.ChatComponentText;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.sounds.SoundEffects;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.trading.MerchantRecipe;
 import net.minecraft.world.item.trading.MerchantRecipeList;
 import net.minecraft.world.level.World;
 import org.apache.commons.lang.Validate;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 public class CraftMerchantCustom extends CraftMerchant {
 
@@ -34,12 +34,11 @@ public class CraftMerchantCustom extends CraftMerchant {
         private final IChatBaseComponent title;
         private final MerchantRecipeList trades = new MerchantRecipeList();
         private EntityHuman tradingPlayer;
-        private World tradingWorld;
         protected CraftMerchant craftMerchant;
 
         public MinecraftMerchant(String title) {
             Validate.notNull(title, "Title cannot be null");
-            this.title = new ChatComponentText(title);
+            this.title = CraftChatMessage.fromString(title)[0];
         }
 
         @Override
@@ -50,9 +49,6 @@ public class CraftMerchantCustom extends CraftMerchant {
         @Override
         public void setTradingPlayer(EntityHuman entityhuman) {
             this.tradingPlayer = entityhuman;
-            if (entityhuman != null) {
-                this.tradingWorld = entityhuman.level;
-            }
         }
 
         @Override

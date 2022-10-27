@@ -6,6 +6,8 @@ import com.google.common.io.BaseEncoding;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.shorts.ShortArraySet;
+import it.unimi.dsi.fastutil.shorts.ShortSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -26,21 +28,25 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import net.minecraft.SystemUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.SectionPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketDataSerializer;
-import net.minecraft.network.chat.ChatComponentText;
-import net.minecraft.network.chat.ChatMessageType;
+import net.minecraft.network.chat.ChatMessageContent;
 import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderSizePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDelayPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDistancePacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
-import net.minecraft.network.protocol.game.PacketPlayOutChat;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomPayload;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
@@ -48,6 +54,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
 import net.minecraft.network.protocol.game.PacketPlayOutExperience;
 import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.network.protocol.game.PacketPlayOutMultiBlockChange;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter;
@@ -76,10 +83,11 @@ import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntitySign;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.border.IWorldBorderListener;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -96,7 +104,9 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -111,8 +121,10 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.CraftWorldBorder;
 import org.bukkit.craftbukkit.advancement.CraftAdvancement;
 import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
+import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
@@ -156,6 +168,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private double health = 20;
     private boolean scaledHealth = false;
     private double healthScale = 20;
+    private CraftWorldBorder clientWorldBorder = null;
+    private IWorldBorderListener clientWorldBorderListener = createWorldBorderListener();
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -221,7 +235,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            getHandle().connection.send(new PacketPlayOutChat(component, ChatMessageType.SYSTEM, SystemUtils.NIL_UUID));
+            getHandle().sendSystemMessage(component);
         }
     }
 
@@ -230,7 +244,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            getHandle().connection.send(new PacketPlayOutChat(component, ChatMessageType.CHAT, (sender == null) ? SystemUtils.NIL_UUID : sender));
+            getHandle().sendSystemMessage(component);
         }
     }
 
@@ -325,7 +339,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private void updatePlayerListHeaderFooter() {
         if (getHandle().connection == null) return;
 
-        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter((this.playerListHeader == null) ? new ChatComponentText("") : this.playerListHeader, (this.playerListFooter == null) ? new ChatComponentText("") : this.playerListFooter);
+        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter((this.playerListHeader == null) ? IChatBaseComponent.empty() : this.playerListHeader, (this.playerListFooter == null) ? IChatBaseComponent.empty() : this.playerListFooter);
         getHandle().connection.send(packet);
     }
 
@@ -373,7 +387,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void chat(String msg) {
         if (getHandle().connection == null) return;
 
-        getHandle().connection.chat(msg, false);
+        getHandle().connection.chat(msg, PlayerChatMessage.system(new ChatMessageContent(msg)), false);
     }
 
     @Override
@@ -420,7 +434,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         float f = (float) Math.pow(2.0D, (note - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -482,7 +496,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 break;
         }
         float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -499,7 +513,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch);
+        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -507,7 +521,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), new Vec3D(loc.getX(), loc.getY(), loc.getZ()), volume, pitch);
+        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), new Vec3D(loc.getX(), loc.getY(), loc.getZ()), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -520,7 +534,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
 
-        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch);
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -544,6 +558,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         getHandle().connection.send(new PacketPlayOutStopSound(new MinecraftKey(sound), category == null ? net.minecraft.sounds.SoundCategory.MASTER : net.minecraft.sounds.SoundCategory.valueOf(category.name())));
+    }
+
+    @Override
+    public void stopSound(org.bukkit.SoundCategory category) {
+        if (getHandle().connection == null) return;
+
+        getHandle().connection.send(new PacketPlayOutStopSound(null, net.minecraft.sounds.SoundCategory.valueOf(category.name())));
     }
 
     @Override
@@ -597,6 +618,44 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), ((CraftBlockData) block).getState());
         getHandle().connection.send(packet);
+    }
+
+    @Override
+    public void sendBlockChanges(Collection<BlockState> blocks, boolean suppressLightUpdates) {
+        Preconditions.checkArgument(blocks != null, "blocks must not be null");
+
+        if (getHandle().connection == null || blocks.isEmpty()) {
+            return;
+        }
+
+        Map<SectionPosition, ChunkSectionChanges> changes = new HashMap<>();
+        for (BlockState state : blocks) {
+            CraftBlockState cstate = (CraftBlockState) state;
+            BlockPosition blockPosition = cstate.getPosition();
+
+            // The coordinates of the chunk section in which the block is located, aka chunk x, y, and z
+            SectionPosition sectionPosition = SectionPosition.of(blockPosition);
+
+            // Push the block change position and block data to the final change map
+            ChunkSectionChanges sectionChanges = changes.computeIfAbsent(sectionPosition, (ignore) -> new ChunkSectionChanges());
+
+            sectionChanges.positions().add(SectionPosition.sectionRelativePos(blockPosition));
+            sectionChanges.blockData().add(cstate.getHandle());
+        }
+
+        // Construct the packets using the data allocated above and send then to the players
+        for (Map.Entry<SectionPosition, ChunkSectionChanges> entry : changes.entrySet()) {
+            ChunkSectionChanges chunkChanges = entry.getValue();
+            PacketPlayOutMultiBlockChange packet = new PacketPlayOutMultiBlockChange(entry.getKey(), chunkChanges.positions(), chunkChanges.blockData().toArray(IBlockData[]::new), suppressLightUpdates);
+            getHandle().connection.send(packet);
+        }
+    }
+
+    private record ChunkSectionChanges(ShortSet positions, List<IBlockData> blockData) {
+
+        public ChunkSectionChanges() {
+            this(new ShortArraySet(), new ArrayList<>());
+        }
     }
 
     @Override
@@ -661,6 +720,82 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         );
 
         getHandle().connection.send(new PacketPlayOutEntityEquipment(entity.getEntityId(), equipment));
+    }
+
+    @Override
+    public WorldBorder getWorldBorder() {
+        return clientWorldBorder;
+    }
+
+    @Override
+    public void setWorldBorder(WorldBorder border) {
+        CraftWorldBorder craftBorder = (CraftWorldBorder) border;
+
+        if (border != null && !craftBorder.isVirtual() && !craftBorder.getWorld().equals(getWorld())) {
+            throw new UnsupportedOperationException("Cannot set player world border to that of another world");
+        }
+
+        // Nullify the old client-sided world border listeners so that calls to it will not affect this player
+        if (clientWorldBorder != null) {
+            this.clientWorldBorder.getHandle().removeListener(clientWorldBorderListener);
+        }
+
+        net.minecraft.world.level.border.WorldBorder newWorldBorder;
+        if (craftBorder == null || !craftBorder.isVirtual()) {
+            this.clientWorldBorder = null;
+            newWorldBorder = ((CraftWorldBorder) getWorld().getWorldBorder()).getHandle();
+        } else {
+            this.clientWorldBorder = craftBorder;
+            this.clientWorldBorder.getHandle().addListener(clientWorldBorderListener);
+            newWorldBorder = clientWorldBorder.getHandle();
+        }
+
+        // Send all world border update packets to the player
+        PlayerConnection connection = getHandle().connection;
+        connection.send(new ClientboundSetBorderSizePacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderLerpSizePacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderCenterPacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderWarningDelayPacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderWarningDistancePacket(newWorldBorder));
+    }
+
+    private IWorldBorderListener createWorldBorderListener() {
+        return new IWorldBorderListener() {
+            @Override
+            public void onBorderSizeSet(net.minecraft.world.level.border.WorldBorder border, double size) {
+                getHandle().connection.send(new ClientboundSetBorderSizePacket(border));
+            }
+
+            @Override
+            public void onBorderSizeLerping(net.minecraft.world.level.border.WorldBorder border, double size, double newSize, long time) {
+                getHandle().connection.send(new ClientboundSetBorderLerpSizePacket(border));
+            }
+
+            @Override
+            public void onBorderCenterSet(net.minecraft.world.level.border.WorldBorder border, double x, double z) {
+                getHandle().connection.send(new ClientboundSetBorderCenterPacket(border));
+            }
+
+            @Override
+            public void onBorderSetWarningTime(net.minecraft.world.level.border.WorldBorder border, int warningTime) {
+                getHandle().connection.send(new ClientboundSetBorderWarningDelayPacket(border));
+            }
+
+            @Override
+            public void onBorderSetWarningBlocks(net.minecraft.world.level.border.WorldBorder border, int warningBlocks) {
+                getHandle().connection.send(new ClientboundSetBorderWarningDistancePacket(border));
+            }
+
+            @Override
+            public void onBorderSetDamagePerBlock(net.minecraft.world.level.border.WorldBorder border, double damage) {} // NO OP
+
+            @Override
+            public void onBorderSetDamageSafeZOne(net.minecraft.world.level.border.WorldBorder border, double blocks) {} // NO OP
+        };
+    }
+
+    public boolean hasClientWorldBorder() {
+        return clientWorldBorder != null;
     }
 
     @Override
@@ -1670,12 +1805,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().connection.send(times);
 
         if (title != null) {
-            ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromStringOrNull(title));
+            ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromString(title)[0]);
             getHandle().connection.send(packetTitle);
         }
 
         if (subtitle != null) {
-            ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromStringOrNull(subtitle));
+            ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromString(subtitle)[0]);
             getHandle().connection.send(packetSubtitle);
         }
     }

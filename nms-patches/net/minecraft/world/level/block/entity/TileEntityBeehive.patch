@@ -65,7 +65,7 @@
              entity.stopRiding();
              entity.ejectPassengers();
              NBTTagCompound nbttagcompound = new NBTTagCompound();
-@@ -173,7 +192,13 @@
+@@ -174,7 +193,13 @@
      }
  
      private static boolean releaseOccupant(World world, BlockPosition blockposition, IBlockData iblockdata, TileEntityBeehive.HiveBee tileentitybeehive_hivebee, @Nullable List<Entity> list, TileEntityBeehive.ReleaseStatus tileentitybeehive_releasestatus, @Nullable BlockPosition blockposition1) {
@@ -80,7 +80,7 @@
              return false;
          } else {
              NBTTagCompound nbttagcompound = tileentitybeehive_hivebee.entityData.copy();
-@@ -196,6 +221,18 @@
+@@ -197,6 +222,18 @@
                      if (!entity.getType().is(TagsEntity.BEEHIVE_INHABITORS)) {
                          return false;
                      } else {
@@ -99,7 +99,7 @@
                          if (entity instanceof EntityBee) {
                              EntityBee entitybee = (EntityBee) entity;
  
-@@ -225,6 +262,7 @@
+@@ -228,6 +265,7 @@
                                  list.add(entitybee);
                              }
  
@@ -107,7 +107,7 @@
                              float f = entity.getBbWidth();
                              double d0 = flag ? 0.0D : 0.55D + (double) (f / 2.0F);
                              double d1 = (double) blockposition.getX() + 0.5D + d0 * (double) enumdirection.getStepX();
-@@ -232,10 +270,11 @@
+@@ -235,11 +273,12 @@
                              double d3 = (double) blockposition.getZ() + 0.5D + d0 * (double) enumdirection.getStepZ();
  
                              entity.moveTo(d1, d2, d3, entity.getYRot(), entity.getXRot());
@@ -115,12 +115,13 @@
                          }
  
                          world.playSound((EntityHuman) null, blockposition, SoundEffects.BEEHIVE_EXIT, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                         world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(entity, world.getBlockState(blockposition)));
 -                        return world.addFreshEntity(entity);
 +                        return true; // return this.world.addFreshEntity(entity); // CraftBukkit - moved up
                      }
                  } else {
                      return false;
-@@ -284,6 +323,10 @@
+@@ -288,6 +327,10 @@
                  if (releaseOccupant(world, blockposition, iblockdata, tileentitybeehive_hivebee, (List) null, tileentitybeehive_releasestatus, blockposition1)) {
                      flag = true;
                      iterator.remove();
@@ -131,7 +132,7 @@
                  }
              }
          }
-@@ -325,6 +368,11 @@
+@@ -329,6 +372,11 @@
              this.savedFlowerPos = GameProfileSerializer.readBlockPos(nbttagcompound.getCompound("FlowerPos"));
          }
  
@@ -143,7 +144,7 @@
      }
  
      @Override
-@@ -334,6 +382,7 @@
+@@ -338,6 +386,7 @@
          if (this.hasSavedFlowerPos()) {
              nbttagcompound.put("FlowerPos", GameProfileSerializer.writeBlockPos(this.savedFlowerPos));
          }

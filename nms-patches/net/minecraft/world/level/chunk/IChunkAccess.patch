@@ -24,7 +24,7 @@
  
      private static void replaceMissingSections(LevelHeightAccessor levelheightaccessor, IRegistry<BiomeBase> iregistry, ChunkSection[] achunksection) {
          for (int i = 0; i < achunksection.length; ++i) {
-@@ -258,10 +267,11 @@
+@@ -256,10 +265,11 @@
  
      public void setUnsaved(boolean flag) {
          this.unsaved = flag;
@@ -37,12 +37,12 @@
      }
  
      public abstract ChunkStatus getStatus();
-@@ -394,6 +404,27 @@
+@@ -392,6 +402,27 @@
          }
      }
  
 +    // CraftBukkit start
-+    public void setBiome(int i, int j, int k, BiomeBase biome) {
++    public void setBiome(int i, int j, int k, Holder<BiomeBase> biome) {
 +        try {
 +            int l = QuartPos.fromBlock(this.getMinBuildHeight());
 +            int i1 = l + QuartPos.fromBlock(this.getHeight()) - 1;
@@ -65,23 +65,3 @@
      public void fillBiomesFromNoise(BiomeResolver biomeresolver, Climate.Sampler climate_sampler) {
          ChunkCoordIntPair chunkcoordintpair = this.getPos();
          int i = QuartPos.fromBlock(chunkcoordintpair.getMinBlockX());
-@@ -425,8 +456,10 @@
-         return this;
-     }
- 
--    public static record a(SerializableTickContainer<Block> a, SerializableTickContainer<FluidType> b) {
-+    // CraftBukkit start - decompile error
-+    public static record a(SerializableTickContainer<Block> blocks, SerializableTickContainer<FluidType> fluids) {
- 
-+        /*
-         private final SerializableTickContainer<Block> blocks;
-         private final SerializableTickContainer<FluidType> fluids;
- 
-@@ -442,5 +475,7 @@
-         public SerializableTickContainer<FluidType> fluids() {
-             return this.fluids;
-         }
-+         */
-+        // CraftBukkit end
-     }
- }

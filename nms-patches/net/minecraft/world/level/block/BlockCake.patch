@@ -19,4 +19,4 @@
 +            // CraftBukkit end
              int i = (Integer) iblockdata.getValue(BlockCake.BITES);
  
-             generatoraccess.gameEvent(entityhuman, GameEvent.EAT, blockposition);
+             generatoraccess.gameEvent((Entity) entityhuman, GameEvent.EAT, blockposition);

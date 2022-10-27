@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
@@ -41,6 +43,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
 
     @Override
     public Collection<ItemStack> populateLoot(Random random, LootContext context) {
+        Preconditions.checkArgument(context != null, "LootContext cannot be null");
         LootTableInfo nmsContext = convertContext(context, random);
         List<net.minecraft.world.item.ItemStack> nmsItems = handle.getRandomItems(nmsContext);
         Collection<ItemStack> bukkit = new ArrayList<>(nmsItems.size());
@@ -57,12 +60,14 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
 
     @Override
     public void fillInventory(Inventory inventory, Random random, LootContext context) {
+        Preconditions.checkArgument(inventory != null, "Inventory cannot be null");
+        Preconditions.checkArgument(context != null, "LootContext cannot be null");
         LootTableInfo nmsContext = convertContext(context, random);
         CraftInventory craftInventory = (CraftInventory) inventory;
         IInventory handle = craftInventory.getInventory();
 
         // TODO: When events are added, call event here w/ custom reason?
-        getHandle().fill(handle, nmsContext);
+        getHandle().fillInventory(handle, nmsContext, true);
     }
 
     @Override
@@ -71,12 +76,14 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
     }
 
     private LootTableInfo convertContext(LootContext context, Random random) {
+        Preconditions.checkArgument(context != null, "LootContext cannot be null");
         Location loc = context.getLocation();
+        Preconditions.checkArgument(loc.getWorld() != null, "LootContext.getLocation#getWorld cannot be null");
         WorldServer handle = ((CraftWorld) loc.getWorld()).getHandle();
 
         LootTableInfo.Builder builder = new LootTableInfo.Builder(handle);
         if (random != null) {
-            builder = builder.withRandom(random);
+            builder = builder.withRandom(new RandomSourceWrapper(random));
         }
         setMaybe(builder, LootContextParameters.ORIGIN, new Vec3D(loc.getX(), loc.getY(), loc.getZ()));
         if (getHandle() != LootTable.EMPTY) {
@@ -95,6 +102,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
                 // If there is a player killer, damage source should reflect that in case loot tables use that information
                 setMaybe(builder, LootContextParameters.DAMAGE_SOURCE, DamageSource.playerAttack(nmsKiller));
                 setMaybe(builder, LootContextParameters.LAST_DAMAGE_PLAYER, nmsKiller); // SPIGOT-5603 - Set minecraft:killed_by_player
+                setMaybe(builder, LootContextParameters.TOOL, nmsKiller.getUseItem()); // SPIGOT-6925 - Set minecraft:match_tool
             }
 
             // SPIGOT-5603 - Use LootContext#lootingModifier
