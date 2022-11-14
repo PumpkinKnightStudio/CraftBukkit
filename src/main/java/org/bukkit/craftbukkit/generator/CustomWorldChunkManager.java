@@ -11,7 +11,6 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.WorldChunkManager;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.generator.BiomeParameterPoint;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.WorldInfo;
 
