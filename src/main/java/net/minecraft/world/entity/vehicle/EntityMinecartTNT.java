@@ -111,7 +111,7 @@ public class EntityMinecartTNT extends EntityMinecartAbstract {
             }
 
             // CraftBukkit start
-            ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), (float) (4.0D + this.random.nextDouble() * 1.5D * d1), false);
+            ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) this.getBukkitEntity(), (float) (4.0D + this.random.nextDouble() * 1.5D * d1), false);
             this.level.getCraftServer().getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 fuse = -1;
