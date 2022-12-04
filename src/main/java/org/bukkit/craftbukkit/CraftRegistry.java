@@ -22,11 +22,15 @@ import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.generator.strucutre.CraftStructure;
+import org.bukkit.craftbukkit.generator.strucutre.CraftStructureType;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
+import org.bukkit.generator.structure.Structure;
+import org.bukkit.generator.structure.StructureType;
 import org.bukkit.potion.PotionEffectType;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
