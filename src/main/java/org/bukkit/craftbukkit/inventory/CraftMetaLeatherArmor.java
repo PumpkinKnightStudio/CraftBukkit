@@ -2,18 +2,28 @@ package org.bukkit.craftbukkit.inventory;
 
 import static org.bukkit.craftbukkit.inventory.CraftItemFactory.*;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Sets;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
+
+    private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
+            Material.LEATHER_HELMET,
+            Material.LEATHER_HORSE_ARMOR,
+            Material.LEATHER_CHESTPLATE,
+            Material.LEATHER_LEGGINGS,
+            Material.LEATHER_BOOTS
+    );
+
     static final ItemMetaKey COLOR = new ItemMetaKey("color");
 
     private Color color = DEFAULT_LEATHER_COLOR;
@@ -67,13 +77,7 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        if (type == Material.LEATHER_HELMET || type == Material.LEATHER_HORSE_ARMOR
-                || type == Material.LEATHER_CHESTPLATE || type == Material.LEATHER_LEGGINGS
-                || type == Material.LEATHER_BOOTS) {
-            return true;
-        }
-
-        return false;
+        return LEATHER_ARMOR_MATERIALS.contains(type);
     }
 
     @Override

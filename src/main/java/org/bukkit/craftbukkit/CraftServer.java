@@ -169,6 +169,7 @@ import org.bukkit.craftbukkit.inventory.CraftStonecuttingRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
 import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
 import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
+import org.bukkit.craftbukkit.map.CraftMapColorCache;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
 import org.bukkit.craftbukkit.metadata.PlayerMetadataStore;
@@ -176,6 +177,7 @@ import org.bukkit.craftbukkit.metadata.WorldMetadataStore;
 import org.bukkit.craftbukkit.potion.CraftPotionBrewer;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
+import org.bukkit.craftbukkit.scoreboard.CraftCriteria;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
 import org.bukkit.craftbukkit.structure.CraftStructureManager;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
@@ -220,6 +222,7 @@ import org.bukkit.inventory.SmithingRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.loot.LootTable;
+import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapView;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
@@ -236,6 +239,7 @@ import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scheduler.BukkitWorker;
+import org.bukkit.scoreboard.Criteria;
 import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
@@ -258,7 +262,7 @@ public final class CraftServer implements Server {
     protected final DedicatedServer console;
     protected final DedicatedPlayerList playerList;
     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
-    private final Map<Class<?>, Registry<?>> registers = new HashMap<>();
+    private final Map<Class<?>, Registry<?>> registries = new HashMap<>();
     private YamlConfiguration configuration;
     private YamlConfiguration commandsConfiguration;
     private final Yaml yaml = new Yaml(new SafeConstructor());
@@ -352,6 +356,11 @@ public final class CraftServer implements Server {
         TicketType.PLUGIN.timeout = configuration.getInt("chunk-gc.period-in-ticks");
         minimumAPI = configuration.getString("settings.minimum-api");
         loadIcon();
+
+        // Set map color cache
+        if (configuration.getBoolean("settings.use-map-color-cache")) {
+            MapPalette.setMapColorCache(new CraftMapColorCache(logger));
+        }
     }
 
     public boolean getCommandBlockOverride(String command) {
@@ -975,7 +984,7 @@ public final class CraftServer implements Server {
 
     @Override
     public World createWorld(WorldCreator creator) {
-        Preconditions.checkState(!console.levels.isEmpty(), "Cannot create additional worlds on STARTUP");
+        Preconditions.checkState(console.getAllLevels().iterator().hasNext(), "Cannot create additional worlds on STARTUP");
         Validate.notNull(creator, "Creator may not be null");
 
         String name = creator.name();
@@ -1074,7 +1083,7 @@ public final class CraftServer implements Server {
         console.initWorld(internal, worlddata, worlddata, worlddata.worldGenSettings());
 
         internal.setSpawnSettings(true, true);
-        console.levels.put(internal.dimension(), internal);
+        console.addLevel(internal);
 
         getServer().prepareLevels(internal.getChunkSource().chunkMap.progressListener, internal);
         internal.entityManager.tick(); // SPIGOT-6526: Load pending entities so they are available to the API
@@ -1096,7 +1105,7 @@ public final class CraftServer implements Server {
 
         WorldServer handle = ((CraftWorld) world).getHandle();
 
-        if (!(console.levels.containsKey(handle.dimension()))) {
+        if (console.getLevel(handle.dimension()) == null) {
             return false;
         }
 
@@ -1128,7 +1137,7 @@ public final class CraftServer implements Server {
         }
 
         worlds.remove(world.getName().toLowerCase(java.util.Locale.ENGLISH));
-        console.levels.remove(handle.dimension());
+        console.removeLevel(handle);
         return true;
     }
 
@@ -1392,6 +1401,16 @@ public final class CraftServer implements Server {
     public void setSpawnRadius(int value) {
         configuration.set("settings.spawn-radius", value);
         saveConfig();
+    }
+
+    @Override
+    public boolean shouldSendChatPreviews() {
+        return this.getServer().previewsChat();
+    }
+
+    @Override
+    public boolean isEnforcingSecureProfiles() {
+        return this.getServer().enforceSecureProfile();
     }
 
     @Override
@@ -1820,6 +1839,11 @@ public final class CraftServer implements Server {
     }
 
     @Override
+    public int getMaxChainedNeighborUpdates() {
+        return this.getServer().getMaxChainedNeighborUpdates();
+    }
+
+    @Override
     public HelpMap getHelpMap() {
         return helpMap;
     }
@@ -1954,6 +1978,11 @@ public final class CraftServer implements Server {
     @Override
     public CraftScoreboardManager getScoreboardManager() {
         return scoreboardManager;
+    }
+
+    @Override
+    public Criteria getScoreboardCriteria(String name) {
+        return CraftCriteria.getFromBukkit(name);
     }
 
     public void checkSaveState() {
@@ -2239,7 +2268,7 @@ public final class CraftServer implements Server {
 
     @Override
     public <T extends Keyed> Registry<T> getRegistry(Class<T> aClass) {
-        return (Registry<T>) registers.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.registryHolder));
+        return (Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.registryHolder));
     }
 
     @Deprecated

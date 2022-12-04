@@ -10,8 +10,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BundleMeta;
@@ -49,7 +47,10 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
                 for (int i = 0; i < list.size(); i++) {
                     NBTTagCompound nbttagcompound1 = list.getCompound(i);
 
-                    addItem(CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(nbttagcompound1)));
+                    ItemStack itemStack = CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(nbttagcompound1));
+                    if (!itemStack.getType().isAir()) { // SPIGOT-7174 - Avoid adding air
+                        addItem(itemStack);
+                    }
                 }
             }
         }
@@ -61,8 +62,8 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
         Iterable<?> items = SerializableMeta.getObject(Iterable.class, map, ITEMS.BUKKIT, true);
         if (items != null) {
             for (Object stack : items) {
-                if (stack instanceof ItemStack) {
-                    addItem((ItemStack) stack);
+                if (stack instanceof ItemStack itemStack && !itemStack.getType().isAir()) { // SPIGOT-7174 - Avoid adding air
+                    addItem(itemStack);
                 }
             }
         }

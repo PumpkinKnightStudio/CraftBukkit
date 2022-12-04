@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Position;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.level.PlayerChunkMap;
 import net.minecraft.server.level.WorldServer;
+import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -161,10 +163,12 @@ import net.minecraft.world.phys.AxisAlignedBB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
@@ -511,7 +515,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public boolean teleport(Location location, TeleportCause cause) {
-        Preconditions.checkArgument(location != null, "location");
+        Preconditions.checkArgument(location != null, "location cannot be null");
         location.checkFinite();
 
         if (entity.isVehicle() || entity.isRemoved()) {
@@ -522,10 +526,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         entity.stopRiding();
 
         // Let the server handle cross world teleports
-        if (!location.getWorld().equals(getWorld())) {
+        if (location.getWorld() != null && !location.getWorld().equals(getWorld())) {
             // Prevent teleportation to an other world during world generation
             Preconditions.checkState(!entity.generation, "Cannot teleport entity to an other world during world generation");
-            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), new BlockPosition(location.getX(), location.getY(), location.getZ()));
+            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), new Position(location.getX(), location.getY(), location.getZ()));
             return true;
         }
 
@@ -762,6 +766,21 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         if (type.getApplicable().isInstance(this)) {
             this.getHandle().level.broadcastEntityEvent(getHandle(), type.getData());
         }
+    }
+
+    @Override
+    public Sound getSwimSound() {
+        return CraftSound.getBukkit(getHandle().getSwimSound0());
+    }
+
+    @Override
+    public Sound getSwimSplashSound() {
+        return CraftSound.getBukkit(getHandle().getSwimSplashSound0());
+    }
+
+    @Override
+    public Sound getSwimHighSpeedSplashSound() {
+        return CraftSound.getBukkit(getHandle().getSwimHighSpeedSplashSound0());
     }
 
     public void setHandle(final Entity entity) {

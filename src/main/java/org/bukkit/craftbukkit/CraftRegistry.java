@@ -32,6 +32,12 @@ import org.bukkit.potion.PotionEffectType;
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
     public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
+        if (bukkitClass == Structure.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(IRegistry.STRUCTURE_REGISTRY), CraftStructure::new);
+        }
+        if (bukkitClass == StructureType.class) {
+            return new CraftRegistry<>(IRegistry.STRUCTURE_TYPES, CraftStructureType::new);
+        }
         if (bukkitClass == Biome.class) {
             return new CraftBiome.CraftBiomeRegistry(registryHolder.ownedRegistryOrThrow(IRegistry.BIOME_REGISTRY), CraftBiome::new);
         }

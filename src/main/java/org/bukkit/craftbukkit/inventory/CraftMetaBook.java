@@ -15,12 +15,10 @@ import net.minecraft.network.chat.IChatBaseComponent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BookMeta.Generation;
 
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaBook extends CraftMetaItem implements BookMeta {
@@ -195,11 +193,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        if (type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK) {
-            return true;
-        }
-
-        return false;
+        return type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK;
     }
 
     @Override

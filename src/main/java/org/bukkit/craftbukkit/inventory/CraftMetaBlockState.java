@@ -2,24 +2,101 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.block.CraftBanner;
 import org.bukkit.craftbukkit.block.CraftBlockEntityState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta {
+
+    private static final Set<Material> SHULKER_BOX_MATERIALS = Sets.newHashSet(
+            Material.SHULKER_BOX,
+            Material.WHITE_SHULKER_BOX,
+            Material.ORANGE_SHULKER_BOX,
+            Material.MAGENTA_SHULKER_BOX,
+            Material.LIGHT_BLUE_SHULKER_BOX,
+            Material.YELLOW_SHULKER_BOX,
+            Material.LIME_SHULKER_BOX,
+            Material.PINK_SHULKER_BOX,
+            Material.GRAY_SHULKER_BOX,
+            Material.LIGHT_GRAY_SHULKER_BOX,
+            Material.CYAN_SHULKER_BOX,
+            Material.PURPLE_SHULKER_BOX,
+            Material.BLUE_SHULKER_BOX,
+            Material.BROWN_SHULKER_BOX,
+            Material.GREEN_SHULKER_BOX,
+            Material.RED_SHULKER_BOX,
+            Material.BLACK_SHULKER_BOX
+    );
+
+    private static final Set<Material> BLOCK_STATE_MATERIALS = Sets.newHashSet(
+            Material.FURNACE,
+            Material.CHEST,
+            Material.TRAPPED_CHEST,
+            Material.JUKEBOX,
+            Material.DISPENSER,
+            Material.DROPPER,
+            Material.ACACIA_SIGN,
+            Material.ACACIA_WALL_SIGN,
+            Material.BIRCH_SIGN,
+            Material.BIRCH_WALL_SIGN,
+            Material.CRIMSON_SIGN,
+            Material.CRIMSON_WALL_SIGN,
+            Material.DARK_OAK_SIGN,
+            Material.DARK_OAK_WALL_SIGN,
+            Material.JUNGLE_SIGN,
+            Material.JUNGLE_WALL_SIGN,
+            Material.MANGROVE_SIGN,
+            Material.MANGROVE_WALL_SIGN,
+            Material.OAK_SIGN,
+            Material.OAK_WALL_SIGN,
+            Material.SPRUCE_SIGN,
+            Material.SPRUCE_WALL_SIGN,
+            Material.WARPED_SIGN,
+            Material.WARPED_WALL_SIGN,
+            Material.SPAWNER,
+            Material.BREWING_STAND,
+            Material.ENCHANTING_TABLE,
+            Material.COMMAND_BLOCK,
+            Material.REPEATING_COMMAND_BLOCK,
+            Material.CHAIN_COMMAND_BLOCK,
+            Material.BEACON,
+            Material.DAYLIGHT_DETECTOR,
+            Material.HOPPER,
+            Material.COMPARATOR,
+            Material.SHIELD,
+            Material.STRUCTURE_BLOCK,
+            Material.ENDER_CHEST,
+            Material.BARREL,
+            Material.BELL,
+            Material.BLAST_FURNACE,
+            Material.CAMPFIRE,
+            Material.SOUL_CAMPFIRE,
+            Material.JIGSAW,
+            Material.LECTERN,
+            Material.SMOKER,
+            Material.BEEHIVE,
+            Material.BEE_NEST,
+            Material.SCULK_CATALYST,
+            Material.SCULK_SHRIEKER,
+            Material.SCULK_SENSOR
+    );
+
+    static {
+        // Add shulker boxes to the list of block state materials too
+        BLOCK_STATE_MATERIALS.addAll(SHULKER_BOX_MATERIALS);
+    }
 
     @ItemMetaKey.Specific(ItemMetaKey.Specific.To.NBT)
     static final ItemMetaKey BLOCK_ENTITY_TAG = new ItemMetaKey("BlockEntityTag");
@@ -130,27 +207,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean applicableTo(Material type) {
-        if (material == Material.FURNACE || material == Material.CHEST
-                || material == Material.TRAPPED_CHEST || material == Material.JUKEBOX
-                || material == Material.DISPENSER || material == Material.DROPPER
-                || Tag.SIGNS.isTagged(material) || material == Material.SPAWNER
-                || material == Material.BREWING_STAND || material == Material.ENCHANTING_TABLE
-                || material == Material.COMMAND_BLOCK || material == Material.REPEATING_COMMAND_BLOCK
-                || material == Material.CHAIN_COMMAND_BLOCK || material == Material.BEACON
-                || material == Material.DAYLIGHT_DETECTOR || material == Material.HOPPER
-                || material == Material.COMPARATOR || material == Material.SHIELD
-                || material == Material.STRUCTURE_BLOCK || Tag.SHULKER_BOXES.isTagged(material)
-                || material == Material.ENDER_CHEST || material == Material.BARREL
-                || material == Material.BELL || material == Material.BLAST_FURNACE
-                || material == Material.CAMPFIRE || material == Material.SOUL_CAMPFIRE
-                || material == Material.JIGSAW || material == Material.LECTERN
-                || material == Material.SMOKER || material == Material.BEEHIVE
-                || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
-                || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR) {
-                return true;
-        }
-
-        return false;
+        return BLOCK_STATE_MATERIALS.contains(type);
     }
 
     @Override
@@ -173,10 +230,10 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         if (blockEntityTag != null) {
             if (material == Material.SHIELD) {
                 blockEntityTag.putString("id", "minecraft:banner");
-            } else if (Tag.SHULKER_BOXES.isTagged(material)) {
-                blockEntityTag.putString("id", "minecraft:shulker_box");
             } else if (material == Material.BEE_NEST || material == Material.BEEHIVE) {
                 blockEntityTag.putString("id", "minecraft:beehive");
+            } else if (SHULKER_BOX_MATERIALS.contains(material)) {
+                blockEntityTag.putString("id", "minecraft:shulker_box");
             }
         }
 

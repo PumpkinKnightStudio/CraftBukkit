@@ -33,4 +33,9 @@ public class CraftParrot extends CraftTameableAnimal implements Parrot {
     public String toString() {
         return "CraftParrot";
     }
+
+    @Override
+    public boolean isDancing() {
+        return getHandle().isPartyParrot();
+    }
 }

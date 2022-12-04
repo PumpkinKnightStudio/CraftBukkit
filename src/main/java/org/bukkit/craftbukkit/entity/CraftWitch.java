@@ -18,4 +18,9 @@ public class CraftWitch extends CraftRaider implements Witch {
     public String toString() {
         return "CraftWitch";
     }
+
+    @Override
+    public boolean isDrinkingPotion() {
+        return getHandle().isDrinkingPotion();
+    }
 }

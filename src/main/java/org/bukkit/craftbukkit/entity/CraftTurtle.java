@@ -19,4 +19,14 @@ public class CraftTurtle extends CraftAnimals implements Turtle {
     public String toString() {
         return "CraftTurtle";
     }
+
+    @Override
+    public boolean hasEgg() {
+        return getHandle().hasEgg();
+    }
+
+    @Override
+    public boolean isLayingEgg() {
+        return getHandle().isLayingEgg();
+    }
 }
