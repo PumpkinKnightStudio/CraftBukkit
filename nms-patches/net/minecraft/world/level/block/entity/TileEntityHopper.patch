@@ -163,10 +163,10 @@
 -        return getContainerAt(world, blockposition.relative(enumdirection));
 +        // CraftBukkit start
 +        var inventory = getContainerAt(world, blockposition.relative(enumdirection));
-+        var event = new HopperInventorySearchEvent(new CraftInventory(inventory), HopperInventorySearchEvent.ContainerType.ATTACHED);
++        var event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.ATTACHED);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
 +        var craftInventory = (CraftInventory)event.getInventory();
-+        return craftInventory.getInventory();
++        return craftInventory != null ? craftInventory.getInventory() : null;
 +        // CraftBukkit end
      }
  
@@ -175,10 +175,10 @@
 -        return getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
 +        // CraftBukkit start
 +        var inventory = getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
-+        var event = new HopperInventorySearchEvent(new CraftInventory(inventory), HopperInventorySearchEvent.ContainerType.SOURCE);
++        var event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.SOURCE);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
 +        var craftInventory = (CraftInventory)event.getInventory();
-+        return craftInventory.getInventory();
++        return craftInventory != null ? craftInventory.getInventory() : null;
 +        // CraftBukkit end
      }
  
