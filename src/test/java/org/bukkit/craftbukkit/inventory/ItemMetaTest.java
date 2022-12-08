@@ -404,7 +404,10 @@ public class ItemMetaTest extends AbstractTestingBase {
     public void testSpawnEggsHasMeta() {
         for (Material material : Material.values()) {
             net.minecraft.world.item.Item item = CraftMagicNumbers.getItem(material);
-            if (item instanceof net.minecraft.world.item.ItemMonsterEgg itemMonsterEgg) {
+            if (material.isLegacy()) {
+                continue;
+            }
+            if (item instanceof net.minecraft.world.item.ItemMonsterEgg) {
                 final CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(material);
                 final ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
                 if (!(baseMeta instanceof final CraftMetaSpawnEgg metaSpawnEgg)) {
