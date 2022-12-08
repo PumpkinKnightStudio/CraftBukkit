@@ -29,6 +29,7 @@ import org.bukkit.craftbukkit.inventory.ItemStackTest.BukkitWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.CraftWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackWrapper;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
@@ -48,6 +49,7 @@ import org.bukkit.inventory.meta.KnowledgeBookMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
@@ -396,6 +398,26 @@ public class ItemMetaTest extends AbstractTestingBase {
         BlockDataMeta itemMeta = (BlockDataMeta) Bukkit.getItemFactory().getItemMeta(Material.CHEST);
         itemMeta.setBlockData(CraftBlockData.newData(null, "minecraft:chest[waterlogged=true]"));
         assertThat(itemMeta.getBlockData(Material.CHEST), is(CraftBlockData.newData(null, "minecraft:chest[waterlogged=true]")));
+    }
+
+    @Test
+    public void testSpawnEggsHasMeta() {
+        for (Material material : Material.values()) {
+            net.minecraft.world.item.Item item = CraftMagicNumbers.getItem(material);
+            if (item instanceof net.minecraft.world.item.ItemMonsterEgg itemMonsterEgg) {
+                final CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(material);
+                final ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
+                if (!(baseMeta instanceof final CraftMetaSpawnEgg metaSpawnEgg)) {
+                    throw new UnsupportedOperationException(material + " is not handled in CraftItemFactory");
+                }
+                if (!(baseMetaItem instanceof SpawnEggMeta)) {
+                    throw new UnsupportedOperationException(material + " is not handled in CraftItemStack");
+                }
+                if (!metaSpawnEgg.applicableTo(material)) {
+                    throw new UnsupportedOperationException(material + " is not handled in CraftMetaSpawnEgg");
+                }
+            }
+        }
     }
 
     private void downCastTest(final StackWrapper provider) {
