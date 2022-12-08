@@ -414,7 +414,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     throw new UnsupportedOperationException(material + " is not handled in CraftItemStack");
                 }
                 if (!metaSpawnEgg.applicableTo(material)) {
-                    throw new UnsupportedOperationException(material + " is not handled in CraftMetaSpawnEgg");
+                    throw new UnsupportedOperationException(material + " is not applicable to CraftMetaSpawnEgg");
                 }
             }
         }
