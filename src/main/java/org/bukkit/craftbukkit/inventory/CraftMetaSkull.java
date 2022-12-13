@@ -56,9 +56,10 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
     CraftMetaSkull(CraftMetaItem meta) {
         super(meta);
-        if (!(meta instanceof CraftMetaSkull skullMeta)) {
+        if (!(meta instanceof CraftMetaSkull)) {
             return;
         }
+        CraftMetaSkull skullMeta = (CraftMetaSkull) meta;
         this.setProfile(skullMeta.profile);
         this.noteBlockSound = skullMeta.noteBlockSound;
     }
@@ -81,8 +82,8 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         super(map);
         if (profile == null) {
             Object object = map.get(SKULL_OWNER.BUKKIT);
-            if (object instanceof PlayerProfile playerProfile) {
-                setOwnerProfile(playerProfile);
+            if (object instanceof PlayerProfile) {
+                setOwnerProfile((PlayerProfile) object);
             } else {
                 setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
             }
@@ -188,8 +189,8 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     public boolean setOwningPlayer(OfflinePlayer owner) {
         if (owner == null) {
             setProfile(null);
-        } else if (owner instanceof CraftPlayer craftPlayer) {
-            setProfile(craftPlayer.getProfile());
+        } else if (owner instanceof CraftPlayer) {
+            setProfile(((CraftPlayer) owner).getProfile());
         } else {
             setProfile(new GameProfile(owner.getUniqueId(), owner.getName()));
         }
@@ -244,7 +245,8 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaSkull that) {
+        if (meta instanceof CraftMetaSkull) {
+            CraftMetaSkull that = (CraftMetaSkull) meta;
 
             // SPIGOT-5403: equals does not check properties
             return (this.profile != null ? that.profile != null && this.serializedProfile.equals(that.serializedProfile) : that.profile == null);
