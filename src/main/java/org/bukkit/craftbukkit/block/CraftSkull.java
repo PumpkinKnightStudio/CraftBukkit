@@ -18,6 +18,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.profile.PlayerProfile;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implements Skull {
 
@@ -125,6 +126,14 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     @Override
     public NamespacedKey getNoteBlockSound() {
         return (this.getSnapshot().getNoteBlockSound() == null) ? null : CraftNamespacedKey.fromMinecraft(this.getSnapshot().getNoteBlockSound());
+    }
+
+    @Override
+    public void setNoteBlockSound(@Nullable NamespacedKey namespacedKey) {
+        if (namespacedKey == null) {
+            return;
+        }
+        this.getSnapshot().noteBlockSound = CraftNamespacedKey.toMinecraft(namespacedKey);
     }
 
     @Override

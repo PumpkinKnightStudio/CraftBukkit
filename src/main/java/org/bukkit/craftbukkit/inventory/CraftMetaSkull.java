@@ -47,6 +47,9 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     static final ItemMetaKey SKULL_PROFILE = new ItemMetaKey("SkullProfile");
 
     static final ItemMetaKey SKULL_OWNER = new ItemMetaKey("SkullOwner", "skull-owner");
+
+    @ItemMetaKey.Specific(ItemMetaKey.Specific.To.NBT)
+    static final ItemMetaKey BLOCK_ENTITY_TAG = new ItemMetaKey("BlockEntityTag");
     static final ItemMetaKey NOTE_BLOCK_SOUND = new ItemMetaKey("note_block_sound");
     static final int MAX_OWNER_LENGTH = 16;
 
@@ -73,8 +76,11 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             this.setProfile(new GameProfile(null, tag.getString(SKULL_OWNER.NBT)));
         }
 
-        if (tag.contains(NOTE_BLOCK_SOUND.NBT)) {
-            this.noteBlockSound = MinecraftKey.tryParse(tag.getString(SKULL_PROFILE.NBT));
+        if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
+            NBTTagCompound nbtTagCompound = tag.getCompound(BLOCK_ENTITY_TAG.NBT).copy();
+            if (nbtTagCompound.contains(NOTE_BLOCK_SOUND.NBT, 8)) {
+                this.noteBlockSound = MinecraftKey.tryParse(nbtTagCompound.getString(NOTE_BLOCK_SOUND.NBT));
+            }
         }
     }
 
@@ -86,6 +92,14 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
                 setOwnerProfile((PlayerProfile) object);
             } else {
                 setOwner(SerializableMeta.getString(map, SKULL_OWNER.BUKKIT, true));
+            }
+        }
+        if (noteBlockSound == null) {
+            Object object = map.get(NOTE_BLOCK_SOUND.BUKKIT);
+            if (object instanceof NamespacedKey) {
+                setNoteBlockSound((NamespacedKey) object);
+            } else {
+                setNoteBlockSound(SerializableMeta.getObject(NamespacedKey.class, map, NOTE_BLOCK_SOUND.BUKKIT, true));
             }
         }
     }
@@ -103,6 +117,12 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             }
 
             this.setProfile(GameProfileSerializer.readGameProfile(skullTag));
+        }
+        if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
+            NBTTagCompound nbtTagCompound = tag.getCompound(BLOCK_ENTITY_TAG.NBT).copy();
+            if (nbtTagCompound.contains(NOTE_BLOCK_SOUND.NBT, 8)) {
+                this.noteBlockSound = MinecraftKey.tryParse(nbtTagCompound.getString(NOTE_BLOCK_SOUND.NBT));
+            }
         }
     }
 
@@ -124,6 +144,12 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
                 tag.put(SKULL_OWNER.NBT, serializedProfile);
             });
         }
+
+        if (noteBlockSound != null) {
+            NBTTagCompound nbtTagCompound = new NBTTagCompound();
+            nbtTagCompound.putString(NOTE_BLOCK_SOUND.NBT, this.noteBlockSound.toString());
+            tag.put(BLOCK_ENTITY_TAG.NBT, nbtTagCompound);
+        }
     }
 
     @Override
@@ -132,7 +158,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     }
 
     boolean isSkullEmpty() {
-        return profile == null;
+        return profile == null && noteBlockSound == null;
     }
 
     @Override
@@ -237,6 +263,9 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (hasOwner()) {
             hash = 61 * hash + profile.hashCode();
         }
+        if (this.noteBlockSound != null) {
+            hash = 61 * hash + noteBlockSound.hashCode();
+        }
         return original != hash ? CraftMetaSkull.class.hashCode() ^ hash : hash;
     }
 
@@ -249,7 +278,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             CraftMetaSkull that = (CraftMetaSkull) meta;
 
             // SPIGOT-5403: equals does not check properties
-            return (this.profile != null ? that.profile != null && this.serializedProfile.equals(that.serializedProfile) : that.profile == null);
+            return (this.profile != null ? that.profile != null && this.serializedProfile.equals(that.serializedProfile) : that.profile == null) && this.noteBlockSound == that.noteBlockSound;
         }
         return true;
     }
