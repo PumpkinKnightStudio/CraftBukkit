@@ -210,7 +210,7 @@ import org.bukkit.event.player.PlayerBucketFishEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.event.player.PlayerExpCooldownEvent;
+import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
@@ -1706,8 +1706,8 @@ public class CraftEventFactory {
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    public static PlayerExpCooldownEvent callPlayerXpCooldownEvent(HumanEntity player, int oldCooldown, int newCooldown, PlayerExpCooldownEvent.ChangeReason changeReason) {
-        PlayerExpCooldownEvent event = new PlayerExpCooldownEvent(player, oldCooldown, newCooldown, changeReason);
+    public static PlayerExpCooldownChangeEvent callPlayerXpCooldownEvent(HumanEntity player, int oldCooldown, int newCooldown, PlayerExpCooldownChangeEvent.ChangeReason changeReason) {
+        PlayerExpCooldownChangeEvent event = new PlayerExpCooldownChangeEvent(player, oldCooldown, newCooldown, changeReason);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }

@@ -142,7 +142,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerExpCooldownEvent;
+import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerHideEntityEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.player.PlayerShowEntityEvent;
@@ -1116,8 +1116,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setExpCooldown(int ticks) {
-        int newticks = CraftEventFactory.callPlayerXpCooldownEvent(this, getHandle().takeXpDelay, ticks, PlayerExpCooldownEvent.ChangeReason.PLUGIN).getNewCooldown();
-        getHandle().takeXpDelay = newticks;
+        getHandle().takeXpDelay = CraftEventFactory.callPlayerXpCooldownEvent(this, getHandle().takeXpDelay, ticks, PlayerExpCooldownChangeEvent.ChangeReason.PLUGIN).getNewCooldown();
     }
 
     @Override
