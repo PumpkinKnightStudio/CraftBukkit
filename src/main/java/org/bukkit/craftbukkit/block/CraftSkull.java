@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
@@ -125,12 +126,14 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     @Override
     public NamespacedKey getNoteBlockSound() {
-        return (this.getSnapshot().getNoteBlockSound() == null) ? null : CraftNamespacedKey.fromMinecraft(this.getSnapshot().getNoteBlockSound());
+        MinecraftKey key = getSnapshot().getNoteBlockSound();
+        return (key != null) ? CraftNamespacedKey.fromMinecraft(key) : null;
     }
 
     @Override
     public void setNoteBlockSound(@Nullable NamespacedKey namespacedKey) {
         if (namespacedKey == null) {
+            this.getSnapshot().noteBlockSound = null;
             return;
         }
         this.getSnapshot().noteBlockSound = CraftNamespacedKey.toMinecraft(namespacedKey);
