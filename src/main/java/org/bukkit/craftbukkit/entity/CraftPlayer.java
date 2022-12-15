@@ -130,6 +130,7 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
@@ -141,6 +142,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerExpCooldownEvent;
 import org.bukkit.event.player.PlayerHideEntityEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.player.PlayerShowEntityEvent;
@@ -1105,6 +1107,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public WeatherType getPlayerWeather() {
         return getHandle().getPlayerWeather();
+    }
+
+    @Override
+    public int getExpCooldown() {
+        return getHandle().takeXpDelay;
+    }
+
+    @Override
+    public void setExpCooldown(int ticks) {
+        int newticks = CraftEventFactory.callPlayerXpCooldownEvent(this, getHandle().takeXpDelay, ticks, PlayerExpCooldownEvent.ChangeReason.PLUGIN).getNewCooldown();
+        getHandle().takeXpDelay = newticks;
     }
 
     @Override

@@ -210,6 +210,7 @@ import org.bukkit.event.player.PlayerBucketFishEvent;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerExpCooldownEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
@@ -1703,5 +1704,11 @@ public class CraftEventFactory {
         List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
         EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
         Bukkit.getPluginManager().callEvent(event);
+    }
+
+    public static PlayerExpCooldownEvent callPlayerXpCooldownEvent(HumanEntity player, int oldCooldown, int newCooldown, PlayerExpCooldownEvent.ChangeReason changeReason) {
+        PlayerExpCooldownEvent event = new PlayerExpCooldownEvent(player, oldCooldown, newCooldown, changeReason);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
     }
 }
