@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3D;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.player.PlayerExpCooldownEvent;
+import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 // CraftBukkit end
 
 public class EntityExperienceOrb extends Entity {
@@ -245,7 +245,7 @@ public class EntityExperienceOrb extends Entity {
     public void playerTouch(EntityHuman entityhuman) {
         if (!this.level.isClientSide) {
             if (entityhuman.takeXpDelay == 0) {
-                entityhuman.takeXpDelay = CraftEventFactory.callPlayerXpCooldownEvent(entityhuman.getBukkitEntity(), 0, 2, PlayerExpCooldownEvent.ChangeReason.PICKED_UP_XP_ORB).getNewCooldown();
+                entityhuman.takeXpDelay = CraftEventFactory.callPlayerXpCooldownEvent(entityhuman.getBukkitEntity(), 0, 2, PlayerExpCooldownChangeEvent.ChangeReason.PICKUP_ORB).getNewCooldown();
                 entityhuman.take(this, 1);
                 int i = this.repairPlayerItems(entityhuman, this.value);
 
