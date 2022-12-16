@@ -51,7 +51,7 @@
          if (!this.level.isClientSide) {
              if (entityhuman.takeXpDelay == 0) {
 -                entityhuman.takeXpDelay = 2;
-+                entityhuman.takeXpDelay = CraftEventFactory.callPlayerXpCooldownEvent(entityhuman.getBukkitEntity(), 0, 2, PlayerExpCooldownChangeEvent.ChangeReason.PICKUP_ORB).getNewCooldown();
++                entityhuman.takeXpDelay = CraftEventFactory.callPlayerXpCooldownEvent(entityhuman.getBukkitEntity(), 0, 2, PlayerExpCooldownChangeEvent.ChangeReason.PICKUP_ORB).getNewCooldown(); // CraftBukkit - entityhuman.takeXpDelay = 2;
                  entityhuman.take(this, 1);
                  int i = this.repairPlayerItems(entityhuman, this.value);
  
