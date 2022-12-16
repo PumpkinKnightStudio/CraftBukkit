@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.nbt.GameProfileSerializer;
@@ -278,7 +279,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             CraftMetaSkull that = (CraftMetaSkull) meta;
 
             // SPIGOT-5403: equals does not check properties
-            return (this.profile != null ? that.profile != null && this.serializedProfile.equals(that.serializedProfile) : that.profile == null) && this.noteBlockSound == that.noteBlockSound;
+            return (this.profile != null ? that.profile != null && this.serializedProfile.equals(that.serializedProfile) : that.profile == null) && Objects.equals(this.noteBlockSound, that.noteBlockSound);
         }
         return true;
     }
@@ -294,8 +295,9 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (this.profile != null) {
             return builder.put(SKULL_OWNER.BUKKIT, new CraftPlayerProfile(this.profile));
         }
-        if (this.noteBlockSound != null) {
-            return builder.put(NOTE_BLOCK_SOUND.BUKKIT, getNoteBlockSound());
+        NamespacedKey namespacedKeyNB = this.getNoteBlockSound();
+        if (namespacedKeyNB != null) {
+            return builder.put(NOTE_BLOCK_SOUND.BUKKIT, namespacedKeyNB);
         }
         return builder;
     }
