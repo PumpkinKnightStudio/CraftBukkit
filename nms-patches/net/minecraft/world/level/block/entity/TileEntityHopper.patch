@@ -162,10 +162,10 @@
  
 -        return getContainerAt(world, blockposition.relative(enumdirection));
 +        // CraftBukkit start
-+        var inventory = getContainerAt(world, blockposition.relative(enumdirection));
-+        var event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.ATTACHED);
++        IInventory inventory = getContainerAt(world, blockposition.relative(enumdirection));
++        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.DESTINATION);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
-+        var craftInventory = (CraftInventory)event.getInventory();
++        CraftInventory craftInventory = (CraftInventory)event.getInventory();
 +        return craftInventory != null ? craftInventory.getInventory() : null;
 +        // CraftBukkit end
      }
@@ -174,10 +174,10 @@
      private static IInventory getSourceContainer(World world, IHopper ihopper) {
 -        return getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
 +        // CraftBukkit start
-+        var inventory = getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
-+        var event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.SOURCE);
++        IInventory inventory = getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
++        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.SOURCE);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
-+        var craftInventory = (CraftInventory)event.getInventory();
++        CraftInventory craftInventory = (CraftInventory)event.getInventory();
 +        return craftInventory != null ? craftInventory.getInventory() : null;
 +        // CraftBukkit end
      }
