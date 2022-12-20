@@ -156,17 +156,28 @@
          ItemStack itemstack = entityitem.getItem().copy();
          ItemStack itemstack1 = addItem((IInventory) null, iinventory, itemstack, (EnumDirection) null);
  
-@@ -331,12 +430,24 @@
+@@ -327,16 +426,32 @@
+         return itemstack;
+     }
+ 
++    // CraftBukkit start
++    @Nullable
++    private static IInventory runHopperInventorySearchEvent(IInventory inventory, HopperInventorySearchEvent.ContainerType containerType) {
++        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, containerType);
++        Bukkit.getServer().getPluginManager().callEvent(event);
++        CraftInventory craftInventory = (CraftInventory)event.getInventory();
++        return craftInventory != null ? craftInventory.getInventory() : null;
++    }
++    // CraftBukkit end
++
+     @Nullable
      private static IInventory getAttachedContainer(World world, BlockPosition blockposition, IBlockData iblockdata) {
          EnumDirection enumdirection = (EnumDirection) iblockdata.getValue(BlockHopper.FACING);
  
 -        return getContainerAt(world, blockposition.relative(enumdirection));
 +        // CraftBukkit start
 +        IInventory inventory = getContainerAt(world, blockposition.relative(enumdirection));
-+        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.DESTINATION);
-+        Bukkit.getServer().getPluginManager().callEvent(event);
-+        CraftInventory craftInventory = (CraftInventory)event.getInventory();
-+        return craftInventory != null ? craftInventory.getInventory() : null;
++        return runHopperInventorySearchEvent(inventory, HopperInventorySearchEvent.ContainerType.DESTINATION);
 +        // CraftBukkit end
      }
  
@@ -175,10 +186,7 @@
 -        return getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
 +        // CraftBukkit start
 +        IInventory inventory = getContainerAt(world, ihopper.getLevelX(), ihopper.getLevelY() + 1.0D, ihopper.getLevelZ());
-+        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, HopperInventorySearchEvent.ContainerType.SOURCE);
-+        Bukkit.getServer().getPluginManager().callEvent(event);
-+        CraftInventory craftInventory = (CraftInventory)event.getInventory();
-+        return craftInventory != null ? craftInventory.getInventory() : null;
++        return runHopperInventorySearchEvent(inventory, HopperInventorySearchEvent.ContainerType.SOURCE);
 +        // CraftBukkit end
      }
  
