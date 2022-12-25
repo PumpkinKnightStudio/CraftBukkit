@@ -5,18 +5,20 @@ import org.bukkit.generator.BiomeParameterPoint;
 
 public class CraftBiomeParameterPoint implements BiomeParameterPoint {
 
-    private final float temperature;
-    private final float humidity;
-    private final float continentalness;
-    private final float erosion;
-    private final float depth;
-    private final float weirdness;
+    private final double temperature;
+    private final double humidity;
+    private final double continentalness;
+    private final double erosion;
+    private final double depth;
+    private final double weirdness;
+    private final Climate.Sampler sampler;
 
-    public static BiomeParameterPoint createBiomeParameterPoint(Climate.h targetPoint) {
-        return new CraftBiomeParameterPoint(targetPoint.temperature(), targetPoint.humidity(), targetPoint.continentalness(), targetPoint.erosion(), targetPoint.depth(), targetPoint.weirdness());
+    public static BiomeParameterPoint createBiomeParameterPoint(Climate.Sampler sampler, Climate.h targetPoint) {
+        return new CraftBiomeParameterPoint(sampler, Climate.unquantizeCoord(targetPoint.temperature()), Climate.unquantizeCoord(targetPoint.humidity()), Climate.unquantizeCoord(targetPoint.continentalness()), Climate.unquantizeCoord(targetPoint.erosion()), Climate.unquantizeCoord(targetPoint.depth()), Climate.unquantizeCoord(targetPoint.weirdness()));
     }
 
-    private CraftBiomeParameterPoint(float temperature, float humidity, float continentalness, float erosion, float depth, float weirdness) {
+    private CraftBiomeParameterPoint(Climate.Sampler sampler, double temperature, double humidity, double continentalness, double erosion, double depth, double weirdness) {
+        this.sampler = sampler;
         this.temperature = temperature;
         this.humidity = humidity;
         this.continentalness = continentalness;
@@ -26,32 +28,92 @@ public class CraftBiomeParameterPoint implements BiomeParameterPoint {
     }
 
     @Override
-    public float getTemperature() {
+    public double getTemperature() {
         return this.temperature;
     }
 
     @Override
-    public float getHumidity() {
+    public double getMaxTemperature() {
+        return this.sampler.temperature().maxValue();
+    }
+
+    @Override
+    public double getMinTemperature() {
+        return this.sampler.temperature().minValue();
+    }
+
+    @Override
+    public double getHumidity() {
         return this.humidity;
     }
 
     @Override
-    public float getContinentalness() {
+    public double getMaxHumidity() {
+        return this.sampler.humidity().maxValue();
+    }
+
+    @Override
+    public double getMinHumidity() {
+        return this.sampler.humidity().minValue();
+    }
+
+    @Override
+    public double getContinentalness() {
         return this.continentalness;
     }
 
     @Override
-    public float getErosion() {
+    public double getMaxContinentalness() {
+        return this.sampler.continentalness().maxValue();
+    }
+
+    @Override
+    public double getMinContinentalness() {
+        return this.sampler.continentalness().minValue();
+    }
+
+    @Override
+    public double getErosion() {
         return this.erosion;
     }
 
     @Override
-    public float getDepth() {
+    public double getMaxErosion() {
+        return this.sampler.erosion().maxValue();
+    }
+
+    @Override
+    public double getMinErosion() {
+        return this.sampler.erosion().minValue();
+    }
+
+    @Override
+    public double getDepth() {
         return this.depth;
     }
 
     @Override
-    public float getWeirdness() {
+    public double getMaxDepth() {
+        return this.sampler.depth().maxValue();
+    }
+
+    @Override
+    public double getMinDepth() {
+        return this.sampler.depth().minValue();
+    }
+
+    @Override
+    public double getWeirdness() {
         return this.weirdness;
+    }
+
+    @Override
+    public double getMaxWeirdness() {
+        return this.sampler.weirdness().maxValue();
+    }
+
+    @Override
+    public double getMinWeirdness() {
+        return this.sampler.weirdness().minValue();
     }
 }
