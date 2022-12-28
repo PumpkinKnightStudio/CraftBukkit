@@ -2,9 +2,10 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityMonster;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.entity.Enemy;
 import org.bukkit.entity.Monster;
 
-public class CraftMonster extends CraftCreature implements Monster {
+public class CraftMonster extends CraftCreature implements Monster, Enemy {
 
     public CraftMonster(CraftServer server, EntityMonster entity) {
         super(server, entity);

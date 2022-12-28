@@ -6,10 +6,11 @@ import org.bukkit.DyeColor;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.entity.Enemy;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Shulker;
 
-public class CraftShulker extends CraftGolem implements Shulker {
+public class CraftShulker extends CraftGolem implements Shulker, Enemy {
 
     public CraftShulker(CraftServer server, EntityShulker entity) {
         super(server, entity);

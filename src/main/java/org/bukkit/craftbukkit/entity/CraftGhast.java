@@ -2,10 +2,11 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityGhast;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.entity.Enemy;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ghast;
 
-public class CraftGhast extends CraftFlying implements Ghast {
+public class CraftGhast extends CraftFlying implements Ghast, Enemy {
 
     public CraftGhast(CraftServer server, EntityGhast entity) {
         super(server, entity);
