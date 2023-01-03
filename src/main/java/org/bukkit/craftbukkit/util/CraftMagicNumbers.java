@@ -35,6 +35,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.datafix.fixes.DataConverterTypes;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -54,9 +55,11 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -359,6 +362,31 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public CreativeCategory getCreativeCategory(Material material) {
         return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
+    }
+
+    @Override
+    public String getTranslationKey(Material material) {
+        if(material.isBlock()) {
+            return getBlock(material).getDescriptionId();
+        } else {
+            return getItem(material).getDescriptionId();
+        }
+    }
+
+    @Override
+    public String getTranslationKey(EntityType entityType) {
+        return EntityTypes.byString(entityType.name()).map(EntityTypes::getDescriptionId).orElseThrow();
+    }
+
+    @Override
+    public String getTranslationKey(ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+        return nmsItemStack.getItem().getDescriptionId(nmsItemStack);
+    }
+
+    @Override
+    public String getTranslationKey(org.bukkit.block.Block block) {
+        return ((CraftBlock)block).getNMS().getBlock().getDescriptionId();
     }
 
     /**

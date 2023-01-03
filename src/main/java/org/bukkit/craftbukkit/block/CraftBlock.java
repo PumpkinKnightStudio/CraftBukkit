@@ -642,4 +642,9 @@ public class CraftBlock implements Block {
 
         return iblockdata.canSurvive(world, this.position);
     }
+
+    @Override
+    public String getTranslationKey() {
+        return Bukkit.getUnsafe().getTranslationKey(this);
+    }
 }
