@@ -1,10 +1,7 @@
 --- a/net/minecraft/world/entity/player/EntityHuman.java
 +++ b/net/minecraft/world/entity/player/EntityHuman.java
-@@ -113,8 +113,23 @@
- import net.minecraft.world.scores.Scoreboard;
- import net.minecraft.world.scores.ScoreboardTeam;
+@@ -115,6 +115,21 @@
  import net.minecraft.world.scores.ScoreboardTeamBase;
-+import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -19,6 +16,7 @@
 +import org.bukkit.event.entity.EntityExhaustionEvent;
 +import org.bukkit.event.player.PlayerDropItemEvent;
 +import org.bukkit.event.player.PlayerVelocityEvent;
++import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
 +// CraftBukkit end
 +
  public abstract class EntityHuman extends EntityLiving {
