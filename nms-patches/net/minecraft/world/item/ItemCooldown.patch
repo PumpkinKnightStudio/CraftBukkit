@@ -20,7 +20,7 @@
 -    public void addCooldown(Item item, int i) {
 +    // CraftBukkit - Call PlayerItemCooldownChangeEvent
 +    public void addCooldown(Item item, int i, EntityHuman player, PlayerItemCooldownChangeEvent.Reason reason) {
-+        PlayerItemCooldownChangeEvent playeritemcooldownevent = new PlayerItemCooldownChangeEvent(player.getBukkitEntity(), CraftItemStack.asBukkitCopy(new ItemStack(item)), i, reason);
++        PlayerItemCooldownChangeEvent playeritemcooldownevent = new PlayerItemCooldownChangeEvent(player.getBukkitEntity(), CraftItemStack.asBukkitCopy(new ItemStack(item)).getType(), i, reason);
 +        player.getServer().server.getPluginManager().callEvent(playeritemcooldownevent);
 +        if (!playeritemcooldownevent.isCancelled()) {
 +            addCooldown0(item, playeritemcooldownevent.getCooldown());
