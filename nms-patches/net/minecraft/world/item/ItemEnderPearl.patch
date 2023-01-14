@@ -1,6 +1,14 @@
 --- a/net/minecraft/world/item/ItemEnderPearl.java
 +++ b/net/minecraft/world/item/ItemEnderPearl.java
-@@ -19,16 +19,24 @@
+@@ -8,6 +8,7 @@
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.projectile.EntityEnderPearl;
+ import net.minecraft.world.level.World;
++import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
+ 
+ public class ItemEnderPearl extends Item {
+ 
+@@ -19,16 +20,24 @@
      public InteractionResultWrapper<ItemStack> use(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.getItemInHand(enumhand);
  
@@ -22,7 +30,7 @@
          }
  
 +        world.playSound((EntityHuman) null, entityhuman.getX(), entityhuman.getY(), entityhuman.getZ(), SoundEffects.ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-+        entityhuman.getCooldowns().addCooldown(this, 20);
++        entityhuman.getCooldowns().addCooldown(this, 20, entityhuman, PlayerItemCooldownChangeEvent.Reason.ITEM_USE); // CraftBukkit - Call PlayerItemCooldownChangeEvent
 +        // CraftBukkit end
 +
          entityhuman.awardStat(StatisticList.ITEM_USED.get(this));

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/EntityInsentient.java
 +++ b/net/minecraft/world/entity/EntityInsentient.java
-@@ -75,6 +75,19 @@
+@@ -75,6 +75,20 @@
  import net.minecraft.world.level.pathfinder.PathType;
  import net.minecraft.world.level.storage.loot.LootTableInfo;
  
@@ -15,12 +15,13 @@
 +import org.bukkit.event.entity.EntityTransformEvent;
 +import org.bukkit.event.entity.EntityUnleashEvent;
 +import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
++import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
 +// CraftBukkit end
 +
  public abstract class EntityInsentient extends EntityLiving {
  
      private static final DataWatcherObject<Byte> DATA_MOB_FLAGS_ID = DataWatcher.defineId(EntityInsentient.class, DataWatcherRegistry.BYTE);
-@@ -121,6 +134,8 @@
+@@ -121,6 +135,8 @@
      private BlockPosition restrictCenter;
      private float restrictRadius;
  
@@ -29,7 +30,7 @@
      protected EntityInsentient(EntityTypes<? extends EntityInsentient> entitytypes, World world) {
          super(entitytypes, world);
          this.handItems = NonNullList.withSize(2, ItemStack.EMPTY);
-@@ -146,6 +161,12 @@
+@@ -146,6 +162,12 @@
  
      }
  
@@ -42,7 +43,7 @@
      protected void registerGoals() {}
  
      public static AttributeProvider.Builder createMobAttributes() {
-@@ -224,7 +245,38 @@
+@@ -224,7 +246,38 @@
      }
  
      public void setTarget(@Nullable EntityLiving entityliving) {
@@ -81,7 +82,7 @@
      }
  
      @Override
-@@ -364,6 +416,12 @@
+@@ -364,6 +417,12 @@
          return null;
      }
  
@@ -94,7 +95,7 @@
      @Override
      public void addAdditionalSaveData(NBTTagCompound nbttagcompound) {
          super.addAdditionalSaveData(nbttagcompound);
-@@ -453,16 +511,26 @@
+@@ -453,16 +512,26 @@
              nbttagcompound.putBoolean("NoAI", this.isNoAi());
          }
  
@@ -123,7 +124,7 @@
          NBTTagList nbttaglist;
          int i;
  
-@@ -509,6 +577,11 @@
+@@ -509,6 +578,11 @@
          }
  
          this.setNoAi(nbttagcompound.getBoolean("NoAI"));
@@ -135,7 +136,7 @@
      }
  
      @Override
-@@ -576,7 +649,7 @@
+@@ -576,7 +650,7 @@
  
      protected void pickUpItem(EntityItem entityitem) {
          ItemStack itemstack = entityitem.getItem();
@@ -144,7 +145,7 @@
  
          if (!itemstack1.isEmpty()) {
              this.onItemPickup(entityitem);
-@@ -590,15 +663,29 @@
+@@ -590,15 +664,29 @@
      }
  
      public ItemStack equipItemIfPossible(ItemStack itemstack) {
@@ -175,7 +176,7 @@
              }
  
              if (enumitemslot.isArmor() && itemstack.getCount() > 1) {
-@@ -750,6 +837,7 @@
+@@ -750,6 +838,7 @@
      @Override
      protected final void serverAiStep() {
          ++this.noActionTime;
@@ -183,7 +184,7 @@
          this.level.getProfiler().push("sensing");
          this.sensing.tick();
          this.level.getProfiler().pop();
-@@ -1143,6 +1231,12 @@
+@@ -1143,6 +1232,12 @@
          if (!this.isAlive()) {
              return EnumInteractionResult.PASS;
          } else if (this.getLeashHolder() == entityhuman) {
@@ -196,7 +197,7 @@
              this.dropLeash(true, !entityhuman.getAbilities().instabuild);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
          } else {
-@@ -1166,6 +1260,12 @@
+@@ -1166,6 +1261,12 @@
          ItemStack itemstack = entityhuman.getItemInHand(enumhand);
  
          if (itemstack.is(Items.LEAD) && this.canBeLeashed(entityhuman)) {
@@ -209,7 +210,7 @@
              this.setLeashedTo(entityhuman, true);
              itemstack.shrink(1);
              return EnumInteractionResult.sidedSuccess(this.level.isClientSide);
-@@ -1181,7 +1281,7 @@
+@@ -1181,7 +1282,7 @@
              if (itemstack.getItem() instanceof ItemMonsterEgg) {
                  if (this.level instanceof WorldServer) {
                      ItemMonsterEgg itemmonsteregg = (ItemMonsterEgg) itemstack.getItem();
@@ -218,7 +219,7 @@
  
                      optional.ifPresent((entityinsentient) -> {
                          this.onOffspringSpawnedFromEgg(entityhuman, entityinsentient);
-@@ -1231,12 +1331,19 @@
+@@ -1231,12 +1332,19 @@
          return this.restrictRadius != -1.0F;
      }
  
@@ -239,7 +240,7 @@
  
              if (t0 == null) {
                  return null;
-@@ -1271,7 +1378,12 @@
+@@ -1271,7 +1379,12 @@
                      }
                  }
  
@@ -253,7 +254,7 @@
                  if (this.isPassenger()) {
                      Entity entity = this.getVehicle();
  
-@@ -1292,6 +1404,7 @@
+@@ -1292,6 +1405,7 @@
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -261,7 +262,7 @@
                  this.dropLeash(true, true);
              }
  
-@@ -1303,7 +1416,9 @@
+@@ -1303,7 +1417,9 @@
              this.leashHolder = null;
              this.leashInfoTag = null;
              if (!this.level.isClientSide && flag1) {
@@ -271,7 +272,7 @@
              }
  
              if (!this.level.isClientSide && flag && this.level instanceof WorldServer) {
-@@ -1353,6 +1468,7 @@
+@@ -1353,6 +1469,7 @@
          boolean flag1 = super.startRiding(entity, flag);
  
          if (flag1 && this.isLeashed()) {
@@ -279,7 +280,7 @@
              this.dropLeash(true, true);
          }
  
-@@ -1377,7 +1493,9 @@
+@@ -1377,7 +1494,9 @@
              }
  
              if (this.tickCount > 100) {
@@ -289,7 +290,7 @@
                  this.leashInfoTag = null;
              }
          }
-@@ -1458,7 +1576,14 @@
+@@ -1458,7 +1577,14 @@
          int i = EnchantmentManager.getFireAspect(this);
  
          if (i > 0) {
@@ -305,7 +306,16 @@
          }
  
          boolean flag = entity.hurt(DamageSource.mobAttack(this), f);
-@@ -1532,9 +1657,10 @@
+@@ -1487,7 +1613,7 @@
+             float f = 0.25F + (float) EnchantmentManager.getBlockEfficiency(this) * 0.05F;
+ 
+             if (this.random.nextFloat() < f) {
+-                entityhuman.getCooldowns().addCooldown(Items.SHIELD, 100);
++                entityhuman.getCooldowns().addCooldown(Items.SHIELD, 100, entityhuman, PlayerItemCooldownChangeEvent.Reason.ITEM_USE); // CraftBukkit - Call PlayerItemCooldownChangeEvent
+                 this.level.broadcastEntityEvent(entityhuman, (byte) 30);
+             }
+         }
+@@ -1532,9 +1658,10 @@
      @Override
      protected void removeAfterChangingDimensions() {
          super.removeAfterChangingDimensions();

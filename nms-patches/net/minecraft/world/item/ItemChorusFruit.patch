@@ -1,6 +1,14 @@
 --- a/net/minecraft/world/item/ItemChorusFruit.java
 +++ b/net/minecraft/world/item/ItemChorusFruit.java
-@@ -39,7 +39,16 @@
+@@ -12,6 +12,7 @@
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.gameevent.GameEvent;
+ import net.minecraft.world.phys.Vec3D;
++import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
+ 
+ public class ItemChorusFruit extends Item {
+ 
+@@ -39,7 +40,16 @@
  
                  Vec3D vec3d = entityliving.position();
  
@@ -17,4 +25,15 @@
 +                    // CraftBukkit end
                      world.gameEvent(GameEvent.TELEPORT, vec3d, GameEvent.a.of((Entity) entityliving));
                      SoundEffect soundeffect = entityliving instanceof EntityFox ? SoundEffects.FOX_TELEPORT : SoundEffects.CHORUS_FRUIT_TELEPORT;
+ 
+@@ -49,8 +59,8 @@
+                 }
+             }
+ 
+-            if (entityliving instanceof EntityHuman) {
+-                ((EntityHuman) entityliving).getCooldowns().addCooldown(this, 20);
++            if (entityliving instanceof EntityHuman entityHuman) {
++                entityHuman.getCooldowns().addCooldown(this, 20, entityHuman, PlayerItemCooldownChangeEvent.Reason.ITEM_USE); // CraftBukkit - Call PlayerItemCooldownChangeEvent
+             }
+         }
  
