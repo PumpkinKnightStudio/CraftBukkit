@@ -1,33 +1,32 @@
 --- a/net/minecraft/world/item/ItemCooldown.java
 +++ b/net/minecraft/world/item/ItemCooldown.java
-@@ -5,6 +5,12 @@
- import java.util.Map;
+@@ -6,6 +6,12 @@
  import java.util.Map.Entry;
  import net.minecraft.util.MathHelper;
-+import net.minecraft.world.entity.player.EntityHuman;
-+
+ 
 +// CraftBukkit start
++import net.minecraft.world.entity.player.EntityHuman;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
 +// CraftBukkit end
- 
++
  public class ItemCooldown {
  
-@@ -47,7 +53,16 @@
+     public final Map<Item, ItemCooldown.Info> cooldowns = Maps.newHashMap();
+@@ -47,6 +53,16 @@
  
      }
  
--    public void addCooldown(Item item, int i) {
-+    // CraftBukkit - Call PlayerItemCooldownChangeEvent
++    // CraftBukkit start - Call PlayerItemCooldownChangeEvent
 +    public void addCooldown(Item item, int i, EntityHuman player, PlayerItemCooldownChangeEvent.Reason reason) {
 +        PlayerItemCooldownChangeEvent playeritemcooldownevent = new PlayerItemCooldownChangeEvent(player.getBukkitEntity(), CraftItemStack.asBukkitCopy(new ItemStack(item)).getType(), i, reason);
 +        player.getServer().server.getPluginManager().callEvent(playeritemcooldownevent);
 +        if (!playeritemcooldownevent.isCancelled()) {
-+            addCooldown0(item, playeritemcooldownevent.getCooldown());
++            addCooldown(item, playeritemcooldownevent.getCooldown());
 +        }
 +    }
++    // CraftBukkit end
 +
-+    private void addCooldown0(Item item, int i) { // Pail: public -> private, addCooldown -> addCooldown0
+     public void addCooldown(Item item, int i) {
          this.cooldowns.put(item, new ItemCooldown.Info(this.tickCount, this.tickCount + i));
          this.onCooldownStarted(item, i);
-     }

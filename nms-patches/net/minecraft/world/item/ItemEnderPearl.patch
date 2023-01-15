@@ -1,17 +1,15 @@
 --- a/net/minecraft/world/item/ItemEnderPearl.java
 +++ b/net/minecraft/world/item/ItemEnderPearl.java
-@@ -9,6 +9,10 @@
+@@ -9,6 +9,8 @@
  import net.minecraft.world.entity.projectile.EntityEnderPearl;
  import net.minecraft.world.level.World;
  
-+// CraftBukkit start
-+import org.bukkit.event.player.PlayerItemCooldownChangeEvent;
-+// CraftBukkit end
++import org.bukkit.event.player.PlayerItemCooldownChangeEvent; // CraftBukkit
 +
  public class ItemEnderPearl extends Item {
  
      public ItemEnderPearl(Item.Info item_info) {
-@@ -19,16 +23,24 @@
+@@ -19,16 +21,24 @@
      public InteractionResultWrapper<ItemStack> use(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.getItemInHand(enumhand);
  
