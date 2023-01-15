@@ -27,14 +27,18 @@
                      world.gameEvent(GameEvent.TELEPORT, vec3d, GameEvent.a.of((Entity) entityliving));
                      SoundEffect soundeffect = entityliving instanceof EntityFox ? SoundEffects.FOX_TELEPORT : SoundEffects.CHORUS_FRUIT_TELEPORT;
  
-@@ -49,8 +60,8 @@
+@@ -48,10 +59,11 @@
+                     break;
                  }
              }
- 
+-
 -            if (entityliving instanceof EntityHuman) {
 -                ((EntityHuman) entityliving).getCooldowns().addCooldown(this, 20);
++            // CraftBukkit start - Call PlayerItemCooldownChangeEvent
 +            if (entityliving instanceof EntityHuman entityHuman) {
-+                entityHuman.getCooldowns().addCooldown(this, 20, entityHuman, PlayerItemCooldownChangeEvent.Reason.ITEM_USE); // CraftBukkit - Call PlayerItemCooldownChangeEvent
++                entityHuman.getCooldowns().addCooldown(this, 20, entityHuman, PlayerItemCooldownChangeEvent.Reason.ITEM_USE);
              }
++            // CraftBukkit end
          }
  
+         return itemstack1;
