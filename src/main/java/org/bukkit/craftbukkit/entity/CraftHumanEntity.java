@@ -674,4 +674,14 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         boolean success = getHandle().level.addFreshEntity(fireworks, SpawnReason.CUSTOM);
         return success ? (Firework) fireworks.getBukkitEntity() : null;
     }
+
+    @Override
+    public int getEnchantmentSeed() {
+        return getHandle().enchantmentSeed;
+    }
+
+    @Override
+    public void setEnchantmentSeed(int i) {
+        getHandle().enchantmentSeed = i;
+    }
 }
