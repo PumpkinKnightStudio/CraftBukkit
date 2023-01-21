@@ -365,11 +365,22 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     @Override
-    public String getTranslationKey(Material material) {
-        if(material.isBlock()) {
-            return getBlock(material).getDescriptionId();
+    public String getBlockTranslationKey(Material material) {
+        Block block = getBlock(material);
+        if(block != null) {
+            return block.getDescriptionId();
         } else {
-            return getItem(material).getDescriptionId();
+            return null;
+        }
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        Item item = getItem(material);
+        if(item != null) {
+            return item.getDescriptionId();
+        } else {
+            return null;
         }
     }
 
