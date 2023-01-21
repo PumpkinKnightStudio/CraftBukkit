@@ -49,7 +49,7 @@
      public int totalExperience;
      public float experienceProgress;
 -    protected int enchantmentSeed;
-+    public int enchantmentSeed; // CraftBukkit - protected -> public
++    public int enchantmentSeed; // PAIL protected -> public
      protected final float defaultFlySpeed = 0.02F;
      private int lastLevelUpTime;
      private final GameProfile gameProfile;
