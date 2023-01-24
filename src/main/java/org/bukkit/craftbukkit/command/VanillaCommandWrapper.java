@@ -64,10 +64,10 @@ public final class VanillaCommandWrapper extends BukkitCommand implements Brigad
         return results;
     }
 
-	@Override
-	public LiteralCommandNode<CommandListenerWrapper> getNode() {
-		return (LiteralCommandNode<CommandListenerWrapper>) vanillaCommand;
-	}
+    @Override
+    public LiteralCommandNode<CommandListenerWrapper> getNode() {
+        return (LiteralCommandNode<CommandListenerWrapper>) vanillaCommand;
+    }
 
     public static CommandListenerWrapper getListener(CommandSender sender) {
         if (sender instanceof Player) {
