@@ -42,7 +42,7 @@ public class PerMaterialTest extends AbstractTestingBase {
 
     @BeforeClass
     public static void getFireValues() {
-        fireValues = ((BlockFire) Blocks.FIRE).flameOdds;
+        fireValues = ((BlockFire) Blocks.FIRE).igniteOdds;
     }
 
     @Parameters(name = "{index}: {0}")
@@ -284,6 +284,13 @@ public class PerMaterialTest extends AbstractTestingBase {
                 BlockData blockData = Bukkit.createBlockData(material);
                 assertTrue(expectedClass + " <> " + blockData.getClass(), expectedClass.isInstance(blockData));
             }
+        }
+    }
+
+    @Test
+    public void testCreativeCategory() {
+        if (material.isItem()) {
+            material.getCreativeCategory();
         }
     }
 }

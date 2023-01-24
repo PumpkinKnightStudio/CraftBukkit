@@ -34,7 +34,9 @@ public class Main {
 
             String repoDir = System.getProperty("bundlerRepoDir", "bundler");
             Path outputDir = Paths.get(repoDir).toAbsolutePath();
-            Files.createDirectories(outputDir);
+            if (!Files.isDirectory(outputDir)) {
+                Files.createDirectories(outputDir);
+            }
 
             System.out.println("Unbundling libraries to " + outputDir);
 
@@ -48,8 +50,7 @@ public class Main {
                 System.exit(0);
             }
 
-            ClassLoader maybePlatformClassLoader = getClass().getClassLoader().getParent();
-            URLClassLoader classLoader = new URLClassLoader(extractedUrls.toArray(new URL[0]), maybePlatformClassLoader);
+            URLClassLoader classLoader = new URLClassLoader(extractedUrls.toArray(new URL[0]));
 
             System.out.println("Starting server");
             Thread runThread = new Thread(() -> {

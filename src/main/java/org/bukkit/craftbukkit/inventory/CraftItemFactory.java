@@ -1,5 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Item;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -61,6 +68,8 @@ public final class CraftItemFactory implements ItemFactory {
         case CREEPER_WALL_HEAD:
         case DRAGON_HEAD:
         case DRAGON_WALL_HEAD:
+        case PIGLIN_HEAD:
+        case PIGLIN_WALL_HEAD:
         case PLAYER_HEAD:
         case PLAYER_WALL_HEAD:
         case SKELETON_SKULL:
@@ -122,11 +131,13 @@ public final class CraftItemFactory implements ItemFactory {
         case YELLOW_BANNER:
         case YELLOW_WALL_BANNER:
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
+        case ALLAY_SPAWN_EGG:
         case AXOLOTL_SPAWN_EGG:
         case BAT_SPAWN_EGG:
         case BEE_SPAWN_EGG:
         case BLAZE_SPAWN_EGG:
         case CAT_SPAWN_EGG:
+        case CAMEL_SPAWN_EGG:
         case CAVE_SPIDER_SPAWN_EGG:
         case CHICKEN_SPAWN_EGG:
         case COD_SPAWN_EGG:
@@ -136,10 +147,12 @@ public final class CraftItemFactory implements ItemFactory {
         case DONKEY_SPAWN_EGG:
         case DROWNED_SPAWN_EGG:
         case ELDER_GUARDIAN_SPAWN_EGG:
+        case ENDER_DRAGON_SPAWN_EGG:
         case ENDERMAN_SPAWN_EGG:
         case ENDERMITE_SPAWN_EGG:
         case EVOKER_SPAWN_EGG:
         case FOX_SPAWN_EGG:
+        case FROG_SPAWN_EGG:
         case GHAST_SPAWN_EGG:
         case GLOW_SQUID_SPAWN_EGG:
         case GOAT_SPAWN_EGG:
@@ -147,6 +160,7 @@ public final class CraftItemFactory implements ItemFactory {
         case HOGLIN_SPAWN_EGG:
         case HORSE_SPAWN_EGG:
         case HUSK_SPAWN_EGG:
+        case IRON_GOLEM_SPAWN_EGG:
         case LLAMA_SPAWN_EGG:
         case MAGMA_CUBE_SPAWN_EGG:
         case MOOSHROOM_SPAWN_EGG:
@@ -170,10 +184,12 @@ public final class CraftItemFactory implements ItemFactory {
         case SKELETON_HORSE_SPAWN_EGG:
         case SKELETON_SPAWN_EGG:
         case SLIME_SPAWN_EGG:
+        case SNOW_GOLEM_SPAWN_EGG:
         case SPIDER_SPAWN_EGG:
         case SQUID_SPAWN_EGG:
         case STRAY_SPAWN_EGG:
         case STRIDER_SPAWN_EGG:
+        case TADPOLE_SPAWN_EGG:
         case TRADER_LLAMA_SPAWN_EGG:
         case TROPICAL_FISH_SPAWN_EGG:
         case TURTLE_SPAWN_EGG:
@@ -181,8 +197,10 @@ public final class CraftItemFactory implements ItemFactory {
         case VILLAGER_SPAWN_EGG:
         case VINDICATOR_SPAWN_EGG:
         case WANDERING_TRADER_SPAWN_EGG:
+        case WARDEN_SPAWN_EGG:
         case WITCH_SPAWN_EGG:
         case WITHER_SKELETON_SPAWN_EGG:
+        case WITHER_SPAWN_EGG:
         case WOLF_SPAWN_EGG:
         case ZOGLIN_SPAWN_EGG:
         case ZOMBIE_HORSE_SPAWN_EGG:
@@ -200,21 +218,45 @@ public final class CraftItemFactory implements ItemFactory {
         case JUKEBOX:
         case DISPENSER:
         case DROPPER:
+        case ACACIA_HANGING_SIGN:
         case ACACIA_SIGN:
+        case ACACIA_WALL_HANGING_SIGN:
         case ACACIA_WALL_SIGN:
+        case BAMBOO_HANGING_SIGN:
+        case BAMBOO_SIGN:
+        case BAMBOO_WALL_HANGING_SIGN:
+        case BAMBOO_WALL_SIGN:
+        case BIRCH_HANGING_SIGN:
         case BIRCH_SIGN:
+        case BIRCH_WALL_HANGING_SIGN:
         case BIRCH_WALL_SIGN:
+        case CRIMSON_HANGING_SIGN:
         case CRIMSON_SIGN:
+        case CRIMSON_WALL_HANGING_SIGN:
         case CRIMSON_WALL_SIGN:
+        case DARK_OAK_HANGING_SIGN:
         case DARK_OAK_SIGN:
+        case DARK_OAK_WALL_HANGING_SIGN:
         case DARK_OAK_WALL_SIGN:
+        case JUNGLE_HANGING_SIGN:
         case JUNGLE_SIGN:
+        case JUNGLE_WALL_HANGING_SIGN:
         case JUNGLE_WALL_SIGN:
+        case MANGROVE_HANGING_SIGN:
+        case MANGROVE_SIGN:
+        case MANGROVE_WALL_HANGING_SIGN:
+        case MANGROVE_WALL_SIGN:
+        case OAK_HANGING_SIGN:
         case OAK_SIGN:
+        case OAK_WALL_HANGING_SIGN:
         case OAK_WALL_SIGN:
+        case SPRUCE_HANGING_SIGN:
         case SPRUCE_SIGN:
+        case SPRUCE_WALL_HANGING_SIGN:
         case SPRUCE_WALL_SIGN:
+        case WARPED_HANGING_SIGN:
         case WARPED_SIGN:
+        case WARPED_WALL_HANGING_SIGN:
         case WARPED_WALL_SIGN:
         case SPAWNER:
         case BREWING_STAND:
@@ -256,7 +298,10 @@ public final class CraftItemFactory implements ItemFactory {
         case SMOKER:
         case BEEHIVE:
         case BEE_NEST:
+        case SCULK_CATALYST:
+        case SCULK_SHRIEKER:
         case SCULK_SENSOR:
+        case CHISELED_BOOKSHELF:
             return new CraftMetaBlockState(meta, material);
         case TROPICAL_FISH_BUCKET:
             return meta instanceof CraftMetaTropicalFishBucket ? meta : new CraftMetaTropicalFishBucket(meta);
@@ -277,6 +322,8 @@ public final class CraftItemFactory implements ItemFactory {
             return meta instanceof CraftMetaCompass ? meta : new CraftMetaCompass(meta);
         case BUNDLE:
             return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
+        case GOAT_HORN:
+            return meta instanceof CraftMetaMusicInstrument ? meta : new CraftMetaMusicInstrument(meta);
         default:
             return new CraftMetaItem(meta);
         }
@@ -338,6 +385,25 @@ public final class CraftItemFactory implements ItemFactory {
     @Override
     public Color getDefaultLeatherColor() {
         return DEFAULT_LEATHER_COLOR;
+    }
+
+    @Override
+    public ItemStack createItemStack(String input) throws IllegalArgumentException {
+        try {
+            ArgumentParserItemStack.a arg = ArgumentParserItemStack.parseForItem(BuiltInRegistries.ITEM.asLookup(), new StringReader(input));
+
+            Item item = arg.item().value();
+            net.minecraft.world.item.ItemStack nmsItemStack = new net.minecraft.world.item.ItemStack(item);
+
+            NBTTagCompound nbt = arg.nbt();
+            if (nbt != null) {
+                nmsItemStack.setTag(nbt);
+            }
+
+            return CraftItemStack.asCraftMirror(nmsItemStack);
+        } catch (CommandSyntaxException ex) {
+            throw new IllegalArgumentException("Could not parse ItemStack: " + input, ex);
+        }
     }
 
     @Override

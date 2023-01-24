@@ -2,9 +2,11 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.World;
@@ -14,6 +16,10 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.profile.PlayerProfile;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implements Skull {
 
@@ -101,6 +107,39 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     }
 
     @Override
+    public PlayerProfile getOwnerProfile() {
+        if (!hasOwner()) {
+            return null;
+        }
+
+        return new CraftPlayerProfile(profile);
+    }
+
+    @Override
+    public void setOwnerProfile(PlayerProfile profile) {
+        if (profile == null) {
+            this.profile = null;
+        } else {
+            this.profile = CraftPlayerProfile.validateSkullProfile(((CraftPlayerProfile) profile).buildGameProfile());
+        }
+    }
+
+    @Override
+    public NamespacedKey getNoteBlockSound() {
+        MinecraftKey key = getSnapshot().getNoteBlockSound();
+        return (key != null) ? CraftNamespacedKey.fromMinecraft(key) : null;
+    }
+
+    @Override
+    public void setNoteBlockSound(@Nullable NamespacedKey namespacedKey) {
+        if (namespacedKey == null) {
+            this.getSnapshot().noteBlockSound = null;
+            return;
+        }
+        this.getSnapshot().noteBlockSound = CraftNamespacedKey.toMinecraft(namespacedKey);
+    }
+
+    @Override
     public BlockFace getRotation() {
         BlockData blockData = getBlockData();
         return (blockData instanceof Rotatable) ? ((Rotatable) blockData).getRotation() : ((Directional) blockData).getFacing();
@@ -129,6 +168,9 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             case ZOMBIE_HEAD:
             case ZOMBIE_WALL_HEAD:
                 return SkullType.ZOMBIE;
+            case PIGLIN_HEAD:
+            case PIGLIN_WALL_HEAD:
+                return SkullType.PIGLIN;
             case PLAYER_HEAD:
             case PLAYER_WALL_HEAD:
                 return SkullType.PLAYER;

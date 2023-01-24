@@ -1,71 +1,34 @@
 --- a/net/minecraft/world/level/SpawnerCreature.java
 +++ b/net/minecraft/world/level/SpawnerCreature.java
-@@ -47,6 +47,11 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -49,6 +49,13 @@
+ import net.minecraft.world.phys.Vec3D;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.world.level.storage.WorldData;
++import org.bukkit.craftbukkit.util.CraftSpawnCategory;
++import org.bukkit.entity.SpawnCategory;
 +import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 +// CraftBukkit end
 +
  public final class SpawnerCreature {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -73,7 +78,8 @@
-             if (entity instanceof EntityInsentient) {
-                 EntityInsentient entityinsentient = (EntityInsentient) entity;
- 
--                if (entityinsentient.isPersistenceRequired() || entityinsentient.requiresCustomPersistence()) {
-+                // CraftBukkit - Split out persistent check, don't apply it to special persistent mobs
-+                if (entityinsentient.removeWhenFarAway(0) && entityinsentient.isPersistenceRequired()) {
-                     continue;
-                 }
-             }
-@@ -111,10 +117,54 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+@@ -113,10 +120,25 @@
          EnumCreatureType[] aenumcreaturetype = SpawnerCreature.SPAWNING_CATEGORIES;
          int i = aenumcreaturetype.length;
  
-+        // CraftBukkit start - Other mob type spawn tick rate
-+        WorldData worlddata = worldserver.getLevelData();
-+        boolean spawnAnimalThisTick = worldserver.ticksPerAnimalSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerAnimalSpawns == 0L;
-+        boolean spawnMonsterThisTick = worldserver.ticksPerMonsterSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerMonsterSpawns == 0L;
-+        boolean spawnWaterThisTick = worldserver.ticksPerWaterSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerWaterSpawns == 0L;
-+        boolean spawnAmbientThisTick = worldserver.ticksPerAmbientSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerAmbientSpawns == 0L;
-+        boolean spawnWaterAmbientThisTick = worldserver.ticksPerWaterAmbientSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerWaterAmbientSpawns == 0L;
-+        boolean spawnWaterUndergroundCreatureThisTick = worldserver.ticksPerWaterUndergroundCreatureSpawns != 0L && worlddata.getGameTime() % worldserver.ticksPerWaterUndergroundCreatureSpawns == 0L;
-+        // CraftBukkit end
++        WorldData worlddata = worldserver.getLevelData(); // CraftBukkit - Other mob type spawn tick rate
 +
          for (int j = 0; j < i; ++j) {
              EnumCreatureType enumcreaturetype = aenumcreaturetype[j];
 +            // CraftBukkit start - Use per-world spawn limits
 +            boolean spawnThisTick = true;
 +            int limit = enumcreaturetype.getMaxInstancesPerChunk();
-+            switch (enumcreaturetype) {
-+                case MONSTER:
-+                    spawnThisTick = spawnMonsterThisTick;
-+                    limit = worldserver.getWorld().getMonsterSpawnLimit();
-+                    break;
-+                case CREATURE:
-+                    spawnThisTick = spawnAnimalThisTick;
-+                    limit = worldserver.getWorld().getAnimalSpawnLimit();
-+                    break;
-+                case WATER_CREATURE:
-+                    spawnThisTick = spawnWaterThisTick;
-+                    limit = worldserver.getWorld().getWaterAnimalSpawnLimit();
-+                    break;
-+                case UNDERGROUND_WATER_CREATURE:
-+                    spawnThisTick = spawnWaterUndergroundCreatureThisTick;
-+                    limit = worldserver.getWorld().getWaterUndergroundCreatureSpawnLimit();
-+                    break;
-+                case AMBIENT:
-+                    spawnThisTick = spawnAmbientThisTick;
-+                    limit = worldserver.getWorld().getAmbientSpawnLimit();
-+                    break;
-+                case WATER_AMBIENT:
-+                    spawnThisTick = spawnWaterAmbientThisTick;
-+                    limit = worldserver.getWorld().getWaterAmbientSpawnLimit();
-+                    break;
++            SpawnCategory spawnCategory = CraftSpawnCategory.toBukkit(enumcreaturetype);
++            if (CraftSpawnCategory.isValidForLimits(spawnCategory)) {
++                spawnThisTick = worldserver.ticksPerSpawnCategory.getLong(spawnCategory) != 0 && worlddata.getGameTime() % worldserver.ticksPerSpawnCategory.getLong(spawnCategory) == 0;
++                limit = worldserver.getWorld().getSpawnLimit(spawnCategory);
 +            }
  
 -            if ((flag || !enumcreaturetype.isFriendly()) && (flag1 || enumcreaturetype.isFriendly()) && (flag2 || !enumcreaturetype.isPersistent()) && spawnercreature_d.canSpawnForCategory(enumcreaturetype, chunk.getPos())) {
@@ -78,7 +41,7 @@
                  Objects.requireNonNull(spawnercreature_d);
                  SpawnerCreature.c spawnercreature_c = spawnercreature_d::canSpawn;
  
-@@ -199,10 +249,14 @@
+@@ -201,10 +223,15 @@
                                          entityinsentient.moveTo(d0, (double) i, d1, worldserver.random.nextFloat() * 360.0F, 0.0F);
                                          if (isValidPositionForMob(worldserver, entityinsentient, d2)) {
                                              groupdataentity = entityinsentient.finalizeSpawn(worldserver, worldserver.getCurrentDifficultyAt(entityinsentient.blockPosition()), EnumMobSpawn.NATURAL, groupdataentity, (NBTTagCompound) null);
@@ -87,7 +50,8 @@
 -                                            worldserver.addFreshEntityWithPassengers(entityinsentient);
 -                                            spawnercreature_a.run(entityinsentient, ichunkaccess);
 +                                            // CraftBukkit start
-+                                            worldserver.addFreshEntityWithPassengers(entityinsentient, SpawnReason.NATURAL);
++                                            // SPIGOT-7045: Give ocelot babies back their special spawn reason. Note: This is the only modification required as ocelots count as monsters which means they only spawn during normal chunk ticking and do not spawn during chunk generation as starter mobs.
++                                            worldserver.addFreshEntityWithPassengers(entityinsentient, (entityinsentient instanceof net.minecraft.world.entity.animal.EntityOcelot && !((org.bukkit.entity.Ageable) entityinsentient.getBukkitEntity()).isAdult()) ? SpawnReason.OCELOT_BABY : SpawnReason.NATURAL);
 +                                            if (!entityinsentient.isRemoved()) {
 +                                                ++j;
 +                                                ++k1;
@@ -97,7 +61,7 @@
                                              if (j >= entityinsentient.getMaxSpawnClusterSize()) {
                                                  return;
                                              }
-@@ -377,7 +431,7 @@
+@@ -390,7 +417,7 @@
  
                                      if (entityinsentient.checkSpawnRules(worldaccess, EnumMobSpawn.CHUNK_GENERATION) && entityinsentient.checkSpawnObstruction(worldaccess)) {
                                          groupdataentity = entityinsentient.finalizeSpawn(worldaccess, worldaccess.getCurrentDifficultyAt(entityinsentient.blockPosition()), EnumMobSpawn.CHUNK_GENERATION, groupdataentity, (NBTTagCompound) null);
@@ -106,7 +70,7 @@
                                          flag = true;
                                      }
                                  }
-@@ -498,8 +552,10 @@
+@@ -511,8 +538,10 @@
              return this.unmodifiableMobCategoryCounts;
          }
  

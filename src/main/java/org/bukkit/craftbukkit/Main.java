@@ -121,6 +121,8 @@ public class Main {
                 acceptsAll(asList("v", "version"), "Show the CraftBukkit Version");
 
                 acceptsAll(asList("demo"), "Demo mode");
+
+                acceptsAll(asList("initSettings"), "Only create configuration files and then exit"); // SPIGOT-5761: Add initSettings option
             }
         };
 
@@ -153,8 +155,8 @@ public class Main {
                 System.err.println("Unsupported Java detected (" + javaVersion + "). This version of Minecraft requires at least Java 17. Check your Java version with the command 'java -version'.");
                 return;
             }
-            if (javaVersion > 61.0) {
-                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 17 is supported.");
+            if (javaVersion > 63.0) {
+                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 19 is supported.");
                 return;
             }
 
@@ -185,7 +187,7 @@ public class Main {
                     Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
 
                     Calendar deadline = Calendar.getInstance();
-                    deadline.add(Calendar.DAY_OF_YEAR, -7);
+                    deadline.add(Calendar.DAY_OF_YEAR, -14);
                     if (buildDate.before(deadline.getTime())) {
                         System.err.println("*** Error, this build is outdated ***");
                         System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");

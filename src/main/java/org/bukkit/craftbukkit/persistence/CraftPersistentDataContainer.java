@@ -15,7 +15,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public final class CraftPersistentDataContainer implements PersistentDataContainer {
+public class CraftPersistentDataContainer implements PersistentDataContainer {
 
     private final Map<String, NBTBase> customDataTags = new HashMap<>();
     private final CraftPersistentDataTypeRegistry registry;
@@ -30,6 +30,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
         this.registry = registry;
         this.adapterContext = new CraftPersistentDataAdapterContext(this.registry);
     }
+
 
     @Override
     public <T, Z> void set(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {

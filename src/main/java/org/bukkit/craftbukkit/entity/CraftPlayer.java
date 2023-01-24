@@ -6,6 +6,8 @@ import com.google.common.io.BaseEncoding;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.shorts.ShortArraySet;
+import it.unimi.dsi.fastutil.shorts.ShortSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -26,29 +28,36 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import net.minecraft.SystemUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPosition;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketDataSerializer;
-import net.minecraft.network.chat.ChatComponentText;
-import net.minecraft.network.chat.ChatMessageType;
 import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderSizePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDelayPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDistancePacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
-import net.minecraft.network.protocol.game.PacketPlayOutChat;
 import net.minecraft.network.protocol.game.PacketPlayOutCustomPayload;
-import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
+import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
 import net.minecraft.network.protocol.game.PacketPlayOutExperience;
 import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.network.protocol.game.PacketPlayOutMultiBlockChange;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
-import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition;
 import net.minecraft.network.protocol.game.PacketPlayOutStopSound;
@@ -63,6 +72,7 @@ import net.minecraft.server.level.PlayerChunkMap;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.server.players.WhiteListEntry;
+import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EnumItemSlot;
@@ -75,10 +85,11 @@ import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntitySign;
+import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.border.IWorldBorderListener;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -95,7 +106,10 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
@@ -109,14 +123,17 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.CraftWorldBorder;
 import org.bukkit.craftbukkit.advancement.CraftAdvancement;
 import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
+import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
+import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -124,7 +141,9 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerHideEntityEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
+import org.bukkit.event.player.PlayerShowEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -135,6 +154,7 @@ import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
+import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scoreboard.Scoreboard;
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
@@ -144,12 +164,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers = new HashMap<>();
+    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenEntities = new HashMap<>();
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;
     private boolean scaledHealth = false;
     private double healthScale = 20;
+    private CraftWorldBorder clientWorldBorder = null;
+    private IWorldBorderListener clientWorldBorderListener = createWorldBorderListener();
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -185,6 +207,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
+    public PlayerProfile getPlayerProfile() {
+        return new CraftPlayerProfile(getProfile());
+    }
+
+    @Override
     public InetSocketAddress getAddress() {
         if (getHandle().connection == null) return null;
 
@@ -210,7 +237,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            getHandle().connection.send(new PacketPlayOutChat(component, ChatMessageType.SYSTEM, SystemUtils.NIL_UUID));
+            getHandle().sendSystemMessage(component);
         }
     }
 
@@ -219,7 +246,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         for (IChatBaseComponent component : CraftChatMessage.fromString(message)) {
-            getHandle().connection.send(new PacketPlayOutChat(component, ChatMessageType.CHAT, (sender == null) ? SystemUtils.NIL_UUID : sender));
+            getHandle().sendSystemMessage(component);
         }
     }
 
@@ -274,7 +301,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromStringOrNull(name);
         for (EntityPlayer player : (List<EntityPlayer>) server.getHandle().players) {
             if (player.getBukkitEntity().canSee(this)) {
-                player.connection.send(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, getHandle()));
+                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.a.UPDATE_DISPLAY_NAME, getHandle()));
             }
         }
     }
@@ -314,7 +341,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private void updatePlayerListHeaderFooter() {
         if (getHandle().connection == null) return;
 
-        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter((this.playerListHeader == null) ? new ChatComponentText("") : this.playerListHeader, (this.playerListFooter == null) ? new ChatComponentText("") : this.playerListFooter);
+        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter((this.playerListHeader == null) ? IChatBaseComponent.empty() : this.playerListHeader, (this.playerListFooter == null) ? IChatBaseComponent.empty() : this.playerListFooter);
         getHandle().connection.send(packet);
     }
 
@@ -362,7 +389,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void chat(String msg) {
         if (getHandle().connection == null) return;
 
-        getHandle().connection.chat(msg, false);
+        getHandle().connection.chat(msg, PlayerChatMessage.system(msg), false);
     }
 
     @Override
@@ -409,7 +436,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         float f = (float) Math.pow(2.0D, (note - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect("block.note_block." + instrumentName)), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -471,7 +498,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 break;
         }
         float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect("block.note_block." + instrumentName)), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -488,7 +515,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch);
+        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -496,7 +523,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), new Vec3D(loc.getX(), loc.getY(), loc.getZ()), volume, pitch);
+        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(Holder.direct(SoundEffect.createVariableRangeEvent(new MinecraftKey(sound))), net.minecraft.sounds.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch, getHandle().getRandom().nextLong());
+        getHandle().connection.send(packet);
+    }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, Sound sound, float volume, float pitch) {
+        playSound(entity, sound, org.bukkit.SoundCategory.MASTER, volume, pitch);
+    }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
+        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
+
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
         getHandle().connection.send(packet);
     }
 
@@ -520,6 +560,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         getHandle().connection.send(new PacketPlayOutStopSound(new MinecraftKey(sound), category == null ? net.minecraft.sounds.SoundCategory.MASTER : net.minecraft.sounds.SoundCategory.valueOf(category.name())));
+    }
+
+    @Override
+    public void stopSound(org.bukkit.SoundCategory category) {
+        if (getHandle().connection == null) return;
+
+        getHandle().connection.send(new PacketPlayOutStopSound(null, net.minecraft.sounds.SoundCategory.valueOf(category.name())));
     }
 
     @Override
@@ -573,6 +620,44 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), ((CraftBlockData) block).getState());
         getHandle().connection.send(packet);
+    }
+
+    @Override
+    public void sendBlockChanges(Collection<BlockState> blocks, boolean suppressLightUpdates) {
+        Preconditions.checkArgument(blocks != null, "blocks must not be null");
+
+        if (getHandle().connection == null || blocks.isEmpty()) {
+            return;
+        }
+
+        Map<SectionPosition, ChunkSectionChanges> changes = new HashMap<>();
+        for (BlockState state : blocks) {
+            CraftBlockState cstate = (CraftBlockState) state;
+            BlockPosition blockPosition = cstate.getPosition();
+
+            // The coordinates of the chunk section in which the block is located, aka chunk x, y, and z
+            SectionPosition sectionPosition = SectionPosition.of(blockPosition);
+
+            // Push the block change position and block data to the final change map
+            ChunkSectionChanges sectionChanges = changes.computeIfAbsent(sectionPosition, (ignore) -> new ChunkSectionChanges());
+
+            sectionChanges.positions().add(SectionPosition.sectionRelativePos(blockPosition));
+            sectionChanges.blockData().add(cstate.getHandle());
+        }
+
+        // Construct the packets using the data allocated above and send then to the players
+        for (Map.Entry<SectionPosition, ChunkSectionChanges> entry : changes.entrySet()) {
+            ChunkSectionChanges chunkChanges = entry.getValue();
+            PacketPlayOutMultiBlockChange packet = new PacketPlayOutMultiBlockChange(entry.getKey(), chunkChanges.positions(), chunkChanges.blockData().toArray(IBlockData[]::new), suppressLightUpdates);
+            getHandle().connection.send(packet);
+        }
+    }
+
+    private record ChunkSectionChanges(ShortSet positions, List<IBlockData> blockData) {
+
+        public ChunkSectionChanges() {
+            this(new ShortArraySet(), new ArrayList<>());
+        }
     }
 
     @Override
@@ -637,6 +722,82 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         );
 
         getHandle().connection.send(new PacketPlayOutEntityEquipment(entity.getEntityId(), equipment));
+    }
+
+    @Override
+    public WorldBorder getWorldBorder() {
+        return clientWorldBorder;
+    }
+
+    @Override
+    public void setWorldBorder(WorldBorder border) {
+        CraftWorldBorder craftBorder = (CraftWorldBorder) border;
+
+        if (border != null && !craftBorder.isVirtual() && !craftBorder.getWorld().equals(getWorld())) {
+            throw new UnsupportedOperationException("Cannot set player world border to that of another world");
+        }
+
+        // Nullify the old client-sided world border listeners so that calls to it will not affect this player
+        if (clientWorldBorder != null) {
+            this.clientWorldBorder.getHandle().removeListener(clientWorldBorderListener);
+        }
+
+        net.minecraft.world.level.border.WorldBorder newWorldBorder;
+        if (craftBorder == null || !craftBorder.isVirtual()) {
+            this.clientWorldBorder = null;
+            newWorldBorder = ((CraftWorldBorder) getWorld().getWorldBorder()).getHandle();
+        } else {
+            this.clientWorldBorder = craftBorder;
+            this.clientWorldBorder.getHandle().addListener(clientWorldBorderListener);
+            newWorldBorder = clientWorldBorder.getHandle();
+        }
+
+        // Send all world border update packets to the player
+        PlayerConnection connection = getHandle().connection;
+        connection.send(new ClientboundSetBorderSizePacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderLerpSizePacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderCenterPacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderWarningDelayPacket(newWorldBorder));
+        connection.send(new ClientboundSetBorderWarningDistancePacket(newWorldBorder));
+    }
+
+    private IWorldBorderListener createWorldBorderListener() {
+        return new IWorldBorderListener() {
+            @Override
+            public void onBorderSizeSet(net.minecraft.world.level.border.WorldBorder border, double size) {
+                getHandle().connection.send(new ClientboundSetBorderSizePacket(border));
+            }
+
+            @Override
+            public void onBorderSizeLerping(net.minecraft.world.level.border.WorldBorder border, double size, double newSize, long time) {
+                getHandle().connection.send(new ClientboundSetBorderLerpSizePacket(border));
+            }
+
+            @Override
+            public void onBorderCenterSet(net.minecraft.world.level.border.WorldBorder border, double x, double z) {
+                getHandle().connection.send(new ClientboundSetBorderCenterPacket(border));
+            }
+
+            @Override
+            public void onBorderSetWarningTime(net.minecraft.world.level.border.WorldBorder border, int warningTime) {
+                getHandle().connection.send(new ClientboundSetBorderWarningDelayPacket(border));
+            }
+
+            @Override
+            public void onBorderSetWarningBlocks(net.minecraft.world.level.border.WorldBorder border, int warningBlocks) {
+                getHandle().connection.send(new ClientboundSetBorderWarningDistancePacket(border));
+            }
+
+            @Override
+            public void onBorderSetDamagePerBlock(net.minecraft.world.level.border.WorldBorder border, double damage) {} // NO OP
+
+            @Override
+            public void onBorderSetDamageSafeZOne(net.minecraft.world.level.border.WorldBorder border, double blocks) {} // NO OP
+        };
+    }
+
+    public boolean hasClientWorldBorder() {
+        return clientWorldBorder != null;
     }
 
     @Override
@@ -987,6 +1148,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
+    public GameMode getPreviousGameMode() {
+        EnumGamemode previousGameMode = getHandle().gameMode.getPreviousGameModeForPlayer();
+
+        return (previousGameMode == null) ? null : GameMode.getByValue(previousGameMode.getId());
+    }
+
+    @Override
     public void giveExp(int exp) {
         getHandle().giveExperiencePoints(exp);
     }
@@ -1057,94 +1225,119 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     @Deprecated
     public void hidePlayer(Player player) {
-        hidePlayer0(null, player);
+        hideEntity0(null, player);
     }
 
     @Override
     public void hidePlayer(Plugin plugin, Player player) {
+        hideEntity(plugin, player);
+    }
+
+    @Override
+    public void hideEntity(Plugin plugin, org.bukkit.entity.Entity entity) {
         Validate.notNull(plugin, "Plugin cannot be null");
         Validate.isTrue(plugin.isEnabled(), "Plugin attempted to hide player while disabled");
 
-        hidePlayer0(plugin, player);
+        hideEntity0(plugin, entity);
     }
 
-    private void hidePlayer0(@Nullable Plugin plugin, Player player) {
-        Validate.notNull(player, "hidden player cannot be null");
+    private void hideEntity0(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Validate.notNull(entity, "hidden entity cannot be null");
         if (getHandle().connection == null) return;
-        if (equals(player)) return;
+        if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(player.getUniqueId());
+        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
         if (hidingPlugins != null) {
-            // Some plugins are already hiding the player. Just mark that this
-            // plugin wants the player hidden too and end.
+            // Some plugins are already hiding the entity. Just mark that this
+            // plugin wants the entity hidden too and end.
             hidingPlugins.add(getPluginWeakReference(plugin));
             return;
         }
         hidingPlugins = new HashSet<>();
         hidingPlugins.add(getPluginWeakReference(plugin));
-        hiddenPlayers.put(player.getUniqueId(), hidingPlugins);
+        hiddenEntities.put(entity.getUniqueId(), hidingPlugins);
 
-        // Remove this player from the hidden player's EntityTrackerEntry
-        PlayerChunkMap tracker = ((WorldServer) entity.level).getChunkSource().chunkMap;
-        EntityPlayer other = ((CraftPlayer) player).getHandle();
+        // Remove this entity from the hidden player's EntityTrackerEntry
+        PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
+        Entity other = ((CraftEntity) entity).getHandle();
         PlayerChunkMap.EntityTracker entry = tracker.entityMap.get(other.getId());
         if (entry != null) {
             entry.removePlayer(getHandle());
         }
 
-        // Remove the hidden player from this player user list, if they're on it
-        if (other.sentListPacket) {
-            getHandle().connection.send(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, other));
+        // Remove the hidden entity from this player user list, if they're on it
+        if (other instanceof EntityPlayer) {
+            EntityPlayer otherPlayer = (EntityPlayer) other;
+            if (otherPlayer.sentListPacket) {
+                getHandle().connection.send(new ClientboundPlayerInfoRemovePacket(List.of(otherPlayer.getUUID())));
+            }
         }
+
+        server.getPluginManager().callEvent(new PlayerHideEntityEvent(this, entity));
     }
 
     @Override
     @Deprecated
     public void showPlayer(Player player) {
-        showPlayer0(null, player);
+        showEntity0(null, player);
     }
 
     @Override
     public void showPlayer(Plugin plugin, Player player) {
+        showEntity(plugin, player);
+    }
+
+    @Override
+    public void showEntity(Plugin plugin, org.bukkit.entity.Entity entity) {
         Validate.notNull(plugin, "Plugin cannot be null");
         // Don't require that plugin be enabled. A plugin must be allowed to call
         // showPlayer during its onDisable() method.
-        showPlayer0(plugin, player);
+        showEntity0(plugin, entity);
     }
 
-    private void showPlayer0(@Nullable Plugin plugin, Player player) {
-        Validate.notNull(player, "shown player cannot be null");
+    private void showEntity0(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Validate.notNull(entity, "shown entity cannot be null");
         if (getHandle().connection == null) return;
-        if (equals(player)) return;
+        if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(player.getUniqueId());
+        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
         if (hidingPlugins == null) {
-            return; // Player isn't hidden
+            return; // Entity isn't hidden
         }
         hidingPlugins.remove(getPluginWeakReference(plugin));
         if (!hidingPlugins.isEmpty()) {
-            return; // Some other plugins still want the player hidden
+            return; // Some other plugins still want the entity hidden
         }
-        hiddenPlayers.remove(player.getUniqueId());
+        hiddenEntities.remove(entity.getUniqueId());
 
-        PlayerChunkMap tracker = ((WorldServer) entity.level).getChunkSource().chunkMap;
-        EntityPlayer other = ((CraftPlayer) player).getHandle();
+        PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
+        Entity other = ((CraftEntity) entity).getHandle();
 
-        getHandle().connection.send(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
+        if (other instanceof EntityPlayer) {
+            EntityPlayer otherPlayer = (EntityPlayer) other;
+            getHandle().connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(otherPlayer)));
+        }
 
         PlayerChunkMap.EntityTracker entry = tracker.entityMap.get(other.getId());
-        if (entry != null && !entry.seenBy.contains(getHandle())) {
+        if (entry != null && !entry.seenBy.contains(getHandle().connection)) {
             entry.updatePlayer(getHandle());
         }
+
+        server.getPluginManager().callEvent(new PlayerShowEntityEvent(this, entity));
     }
 
-    public void removeDisconnectingPlayer(Player player) {
-        hiddenPlayers.remove(player.getUniqueId());
+    public void onEntityRemove(Entity entity) {
+        hiddenEntities.remove(entity.getUUID());
     }
 
     @Override
     public boolean canSee(Player player) {
-        return !hiddenPlayers.containsKey(player.getUniqueId());
+        return canSee((org.bukkit.entity.Entity) player);
+    }
+
+    @Override
+    public boolean canSee(org.bukkit.entity.Entity entity) {
+        return !hiddenEntities.containsKey(entity.getUniqueId());
     }
 
     @Override
@@ -1284,18 +1477,35 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setResourcePack(String url) {
-        Validate.notNull(url, "Resource pack URL cannot be null");
-
-        getHandle().sendTexturePack(url, "null", false, null);
+        setResourcePack(url, null);
     }
 
     @Override
     public void setResourcePack(String url, byte[] hash) {
-        Validate.notNull(url, "Resource pack URL cannot be null");
-        Validate.notNull(hash, "Resource pack hash cannot be null");
-        Validate.isTrue(hash.length == 20, "Resource pack hash should be 20 bytes long but was " + hash.length);
+        setResourcePack(url, hash, false);
+    }
 
-        getHandle().sendTexturePack(url, BaseEncoding.base16().lowerCase().encode(hash), false, null);
+    @Override
+    public void setResourcePack(String url, byte[] hash, String prompt) {
+        setResourcePack(url, hash, prompt, false);
+    }
+
+    @Override
+    public void setResourcePack(String url, byte[] hash, boolean force) {
+        setResourcePack(url, hash, null, force);
+    }
+
+    @Override
+    public void setResourcePack(String url, byte[] hash, String prompt, boolean force) {
+        Validate.notNull(url, "Resource pack URL cannot be null");
+
+        if (hash != null) {
+            Validate.isTrue(hash.length == 20, "Resource pack hash should be 20 bytes long but was " + hash.length);
+
+            getHandle().sendTexturePack(url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true));
+        } else {
+            getHandle().sendTexturePack(url, "", force, CraftChatMessage.fromStringOrNull(prompt, true));
+        }
     }
 
     public void addChannel(String channel) {
@@ -1597,12 +1807,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().connection.send(times);
 
         if (title != null) {
-            ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromStringOrNull(title));
+            ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromString(title)[0]);
             getHandle().connection.send(packetTitle);
         }
 
         if (subtitle != null) {
-            ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromStringOrNull(subtitle));
+            ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromString(subtitle)[0]);
             getHandle().connection.send(packetSubtitle);
         }
     }
@@ -1720,6 +1930,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getInventory().setItemInMainHand(book);
         getHandle().openItemGui(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(book), net.minecraft.world.EnumHand.MAIN_HAND);
         getInventory().setItemInMainHand(hand);
+    }
+
+    @Override
+    public void openSign(Sign sign) {
+        CraftSign.openSign(sign, this);
     }
 
     @Override

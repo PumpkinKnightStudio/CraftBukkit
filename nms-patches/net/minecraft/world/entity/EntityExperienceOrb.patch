@@ -45,7 +45,7 @@
              Vec3D vec3d = new Vec3D(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double) this.followingPlayer.getEyeHeight() / 2.0D - this.getY(), this.followingPlayer.getZ() - this.getZ());
              double d0 = vec3d.lengthSqr();
  
-@@ -225,7 +247,7 @@
+@@ -227,7 +249,7 @@
                  int i = this.repairPlayerItems(entityhuman, this.value);
  
                  if (i > 0) {
@@ -54,12 +54,12 @@
                  }
  
                  --this.count;
-@@ -243,9 +265,17 @@
+@@ -245,9 +267,17 @@
          if (entry != null) {
              ItemStack itemstack = (ItemStack) entry.getValue();
              int j = Math.min(this.xpToDurability(this.value), itemstack.getDamageValue());
 +            // CraftBukkit start
-+            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, j);
++            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, entry.getKey(), j);
 +            j = event.getRepairAmount();
 +            if (event.isCancelled()) {
 +                return i;
@@ -72,7 +72,7 @@
  
              return k > 0 ? this.repairPlayerItems(entityhuman, k) : 0;
          } else {
-@@ -270,6 +300,24 @@
+@@ -272,6 +302,24 @@
      }
  
      public static int getExperienceValue(int i) {

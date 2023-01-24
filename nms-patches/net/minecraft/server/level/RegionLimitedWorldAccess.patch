@@ -1,6 +1,15 @@
 --- a/net/minecraft/server/level/RegionLimitedWorldAccess.java
 +++ b/net/minecraft/server/level/RegionLimitedWorldAccess.java
-@@ -319,6 +319,13 @@
+@@ -208,7 +208,7 @@
+         if (iblockdata.isAir()) {
+             return false;
+         } else {
+-            if (flag) {
++            if (false) { // CraftBukkit - SPIGOT-6833: Do not drop during world generation
+                 TileEntity tileentity = iblockdata.hasBlockEntity() ? this.getBlockEntity(blockposition) : null;
+ 
+                 Block.dropResources(iblockdata, this.level, blockposition, tileentity, entity, ItemStack.EMPTY);
+@@ -327,6 +327,13 @@
  
      @Override
      public boolean addFreshEntity(Entity entity) {

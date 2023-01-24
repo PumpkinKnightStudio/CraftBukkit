@@ -1,21 +1,23 @@
 package org.bukkit.craftbukkit.block;
 
-import net.minecraft.network.chat.ChatComponentText;
+import com.google.common.base.Preconditions;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.block.entity.TileEntitySign;
 import org.bukkit.DyeColor;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.entity.Player;
 
-public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements Sign {
+public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T> implements Sign {
 
     // Lazily initialized only if requested:
     private String[] originalLines = null;
     private String[] lines = null;
 
-    public CraftSign(World world, TileEntitySign tileEntity) {
+    public CraftSign(World world, T tileEntity) {
         super(world, tileEntity);
     }
 
@@ -73,7 +75,7 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
     }
 
     @Override
-    public void applyTo(TileEntitySign sign) {
+    public void applyTo(T sign) {
         super.applyTo(sign);
 
         if (lines != null) {
@@ -87,6 +89,17 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
         }
     }
 
+    public static void openSign(Sign sign, Player player) {
+        Preconditions.checkArgument(sign != null, "sign == null");
+        Preconditions.checkArgument(sign.isPlaced(), "Sign must be placed");
+        Preconditions.checkArgument(sign.getWorld() == player.getWorld(), "Sign must be in same world as Player");
+
+        TileEntitySign handle = ((CraftSign<?>) sign).getTileEntity();
+        handle.isEditable = true;
+
+        ((CraftPlayer) player).getHandle().openTextEdit(handle);
+    }
+
     public static IChatBaseComponent[] sanitizeLines(String[] lines) {
         IChatBaseComponent[] components = new IChatBaseComponent[4];
 
@@ -94,7 +107,7 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements 
             if (i < lines.length && lines[i] != null) {
                 components[i] = CraftChatMessage.fromString(lines[i])[0];
             } else {
-                components[i] = new ChatComponentText("");
+                components[i] = IChatBaseComponent.empty();
             }
         }
 

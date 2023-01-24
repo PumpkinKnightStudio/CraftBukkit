@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.animal.EntityCat;
 import net.minecraft.world.item.EnumColor;
 import org.bukkit.DyeColor;
@@ -32,14 +33,14 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
 
     @Override
     public Type getCatType() {
-        return Type.values()[getHandle().getCatType()];
+        return Type.values()[BuiltInRegistries.CAT_VARIANT.getId(getHandle().getVariant())];
     }
 
     @Override
     public void setCatType(Type type) {
         Preconditions.checkArgument(type != null, "Cannot have null Type");
 
-        getHandle().setCatType(type.ordinal());
+        getHandle().setVariant(BuiltInRegistries.CAT_VARIANT.byId(type.ordinal()));
     }
 
     @Override

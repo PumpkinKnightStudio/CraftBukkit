@@ -14,7 +14,6 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific.To;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
@@ -54,7 +53,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
     static final ItemMetaKey EXPLOSION_FADE = new ItemMetaKey("FadeColors");
 
     private List<FireworkEffect> effects;
-    private int power;
+    private Integer power;
 
     CraftMetaFirework(CraftMetaItem meta) {
         super(meta);
@@ -81,7 +80,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
 
         NBTTagCompound fireworks = tag.getCompound(FIREWORKS.NBT);
 
-        power = 0xff & fireworks.getByte(FLIGHT.NBT);
+        power = (int) fireworks.getByte(FLIGHT.NBT);
 
         if (!fireworks.contains(EXPLOSIONS.NBT)) {
             return;
@@ -182,7 +181,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
 
         Integer power = SerializableMeta.getObject(Integer.class, map, FLIGHT.BUKKIT, true);
         if (power != null) {
-            setPower(power);
+            this.power = power;
         }
 
         Iterable<?> effects = SerializableMeta.getObject(Iterable.class, map, EXPLOSIONS.BUKKIT, true);
@@ -235,7 +234,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
         }
 
         if (hasPower()) {
-            fireworks.putByte(FLIGHT.NBT, (byte) power);
+            fireworks.putByte(FLIGHT.NBT, power.byteValue());
         }
     }
 
@@ -255,12 +254,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case FIREWORK_ROCKET:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.FIREWORK_ROCKET;
     }
 
     @Override
@@ -273,7 +267,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
     }
 
     boolean hasPower() {
-        return power != 0;
+        return power != null && power != 0;
     }
 
     @Override
@@ -346,7 +340,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
     }
 
     @Override
-    public void addEffects(FireworkEffect...effects) {
+    public void addEffects(FireworkEffect... effects) {
         Validate.notNull(effects, "Effects cannot be null");
         if (effects.length == 0) {
             return;
@@ -395,7 +389,7 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
 
     @Override
     public int getPower() {
-        return this.power;
+        return hasPower() ? this.power : 0;
     }
 
     @Override

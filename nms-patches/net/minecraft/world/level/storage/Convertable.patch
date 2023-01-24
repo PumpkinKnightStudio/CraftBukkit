@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/storage/Convertable.java
 +++ b/net/minecraft/world/level/storage/Convertable.java
-@@ -56,6 +56,10 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -69,6 +69,10 @@
+ import net.minecraft.world.level.levelgen.WorldDimensions;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.world.level.dimension.WorldDimension;
@@ -10,8 +10,25 @@
 +
  public class Convertable {
  
-     static final Logger LOGGER = LogManager.getLogger();
-@@ -277,9 +281,23 @@
+     static final Logger LOGGER = LogUtils.getLogger();
+@@ -115,7 +119,7 @@
+     }
+ 
+     private static WorldDataConfiguration readDataConfig(Dynamic<?> dynamic) {
+-        DataResult dataresult = WorldDataConfiguration.CODEC.parse(dynamic);
++        DataResult<WorldDataConfiguration> dataresult = WorldDataConfiguration.CODEC.parse(dynamic); // CraftBukkit - decompile error
+         Logger logger = Convertable.LOGGER;
+ 
+         Objects.requireNonNull(logger);
+@@ -253,6 +257,7 @@
+             WorldDimensions.b worlddimensions_b = generatorsettings.dimensions().bake(iregistry);
+             Lifecycle lifecycle1 = worlddimensions_b.lifecycle().add(lifecycle);
+             WorldDataServer worlddataserver = WorldDataServer.parse(dynamic, datafixer, i, nbttagcompound2, worldsettings, levelversion, worlddimensions_b.specialWorldProperty(), generatorsettings.options(), lifecycle1);
++            worlddataserver.pdc = nbttagcompound1.get("BukkitValues"); // CraftBukkit - Add PDC to world
+ 
+             return Pair.of(worlddataserver, worlddimensions_b);
+         };
+@@ -334,9 +339,23 @@
          return this.backupDir;
      }
  
@@ -35,10 +52,10 @@
      }
 +    // CraftBukkit end
  
-     public class ConversionSession implements AutoCloseable {
+     public static record a(List<Convertable.b> levels) implements Iterable<Convertable.b> {
  
-@@ -287,8 +305,12 @@
-         public final Path levelPath;
+@@ -389,8 +408,12 @@
+         public final Convertable.b levelDirectory;
          private final String levelId;
          private final Map<SavedFile, Path> resources = Maps.newHashMap();
 +        // CraftBukkit start
@@ -49,14 +66,23 @@
 +            this.dimensionType = dimensionType;
 +            // CraftBukkit end
              this.levelId = s;
-             this.levelPath = Convertable.this.baseDir.resolve(s);
-             this.lock = SessionLock.create(this.levelPath);
-@@ -305,7 +327,7 @@
+             this.levelDirectory = new Convertable.b(Convertable.this.baseDir.resolve(s));
+             this.lock = SessionLock.create(this.levelDirectory.path());
+@@ -401,7 +424,7 @@
+         }
+ 
+         public Path getLevelPath(SavedFile savedfile) {
+-            Map map = this.resources;
++            Map<SavedFile, Path> map = this.resources; // CraftBukkit - decompile error
+             Convertable.b convertable_b = this.levelDirectory;
+ 
+             Objects.requireNonNull(this.levelDirectory);
+@@ -409,7 +432,7 @@
          }
  
          public Path getDimensionPath(ResourceKey<World> resourcekey) {
--            return DimensionManager.getStorageFolder(resourcekey, this.levelPath);
-+            return getStorageFolder(this.levelPath, this.dimensionType); // CraftBukkit
+-            return DimensionManager.getStorageFolder(resourcekey, this.levelDirectory.path());
++            return getStorageFolder(this.levelDirectory.path(), this.dimensionType); // CraftBukkit
          }
  
          private void checkLock() {

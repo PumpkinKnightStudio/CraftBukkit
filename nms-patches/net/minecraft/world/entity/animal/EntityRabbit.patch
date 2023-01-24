@@ -15,7 +15,7 @@
  
      @Override
      public void registerGoals() {
-@@ -556,9 +562,23 @@
+@@ -570,9 +576,23 @@
                      int i = (Integer) iblockdata.getValue(BlockCarrots.AGE);
  
                      if (i == 0) {
