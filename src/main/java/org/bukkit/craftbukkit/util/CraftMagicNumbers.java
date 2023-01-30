@@ -367,7 +367,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public String getBlockTranslationKey(Material material) {
         Block block = getBlock(material);
-        if(block != null) {
+        if (block != null) {
             return block.getDescriptionId();
         } else {
             return null;
@@ -377,7 +377,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public String getItemTranslationKey(Material material) {
         Item item = getItem(material);
-        if(item != null) {
+        if (item != null) {
             return item.getDescriptionId();
         } else {
             return null;
@@ -397,7 +397,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     @Override
     public String getTranslationKey(org.bukkit.block.Block block) {
-        return ((CraftBlock)block).getNMS().getBlock().getDescriptionId();
+        return ((CraftBlock) block).getNMS().getBlock().getDescriptionId();
     }
 
     /**
