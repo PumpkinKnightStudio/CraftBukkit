@@ -5,3 +5,37 @@
  package net.minecraft.world.level.block.state;
  
  import com.google.common.collect.ImmutableMap;
+@@ -71,6 +72,9 @@
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ import net.minecraft.world.phys.shapes.VoxelShapes;
++// CraftBukkit Start
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++// CraftBukkit end
+ 
+ public abstract class BlockBase implements FeatureElement {
+ 
+@@ -126,6 +130,11 @@
+     /** @deprecated */
+     @Deprecated
+     public IBlockData updateShape(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
++        // CraftBukkit start
++        if  (!iblockdata.canSurvive(generatoraccess, blockposition)) {
++            CraftEventFactory.callBlockDeathEvent(generatoraccess, blockposition);
++        }
++        // CraftBukkit end
+         return iblockdata;
+     }
+ 
+@@ -992,6 +1001,11 @@
+         }
+ 
+         public IBlockData updateShape(EnumDirection enumdirection, IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
++            // CraftBukkit start
++            if  (!this.getBlock().canSurvive(this.asState(), generatoraccess, blockposition)) {
++                CraftEventFactory.callBlockDeathEvent(generatoraccess, blockposition);
++            }
++            // CraftBukkit end
+             return this.getBlock().updateShape(this.asState(), enumdirection, iblockdata, generatoraccess, blockposition, blockposition1);
+         }
+ 

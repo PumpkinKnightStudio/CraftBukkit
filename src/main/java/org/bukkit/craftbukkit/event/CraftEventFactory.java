@@ -132,6 +132,7 @@ import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockDeathEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockFormEvent;
@@ -1702,6 +1703,11 @@ public class CraftEventFactory {
     public static void callEntitiesUnloadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
         List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
         EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
+        Bukkit.getPluginManager().callEvent(event);
+    }
+    public static void callBlockDeathEvent(GeneratorAccess world, BlockPosition pos) {
+        CraftBlockState blockState = CraftBlockStates.getBlockState(world, pos);
+        BlockDeathEvent event = new BlockDeathEvent(blockState.getBlock());
         Bukkit.getPluginManager().callEvent(event);
     }
 }
