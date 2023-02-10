@@ -553,17 +553,13 @@ public class CraftBlock implements Block {
     public boolean isPreferredTool(ItemStack item) {
         IBlockData iblockdata = getNMS();
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
-        return isPreferredTool(iblockdata, nms);
+        return CraftBlockData.isPreferredTool(iblockdata, nms);
     }
 
     @Override
     public float getBreakSpeed(Player player) {
         Preconditions.checkArgument(player != null, "player cannot be null");
         return getNMS().getDestroyProgress(((CraftPlayer) player).getHandle(), world, position);
-    }
-
-    private boolean isPreferredTool(IBlockData iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
-        return !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata);
     }
 
     @Override

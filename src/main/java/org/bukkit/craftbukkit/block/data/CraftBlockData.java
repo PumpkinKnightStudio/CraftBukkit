@@ -29,13 +29,15 @@ import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
 import org.bukkit.block.PistonMoveReaction;
-import org.bukkit.block.RandomBlockOffset;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
 
@@ -566,13 +568,20 @@ public class CraftBlockData implements BlockData {
     }
 
     @Override
-    public PistonMoveReaction getPistonMoveReaction() {
-        return PistonMoveReaction.getById(state.getPistonPushReaction().ordinal());
+    public boolean isPreferredTool(ItemStack tool) {
+        Preconditions.checkArgument(tool != null, "tool must not be null");
+
+        net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(tool);
+        return isPreferredTool(state, nms);
+    }
+
+    public static boolean isPreferredTool(IBlockData iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
+        return !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata);
     }
 
     @Override
-    public RandomBlockOffset getRandomBlockOffset() {
-        return RandomBlockOffset.values()[state.getOffsetType().ordinal()];
+    public PistonMoveReaction getPistonMoveReaction() {
+        return PistonMoveReaction.getById(state.getPistonPushReaction().ordinal());
     }
 
     @Override
