@@ -37,7 +37,6 @@ import org.bukkit.craftbukkit.block.CraftBlockSupport;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
 
