@@ -164,7 +164,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenEntities = new HashMap<>();
+    private final Map<UUID, Set<WeakReference<Plugin>>> invertedVisibilityEntities = new HashMap<>();
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;
@@ -1259,17 +1259,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
-        if (hidingPlugins != null) {
-            // Some plugins are already hiding the entity. Just mark that this
-            // plugin wants the entity hidden too and end.
-            hidingPlugins.add(getPluginWeakReference(plugin));
-            return;
+        boolean shouldHide;
+        if (entity.isVisibleByDefault()) {
+            shouldHide = addInvertedVisibility(plugin, entity);
+        } else {
+            shouldHide = removeInvertedVisiblity(plugin, entity);
         }
-        hidingPlugins = new HashSet<>();
-        hidingPlugins.add(getPluginWeakReference(plugin));
-        hiddenEntities.put(entity.getUniqueId(), hidingPlugins);
 
+        if (shouldHide) {
+            untrackAndHideEntity(entity);
+        }
+    }
+
+    private boolean addInvertedVisibility(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Set<WeakReference<Plugin>> invertedPlugins = invertedVisibilityEntities.get(entity.getUniqueId());
+        if (invertedPlugins != null) {
+            // Some plugins are already inverting the entity. Just mark that this
+            // plugin wants the entity inverted too and end.
+            invertedPlugins.add(getPluginWeakReference(plugin));
+            return false;
+        }
+        invertedPlugins = new HashSet<>();
+        invertedPlugins.add(getPluginWeakReference(plugin));
+        invertedVisibilityEntities.put(entity.getUniqueId(), invertedPlugins);
+
+        return true;
+    }
+
+    private void untrackAndHideEntity(org.bukkit.entity.Entity entity) {
         // Remove this entity from the hidden player's EntityTrackerEntry
         PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
@@ -1287,6 +1304,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         server.getPluginManager().callEvent(new PlayerHideEntityEvent(this, entity));
+    }
+
+    void resetAndHideEntity(org.bukkit.entity.Entity entity) {
+        invertedVisibilityEntities.remove(entity.getUniqueId());
+
+        untrackAndHideEntity(entity);
     }
 
     @Override
@@ -1313,16 +1336,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
-        if (hidingPlugins == null) {
-            return; // Entity isn't hidden
+        boolean shouldShow;
+        if (entity.isVisibleByDefault()) {
+            shouldShow = removeInvertedVisiblity(plugin, entity);
+        } else {
+            shouldShow = addInvertedVisibility(plugin, entity);
         }
-        hidingPlugins.remove(getPluginWeakReference(plugin));
-        if (!hidingPlugins.isEmpty()) {
-            return; // Some other plugins still want the entity hidden
-        }
-        hiddenEntities.remove(entity.getUniqueId());
 
+        if (shouldShow) {
+            trackAndShowEntity(entity);
+        }
+    }
+
+    private boolean removeInvertedVisiblity(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Set<WeakReference<Plugin>> invertedPlugins = invertedVisibilityEntities.get(entity.getUniqueId());
+        if (invertedPlugins == null) {
+            return false; // Entity isn't inverted
+        }
+        invertedPlugins.remove(getPluginWeakReference(plugin));
+        if (!invertedPlugins.isEmpty()) {
+            return false; // Some other plugins still want the entity inverted
+        }
+        invertedVisibilityEntities.remove(entity.getUniqueId());
+
+        return true;
+    }
+
+    private void trackAndShowEntity(org.bukkit.entity.Entity entity) {
         PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
 
@@ -1339,8 +1379,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         server.getPluginManager().callEvent(new PlayerShowEntityEvent(this, entity));
     }
 
+    void resetAndShowEntity(org.bukkit.entity.Entity entity) {
+        invertedVisibilityEntities.remove(entity.getUniqueId());
+
+        trackAndShowEntity(entity);
+    }
+
     public void onEntityRemove(Entity entity) {
-        hiddenEntities.remove(entity.getUUID());
+        invertedVisibilityEntities.remove(entity.getUUID());
     }
 
     @Override
@@ -1350,7 +1396,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean canSee(org.bukkit.entity.Entity entity) {
-        return !hiddenEntities.containsKey(entity.getUniqueId());
+        return entity.isVisibleByDefault() ^ invertedVisibilityEntities.containsKey(entity.getUniqueId());
     }
 
     @Override
