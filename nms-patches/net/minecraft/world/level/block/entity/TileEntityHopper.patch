@@ -77,7 +77,7 @@
          IInventory iinventory1 = getAttachedContainer(world, blockposition, iblockdata);
  
          if (iinventory1 == null) {
-@@ -161,7 +206,28 @@
+@@ -161,7 +206,30 @@
                  for (int i = 0; i < iinventory.getContainerSize(); ++i) {
                      if (!iinventory.getItem(i).isEmpty()) {
                          ItemStack itemstack = iinventory.getItem(i).copy();
@@ -91,8 +91,10 @@
 +                        // Have to special case large chests as they work oddly
 +                        if (iinventory1 instanceof InventoryLargeChest) {
 +                            destinationInventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) iinventory1);
-+                        } else {
++                        } else if (iinventory1.getOwner() != null) {
 +                            destinationInventory = iinventory1.getOwner().getInventory();
++                        } else {
++                            destinationInventory = new CraftInventory(iinventory);
 +                        }
 +
 +                        InventoryMoveItemEvent event = new InventoryMoveItemEvent(iinventory.getOwner().getInventory(), oitemstack.clone(), destinationInventory, true);
@@ -107,7 +109,7 @@
  
                          if (itemstack1.isEmpty()) {
                              iinventory1.setChanged();
-@@ -226,7 +292,34 @@
+@@ -226,7 +294,36 @@
  
          if (!itemstack.isEmpty() && canTakeItemFromContainer(iinventory, itemstack, i, enumdirection)) {
              ItemStack itemstack1 = itemstack.copy();
@@ -120,8 +122,10 @@
 +            // Have to special case large chests as they work oddly
 +            if (iinventory instanceof InventoryLargeChest) {
 +                sourceInventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) iinventory);
-+            } else {
++            } else if (iinventory.getOwner() != null) {
 +                sourceInventory = iinventory.getOwner().getInventory();
++            } else {
++                sourceInventory = new CraftInventory(iinventory);
 +            }
 +
 +            InventoryMoveItemEvent event = new InventoryMoveItemEvent(sourceInventory, oitemstack.clone(), ihopper.getOwner().getInventory(), false);
@@ -143,7 +147,7 @@
  
              if (itemstack2.isEmpty()) {
                  iinventory.setChanged();
-@@ -241,6 +334,13 @@
+@@ -241,6 +338,13 @@
  
      public static boolean addItem(IInventory iinventory, EntityItem entityitem) {
          boolean flag = false;
@@ -157,17 +161,17 @@
          ItemStack itemstack = entityitem.getItem().copy();
          ItemStack itemstack1 = addItem((IInventory) null, iinventory, itemstack, (EnumDirection) null);
  
-@@ -327,16 +427,35 @@
+@@ -327,16 +431,35 @@
          return itemstack;
      }
  
 +    // CraftBukkit start
 +    @Nullable
 +    private static IInventory runHopperInventorySearchEvent(IInventory inventory, Location hopperLocation, Location searchLocation, HopperInventorySearchEvent.ContainerType containerType) {
-+        HopperInventorySearchEvent event = new HopperInventorySearchEvent(inventory != null ? new CraftInventory(inventory) : null, containerType, hopperLocation, searchLocation);
++        HopperInventorySearchEvent event = new HopperInventorySearchEvent((inventory != null) ? new CraftInventory(inventory) : null, containerType, hopperLocation, searchLocation);
 +        Bukkit.getServer().getPluginManager().callEvent(event);
-+        CraftInventory craftInventory = (CraftInventory)event.getInventory();
-+        return craftInventory != null ? craftInventory.getInventory() : null;
++        CraftInventory craftInventory = (CraftInventory) event.getInventory();
++        return (craftInventory != null) ? craftInventory.getInventory() : null;
 +    }
 +    // CraftBukkit end
 +
