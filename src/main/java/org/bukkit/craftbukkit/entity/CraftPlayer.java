@@ -1307,7 +1307,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     void resetAndHideEntity(org.bukkit.entity.Entity entity) {
-        if (invertedVisibilityEntities.remove(entity.getUniqueId()) != null) {
+        if (invertedVisibilityEntities.remove(entity.getUniqueId()) == null) {
             untrackAndHideEntity(entity);
         }
     }
@@ -1380,7 +1380,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     void resetAndShowEntity(org.bukkit.entity.Entity entity) {
-        if (invertedVisibilityEntities.remove(entity.getUniqueId()) != null) {
+        if (invertedVisibilityEntities.remove(entity.getUniqueId()) == null) {
             trackAndShowEntity(entity);
         }
     }
