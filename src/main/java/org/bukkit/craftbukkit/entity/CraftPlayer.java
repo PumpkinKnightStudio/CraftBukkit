@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -58,6 +59,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.network.protocol.game.PacketPlayOutMultiBlockChange;
 import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
+import net.minecraft.network.protocol.game.PacketPlayOutOpenSignEditor;
 import net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition;
 import net.minecraft.network.protocol.game.PacketPlayOutStopSound;
@@ -105,6 +107,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
+import org.bukkit.Tag;
 import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
@@ -172,6 +175,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private double healthScale = 20;
     private CraftWorldBorder clientWorldBorder = null;
     private IWorldBorderListener clientWorldBorderListener = createWorldBorderListener();
+    private Location fakeSignLocation;
+    private CompletableFuture<String[]> signChangeResultHandler;
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -1948,6 +1953,57 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void openSign(Sign sign) {
         CraftSign.openSign(sign, this);
+    }
+
+    @Override
+    public CompletableFuture<String[]> openSign(Material signMaterial, String[] lines) {
+        Preconditions.checkArgument(signMaterial != null, "signMaterial must not be null");
+        Preconditions.checkArgument(Tag.SIGNS.isTagged(signMaterial), "signMaterial must be tagged with Tag.SIGNS. Given %s", signMaterial.getKey());
+        Preconditions.checkArgument(lines != null, "lines must not be null");
+
+        CompletableFuture<String[]> future = new CompletableFuture<>();
+
+        if (getHandle().connection == null) {
+            future.completeExceptionally(new IllegalStateException("player not fully connected"));
+            return future;
+        }
+
+        if (signChangeResultHandler != null) {
+            future.completeExceptionally(new IllegalStateException("player already has a sign editor open"));
+            return future;
+        }
+
+        Location location = getLocation();
+        location.setY(getWorld().getMinHeight());
+
+        sendBlockChange(location, signMaterial.createBlockData());
+        sendSignChange(location, lines);
+
+        getHandle().connection.send(new PacketPlayOutOpenSignEditor(new BlockPosition(location.getX(), location.getY(), location.getZ())));
+        this.fakeSignLocation = location;
+
+        this.signChangeResultHandler = future;
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<String[]> openSign(String[] lines) {
+        return openSign(Material.OAK_SIGN, lines);
+    }
+
+    public boolean handleSignEdit(String[] lines) {
+        if (signChangeResultHandler == null) {
+            return false;
+        }
+
+        this.signChangeResultHandler.complete(lines);
+        this.signChangeResultHandler = null;
+
+        // Replace the fake sign with the actual block data again
+        sendBlockChange(fakeSignLocation, fakeSignLocation.getBlock().getBlockData());
+        this.fakeSignLocation = null;
+
+        return true;
     }
 
     @Override
