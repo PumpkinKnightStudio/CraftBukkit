@@ -2,7 +2,7 @@ package org.bukkit.entity;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import org.bukkit.NamespacedKey;
@@ -31,8 +31,8 @@ public class VillagerProfessionTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (VillagerProfession villagerProfession : IRegistry.VILLAGER_PROFESSION) {
-            MinecraftKey minecraftKey = IRegistry.VILLAGER_PROFESSION.getKey(villagerProfession);
+        for (VillagerProfession villagerProfession : BuiltInRegistries.VILLAGER_PROFESSION) {
+            MinecraftKey minecraftKey = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villagerProfession);
 
             try {
                 Villager.Profession profession = (Villager.Profession) Villager.Profession.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

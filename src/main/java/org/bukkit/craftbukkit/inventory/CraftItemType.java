@@ -4,10 +4,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Map;
 import java.util.function.Consumer;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
@@ -28,6 +27,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftItemType implements ItemType {
     private final NamespacedKey key;
@@ -187,7 +188,7 @@ public class CraftItemType implements ItemType {
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
         for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(IRegistry.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttributeMap.fromMinecraft(BuiltInRegistries.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
         }
 
@@ -196,8 +197,13 @@ public class CraftItemType implements ItemType {
 
     @Override
     public CreativeCategory getCreativeCategory() {
-        CreativeModeTab category = item.getItemCategory();
-        return CraftCreativeCategory.fromNMS(category);
+        return CreativeCategory.BUILDING_BLOCKS;
+    }
+
+    @Nullable
+    @Override
+    public String getItemTranslationKey() {
+        return item.getDescriptionId();
     }
 
     @Override
@@ -213,6 +219,18 @@ public class CraftItemType implements ItemType {
     @Override
     public int ordinal() {
         return ordinal;
+    }
+
+    @NotNull
+    @Override
+    public String getTranslationKey() {
+        return item.getDescriptionId();
+    }
+
+    @Nullable
+    @Override
+    public String getBlockTranslationKey() {
+        return null;
     }
 
     @Override

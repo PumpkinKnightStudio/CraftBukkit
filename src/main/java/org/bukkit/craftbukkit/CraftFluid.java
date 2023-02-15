@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit;
 
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.material.FluidType;
 import org.bukkit.Fluid;
 import org.bukkit.NamespacedKey;
@@ -15,7 +15,7 @@ public class CraftFluid extends Fluid {
             return null;
         }
 
-        return Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(IRegistry.FLUID.getKey(minecraft)));
+        return Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.FLUID.getKey(minecraft)));
     }
 
     public static FluidType bukkitToMinecraft(Fluid bukkit) {

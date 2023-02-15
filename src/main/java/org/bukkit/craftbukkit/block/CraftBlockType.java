@@ -21,6 +21,8 @@ import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
@@ -168,6 +170,18 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
         return block.getFriction();
     }
 
+    @Nullable
+    @Override
+    public String getBlockTranslationKey() {
+        return block.getDescriptionId();
+    }
+
+    @Nullable
+    @Override
+    public String getItemTranslationKey() {
+        return null;
+    }
+
     @Override
     public Material getCraftingRemainingItem() {
         throw new IllegalArgumentException("The Material is not an item!");
@@ -201,6 +215,12 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     @Override
     public int ordinal() {
         return ordinal;
+    }
+
+    @NotNull
+    @Override
+    public String getTranslationKey() {
+        return block.getDescriptionId();
     }
 
     @Override

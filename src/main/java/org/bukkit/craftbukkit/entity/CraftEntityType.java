@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityTypes;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.NamespacedKey;
@@ -33,13 +34,14 @@ import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftEntityType extends EntityType {
     private static int count = 0;
 
     public static EntityType minecraftToBukkit(EntityTypes<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(IRegistry.ENTITY_TYPE.getKey(minecraft)));
+        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.ENTITY_TYPE.getKey(minecraft)));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }
@@ -136,6 +138,12 @@ public class CraftEntityType extends EntityType {
     @Override
     public int hashCode() {
         return getKey().hashCode();
+    }
+
+    @NotNull
+    @Override
+    public String getTranslationKey() {
+        return entityType.getDescriptionId();
     }
 
     public static class CraftEntityTypeRegistry extends CraftRegistry<EntityType, EntityTypes<?>> {

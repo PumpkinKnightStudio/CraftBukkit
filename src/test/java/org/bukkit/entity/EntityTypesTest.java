@@ -34,8 +34,8 @@ public class EntityTypesTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (EntityTypes<?> entityTypes : IRegistry.ENTITY_TYPE) {
-            MinecraftKey minecraftKey = IRegistry.ENTITY_TYPE.getKey(entityTypes);
+        for (EntityTypes<?> entityTypes : BuiltInRegistries.ENTITY_TYPE) {
+            MinecraftKey minecraftKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityTypes);
 
             try {
                 EntityType entityType = (EntityType) EntityType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

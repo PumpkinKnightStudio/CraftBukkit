@@ -20,6 +20,8 @@ import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Deprecated
 public class CraftLegacyMaterial implements Material {
@@ -928,6 +930,24 @@ public class CraftLegacyMaterial implements Material {
     @Override
     public int ordinal() {
         return ordinal;
+    }
+
+    @NotNull
+    @Override
+    public String getTranslationKey() {
+        throw new IllegalArgumentException("Cannot get translation key of Legacy Material");
+    }
+
+    @Nullable
+    @Override
+    public String getBlockTranslationKey() {
+        throw new IllegalArgumentException("Cannot get block translation key of Legacy Material");
+    }
+
+    @Nullable
+    @Override
+    public String getItemTranslationKey() {
+        throw new IllegalArgumentException("Cannot get item translation key of Legacy Material");
     }
 
     @Override

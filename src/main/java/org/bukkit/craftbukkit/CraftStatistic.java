@@ -387,11 +387,11 @@ public class CraftStatistic extends Statistic {
             }
 
             Type type = null;
-            if (statisticWrapper.getRegistry() == IRegistry.ITEM) {
+            if (statisticWrapper.getRegistry() == BuiltInRegistries.ITEM) {
                 type = Type.ITEM;
-            } else if (statisticWrapper.getRegistry() == IRegistry.BLOCK) {
+            } else if (statisticWrapper.getRegistry() == BuiltInRegistries.BLOCK) {
                 type = Type.BLOCK;
-            } else if (statisticWrapper.getRegistry() == IRegistry.ENTITY_TYPE) {
+            } else if (statisticWrapper.getRegistry() == BuiltInRegistries.ENTITY_TYPE) {
                 type = Type.ENTITY;
             }
 

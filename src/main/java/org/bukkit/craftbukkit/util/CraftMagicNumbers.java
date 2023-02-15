@@ -37,8 +37,10 @@ import net.minecraft.util.datafix.fixes.DataConverterTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.storage.SavedFile;
 import org.bukkit.Bukkit;
+import org.bukkit.Fluid;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -113,7 +115,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
             BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> {
                 MATERIAL_BLOCK.put(material, block);
             });
-        }
+        });
     }
 
     public static Material getMaterial(Block block) {
@@ -334,10 +336,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return clazz;
-    }
-    @Override
-    public CreativeCategory getCreativeCategory(Material material) {
-        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
     }
 
     @Override

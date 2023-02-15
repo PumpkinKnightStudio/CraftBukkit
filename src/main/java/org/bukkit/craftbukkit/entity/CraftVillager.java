@@ -137,7 +137,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
                 return null;
             }
 
-            return Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(IRegistry.VILLAGER_TYPE.getKey(minecraft)));
+            return Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.VILLAGER_TYPE.getKey(minecraft)));
         }
 
         public static VillagerType bukkitToMinecraft(Type bukkit) {
@@ -225,7 +225,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
                 return null;
             }
 
-            return Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(IRegistry.VILLAGER_PROFESSION.getKey(minecraft)));
+            return Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.VILLAGER_PROFESSION.getKey(minecraft)));
         }
 
         public static VillagerProfession bukkitToMinecraft(Profession bukkit) {

@@ -31,7 +31,7 @@ public class BiomeTest extends AbstractTestingBase {
     @Test
     public void testMinecraftToBukkitFieldName() {
         for (BiomeBase biomeBase : BIOMES) {
-            MinecraftKey minecraftKey = RegistryGeneration.BIOME.getKey(biomeBase);
+            MinecraftKey minecraftKey = BIOMES.getKey(biomeBase);
 
             try {
                 Biome biome = (Biome) Biome.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
@@ -60,7 +60,7 @@ public class BiomeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkit() {
-        for (BiomeBase biomeBase : RegistryGeneration.BIOME) {
+        for (BiomeBase biomeBase : BIOMES) {
             // Should always return a biome, since we create the biome from the biome base
             Biome biome = CraftBiome.minecraftToBukkit(BIOMES, biomeBase);
             Assert.assertTrue("No Bukkit mapping for " + biomeBase, biome != null && biome != Biome.CUSTOM);

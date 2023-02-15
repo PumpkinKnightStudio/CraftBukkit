@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.NamespacedKey;
@@ -32,7 +33,7 @@ public class CraftBiome extends Biome {
             return null;
         }
 
-        return registry.getHolderOrThrow(ResourceKey.create(IRegistry.BIOME_REGISTRY, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
+        return registry.getHolderOrThrow(ResourceKey.create(Registries.BIOME, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
     }
 
     private final NamespacedKey key;

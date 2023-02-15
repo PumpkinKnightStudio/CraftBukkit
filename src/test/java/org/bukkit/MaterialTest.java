@@ -49,12 +49,12 @@ public class MaterialTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (Item item : IRegistry.ITEM) {
-            test(IRegistry.ITEM.getKey(item));
+        for (Item item : BuiltInRegistries.ITEM) {
+            test(BuiltInRegistries.ITEM.getKey(item));
         }
 
-        for (Block block : IRegistry.BLOCK) {
-            test(IRegistry.BLOCK.getKey(block));
+        for (Block block : BuiltInRegistries.BLOCK) {
+            test(BuiltInRegistries.BLOCK.getKey(block));
         }
     }
 

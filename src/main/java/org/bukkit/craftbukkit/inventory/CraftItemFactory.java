@@ -165,7 +165,7 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.SMOKER || material == Material.BEEHIVE
                 || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
                 || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR
-                || material == Material.CHISELED_BOOKSHELF ) {
+                || material == Material.CHISELED_BOOKSHELF) {
             return new CraftMetaBlockState(meta, material);
         }
         if (material == Material.TROPICAL_FISH_BUCKET) {

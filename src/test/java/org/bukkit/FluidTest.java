@@ -2,7 +2,7 @@ package org.bukkit;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.material.FluidType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -29,8 +29,8 @@ public class FluidTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (FluidType fluidType : IRegistry.FLUID) {
-            MinecraftKey minecraftKey = IRegistry.FLUID.getKey(fluidType);
+        for (FluidType fluidType : BuiltInRegistries.FLUID) {
+            MinecraftKey minecraftKey = BuiltInRegistries.FLUID.getKey(fluidType);
 
             try {
                 Fluid fluid = (Fluid) Fluid.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

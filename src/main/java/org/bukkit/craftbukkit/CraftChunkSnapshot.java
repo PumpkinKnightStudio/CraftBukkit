@@ -85,7 +85,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     public boolean contains(Biome biome) {
         Preconditions.checkArgument(biome != null, "Biome cannot be null");
 
-        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(this.biomeRegistry, biome));
+        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBiome.bukkitToMinecraft(this.biomeRegistry, biome));
         for (PalettedContainerRO<Holder<BiomeBase>> palette : this.biome) {
             if (palette.maybeHas(nms)) {
                 return true;

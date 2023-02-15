@@ -36,8 +36,8 @@ public class SoundTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (SoundEffect soundEffect : IRegistry.SOUND_EVENT) {
-            MinecraftKey minecraftKey = IRegistry.SOUND_EVENT.getKey(soundEffect);
+        for (SoundEffect soundEffect : BuiltInRegistries.SOUND_EVENT) {
+            MinecraftKey minecraftKey = BuiltInRegistries.SOUND_EVENT.getKey(soundEffect);
 
             try {
                 Sound sound = (Sound) Sound.class.getField(minecraftKey.getPath().toUpperCase().replace(".", "_")).get(null);

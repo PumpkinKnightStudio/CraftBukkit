@@ -3,6 +3,7 @@ package org.bukkit.inventory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
 import org.bukkit.NamespacedKey;
@@ -31,8 +32,8 @@ public class ItemTypeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (Item item : IRegistry.ITEM) {
-            MinecraftKey minecraftKey = IRegistry.ITEM.getKey(item);
+        for (Item item : BuiltInRegistries.ITEM) {
+            MinecraftKey minecraftKey = BuiltInRegistries.ITEM.getKey(item);
 
             try {
                 Field field = ItemType.class.getField(minecraftKey.getPath().toUpperCase());

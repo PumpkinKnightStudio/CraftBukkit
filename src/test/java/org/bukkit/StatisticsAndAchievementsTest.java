@@ -33,7 +33,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (StatisticWrapper<?> statisticWrapper : IRegistry.STAT_TYPE) {
+        for (StatisticWrapper<?> statisticWrapper : BuiltInRegistries.STAT_TYPE) {
             for (net.minecraft.stats.Statistic<?> minecraft : statisticWrapper) {
                 NamespacedKey bukkit = CraftStatistic.getBukkitStatistic(minecraft).getKey();
 

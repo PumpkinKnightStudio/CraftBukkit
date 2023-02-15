@@ -3,6 +3,7 @@ package org.bukkit.entity;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.entity.npc.VillagerType;
 import org.bukkit.NamespacedKey;
@@ -31,8 +32,8 @@ public class VillagerTypeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (VillagerType villagerType : IRegistry.VILLAGER_TYPE) {
-            MinecraftKey minecraftKey = IRegistry.VILLAGER_TYPE.getKey(villagerType);
+        for (VillagerType villagerType : BuiltInRegistries.VILLAGER_TYPE) {
+            MinecraftKey minecraftKey = BuiltInRegistries.VILLAGER_TYPE.getKey(villagerType);
 
             try {
                 Villager.Type type = (Villager.Type) Villager.Type.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

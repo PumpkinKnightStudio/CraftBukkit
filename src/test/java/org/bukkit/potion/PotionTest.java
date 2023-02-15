@@ -37,8 +37,8 @@ public class PotionTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (MobEffectList mobEffectList : IRegistry.MOB_EFFECT) {
-            MinecraftKey minecraftKey = IRegistry.MOB_EFFECT.getKey(mobEffectList);
+        for (MobEffectList mobEffectList : BuiltInRegistries.MOB_EFFECT) {
+            MinecraftKey minecraftKey = BuiltInRegistries.MOB_EFFECT.getKey(mobEffectList);
 
             try {
                 PotionEffectType potionEffectType = (PotionEffectType) PotionEffectType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

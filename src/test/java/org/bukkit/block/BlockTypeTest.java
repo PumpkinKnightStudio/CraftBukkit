@@ -2,7 +2,7 @@ package org.bukkit.block;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.block.Block;
 import org.bukkit.NamespacedKey;
@@ -31,8 +31,8 @@ public class BlockTypeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (Block block : IRegistry.BLOCK) {
-            MinecraftKey minecraftKey = IRegistry.BLOCK.getKey(block);
+        for (Block block : BuiltInRegistries.BLOCK) {
+            MinecraftKey minecraftKey = BuiltInRegistries.BLOCK.getKey(block);
 
             try {
                 Field field = BlockType.class.getField(minecraftKey.getPath().toUpperCase());

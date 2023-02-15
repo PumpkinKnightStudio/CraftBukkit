@@ -10,12 +10,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.entity.player.EntityHuman;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.BlockAccessAir;
@@ -39,7 +39,6 @@ import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.inventory.CraftCreativeCategory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -49,6 +48,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemType {
 
@@ -222,6 +223,18 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
         return block.getFriction();
     }
 
+    @Nullable
+    @Override
+    public String getBlockTranslationKey() {
+        return block.getDescriptionId();
+    }
+
+    @Nullable
+    @Override
+    public String getItemTranslationKey() {
+        return item.getDescriptionId();
+    }
+
     @Override
     public Material getCraftingRemainingItem() {
         Item expectedItem = item.getCraftingRemainingItem();
@@ -239,7 +252,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
         for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(IRegistry.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttributeMap.fromMinecraft(BuiltInRegistries.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
         }
 
@@ -248,8 +261,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
     @Override
     public CreativeCategory getCreativeCategory() {
-        CreativeModeTab category = item.getItemCategory();
-        return CraftCreativeCategory.fromNMS(category);
+        return CreativeCategory.BUILDING_BLOCKS;
     }
 
     @Override
@@ -265,6 +277,12 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
     @Override
     public int ordinal() {
         return ordinal;
+    }
+
+    @NotNull
+    @Override
+    public String getTranslationKey() {
+        return item.getDescriptionId();
     }
 
     @Override

@@ -22,11 +22,6 @@ public class CraftCamel extends CraftAbstractHorse implements Camel {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.CAMEL;
-    }
-
-    @Override
     public Horse.Variant getVariant() {
         return Horse.Variant.CAMEL;
     }

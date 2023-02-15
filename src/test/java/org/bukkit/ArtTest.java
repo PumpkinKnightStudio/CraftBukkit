@@ -41,8 +41,8 @@ public class ArtTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (PaintingVariant painting : IRegistry.PAINTING_VARIANT) {
-            MinecraftKey minecraftKey = IRegistry.PAINTING_VARIANT.getKey(painting);
+        for (PaintingVariant painting : BuiltInRegistries.PAINTING_VARIANT) {
+            MinecraftKey minecraftKey = BuiltInRegistries.PAINTING_VARIANT.getKey(painting);
 
             try {
                 Art art = (Art) Art.class.getField(minecraftKey.getPath().toUpperCase()).get(null);

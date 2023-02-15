@@ -3,6 +3,7 @@ package org.bukkit.enchantments;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -30,8 +31,8 @@ public class EnchantmentTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (net.minecraft.world.item.enchantment.Enchantment enchantment : IRegistry.ENCHANTMENT) {
-            MinecraftKey minecraftKey = IRegistry.ENCHANTMENT.getKey(enchantment);
+        for (net.minecraft.world.item.enchantment.Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
+            MinecraftKey minecraftKey = BuiltInRegistries.ENCHANTMENT.getKey(enchantment);
 
             try {
                 Enchantment bukkitEnchantment = (Enchantment) Enchantment.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
