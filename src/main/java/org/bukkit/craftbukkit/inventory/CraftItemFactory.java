@@ -4,7 +4,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang.Validate;
@@ -71,6 +71,7 @@ public final class CraftItemFactory implements ItemFactory {
         }
         if (material == Material.CREEPER_HEAD || material == Material.CREEPER_WALL_HEAD
                 || material == Material.DRAGON_HEAD || material == Material.DRAGON_WALL_HEAD
+                || material == Material.PIGLIN_HEAD || material == Material.PIGLIN_WALL_HEAD
                 || material == Material.PLAYER_HEAD || material == Material.PLAYER_WALL_HEAD
                 || material == Material.SKELETON_SKULL || material == Material.SKELETON_WALL_SKULL
                 || material == Material.WITHER_SKELETON_SKULL || material == Material.WITHER_SKELETON_WALL_SKULL
@@ -101,40 +102,44 @@ public final class CraftItemFactory implements ItemFactory {
         if (Tag.BANNERS.isTagged(material)) {
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
         }
-        if (material == Material.AXOLOTL_SPAWN_EGG || material == Material.BAT_SPAWN_EGG
-                || material == Material.BEE_SPAWN_EGG || material == Material.BLAZE_SPAWN_EGG
-                || material == Material.CAT_SPAWN_EGG || material == Material.CAVE_SPIDER_SPAWN_EGG
+        if (material == Material.ALLAY_SPAWN_EGG || material == Material.AXOLOTL_SPAWN_EGG
+                || material == Material.BAT_SPAWN_EGG || material == Material.BEE_SPAWN_EGG
+                || material == Material.BLAZE_SPAWN_EGG || material == Material.CAT_SPAWN_EGG
+                || material == Material.CAMEL_SPAWN_EGG || material == Material.CAVE_SPIDER_SPAWN_EGG
                 || material == Material.CHICKEN_SPAWN_EGG || material == Material.COD_SPAWN_EGG
                 || material == Material.COW_SPAWN_EGG || material == Material.CREEPER_SPAWN_EGG
                 || material == Material.DOLPHIN_SPAWN_EGG || material == Material.DONKEY_SPAWN_EGG
                 || material == Material.DROWNED_SPAWN_EGG || material == Material.ELDER_GUARDIAN_SPAWN_EGG
-                || material == Material.ENDERMAN_SPAWN_EGG || material == Material.ENDERMITE_SPAWN_EGG
-                || material == Material.EVOKER_SPAWN_EGG || material == Material.FOX_SPAWN_EGG
+                || material == Material.ENDER_DRAGON_SPAWN_EGG || material == Material.ENDERMAN_SPAWN_EGG
+                || material == Material.ENDERMITE_SPAWN_EGG || material == Material.EVOKER_SPAWN_EGG
+                || material == Material.FOX_SPAWN_EGG || material == Material.FROG_SPAWN_EGG
                 || material == Material.GHAST_SPAWN_EGG || material == Material.GLOW_SQUID_SPAWN_EGG
                 || material == Material.GOAT_SPAWN_EGG || material == Material.GUARDIAN_SPAWN_EGG
                 || material == Material.HOGLIN_SPAWN_EGG || material == Material.HORSE_SPAWN_EGG
-                || material == Material.HUSK_SPAWN_EGG || material == Material.LLAMA_SPAWN_EGG
-                || material == Material.MAGMA_CUBE_SPAWN_EGG || material == Material.MOOSHROOM_SPAWN_EGG
-                || material == Material.MULE_SPAWN_EGG || material == Material.OCELOT_SPAWN_EGG
-                || material == Material.PANDA_SPAWN_EGG || material == Material.PARROT_SPAWN_EGG
-                || material == Material.PHANTOM_SPAWN_EGG || material == Material.PIGLIN_BRUTE_SPAWN_EGG
-                || material == Material.PIGLIN_SPAWN_EGG || material == Material.PIG_SPAWN_EGG
-                || material == Material.PILLAGER_SPAWN_EGG || material == Material.POLAR_BEAR_SPAWN_EGG
-                || material == Material.PUFFERFISH_SPAWN_EGG || material == Material.RABBIT_SPAWN_EGG
-                || material == Material.RAVAGER_SPAWN_EGG || material == Material.SALMON_SPAWN_EGG
-                || material == Material.SHEEP_SPAWN_EGG || material == Material.SHULKER_SPAWN_EGG
-                || material == Material.SILVERFISH_SPAWN_EGG || material == Material.SKELETON_HORSE_SPAWN_EGG
-                || material == Material.SKELETON_SPAWN_EGG || material == Material.SLIME_SPAWN_EGG
+                || material == Material.HUSK_SPAWN_EGG || material == Material.IRON_GOLEM_SPAWN_EGG
+                || material == Material.LLAMA_SPAWN_EGG || material == Material.MAGMA_CUBE_SPAWN_EGG
+                || material == Material.MOOSHROOM_SPAWN_EGG || material == Material.MULE_SPAWN_EGG
+                || material == Material.OCELOT_SPAWN_EGG || material == Material.PANDA_SPAWN_EGG
+                || material == Material.PARROT_SPAWN_EGG || material == Material.PHANTOM_SPAWN_EGG
+                || material == Material.PIGLIN_BRUTE_SPAWN_EGG || material == Material.PIGLIN_SPAWN_EGG
+                || material == Material.PIG_SPAWN_EGG || material == Material.PILLAGER_SPAWN_EGG
+                || material == Material.POLAR_BEAR_SPAWN_EGG || material == Material.PUFFERFISH_SPAWN_EGG
+                || material == Material.RABBIT_SPAWN_EGG || material == Material.RAVAGER_SPAWN_EGG
+                || material == Material.SALMON_SPAWN_EGG || material == Material.SHEEP_SPAWN_EGG
+                || material == Material.SHULKER_SPAWN_EGG || material == Material.SILVERFISH_SPAWN_EGG
+                || material == Material.SKELETON_HORSE_SPAWN_EGG || material == Material.SKELETON_SPAWN_EGG
+                || material == Material.SLIME_SPAWN_EGG || material == Material.SNOW_GOLEM_SPAWN_EGG
                 || material == Material.SPIDER_SPAWN_EGG || material == Material.SQUID_SPAWN_EGG
                 || material == Material.STRAY_SPAWN_EGG || material == Material.STRIDER_SPAWN_EGG
-                || material == Material.TRADER_LLAMA_SPAWN_EGG || material == Material.TROPICAL_FISH_SPAWN_EGG
-                || material == Material.TURTLE_SPAWN_EGG || material == Material.VEX_SPAWN_EGG
-                || material == Material.VILLAGER_SPAWN_EGG || material == Material.VINDICATOR_SPAWN_EGG
-                || material == Material.WANDERING_TRADER_SPAWN_EGG || material == Material.WITCH_SPAWN_EGG
-                || material == Material.WITHER_SKELETON_SPAWN_EGG || material == Material.WOLF_SPAWN_EGG
-                || material == Material.ZOGLIN_SPAWN_EGG || material == Material.ZOMBIE_HORSE_SPAWN_EGG
-                || material == Material.ZOMBIE_SPAWN_EGG || material == Material.ZOMBIE_VILLAGER_SPAWN_EGG
-                || material == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || material == Material.TADPOLE_SPAWN_EGG || material == Material.TRADER_LLAMA_SPAWN_EGG
+                || material == Material.TROPICAL_FISH_SPAWN_EGG || material == Material.TURTLE_SPAWN_EGG
+                || material == Material.VEX_SPAWN_EGG || material == Material.VILLAGER_SPAWN_EGG
+                || material == Material.VINDICATOR_SPAWN_EGG || material == Material.WANDERING_TRADER_SPAWN_EGG
+                || material == Material.WARDEN_SPAWN_EGG || material == Material.WITCH_SPAWN_EGG
+                || material == Material.WITHER_SKELETON_SPAWN_EGG || material == Material.WITHER_SPAWN_EGG
+                || material == Material.WOLF_SPAWN_EGG || material == Material.ZOGLIN_SPAWN_EGG
+                || material == Material.ZOMBIE_HORSE_SPAWN_EGG || material == Material.ZOMBIE_SPAWN_EGG
+                || material == Material.ZOMBIE_VILLAGER_SPAWN_EGG || material == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
             return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
         }
         if (material == Material.ARMOR_STAND) {
@@ -159,7 +164,8 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.JIGSAW || material == Material.LECTERN
                 || material == Material.SMOKER || material == Material.BEEHIVE
                 || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
-                || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR) {
+                || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR
+                || material == Material.CHISELED_BOOKSHELF ) {
             return new CraftMetaBlockState(meta, material);
         }
         if (material == Material.TROPICAL_FISH_BUCKET) {
@@ -184,6 +190,9 @@ public final class CraftItemFactory implements ItemFactory {
         }
         if (material == Material.BUNDLE) {
             return meta instanceof CraftMetaBundle ? meta : new CraftMetaBundle(meta);
+        }
+        if (material == Material.GOAT_HORN) {
+            return meta instanceof CraftMetaMusicInstrument ? meta : new CraftMetaMusicInstrument(meta);
         }
 
         return new CraftMetaItem(meta);
@@ -255,7 +264,7 @@ public final class CraftItemFactory implements ItemFactory {
     @Override
     public ItemStack createItemStack(String input) throws IllegalArgumentException {
         try {
-            ArgumentParserItemStack.a arg = ArgumentParserItemStack.parseForItem(HolderLookup.forRegistry(IRegistry.ITEM), new StringReader(input));
+            ArgumentParserItemStack.a arg = ArgumentParserItemStack.parseForItem(BuiltInRegistries.ITEM.asLookup(), new StringReader(input));
 
             Item item = arg.item().value();
             net.minecraft.world.item.ItemStack nmsItemStack = new net.minecraft.world.item.ItemStack(item);

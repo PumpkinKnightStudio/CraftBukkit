@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.sounds.SoundEffect;
 import org.bukkit.NamespacedKey;
@@ -13,7 +13,7 @@ public class CraftSound extends Sound {
     private static int count = 0;
 
     public static SoundEffect getSoundEffect(String s) {
-        SoundEffect effect = IRegistry.SOUND_EVENT.get(new MinecraftKey(s));
+        SoundEffect effect = BuiltInRegistries.SOUND_EVENT.get(new MinecraftKey(s));
         Preconditions.checkArgument(effect != null, "Sound effect %s does not exist", s);
 
         return effect;
@@ -24,7 +24,7 @@ public class CraftSound extends Sound {
     }
 
     public static Sound getBukkit(SoundEffect soundEffect) {
-        return Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(IRegistry.SOUND_EVENT.getKey(soundEffect)));
+        return Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.SOUND_EVENT.getKey(soundEffect)));
     }
 
     private final NamespacedKey key;

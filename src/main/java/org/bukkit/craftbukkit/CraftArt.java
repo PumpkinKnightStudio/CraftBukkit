@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
@@ -16,14 +16,14 @@ public class CraftArt extends Art {
 
     public static Art minecraftToBukkit(Holder<PaintingVariant> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(IRegistry.PAINTING_VARIANT.getKey(minecraft.value())));
+        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.PAINTING_VARIANT.getKey(minecraft.value())));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }
 
     public static Holder<PaintingVariant> bukkitToMinecraft(Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
-        return IRegistry.PAINTING_VARIANT.getHolderOrThrow(ResourceKey.create(IRegistry.PAINTING_VARIANT_REGISTRY, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
+        return IRegistry.PAINTING_VARIANT.getHolderOrThrow(ResourceKey.create(BuiltInRegistries.PAINTING_VARIANT_REGISTRY, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
     }
 
     private final NamespacedKey key;

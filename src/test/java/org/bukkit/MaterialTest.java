@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -138,13 +138,13 @@ public class MaterialTest extends AbstractTestingBase {
             materials.put(CraftMagicNumbers.key(material), material);
         }
 
-        Iterator<Item> items = IRegistry.ITEM.iterator();
+        Iterator<Item> items = BuiltInRegistries.ITEM.iterator();
 
         while (items.hasNext()) {
             Item item = items.next();
             if (item == null) continue;
 
-            MinecraftKey id = IRegistry.ITEM.getKey(item);
+            MinecraftKey id = BuiltInRegistries.ITEM.getKey(item);
             String name = item.getDescriptionId();
 
             Material material = materials.remove(id);
@@ -161,13 +161,13 @@ public class MaterialTest extends AbstractTestingBase {
         Material[] materials = Lists.newArrayList(Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator())).toArray(new Material[0]);
         List<Material> expectedOrder = new ArrayList<>(materials.length);
 
-        // Start with items in the same order as IRegistry.ITEM
-        StreamSupport.stream(IRegistry.ITEM.spliterator(), false)
+        // Start with items in the same order as BuiltInRegistries.ITEM
+        StreamSupport.stream(BuiltInRegistries.ITEM.spliterator(), false)
                 .map(CraftMagicNumbers::getMaterial)
                 .forEach(expectedOrder::add);
 
-        // Then non-item blocks in the same order as IRegistry.BLOCK
-        StreamSupport.stream(IRegistry.BLOCK.spliterator(), false)
+        // Then non-item blocks in the same order as BuiltInRegistries.BLOCK
+        StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false)
                 .map(CraftMagicNumbers::getMaterial)
                 .filter(block -> !block.isItem())
                 .forEach(expectedOrder::add);

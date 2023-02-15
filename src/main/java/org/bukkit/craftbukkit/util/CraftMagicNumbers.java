@@ -2,6 +2,8 @@ package org.bukkit.craftbukkit.util;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.gson.JsonElement;
@@ -20,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.critereon.LootDeserializationContext;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
@@ -85,27 +87,33 @@ public final class CraftMagicNumbers implements UnsafeValues {
     // ========================================================================
     private static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
     private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
+    private static final BiMap<FluidType, Fluid> FLUIDTYPE_FLUID = HashBiMap.create();
     private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
 
     static {
-        for (Block block : IRegistry.BLOCK) {
-            BLOCK_MATERIAL.put(block, Material.getMaterial(IRegistry.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
+        for (Block block : BuiltInRegistries.BLOCK) {
+            BLOCK_MATERIAL.put(block, Material.getMaterial(BuiltInRegistries.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
         }
 
-        for (Item item : IRegistry.ITEM) {
-            ITEM_MATERIAL.put(item, Material.getMaterial(IRegistry.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
+        for (Item item : BuiltInRegistries.ITEM) {
+            ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
+        }
+
+        for (FluidType fluidType : BuiltInRegistries.FLUID) {
+            Fluid fluid = Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.FLUID.getKey(fluidType)));
+            FLUIDTYPE_FLUID.put(fluidType, fluid);
         }
 
         Registry.MATERIAL.forEach(material -> {
             MinecraftKey key = key(material);
-            IRegistry.ITEM.getOptional(key).ifPresent((item) -> {
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> {
                 MATERIAL_ITEM.put(material, item);
             });
-            IRegistry.BLOCK.getOptional(key).ifPresent((block) -> {
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> {
                 MATERIAL_BLOCK.put(material, block);
             });
-        });
+        }
     }
 
     public static Material getMaterial(Block block) {
@@ -114,6 +122,10 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     public static Material getMaterial(Item item) {
         return ITEM_MATERIAL.getOrDefault(item, Material.AIR);
+    }
+
+    public static Fluid getFluid(FluidType fluid) {
+        return FLUIDTYPE_FLUID.get(fluid);
     }
 
     public static Item getItem(Material material) {
@@ -130,6 +142,10 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return MATERIAL_BLOCK.get(material);
+    }
+
+    public static FluidType getFluid(Fluid fluid) {
+        return FLUIDTYPE_FLUID.inverse().get(fluid);
     }
 
     public static MinecraftKey key(Material mat) {
@@ -202,7 +218,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "69c84c88aeb92ce9fa9525438b93f4fe";
+        return "1afe2ffe8a9d7fc510442a168b3d4338";
     }
 
     @Override
@@ -319,7 +335,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         return clazz;
     }
+    @Override
+    public CreativeCategory getCreativeCategory(Material material) {
+        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
+    }
 
+    @Override
+    public String getTranslationKey(ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+        return nmsItemStack.getItem().getDescriptionId(nmsItemStack);
+    }
     /**
      * This helper class represents the different NBT Tags.
      * <p>

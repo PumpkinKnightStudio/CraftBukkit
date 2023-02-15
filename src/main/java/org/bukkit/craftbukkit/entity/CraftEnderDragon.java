@@ -14,7 +14,7 @@ import org.bukkit.entity.ComplexEntityPart;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragon.Phase;
 
-public class CraftEnderDragon extends CraftMob implements EnderDragon {
+public class CraftEnderDragon extends CraftMob implements EnderDragon, CraftEnemy {
 
     public CraftEnderDragon(CraftServer server, EntityEnderDragon entity) {
         super(server, entity);

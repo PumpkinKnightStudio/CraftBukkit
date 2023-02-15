@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit.attribute;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import org.bukkit.Keyed;
@@ -37,8 +37,8 @@ public class AttributeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (AttributeBase attributeBase : IRegistry.ATTRIBUTE) {
-            MinecraftKey minecraftKey = IRegistry.ATTRIBUTE.getKey(attributeBase);
+        for (AttributeBase attributeBase : BuiltInRegistries.ATTRIBUTE) {
+            MinecraftKey minecraftKey = BuiltInRegistries.ATTRIBUTE.getKey(attributeBase);
 
             try {
                 Attribute attribute = (Attribute) Attribute.class.getField(minecraftKey.getPath().toUpperCase().replace(".", "_")).get(null);
@@ -56,7 +56,7 @@ public class AttributeTest extends AbstractTestingBase {
 
     @Test
     public void testToBukkit() {
-        for (MinecraftKey nms : IRegistry.ATTRIBUTE.keySet()) {
+        for (MinecraftKey nms : BuiltInRegistries.ATTRIBUTE.keySet()) {
             Attribute bukkit = CraftAttributeMap.fromMinecraft(nms.toString());
 
             Assert.assertNotNull(nms.toString(), bukkit);

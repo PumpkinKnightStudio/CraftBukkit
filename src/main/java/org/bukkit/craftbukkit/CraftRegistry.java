@@ -7,6 +7,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.Art;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
@@ -37,46 +39,46 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
     public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == Structure.class) {
-            return new CraftRegistry<>(registryHolder.registryOrThrow(IRegistry.STRUCTURE_REGISTRY), CraftStructure::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new);
         }
         if (bukkitClass == StructureType.class) {
-            return new CraftRegistry<>(IRegistry.STRUCTURE_TYPES, CraftStructureType::new);
+            return new CraftRegistry<>(BuiltInRegistries.STRUCTURE_TYPE, CraftStructureType::new);
         }
         if (bukkitClass == Biome.class) {
             return new CraftBiome.CraftBiomeRegistry(registryHolder.ownedRegistryOrThrow(IRegistry.BIOME_REGISTRY), CraftBiome::new);
         }
         if (bukkitClass == Art.class) {
-            return new CraftRegistry<>(IRegistry.PAINTING_VARIANT, CraftArt::new);
+            return new CraftRegistry<>(BuiltInRegistries.PAINTING_VARIANT, CraftArt::new);
         }
         if (bukkitClass == Fluid.class) {
-            return new CraftRegistry<>(IRegistry.FLUID, CraftFluid::new);
+            return new CraftRegistry<>(BuiltInRegistries.FLUID, CraftFluid::new);
         }
         if (bukkitClass == EntityType.class) {
-            return new CraftEntityType.CraftEntityTypeRegistry(IRegistry.ENTITY_TYPE);
+            return new CraftEntityType.CraftEntityTypeRegistry(BuiltInRegistries.ENTITY_TYPE);
         }
         if (bukkitClass == Attribute.class) {
-            return new CraftRegistry<>(IRegistry.ATTRIBUTE, CraftAttribute::new);
+            return new CraftRegistry<>(BuiltInRegistries.ATTRIBUTE, CraftAttribute::new);
         }
         if (bukkitClass == Villager.Type.class) {
-            return new CraftRegistry<>(IRegistry.VILLAGER_TYPE, CraftVillager.CraftType::new);
+            return new CraftRegistry<>(BuiltInRegistries.VILLAGER_TYPE, CraftVillager.CraftType::new);
         }
         if (bukkitClass == Villager.Profession.class) {
-            return new CraftRegistry<>(IRegistry.VILLAGER_PROFESSION, CraftVillager.CraftProfession::new);
+            return new CraftRegistry<>(BuiltInRegistries.VILLAGER_PROFESSION, CraftVillager.CraftProfession::new);
         }
         if (bukkitClass == PotionEffectType.class) {
-            return new CraftPotionEffectType.CraftPotionEffectTypeRegistry(IRegistry.MOB_EFFECT, CraftPotionEffectType::new);
+            return new CraftPotionEffectType.CraftPotionEffectTypeRegistry(BuiltInRegistries.MOB_EFFECT, CraftPotionEffectType::new);
         }
         if (bukkitClass == Enchantment.class) {
-            return new CraftEnchantment.CraftEnchantmentRegistry(IRegistry.ENCHANTMENT, CraftEnchantment::new);
+            return new CraftEnchantment.CraftEnchantmentRegistry(BuiltInRegistries.ENCHANTMENT, CraftEnchantment::new);
         }
         if (bukkitClass == Sound.class) {
-            return new CraftRegistry<>(IRegistry.SOUND_EVENT, CraftSound::new);
+            return new CraftRegistry<>(BuiltInRegistries.SOUND_EVENT, CraftSound::new);
         }
         if (bukkitClass == Material.class) {
-            return new CraftMaterial.CraftMaterialRegistry(IRegistry.BLOCK, IRegistry.ITEM);
+            return new CraftMaterial.CraftMaterialRegistry(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM);
         }
         if (bukkitClass == Statistic.class) {
-            return new CraftStatistic.CraftStatisticRegistry(IRegistry.STAT_TYPE);
+            return new CraftStatistic.CraftStatisticRegistry(BuiltInRegistries.STAT_TYPE);
         }
 
         return null;

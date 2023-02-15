@@ -198,6 +198,7 @@ import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.event.inventory.PrepareGrindstoneEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.event.inventory.TradeSelectEvent;
@@ -841,8 +842,8 @@ public class CraftEventFactory {
     /**
      * Server methods
      */
-    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, boolean shouldSendChatPreviews, int numPlayers, int maxPlayers) {
-        ServerListPingEvent event = new ServerListPingEvent(address, motd, shouldSendChatPreviews, numPlayers, maxPlayers);
+    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, int numPlayers, int maxPlayers) {
+        ServerListPingEvent event = new ServerListPingEvent("", address, motd, numPlayers, maxPlayers);
         craftServer.getPluginManager().callEvent(event);
         return event;
     }
@@ -925,7 +926,7 @@ public class CraftEventFactory {
         } else if (blockDamage != null) {
             DamageCause cause = null;
             Block damager = blockDamage;
-            if (source == DamageSource.CACTUS || source == DamageSource.SWEET_BERRY_BUSH || source == DamageSource.STALAGMITE || source == DamageSource.FALLING_STALACTITE || source == DamageSource.ANVIL) {
+            if (source == DamageSource.CACTUS || source == DamageSource.SWEET_BERRY_BUSH || source == DamageSource.STALAGMITE || "fallingStalactite".equals(source.msgId) || "anvil".equals(source.msgId)) {
                 cause = DamageCause.CONTACT;
             } else if (source == DamageSource.HOT_FLOOR) {
                 cause = DamageCause.HOT_FLOOR;
@@ -953,7 +954,7 @@ public class CraftEventFactory {
             DamageCause cause = null;
             CraftEntity damager = entityDamage.getBukkitEntity();
             entityDamage = null;
-            if (source == DamageSource.ANVIL || source == DamageSource.FALLING_BLOCK || source == DamageSource.FALLING_STALACTITE) {
+            if ("fallingStalactite".equals(source.msgId) || "fallingBlock".equals(source.msgId) || "anvil".equals(source.msgId)) {
                 cause = DamageCause.FALLING_BLOCK;
             } else if (damager instanceof LightningStrike) {
                 cause = DamageCause.LIGHTNING;
@@ -1047,7 +1048,7 @@ public class CraftEventFactory {
         Map<DamageModifier, Function<? super Double, Double>> modifierFunctions = new EnumMap<DamageModifier, Function<? super Double, Double>>(DamageModifier.class);
         modifiers.put(DamageModifier.BASE, rawDamage);
         modifierFunctions.put(DamageModifier.BASE, ZERO);
-        if (source == DamageSource.FALLING_BLOCK || source == DamageSource.ANVIL) {
+        if ("fallingBlock".equals(source.msgId) || "anvil".equals(source.msgId)) {
             modifiers.put(DamageModifier.HARD_HAT, hardHatModifier);
             modifierFunctions.put(DamageModifier.HARD_HAT, hardHat);
         }
@@ -1449,6 +1450,13 @@ public class CraftEventFactory {
 
     public static PrepareAnvilEvent callPrepareAnvilEvent(InventoryView view, ItemStack item) {
         PrepareAnvilEvent event = new PrepareAnvilEvent(view, CraftItemStack.asCraftMirror(item).clone());
+        event.getView().getPlayer().getServer().getPluginManager().callEvent(event);
+        event.getInventory().setItem(2, event.getResult());
+        return event;
+    }
+
+    public static PrepareGrindstoneEvent callPrepareGrindstoneEvent(InventoryView view, ItemStack item) {
+        PrepareGrindstoneEvent event = new PrepareGrindstoneEvent(view, CraftItemStack.asCraftMirror(item).clone());
         event.getView().getPlayer().getServer().getPluginManager().callEvent(event);
         event.getInventory().setItem(2, event.getResult());
         return event;

@@ -2,7 +2,6 @@ package org.bukkit;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.data.RegistryGeneration;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.block.Biome;
@@ -31,7 +30,7 @@ public class BiomeTest extends AbstractTestingBase {
 
     @Test
     public void testMinecraftToBukkitFieldName() {
-        for (BiomeBase biomeBase : RegistryGeneration.BIOME) {
+        for (BiomeBase biomeBase : BIOMES) {
             MinecraftKey minecraftKey = RegistryGeneration.BIOME.getKey(biomeBase);
 
             try {
@@ -55,7 +54,7 @@ public class BiomeTest extends AbstractTestingBase {
                 continue;
             }
 
-            Assert.assertNotNull("No NMS mapping for " + biome, CraftBiome.bukkitToMinecraft(RegistryGeneration.BIOME, biome));
+            Assert.assertNotNull("No NMS mapping for " + biome, CraftBiome.bukkitToMinecraft(BIOMES, biome));
         }
     }
 
@@ -63,7 +62,7 @@ public class BiomeTest extends AbstractTestingBase {
     public void testMinecraftToBukkit() {
         for (BiomeBase biomeBase : RegistryGeneration.BIOME) {
             // Should always return a biome, since we create the biome from the biome base
-            Biome biome = CraftBiome.minecraftToBukkit(RegistryGeneration.BIOME, biomeBase);
+            Biome biome = CraftBiome.minecraftToBukkit(BIOMES, biomeBase);
             Assert.assertTrue("No Bukkit mapping for " + biomeBase, biome != null && biome != Biome.CUSTOM);
         }
     }

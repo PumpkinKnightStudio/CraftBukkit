@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.sounds.SoundEffect;
 import org.bukkit.craftbukkit.CraftSound;
@@ -62,7 +62,7 @@ public class SoundTest extends AbstractTestingBase {
 
     @Test
     public void testReverse() {
-        for (MinecraftKey effect : IRegistry.SOUND_EVENT.keySet()) {
+        for (MinecraftKey effect : BuiltInRegistries.SOUND_EVENT.keySet()) {
             assertNotNull(effect + "", Sound.valueOf(effect.getPath().replace('.', '_').toUpperCase(java.util.Locale.ENGLISH)));
         }
     }

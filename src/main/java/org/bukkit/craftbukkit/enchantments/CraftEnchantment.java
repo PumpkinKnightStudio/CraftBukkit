@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.enchantment.EnchantmentBinding;
 import net.minecraft.world.item.enchantment.EnchantmentVanishing;
 import org.bukkit.NamespacedKey;
@@ -19,8 +20,8 @@ public class CraftEnchantment extends Enchantment {
     private final net.minecraft.world.item.enchantment.Enchantment target;
     private final String name;
 
-    public CraftEnchantment(NamespacedKey key, net.minecraft.world.item.enchantment.Enchantment target) {
-        this.key = key;
+    public CraftEnchantment(net.minecraft.world.item.enchantment.Enchantment target) {
+        super(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.ENCHANTMENT.getKey(target)));
         this.target = target;
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
         // in case plugins use for example the name as key in a config file to receive enchantment specific values.

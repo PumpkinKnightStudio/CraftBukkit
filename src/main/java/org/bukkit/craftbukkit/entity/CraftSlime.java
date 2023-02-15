@@ -4,7 +4,7 @@ import net.minecraft.world.entity.monster.EntitySlime;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Slime;
 
-public class CraftSlime extends CraftMob implements Slime {
+public class CraftSlime extends CraftMob implements Slime, CraftEnemy {
 
     public CraftSlime(CraftServer server, EntitySlime entity) {
         super(server, entity);

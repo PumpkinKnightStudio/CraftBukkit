@@ -19,7 +19,7 @@ public class CraftPotionEffectType extends PotionEffectType {
             return null;
         }
 
-        return Registry.POTION_EFFECT_TYPE.get(CraftNamespacedKey.fromMinecraft(IRegistry.MOB_EFFECT.getKey(minecraft)));
+        return Registry.POTION_EFFECT_TYPE.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.MOB_EFFECT.getKey(minecraft)));
     }
 
     public static MobEffectList bukkitToMinecraft(PotionEffectType bukkit) {

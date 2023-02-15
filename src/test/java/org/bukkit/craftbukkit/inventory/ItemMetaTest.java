@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemBlock;
@@ -19,6 +19,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
+import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -29,6 +30,7 @@ import org.bukkit.craftbukkit.inventory.ItemStackTest.BukkitWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.CraftWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackWrapper;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
@@ -48,6 +50,7 @@ import org.bukkit.inventory.meta.KnowledgeBookMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
@@ -151,7 +154,7 @@ public class ItemMetaTest extends AbstractTestingBase {
     public void testBlockStateMeta() {
         List<Block> queue = new ArrayList<>();
 
-        for (Item item : IRegistry.ITEM) {
+        for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof ItemBlock) {
                 queue.add(((ItemBlock) item).getBlock());
             }
@@ -180,6 +183,21 @@ public class ItemMetaTest extends AbstractTestingBase {
                 } else {
                     assertTrue(stack + " has unexpected meta of type BlockStateMeta (but is not a tile)", !(meta instanceof BlockStateMeta));
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testSpawnEggsHasMeta() {
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof net.minecraft.world.item.ItemMonsterEgg) {
+                Material material = CraftMagicNumbers.getMaterial(item);
+                CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(material);
+                ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
+
+                assertTrue(material + " is not handled in CraftItemFactory", baseMeta instanceof CraftMetaSpawnEgg);
+                assertTrue(material + " is not applicable to CraftMetaSpawnEgg", baseMeta.applicableTo(material));
+                assertTrue(material + " is not handled in CraftItemStack", baseMetaItem instanceof SpawnEggMeta);
             }
         }
     }
@@ -357,6 +375,14 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final BundleMeta meta = (BundleMeta) cleanStack.getItemMeta();
                     meta.addItem(new ItemStack(Material.STONE));
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.GOAT_HORN) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) cleanStack.getItemMeta();
+                    meta.setInstrument(MusicInstrument.ADMIRE);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
