@@ -1960,10 +1960,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public CompletableFuture<String[]> openSign(Material signMaterial, String[] lines) {
+    public CompletableFuture<String[]> openSign(String[] lines, Material signMaterial) {
+        Preconditions.checkArgument(lines != null, "lines must not be null");
         Preconditions.checkArgument(signMaterial != null, "signMaterial must not be null");
         Preconditions.checkArgument(Tag.SIGNS.isTagged(signMaterial), "signMaterial must be tagged with Tag.SIGNS. Given %s", signMaterial.getKey());
-        Preconditions.checkArgument(lines != null, "lines must not be null");
 
         CompletableFuture<String[]> future = new CompletableFuture<>();
 
@@ -1992,7 +1992,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public CompletableFuture<String[]> openSign(String[] lines) {
-        return openSign(Material.OAK_SIGN, lines);
+        return openSign(lines, Material.OAK_SIGN);
     }
 
     public boolean handleSignEdit(String[] lines) {
