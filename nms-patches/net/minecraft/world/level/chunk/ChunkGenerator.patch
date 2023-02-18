@@ -1,14 +1,6 @@
 --- a/net/minecraft/world/level/chunk/ChunkGenerator.java
 +++ b/net/minecraft/world/level/chunk/ChunkGenerator.java
-@@ -76,6 +76,7 @@
- import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
- import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
- import org.apache.commons.lang3.mutable.MutableBoolean;
-+import org.bukkit.event.world.StructureSpawnEvent;
- 
- public abstract class ChunkGenerator {
- 
-@@ -306,7 +307,7 @@
+@@ -306,7 +306,7 @@
          }
      }
  
@@ -17,7 +9,7 @@
          ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
  
          if (!SharedConstants.debugVoidTerrain(chunkcoordintpair)) {
-@@ -328,7 +329,7 @@
+@@ -328,7 +328,7 @@
  
                  for (int k = 0; k < j; ++k) {
                      ChunkSection chunksection = achunksection[k];
@@ -26,7 +18,7 @@
  
                      Objects.requireNonNull(set);
                      palettedcontainerro.getAll(set::add);
-@@ -354,7 +355,7 @@
+@@ -354,7 +354,7 @@
                              Structure structure = (Structure) iterator.next();
  
                              seededrandom.setFeatureSeed(i, i1, l);
@@ -35,7 +27,7 @@
                                  Optional optional = iregistry.getResourceKey(structure).map(Object::toString);
  
                                  Objects.requireNonNull(structure);
-@@ -439,6 +440,33 @@
+@@ -439,6 +439,33 @@
          }
      }
  
@@ -69,7 +61,7 @@
      private static StructureBoundingBox getWritableArea(IChunkAccess ichunkaccess) {
          ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
          int i = chunkcoordintpair.getMinBlockX();
-@@ -496,7 +524,8 @@
+@@ -496,7 +523,8 @@
          return ((BiomeBase) holder.value()).getMobSettings().getMobs(enumcreaturetype);
      }
  
@@ -79,7 +71,7 @@
          ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
          SectionPosition sectionposition = SectionPosition.bottomOf(ichunkaccess);
          RandomState randomstate = chunkgeneratorstructurestate.randomState();
-@@ -517,7 +546,8 @@
+@@ -517,7 +545,8 @@
  
              if (structureplacement.isStructureChunk(chunkgeneratorstructurestate, chunkcoordintpair.x, chunkcoordintpair.z)) {
                  if (list.size() == 1) {
@@ -89,7 +81,7 @@
                  } else {
                      ArrayList<StructureSet.a> arraylist = new ArrayList(list.size());
  
-@@ -551,7 +581,8 @@
+@@ -551,7 +580,8 @@
  
                              StructureSet.a structureset_a3 = (StructureSet.a) arraylist.get(k);
  
@@ -99,7 +91,7 @@
                                  return;
                              }
  
-@@ -566,7 +597,8 @@
+@@ -566,7 +596,8 @@
          });
      }
  
@@ -109,14 +101,14 @@
          Structure structure = (Structure) structureset_a.structure().value();
          int j = fetchReferences(structuremanager, ichunkaccess, sectionposition, structure);
          HolderSet<BiomeBase> holderset = structure.biomes();
-@@ -576,7 +608,15 @@
+@@ -576,7 +607,15 @@
          StructureStart structurestart = structure.generate(iregistrycustom, this, this.biomeSource, randomstate, structuretemplatemanager, i, chunkcoordintpair, j, ichunkaccess, predicate);
  
          if (structurestart.isValid()) {
 -            structuremanager.setStartForStructure(sectionposition, structure, structurestart, ichunkaccess);
 +        	// CraftBukkit start
 +        	StructureBoundingBox box = structurestart.getBoundingBox();
-+        	StructureSpawnEvent event = new StructureSpawnEvent(worldServer.getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
++        	org.bukkit.event.world.AsyncStructureSpawnEvent event = new org.bukkit.event.world.AsyncStructureSpawnEvent(worldServer.getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
 +        	org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +        	if(event.isCancelled()) {
 +        		return true;
