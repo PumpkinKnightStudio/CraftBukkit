@@ -31,6 +31,7 @@ public class EntityTypesTest extends AbstractTestingBase {
     @Test
     public void testTranslationKey() {
         for (EntityType entityType : EntityType.values()) {
+            // Currently EntityType#getTranslationKey has a validation for null name then for test skip this and check correct names.
             if (entityType.getName() != null) {
                 Assert.assertNotNull("Nulllable translation key for " + entityType, entityType.getTranslationKey());
             }
