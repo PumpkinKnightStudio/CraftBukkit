@@ -71,17 +71,16 @@
          ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
          SectionPosition sectionposition = SectionPosition.bottomOf(ichunkaccess);
          RandomState randomstate = chunkgeneratorstructurestate.randomState();
-@@ -517,7 +545,8 @@
+@@ -517,7 +545,7 @@
  
              if (structureplacement.isStructureChunk(chunkgeneratorstructurestate, chunkcoordintpair.x, chunkcoordintpair.z)) {
                  if (list.size() == 1) {
 -                    this.tryGenerateStructure((StructureSet.a) list.get(0), structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition);
-+                    // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
-+                    this.tryGenerateStructure(worldServer, (StructureSet.a) list.get(0), structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition);
++                    this.tryGenerateStructure(worldServer, (StructureSet.a) list.get(0), structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition); // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
                  } else {
                      ArrayList<StructureSet.a> arraylist = new ArrayList(list.size());
  
-@@ -551,7 +580,8 @@
+@@ -551,7 +579,8 @@
  
                              StructureSet.a structureset_a3 = (StructureSet.a) arraylist.get(k);
  
@@ -91,7 +90,7 @@
                                  return;
                              }
  
-@@ -566,7 +596,8 @@
+@@ -566,7 +595,8 @@
          });
      }
  
@@ -101,20 +100,18 @@
          Structure structure = (Structure) structureset_a.structure().value();
          int j = fetchReferences(structuremanager, ichunkaccess, sectionposition, structure);
          HolderSet<BiomeBase> holderset = structure.biomes();
-@@ -576,7 +607,15 @@
+@@ -576,6 +606,14 @@
          StructureStart structurestart = structure.generate(iregistrycustom, this, this.biomeSource, randomstate, structuretemplatemanager, i, chunkcoordintpair, j, ichunkaccess, predicate);
  
          if (structurestart.isValid()) {
--            structuremanager.setStartForStructure(sectionposition, structure, structurestart, ichunkaccess);
-+        	// CraftBukkit start
-+        	StructureBoundingBox box = structurestart.getBoundingBox();
-+        	org.bukkit.event.world.AsyncStructureSpawnEvent event = new org.bukkit.event.world.AsyncStructureSpawnEvent(worldServer.getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
-+        	org.bukkit.Bukkit.getPluginManager().callEvent(event);
-+        	if(event.isCancelled()) {
-+        		return true;
-+        	}
-+        	// CraftBukkit end
-+        	structuremanager.setStartForStructure(sectionposition, structure, structurestart, ichunkaccess);
++            // CraftBukkit start
++            StructureBoundingBox box = structurestart.getBoundingBox();
++            org.bukkit.event.world.AsyncStructureSpawnEvent event = new org.bukkit.event.world.AsyncStructureSpawnEvent(worldServer.getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
++            org.bukkit.Bukkit.getPluginManager().callEvent(event);
++            if(event.isCancelled()) {
++                return true;
++            }
++            // CraftBukkit end
+             structuremanager.setStartForStructure(sectionposition, structure, structurestart, ichunkaccess);
              return true;
          } else {
-             return false;
