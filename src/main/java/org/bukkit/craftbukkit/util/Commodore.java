@@ -480,6 +480,22 @@ public class Commodore
                             return;
                         }
 
+                        // Convert EnumMap to ImposterEnumMap
+                        // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
+                        if ( owner.equals( "java/util/EnumMap" ) && opcode == Opcodes.INVOKESPECIAL ) {
+                            super.visitMethodInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", name, desc, itf );
+                            return;
+                        }
+
+                        // Since we only know at runtime which call of a map is to the ImposterEnumMap, we rout every put call over to a custom method which checks this
+                        // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
+                        if ( owner.equals("java/util/EnumMap" ) || owner.equals( "java/util/Map" ) ) {
+                            if ( name.equals( "put" ) ) {
+                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "putToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false );
+                                return;
+                            }
+                        }
+
                         if ( modern )
                         {
                             if ( owner.equals( "org/bukkit/Material" ) )
@@ -587,6 +603,17 @@ public class Commodore
                         }
 
                         super.visitLdcInsn( value );
+                    }
+
+                    @Override
+                    public void visitTypeInsn( int opcode, String type ) {
+                        // Need to also change class type when changing the creation of a new Object
+                        // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
+                        if ( Opcodes.NEW == opcode && type.equals( "java/util/EnumMap" ) ) {
+                            super.visitTypeInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap" );
+                            return;
+                        }
+                        super.visitTypeInsn( opcode, type );
                     }
                 };
             }
