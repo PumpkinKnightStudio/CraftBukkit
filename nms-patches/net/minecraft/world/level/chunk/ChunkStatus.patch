@@ -1,11 +1,14 @@
 --- a/net/minecraft/world/level/chunk/ChunkStatus.java
 +++ b/net/minecraft/world/level/chunk/ChunkStatus.java
-@@ -48,7 +48,7 @@
+@@ -48,8 +48,9 @@
      });
      public static final ChunkStatus STRUCTURE_STARTS = register("structure_starts", ChunkStatus.EMPTY, 0, ChunkStatus.PRE_FEATURES, ChunkStatus.Type.PROTOCHUNK, (chunkstatus, executor, worldserver, chunkgenerator, structuretemplatemanager, lightenginethreaded, function, list, ichunkaccess, flag) -> {
          if (!ichunkaccess.getStatus().isOrAfter(chunkstatus)) {
 -            if (worldserver.getServer().getWorldData().worldGenOptions().generateStructures()) {
+-                chunkgenerator.createStructures(worldserver.registryAccess(), worldserver.getChunkSource().getGeneratorState(), worldserver.structureManager(), ichunkaccess, structuretemplatemanager);
 +            if (worldserver.serverLevelData.worldGenOptions().generateStructures()) { // CraftBukkit
-                 chunkgenerator.createStructures(worldserver.registryAccess(), worldserver.getChunkSource().getGeneratorState(), worldserver.structureManager(), ichunkaccess, structuretemplatemanager);
++                // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
++                chunkgenerator.createStructures(worldserver, worldserver.registryAccess(), worldserver.getChunkSource().getGeneratorState(), worldserver.structureManager(), ichunkaccess, structuretemplatemanager);
              }
  
+             if (ichunkaccess instanceof ProtoChunk) {
