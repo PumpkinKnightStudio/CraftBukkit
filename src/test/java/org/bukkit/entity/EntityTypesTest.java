@@ -27,4 +27,13 @@ public class EntityTypesTest extends AbstractTestingBase {
 
         Assert.assertTrue("Unmapped bukkit entities " + allBukkit, allBukkit.isEmpty());
     }
+
+    @Test
+    public void testTranslationKey() {
+        for (EntityType entityType : EntityType.values()) {
+            if (entityType.getName() != null) {
+                Assert.assertNotNull("Nulllable translation key for " + entityType, entityType.getTranslationKey());
+            }
+        }
+    }
 }
