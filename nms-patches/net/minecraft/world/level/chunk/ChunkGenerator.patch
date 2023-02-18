@@ -61,52 +61,13 @@
      private static StructureBoundingBox getWritableArea(IChunkAccess ichunkaccess) {
          ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
          int i = chunkcoordintpair.getMinBlockX();
-@@ -496,7 +523,8 @@
-         return ((BiomeBase) holder.value()).getMobSettings().getMobs(enumcreaturetype);
-     }
- 
--    public void createStructures(IRegistryCustom iregistrycustom, ChunkGeneratorStructureState chunkgeneratorstructurestate, StructureManager structuremanager, IChunkAccess ichunkaccess, StructureTemplateManager structuretemplatemanager) {
-+    // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
-+    public void createStructures(WorldServer worldServer, IRegistryCustom iregistrycustom, ChunkGeneratorStructureState chunkgeneratorstructurestate, StructureManager structuremanager, IChunkAccess ichunkaccess, StructureTemplateManager structuretemplatemanager) {
-         ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
-         SectionPosition sectionposition = SectionPosition.bottomOf(ichunkaccess);
-         RandomState randomstate = chunkgeneratorstructurestate.randomState();
-@@ -517,7 +545,7 @@
- 
-             if (structureplacement.isStructureChunk(chunkgeneratorstructurestate, chunkcoordintpair.x, chunkcoordintpair.z)) {
-                 if (list.size() == 1) {
--                    this.tryGenerateStructure((StructureSet.a) list.get(0), structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition);
-+                    this.tryGenerateStructure(worldServer, (StructureSet.a) list.get(0), structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition); // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
-                 } else {
-                     ArrayList<StructureSet.a> arraylist = new ArrayList(list.size());
- 
-@@ -551,7 +579,8 @@
- 
-                             StructureSet.a structureset_a3 = (StructureSet.a) arraylist.get(k);
- 
--                            if (this.tryGenerateStructure(structureset_a3, structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition)) {
-+                            // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
-+                            if (this.tryGenerateStructure(worldServer, structureset_a3, structuremanager, iregistrycustom, randomstate, structuretemplatemanager, chunkgeneratorstructurestate.getLevelSeed(), ichunkaccess, chunkcoordintpair, sectionposition)) {
-                                 return;
-                             }
- 
-@@ -566,7 +595,8 @@
-         });
-     }
- 
--    private boolean tryGenerateStructure(StructureSet.a structureset_a, StructureManager structuremanager, IRegistryCustom iregistrycustom, RandomState randomstate, StructureTemplateManager structuretemplatemanager, long i, IChunkAccess ichunkaccess, ChunkCoordIntPair chunkcoordintpair, SectionPosition sectionposition) {
-+    // CraftBukkit - added 'worldServer' parameter for StructureSpawnEvent call
-+    private boolean tryGenerateStructure(WorldServer worldServer, StructureSet.a structureset_a, StructureManager structuremanager, IRegistryCustom iregistrycustom, RandomState randomstate, StructureTemplateManager structuretemplatemanager, long i, IChunkAccess ichunkaccess, ChunkCoordIntPair chunkcoordintpair, SectionPosition sectionposition) {
-         Structure structure = (Structure) structureset_a.structure().value();
-         int j = fetchReferences(structuremanager, ichunkaccess, sectionposition, structure);
-         HolderSet<BiomeBase> holderset = structure.biomes();
-@@ -576,6 +606,14 @@
+@@ -576,6 +603,14 @@
          StructureStart structurestart = structure.generate(iregistrycustom, this, this.biomeSource, randomstate, structuretemplatemanager, i, chunkcoordintpair, j, ichunkaccess, predicate);
  
          if (structurestart.isValid()) {
 +            // CraftBukkit start
 +            StructureBoundingBox box = structurestart.getBoundingBox();
-+            org.bukkit.event.world.AsyncStructureSpawnEvent event = new org.bukkit.event.world.AsyncStructureSpawnEvent(worldServer.getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
++            org.bukkit.event.world.AsyncStructureSpawnEvent event = new org.bukkit.event.world.AsyncStructureSpawnEvent(structuremanager.level.getMinecraftWorld().getWorld(), org.bukkit.craftbukkit.generator.strucutre.CraftStructure.minecraftToBukkit(structure, iregistrycustom), new org.bukkit.util.BoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
 +            org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +            if (event.isCancelled()) {
 +                return true;
