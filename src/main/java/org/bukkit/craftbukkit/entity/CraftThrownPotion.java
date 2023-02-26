@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.projectile.EntityPotion;
 import net.minecraft.world.item.alchemy.PotionUtil;
@@ -23,7 +24,7 @@ public class CraftThrownPotion extends CraftThrowableProjectile implements Throw
     public Collection<PotionEffect> getEffects() {
         ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
         for (MobEffect effect : PotionUtil.getMobEffects(getHandle().getItemRaw())) {
-            builder.add(CraftPotionUtil.toBukkit(effect));
+            builder.add(CraftPotionUtil.toBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), effect));
         }
         return builder.build();
     }

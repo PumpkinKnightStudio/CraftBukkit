@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.critereon.LootDeserializationContext;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
@@ -47,9 +48,11 @@ import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
 import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.inventory.ItemStack;
@@ -90,7 +93,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
     // ========================================================================
     private static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
     private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
-    private static final BiMap<FluidType, Fluid> FLUIDTYPE_FLUID = HashBiMap.create();
     private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
 
@@ -101,11 +103,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         for (Item item : BuiltInRegistries.ITEM) {
             ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
-        }
-
-        for (FluidType fluidType : BuiltInRegistries.FLUID) {
-            Fluid fluid = Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.FLUID.getKey(fluidType)));
-            FLUIDTYPE_FLUID.put(fluidType, fluid);
         }
 
         Registry.MATERIAL.forEach(material -> {
@@ -128,7 +125,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static Fluid getFluid(FluidType fluid) {
-        return FLUIDTYPE_FLUID.get(fluid);
+        return CraftFluid.minecraftToBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.FLUID), fluid);
     }
 
     public static Item getItem(Material material) {
@@ -148,7 +145,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static FluidType getFluid(Fluid fluid) {
-        return FLUIDTYPE_FLUID.inverse().get(fluid);
+        return CraftFluid.bukkitToMinecraft(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.FLUID), fluid);
     }
 
     public static MinecraftKey key(Material mat) {

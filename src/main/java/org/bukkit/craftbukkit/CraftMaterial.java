@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.EntityInsentient;
@@ -252,7 +252,7 @@ public class CraftMaterial<B extends BlockData> implements BlockType<B>, ItemTyp
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
         for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(BuiltInRegistries.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttributeMap.fromMinecraft(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ATTRIBUTE).getKey(mapEntry.getKey()).toString());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
         }
 

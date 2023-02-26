@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityTypes;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.NamespacedKey;
@@ -39,9 +38,9 @@ import org.jetbrains.annotations.NotNull;
 public class CraftEntityType extends EntityType {
     private static int count = 0;
 
-    public static EntityType minecraftToBukkit(EntityTypes<?> minecraft) {
+    public static EntityType minecraftToBukkit(IRegistry<EntityTypes<?>> registry, EntityTypes<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.ENTITY_TYPE.getKey(minecraft)));
+        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }

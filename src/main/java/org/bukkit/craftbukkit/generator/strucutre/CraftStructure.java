@@ -2,8 +2,10 @@ package org.bukkit.craftbukkit.generator.strucutre;
 
 import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.Registries;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
@@ -33,7 +35,7 @@ public class CraftStructure extends Structure {
     public CraftStructure(NamespacedKey key, net.minecraft.world.level.levelgen.structure.Structure structure) {
         this.key = key;
         this.structure = structure;
-        this.structureType = CraftStructureType.minecraftToBukkit(structure.type());
+        this.structureType = CraftStructureType.minecraftToBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.STRUCTURE_TYPE), structure.type());
     }
 
     public net.minecraft.world.level.levelgen.structure.Structure getHandle() {

@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -384,7 +385,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public PotionEffect getPotionEffect(PotionEffectType type) {
         MobEffect handle = getHandle().getEffect(MobEffectList.byId(type.getId()));
-        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
+        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
     }
 
     @Override
@@ -396,7 +397,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
         for (MobEffect handle : getHandle().activeEffects.values()) {
-            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
+            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
         }
         return effects;
     }
@@ -687,51 +688,51 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     @Override
     public <T> T getMemory(MemoryKey<T> memoryKey) {
-        return (T) getHandle().getBrain().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
+        return (T) getHandle().getBrain().getMemory(CraftMemoryKey.fromMemoryKey(getRegistryAccess().registryOrThrow(Registries.MEMORY_MODULE_TYPE), memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
     }
 
     @Override
     public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
-        getHandle().getBrain().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), CraftMemoryMapper.toNms(t));
+        getHandle().getBrain().setMemory(CraftMemoryKey.fromMemoryKey(getRegistryAccess().registryOrThrow(Registries.MEMORY_MODULE_TYPE), memoryKey), CraftMemoryMapper.toNms(t));
     }
 
     @Override
     public Sound getHurtSound() {
         SoundEffect sound = getHandle().getHurtSound0(DamageSource.GENERIC);
-        return (sound != null) ? CraftSound.getBukkit(sound) : null;
+        return (sound != null) ? CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), sound) : null;
     }
 
     @Override
     public Sound getDeathSound() {
         SoundEffect sound = getHandle().getDeathSound0();
-        return (sound != null) ? CraftSound.getBukkit(sound) : null;
+        return (sound != null) ? CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), sound) : null;
     }
 
     @Override
     public Sound getFallDamageSound(int fallHeight) {
-        return CraftSound.getBukkit(getHandle().getFallDamageSound0(fallHeight));
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallDamageSound0(fallHeight));
     }
 
     @Override
     public Sound getFallDamageSoundSmall() {
-        return CraftSound.getBukkit(getHandle().getFallSounds().small());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallSounds().small());
     }
 
     @Override
     public Sound getFallDamageSoundBig() {
-        return CraftSound.getBukkit(getHandle().getFallSounds().big());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallSounds().big());
     }
 
     @Override
     public Sound getDrinkingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override
     public Sound getEatingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override

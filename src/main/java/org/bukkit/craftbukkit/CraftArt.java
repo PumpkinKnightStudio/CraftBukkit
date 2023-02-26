@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.decoration.PaintingVariant;
@@ -15,16 +15,16 @@ public class CraftArt extends Art {
     private static final int UNIT_MULTIPLIER = 16;
     private static int count = 0;
 
-    public static Art minecraftToBukkit(Holder<PaintingVariant> minecraft) {
+    public static Art minecraftToBukkit(IRegistry<PaintingVariant> registry, Holder<PaintingVariant> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.PAINTING_VARIANT.getKey(minecraft.value())));
+        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft.value())));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }
 
-    public static Holder<PaintingVariant> bukkitToMinecraft(Art bukkit) {
+    public static Holder<PaintingVariant> bukkitToMinecraft(IRegistry<PaintingVariant> registry, Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
-        return BuiltInRegistries.PAINTING_VARIANT.getHolderOrThrow(ResourceKey.create(Registries.PAINTING_VARIANT, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
+        return registry.getHolderOrThrow(ResourceKey.create(Registries.PAINTING_VARIANT, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
     }
 
     private final NamespacedKey key;

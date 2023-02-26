@@ -6,6 +6,7 @@ import com.google.common.collect.HashBiMap;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.IRegistry;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.ParticleParam;
 import net.minecraft.core.particles.ParticleParamBlock;
@@ -15,7 +16,6 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.VibrationParticleOption;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.gameevent.BlockPositionSource;
@@ -161,17 +161,17 @@ public enum CraftParticle {
         Preconditions.checkState(bukkit != null, "Bukkit particle %s does not exist", this.name());
     }
 
-    public static ParticleParam toNMS(Particle bukkit) {
-        return toNMS(bukkit, null);
+    public static ParticleParam toNMS(IRegistry<net.minecraft.core.particles.Particle<?>> registry, Particle bukkit) {
+        return toNMS(registry, bukkit, null);
     }
 
-    public static <T> ParticleParam toNMS(Particle particle, T obj) {
+    public static <T> ParticleParam toNMS(IRegistry<net.minecraft.core.particles.Particle<?>> registry, Particle particle, T obj) {
         Particle canonical = particle;
         if (aliases.containsKey(particle)) {
             canonical = aliases.get(particle);
         }
 
-        net.minecraft.core.particles.Particle nms = BuiltInRegistries.PARTICLE_TYPE.get(particles.get(canonical));
+        net.minecraft.core.particles.Particle nms = registry.get(particles.get(canonical));
         Preconditions.checkArgument(nms != null, "No NMS particle %s", particle);
 
         if (particle.getDataType().equals(Void.class)) {
@@ -227,11 +227,11 @@ public enum CraftParticle {
         throw new IllegalArgumentException(particle.getDataType().toString());
     }
 
-    public static Particle toBukkit(net.minecraft.core.particles.ParticleParam nms) {
-        return toBukkit(nms.getType());
+    public static Particle toBukkit(IRegistry<net.minecraft.core.particles.Particle<?>> registry, net.minecraft.core.particles.ParticleParam nms) {
+        return toBukkit(registry, nms.getType());
     }
 
-    public static Particle toBukkit(net.minecraft.core.particles.Particle nms) {
-        return particles.inverse().get(BuiltInRegistries.PARTICLE_TYPE.getKey(nms));
+    public static Particle toBukkit(IRegistry<net.minecraft.core.particles.Particle<?>> registry, net.minecraft.core.particles.Particle nms) {
+        return particles.inverse().get(registry.getKey(nms));
     }
 }

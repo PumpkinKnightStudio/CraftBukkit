@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.Position;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -206,7 +208,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
         this.entity = entity;
-        this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
+        this.entityType = CraftEntityType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), entity.getType());
     }
 
     public static CraftEntity getEntity(CraftServer server, Entity entity) {
@@ -772,17 +774,17 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public Sound getSwimSound() {
-        return CraftSound.getBukkit(getHandle().getSwimSound0());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimSound0());
     }
 
     @Override
     public Sound getSwimSplashSound() {
-        return CraftSound.getBukkit(getHandle().getSwimSplashSound0());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimSplashSound0());
     }
 
     @Override
     public Sound getSwimHighSpeedSplashSound() {
-        return CraftSound.getBukkit(getHandle().getSwimHighSpeedSplashSound0());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimHighSpeedSplashSound0());
     }
 
     public void setHandle(final Entity entity) {
@@ -1123,5 +1125,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             });
         }
         return perm;
+    }
+
+    protected IRegistryCustom getRegistryAccess() {
+        return ((CraftServer) getServer()).getServer().registryAccess();
     }
 }

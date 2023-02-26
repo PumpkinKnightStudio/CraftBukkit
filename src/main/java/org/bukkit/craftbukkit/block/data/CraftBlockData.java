@@ -12,17 +12,19 @@ import java.util.stream.Collectors;
 import net.minecraft.commands.arguments.blocks.ArgumentBlock;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.INamable;
 import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
 import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
 import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
@@ -30,6 +32,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -230,7 +233,7 @@ public class CraftBlockData implements BlockData {
 
     // Mimicked from BlockDataAbstract#toString()
     public String toString(Map<IBlockState<?>, Comparable<?>> states) {
-        StringBuilder stateString = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+        StringBuilder stateString = new StringBuilder(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.BLOCK).getKey(state.getBlock()).toString());
 
         if (!states.isEmpty()) {
             stateString.append('[');
@@ -309,7 +312,7 @@ public class CraftBlockData implements BlockData {
     private static IBlockState<?> getState(Class<? extends Block> block, String name, boolean optional) {
         IBlockState<?> state = null;
 
-        for (Block instance : BuiltInRegistries.BLOCK) {
+        for (Block instance : ((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.BLOCK)) {
             if (instance.getClass() == block) {
                 if (state == null) {
                     state = instance.getStateDefinition().getProperty(name);
@@ -524,11 +527,11 @@ public class CraftBlockData implements BlockData {
             try {
                 // Material provided, force that material in
                 if (block != null) {
-                    data = BuiltInRegistries.BLOCK.getKey(block) + data;
+                    data = ((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.BLOCK).getKey(block) + data;
                 }
 
                 StringReader reader = new StringReader(data);
-                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false);
+                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.BLOCK).asLookup(), reader, false);
                 Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data: " + data);
 
                 blockData = arg.blockState();

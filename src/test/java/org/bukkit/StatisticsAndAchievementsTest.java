@@ -35,7 +35,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
     public void testMinecraftToBukkitFieldName() {
         for (StatisticWrapper<?> statisticWrapper : BuiltInRegistries.STAT_TYPE) {
             for (net.minecraft.stats.Statistic<?> minecraft : statisticWrapper) {
-                NamespacedKey bukkit = CraftStatistic.getBukkitStatistic(minecraft).getKey();
+                NamespacedKey bukkit = CraftStatistic.getBukkitStatistic(BuiltInRegistries.STAT_TYPE, minecraft).getKey();
 
                 try {
                     Statistic statistic = (Statistic) Statistic.class.getField(bukkit.getKey().toUpperCase()).get(null);
@@ -59,7 +59,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
             if (statistic.getType() == Statistic.Type.ENTITY) {
                 for (EntityType entity : EntityType.values()) {
                     if (entity.getName() != null) {
-                        assertNotNull(statistic + " missing for " + entity, CraftStatistic.getEntityStatistic(statistic, entity));
+                        assertNotNull(statistic + " missing for " + entity, CraftStatistic.getEntityStatistic(BuiltInRegistries.ENTITY_TYPE, statistic, entity));
                     }
                 }
             }
@@ -75,7 +75,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
                 net.minecraft.stats.Statistic<?> statistic = wrapper.get(child);
                 String message = String.format("org.bukkit.Statistic is missing: '%s'", statistic);
 
-                Statistic subject = CraftStatistic.getBukkitStatistic(statistic);
+                Statistic subject = CraftStatistic.getBukkitStatistic(BuiltInRegistries.STAT_TYPE, statistic);
                 assertThat(message, subject, is(not(nullValue())));
 
                 if (wrapper.getRegistry() == BuiltInRegistries.BLOCK || wrapper.getRegistry() == BuiltInRegistries.ITEM) {

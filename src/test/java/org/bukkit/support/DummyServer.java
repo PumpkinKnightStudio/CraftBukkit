@@ -8,6 +8,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
@@ -21,6 +22,7 @@ import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
@@ -38,7 +40,13 @@ public final class DummyServer {
 
     static {
         try {
-            Server instance = Mockito.mock(Server.class);
+
+            DedicatedServer dedicatedServer = Mockito.mock(DedicatedServer.class);
+            Mockito.when(dedicatedServer.registryAccess()).then(mock -> AbstractTestingBase.REGISTRY_CUSTOM);
+
+            CraftServer instance = Mockito.mock(CraftServer.class);
+
+            Mockito.when(instance.getServer()).then(mock -> dedicatedServer);
 
             Mockito.when(instance.getItemFactory()).then(mock -> CraftItemFactory.instance());
 

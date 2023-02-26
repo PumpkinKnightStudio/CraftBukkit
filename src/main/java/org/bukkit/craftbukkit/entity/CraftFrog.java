@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.animal.frog.Frog;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -46,13 +46,13 @@ public class CraftFrog extends CraftAnimals implements org.bukkit.entity.Frog {
 
     @Override
     public Variant getVariant() {
-        return Registry.FROG_VARIANT.get(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.FROG_VARIANT.getKey(getHandle().getVariant())));
+        return Registry.FROG_VARIANT.get(CraftNamespacedKey.fromMinecraft(getRegistryAccess().registryOrThrow(Registries.FROG_VARIANT).getKey(getHandle().getVariant())));
     }
 
     @Override
     public void setVariant(Variant variant) {
         Preconditions.checkArgument(variant != null, "variant");
 
-        getHandle().setVariant(BuiltInRegistries.FROG_VARIANT.get(CraftNamespacedKey.toMinecraft(variant.getKey())));
+        getHandle().setVariant(getRegistryAccess().registryOrThrow(Registries.FROG_VARIANT).get(CraftNamespacedKey.toMinecraft(variant.getKey())));
     }
 }

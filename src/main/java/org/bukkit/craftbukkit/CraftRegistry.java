@@ -7,7 +7,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import org.bukkit.Art;
 import org.bukkit.Fluid;
@@ -42,43 +41,43 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new);
         }
         if (bukkitClass == StructureType.class) {
-            return new CraftRegistry<>(BuiltInRegistries.STRUCTURE_TYPE, CraftStructureType::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE_TYPE), CraftStructureType::new);
         }
         if (bukkitClass == Biome.class) {
             return new CraftBiome.CraftBiomeRegistry(registryHolder.registryOrThrow(Registries.BIOME), CraftBiome::new);
         }
         if (bukkitClass == Art.class) {
-            return new CraftRegistry<>(BuiltInRegistries.PAINTING_VARIANT, CraftArt::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.PAINTING_VARIANT), CraftArt::new);
         }
         if (bukkitClass == Fluid.class) {
-            return new CraftRegistry<>(BuiltInRegistries.FLUID, CraftFluid::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.FLUID), CraftFluid::new);
         }
         if (bukkitClass == EntityType.class) {
-            return new CraftEntityType.CraftEntityTypeRegistry(BuiltInRegistries.ENTITY_TYPE);
+            return new CraftEntityType.CraftEntityTypeRegistry(registryHolder.registryOrThrow(Registries.ENTITY_TYPE));
         }
         if (bukkitClass == Attribute.class) {
-            return new CraftRegistry<>(BuiltInRegistries.ATTRIBUTE, CraftAttribute::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.ATTRIBUTE), CraftAttribute::new);
         }
         if (bukkitClass == Villager.Type.class) {
-            return new CraftRegistry<>(BuiltInRegistries.VILLAGER_TYPE, CraftVillager.CraftType::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.VILLAGER_TYPE), CraftVillager.CraftType::new);
         }
         if (bukkitClass == Villager.Profession.class) {
-            return new CraftRegistry<>(BuiltInRegistries.VILLAGER_PROFESSION, CraftVillager.CraftProfession::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.VILLAGER_PROFESSION), CraftVillager.CraftProfession::new);
         }
         if (bukkitClass == PotionEffectType.class) {
-            return new CraftPotionEffectType.CraftPotionEffectTypeRegistry(BuiltInRegistries.MOB_EFFECT, CraftPotionEffectType::new);
+            return new CraftPotionEffectType.CraftPotionEffectTypeRegistry(registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
         }
         if (bukkitClass == Enchantment.class) {
-            return new CraftEnchantment.CraftEnchantmentRegistry(BuiltInRegistries.ENCHANTMENT, CraftEnchantment::new);
+            return new CraftEnchantment.CraftEnchantmentRegistry(registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
         }
         if (bukkitClass == Sound.class) {
-            return new CraftRegistry<>(BuiltInRegistries.SOUND_EVENT, CraftSound::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.SOUND_EVENT), CraftSound::new);
         }
         if (bukkitClass == Material.class) {
-            return new CraftMaterial.CraftMaterialRegistry(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM);
+            return new CraftMaterial.CraftMaterialRegistry(registryHolder.registryOrThrow(Registries.BLOCK), registryHolder.registryOrThrow(Registries.ITEM));
         }
         if (bukkitClass == Statistic.class) {
-            return new CraftStatistic.CraftStatisticRegistry(BuiltInRegistries.STAT_TYPE);
+            return new CraftStatistic.CraftStatisticRegistry(registryHolder.registryOrThrow(Registries.STAT_TYPE));
         }
 
         return null;

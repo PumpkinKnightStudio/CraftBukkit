@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -107,7 +108,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
 
     @Override
     public Particle getParticle() {
-        return CraftParticle.toBukkit(getHandle().getParticle());
+        return CraftParticle.toBukkit(getRegistryAccess().registryOrThrow(Registries.PARTICLE_TYPE), getHandle().getParticle());
     }
 
     @Override
@@ -117,7 +118,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
 
     @Override
     public <T> void setParticle(Particle particle, T data) {
-        getHandle().setParticle(CraftParticle.toNMS(particle, data));
+        getHandle().setParticle(CraftParticle.toNMS(getRegistryAccess().registryOrThrow(Registries.PARTICLE_TYPE), particle, data));
     }
 
     @Override
@@ -160,7 +161,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     public List<PotionEffect> getCustomEffects() {
         ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
         for (MobEffect effect : getHandle().effects) {
-            builder.add(CraftPotionUtil.toBukkit(effect));
+            builder.add(CraftPotionUtil.toBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), effect));
         }
         return builder.build();
     }
@@ -168,7 +169,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     @Override
     public boolean hasCustomEffect(PotionEffectType type) {
         for (MobEffect effect : getHandle().effects) {
-            if (CraftPotionUtil.equals(effect.getEffect(), type)) {
+            if (CraftPotionUtil.equals(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), effect.getEffect(), type)) {
                 return true;
             }
         }

@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.raid.EntityRaider;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -64,6 +65,6 @@ public abstract class CraftRaider extends CraftMonster implements Raider {
 
     @Override
     public Sound getCelebrationSound() {
-        return CraftSound.getBukkit(getHandle().getCelebrateSound());
+        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getCelebrateSound());
     }
 }
