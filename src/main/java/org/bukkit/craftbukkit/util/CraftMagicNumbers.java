@@ -47,6 +47,7 @@ import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
@@ -327,10 +328,25 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return pdf.getAPIVersion() == null;
     }
 
+    public static boolean enumCompatibilityMode(PluginDescriptionFile pdf) {
+        if (!((CraftServer) Bukkit.getServer()).enumCompatibilityMode) {
+            return false;
+        }
+
+        if (pdf.getAPIVersion() == null) {
+            return true;
+        }
+
+        int minimum = SUPPORTED_API.indexOf("1.19"); // TODO: 2/19/23 Change to version in which PR gets merged
+        int pluginVersion = SUPPORTED_API.indexOf(pdf.getAPIVersion());
+
+        return pluginVersion < minimum;
+    }
+
     @Override
     public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
         try {
-            clazz = Commodore.convert(clazz, !isLegacy(pdf));
+            clazz = Commodore.convert(clazz, !isLegacy(pdf), enumCompatibilityMode(pdf));
         } catch (Exception ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
         }

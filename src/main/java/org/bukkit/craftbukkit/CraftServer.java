@@ -294,6 +294,7 @@ public final class CraftServer implements Server {
     private CraftIconCache icon;
     private boolean overrideAllCommandBlockCommands = false;
     public boolean ignoreVanillaPermissions = false;
+    public final boolean enumCompatibilityMode;
     private final List<CraftPlayer> playerView;
     public int reloadCount;
 
@@ -374,6 +375,11 @@ public final class CraftServer implements Server {
         // Set map color cache
         if (configuration.getBoolean("settings.use-map-color-cache")) {
             MapPalette.setMapColorCache(new CraftMapColorCache(logger));
+        }
+
+        enumCompatibilityMode = configuration.getBoolean("settings.enum-compatibility-mode", false);
+        if (enumCompatibilityMode) {
+            getLogger().warning("Loading Plugins in Enum compatibility mode. This is not recommended, use at own risk!");
         }
     }
 

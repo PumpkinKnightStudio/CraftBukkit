@@ -4,9 +4,11 @@ import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -20,6 +22,7 @@ import org.bukkit.plugin.AuthorNagException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -104,7 +107,7 @@ public class Commodore
 
                             if ( entry.getName().endsWith( ".class" ) )
                             {
-                                b = convert( b, false );
+                                b = convert( b, false , true );
                                 entry = new JarEntry( entry.getName() );
                             }
 
@@ -123,7 +126,7 @@ public class Commodore
         }
     }
 
-    public static byte[] convert(byte[] b, final boolean modern)
+    public static byte[] convert(byte[] b, final boolean modern, final boolean enumCompatibility )
     {
         ClassReader cr = new ClassReader( b );
         ClassWriter cw = new ClassWriter( cr, 0 );
@@ -480,18 +483,69 @@ public class Commodore
                             return;
                         }
 
-                        // Convert EnumMap to ImposterEnumMap
-                        // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
-                        if ( owner.equals( "java/util/EnumMap" ) && opcode == Opcodes.INVOKESPECIAL ) {
-                            super.visitMethodInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", name, desc, itf );
-                            return;
-                        }
+                        if ( enumCompatibility ) {
+                            // Convert EnumMap to ImposterEnumMap
+                            // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
+                            if ( owner.equals( "java/util/EnumMap" ) && opcode == Opcodes.INVOKESPECIAL )
+                            {
+                                super.visitMethodInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", name, desc, itf );
+                                return;
+                            }
 
-                        // Since we only know at runtime which call of a map is to the ImposterEnumMap, we rout every put call over to a custom method which checks this
-                        // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
-                        if ( owner.equals("java/util/EnumMap" ) || owner.equals( "java/util/Map" ) ) {
-                            if ( name.equals( "put" ) ) {
-                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "putToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false );
+                            // Since we only know at runtime which call of a map is to the ImposterEnumMap, we rout every put call over to a custom method which checks this
+                            // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
+                            if ( owner.equals( "java/util/EnumMap" ) || owner.equals( "java/util/Map" ) )
+                            {
+                                if ( name.equals( "put" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "putToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "putAll" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "putAllToMap", "(Ljava/util/Map;Ljava/util/Map;)V", false );
+                                    return;
+                                }
+                                if ( name.equals( "putIfAbsent" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "putIfAbsentToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "replace" ) && desc.equals( "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "replaceToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z", false );
+                                    return;
+                                }
+                                if ( name.equals( "replace" ) && desc.equals( "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "replaceToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "computeIfAbsent" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "computeIfAbsentToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "computeIfPresent" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "computeIfPresentToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "compute" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "computeToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                                if ( name.equals( "merge" ) )
+                                {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "mergeToMap", "(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;", false );
+                                    return;
+                                }
+                            }
+
+                            if ( owner.equals( "com/google/common/collect/Maps" ) && name.equals( "newEnumMap" ) )
+                            {
+                                super.visitMethodInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap", "newEnumMap", desc, false );
                                 return;
                             }
                         }
@@ -606,14 +660,42 @@ public class Commodore
                     }
 
                     @Override
-                    public void visitTypeInsn( int opcode, String type ) {
+                    public void visitTypeInsn( int opcode, String type )
+                    {
                         // Need to also change class type when changing the creation of a new Object
                         // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
-                        if ( Opcodes.NEW == opcode && type.equals( "java/util/EnumMap" ) ) {
+                        if ( enumCompatibility && Opcodes.NEW == opcode && type.equals( "java/util/EnumMap" ) )
+                        {
                             super.visitTypeInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap" );
                             return;
                         }
                         super.visitTypeInsn( opcode, type );
+                    }
+
+                    @Override
+                    public void visitInvokeDynamicInsn( String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments )
+                    {
+                        // Handle lambda expression
+                        if ( enumCompatibility )
+                        {
+                            List<Object> methodArgs = new ArrayList<>();
+                            for ( Object object : bootstrapMethodArguments )
+                            {
+                                if ( object instanceof Handle handle && handle.getOwner().equals( "java/util/EnumMap" ) )
+                                {
+                                    Handle newHandle = new Handle( handle.getTag(), "org/bukkit/craftbukkit/legacy/ImposterEnumMap", handle.getName(), handle.getDesc(), handle.isInterface() );
+                                    methodArgs.add( newHandle );
+                                    continue;
+                                }
+
+                                methodArgs.add( object );
+                            }
+
+                            super.visitInvokeDynamicInsn( name, descriptor, bootstrapMethodHandle, methodArgs.toArray(Object[]::new) );
+                            return;
+                        }
+
+                        super.visitInvokeDynamicInsn( name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments );
                     }
                 };
             }

@@ -5,9 +5,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-// TODO: 2/18/23 Test more
-// TODO: 2/18/23 Test for Maps.newEnumMap(Class) and
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * The "I can't believe it works" map.
@@ -61,10 +60,8 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
         // Since we replace every enum map we might also replace some maps which are for real enums.
         // If this is the case use a EnumMap instead of a HasMap
         if (objectClass.isEnum()) {
-            System.out.println("Enum " + objectClass);
             return new EnumMap(objectClass);
         } else {
-            System.out.println("No enum " + objectClass);
             return new HashMap();
         }
     }
@@ -77,6 +74,79 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
         }
 
         return map.put(key, value);
+    }
+
+    public static void putAllToMap(Map map, Map other) {
+        if (map instanceof ImposterEnumMap) {
+            ((ImposterEnumMap) map).map.putAll(other);
+            return;
+        }
+
+        map.putAll(other);
+    }
+
+    public static Object putIfAbsentToMap(Map map, Object key, Object value) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.putIfAbsent(key, value);
+        }
+
+        return map.putIfAbsent(key, value);
+    }
+
+    public static boolean replaceToMap(Map map, Object key, Object oldValue, Object value) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.replace(key, oldValue, value);
+        }
+
+        return map.replace(key, oldValue, value);
+    }
+
+    public static Object replaceToMap(Map map, Object key, Object value) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.replace(key, value);
+        }
+
+        return map.replace(key, value);
+    }
+
+    public static Object computeIfAbsentToMap(Map map, Object key, Function function) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.computeIfAbsent(key, function);
+        }
+
+        return map.computeIfAbsent(key, function);
+    }
+
+    public static Object computeIfPresentToMap(Map map, Object key, BiFunction function) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.computeIfPresent(key, function);
+        }
+
+        return map.computeIfPresent(key, function);
+    }
+
+    public static Object computeToMap(Map map, Object key, BiFunction function) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.compute(key, function);
+        }
+
+        return map.compute(key, function);
+    }
+
+    public static Object mergeToMap(Map map, Object key, Object value, BiFunction function) {
+        if (map instanceof ImposterEnumMap) {
+            return ((ImposterEnumMap) map).map.merge(key, value, function);
+        }
+
+        return map.merge(key, value, function);
+    }
+
+    public static EnumMap newEnumMap(Class<?> objectClass) {
+        return new ImposterEnumMap(objectClass);
+    }
+
+    public static EnumMap newEnumMap(Map map) {
+        return new ImposterEnumMap(map);
     }
 
     @Override
