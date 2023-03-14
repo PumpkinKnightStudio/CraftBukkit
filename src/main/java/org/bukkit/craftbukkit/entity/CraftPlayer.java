@@ -693,6 +693,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         int stage = (int) (9 * progress); // There are 0 - 9 damage states
+        if (stage == 0.0F) {
+            stage = -1; // The protocol states that any other value will reset the damage, which this API promises
+        }
+
         PacketPlayOutBlockBreakAnimation packet = new PacketPlayOutBlockBreakAnimation(sourceId, new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), stage);
         getHandle().connection.send(packet);
     }
