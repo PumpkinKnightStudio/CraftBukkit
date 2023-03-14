@@ -39,6 +39,7 @@ import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
@@ -167,7 +168,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenEntities = new HashMap<>();
+    private final Map<UUID, Set<WeakReference<Plugin>>> invertedVisibilityEntities = new HashMap<>();
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;
@@ -220,7 +221,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public InetSocketAddress getAddress() {
         if (getHandle().connection == null) return null;
 
-        SocketAddress addr = getHandle().connection.connection.getRemoteAddress();
+        SocketAddress addr = getHandle().connection.getRemoteAddress();
         if (addr instanceof InetSocketAddress) {
             return (InetSocketAddress) addr;
         } else {
@@ -729,15 +730,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendEquipmentChange(LivingEntity entity, EquipmentSlot slot, ItemStack item) {
+        this.sendEquipmentChange(entity, Map.of(slot, item));
+    }
+
+    @Override
+    public void sendEquipmentChange(LivingEntity entity, Map<EquipmentSlot, ItemStack> items) {
         Preconditions.checkArgument(entity != null, "entity must not be null");
-        Preconditions.checkArgument(slot != null, "slot must not be null");
-        Preconditions.checkArgument(item != null, "item must not be null");
+        Preconditions.checkArgument(items != null, "items must not be null");
 
-        if (getHandle().connection == null) return;
+        if (getHandle().connection == null) {
+            return;
+        }
 
-        List<Pair<EnumItemSlot, net.minecraft.world.item.ItemStack>> equipment = Arrays.asList(
-                new Pair<>(CraftEquipmentSlot.getNMS(slot), CraftItemStack.asNMSCopy(item))
-        );
+        List<Pair<EnumItemSlot, net.minecraft.world.item.ItemStack>> equipment = new ArrayList<>(items.size());
+        for (Map.Entry<EquipmentSlot, ItemStack> entry : items.entrySet()) {
+            EquipmentSlot slot = entry.getKey();
+            Preconditions.checkArgument(slot != null, "Cannot set null EquipmentSlot");
+
+            equipment.add(new Pair<>(CraftEquipmentSlot.getNMS(slot), CraftItemStack.asNMSCopy(entry.getValue())));
+        }
 
         getHandle().connection.send(new PacketPlayOutEntityEquipment(entity.getEntityId(), equipment));
     }
@@ -831,6 +842,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         PacketPlayOutMap packet = new PacketPlayOutMap(map.getId(), map.getScale().getValue(), map.isLocked(), icons, new WorldMap.b(0, 0, 128, 128, data.buffer));
+        getHandle().connection.send(packet);
+    }
+
+    @Override
+    public void addCustomChatCompletions(Collection<String> completions) {
+        this.sendCustomChatCompletionPacket(completions, ClientboundCustomChatCompletionsPacket.Action.ADD);
+    }
+
+    @Override
+    public void removeCustomChatCompletions(Collection<String> completions) {
+        this.sendCustomChatCompletionPacket(completions, ClientboundCustomChatCompletionsPacket.Action.REMOVE);
+    }
+
+    @Override
+    public void setCustomChatCompletions(Collection<String> completions) {
+        this.sendCustomChatCompletionPacket(completions, ClientboundCustomChatCompletionsPacket.Action.SET);
+    }
+
+    private void sendCustomChatCompletionPacket(Collection<String> completions, ClientboundCustomChatCompletionsPacket.Action action) {
+        if (getHandle().connection == null) return;
+
+        ClientboundCustomChatCompletionsPacket packet = new ClientboundCustomChatCompletionsPacket(action, new ArrayList<>(completions));
         getHandle().connection.send(packet);
     }
 
@@ -1264,17 +1297,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
-        if (hidingPlugins != null) {
-            // Some plugins are already hiding the entity. Just mark that this
-            // plugin wants the entity hidden too and end.
-            hidingPlugins.add(getPluginWeakReference(plugin));
-            return;
+        boolean shouldHide;
+        if (entity.isVisibleByDefault()) {
+            shouldHide = addInvertedVisibility(plugin, entity);
+        } else {
+            shouldHide = removeInvertedVisiblity(plugin, entity);
         }
-        hidingPlugins = new HashSet<>();
-        hidingPlugins.add(getPluginWeakReference(plugin));
-        hiddenEntities.put(entity.getUniqueId(), hidingPlugins);
 
+        if (shouldHide) {
+            untrackAndHideEntity(entity);
+        }
+    }
+
+    private boolean addInvertedVisibility(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Set<WeakReference<Plugin>> invertedPlugins = invertedVisibilityEntities.get(entity.getUniqueId());
+        if (invertedPlugins != null) {
+            // Some plugins are already inverting the entity. Just mark that this
+            // plugin wants the entity inverted too and end.
+            invertedPlugins.add(getPluginWeakReference(plugin));
+            return false;
+        }
+        invertedPlugins = new HashSet<>();
+        invertedPlugins.add(getPluginWeakReference(plugin));
+        invertedVisibilityEntities.put(entity.getUniqueId(), invertedPlugins);
+
+        return true;
+    }
+
+    private void untrackAndHideEntity(org.bukkit.entity.Entity entity) {
         // Remove this entity from the hidden player's EntityTrackerEntry
         PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
@@ -1292,6 +1342,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         server.getPluginManager().callEvent(new PlayerHideEntityEvent(this, entity));
+    }
+
+    void resetAndHideEntity(org.bukkit.entity.Entity entity) {
+        if (invertedVisibilityEntities.remove(entity.getUniqueId()) == null) {
+            untrackAndHideEntity(entity);
+        }
     }
 
     @Override
@@ -1318,16 +1374,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
         if (equals(entity)) return;
 
-        Set<WeakReference<Plugin>> hidingPlugins = hiddenEntities.get(entity.getUniqueId());
-        if (hidingPlugins == null) {
-            return; // Entity isn't hidden
+        boolean shouldShow;
+        if (entity.isVisibleByDefault()) {
+            shouldShow = removeInvertedVisiblity(plugin, entity);
+        } else {
+            shouldShow = addInvertedVisibility(plugin, entity);
         }
-        hidingPlugins.remove(getPluginWeakReference(plugin));
-        if (!hidingPlugins.isEmpty()) {
-            return; // Some other plugins still want the entity hidden
-        }
-        hiddenEntities.remove(entity.getUniqueId());
 
+        if (shouldShow) {
+            trackAndShowEntity(entity);
+        }
+    }
+
+    private boolean removeInvertedVisiblity(@Nullable Plugin plugin, org.bukkit.entity.Entity entity) {
+        Set<WeakReference<Plugin>> invertedPlugins = invertedVisibilityEntities.get(entity.getUniqueId());
+        if (invertedPlugins == null) {
+            return false; // Entity isn't inverted
+        }
+        invertedPlugins.remove(getPluginWeakReference(plugin));
+        if (!invertedPlugins.isEmpty()) {
+            return false; // Some other plugins still want the entity inverted
+        }
+        invertedVisibilityEntities.remove(entity.getUniqueId());
+
+        return true;
+    }
+
+    private void trackAndShowEntity(org.bukkit.entity.Entity entity) {
         PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
 
@@ -1344,8 +1417,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         server.getPluginManager().callEvent(new PlayerShowEntityEvent(this, entity));
     }
 
+    void resetAndShowEntity(org.bukkit.entity.Entity entity) {
+        if (invertedVisibilityEntities.remove(entity.getUniqueId()) == null) {
+            trackAndShowEntity(entity);
+        }
+    }
+
     public void onEntityRemove(Entity entity) {
-        hiddenEntities.remove(entity.getUUID());
+        invertedVisibilityEntities.remove(entity.getUUID());
     }
 
     @Override
@@ -1355,11 +1434,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean canSee(org.bukkit.entity.Entity entity) {
-        return canSee(entity.getUniqueId());
+        return entity.isVisibleByDefault() ^ invertedVisibilityEntities.containsKey(entity.getUniqueId());
     }
 
     public boolean canSee(UUID uuid) {
-        return !hiddenEntities.containsKey(uuid);
+        org.bukkit.entity.Entity entity = getServer().getPlayer(uuid);
+        if (entity == null) {
+            entity = getServer().getEntity(uuid); // Also includes players, but check players first for efficiency
+        }
+
+        return (entity != null) ? canSee(entity) : false; // If we can't find it, we can't see it
     }
 
     @Override

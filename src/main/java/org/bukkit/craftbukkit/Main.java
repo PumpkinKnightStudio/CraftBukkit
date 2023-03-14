@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import joptsimple.util.PathConverter;
 import org.fusesource.jansi.AnsiConsole;
 
 public class Main {
@@ -56,6 +57,15 @@ public class Main {
                         .withRequiredArg()
                         .ofType(Integer.class)
                         .describedAs("Port");
+
+                accepts("serverId", "Server ID")
+                        .withRequiredArg();
+
+                accepts("jfrProfile", "Enable JFR profiling");
+
+                accepts("pidFile", "pid File")
+                        .withRequiredArg()
+                        .withValuesConvertedBy(new PathConverter());
 
                 acceptsAll(asList("o", "online-mode"), "Whether to use online authentication")
                         .withRequiredArg()
@@ -155,8 +165,8 @@ public class Main {
                 System.err.println("Unsupported Java detected (" + javaVersion + "). This version of Minecraft requires at least Java 17. Check your Java version with the command 'java -version'.");
                 return;
             }
-            if (javaVersion > 63.0) {
-                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 19 is supported.");
+            if (javaVersion > 64.0) {
+                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 20 is supported.");
                 return;
             }
 
@@ -187,7 +197,7 @@ public class Main {
                     Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
 
                     Calendar deadline = Calendar.getInstance();
-                    deadline.add(Calendar.DAY_OF_YEAR, -14);
+                    deadline.add(Calendar.DAY_OF_YEAR, -3);
                     if (buildDate.before(deadline.getTime())) {
                         System.err.println("*** Error, this build is outdated ***");
                         System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");

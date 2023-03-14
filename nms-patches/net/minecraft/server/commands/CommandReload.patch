@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/commands/CommandReload.java
 +++ b/net/minecraft/server/commands/CommandReload.java
-@@ -44,6 +44,16 @@
+@@ -44,6 +44,17 @@
          return collection1;
      }
  
@@ -11,6 +11,7 @@
 +        Collection<String> collection = resourcepackrepository.getSelectedIds();
 +        Collection<String> collection1 = discoverNewPacks(resourcepackrepository, savedata, collection);
 +        minecraftserver.reloadResources(collection1);
++        ((org.bukkit.craftbukkit.CraftServer) org.bukkit.Bukkit.getServer()).invalidateRegistryCaches();
 +    }
 +    // CraftBukkit end
 +
