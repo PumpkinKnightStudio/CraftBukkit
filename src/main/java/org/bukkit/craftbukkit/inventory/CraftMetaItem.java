@@ -48,6 +48,8 @@ import net.minecraft.world.item.ItemBlock;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
@@ -68,8 +70,11 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ArmorTrim;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.TrimMaterial;
+import org.bukkit.inventory.TrimPattern;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -254,6 +259,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     static final ItemMetaKey ATTRIBUTES_UUID_LOW = new ItemMetaKey("UUIDLeast");
     @Specific(Specific.To.NBT)
     static final ItemMetaKey ATTRIBUTES_SLOT = new ItemMetaKey("Slot");
+    static final ItemMetaKey TRIM = new ItemMetaKey("Trim", "trim");
+    @Specific(Specific.To.NBT)
+    static final ItemMetaKey TRIM_MATERIAL = new ItemMetaKey("material");
+    @Specific(Specific.To.NBT)
+    static final ItemMetaKey TRIM_PATTERN = new ItemMetaKey("pattern");
     @Specific(Specific.To.NBT)
     static final ItemMetaKey HIDEFLAGS = new ItemMetaKey("HideFlags", "ItemFlags");
     @Specific(Specific.To.NBT)
@@ -272,6 +282,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private NBTTagCompound blockData;
     private Map<Enchantment, Integer> enchantments;
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
+    private ArmorTrim trim;
     private int repairCost;
     private int hideFlag;
     private boolean unbreakable;
@@ -309,6 +320,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.attributeModifiers = LinkedHashMultimap.create(meta.attributeModifiers);
         }
 
+        this.trim = meta.trim;
         this.repairCost = meta.repairCost;
         this.hideFlag = meta.hideFlag;
         this.unbreakable = meta.unbreakable;
@@ -355,6 +367,17 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         this.enchantments = buildEnchantments(tag, ENCHANTMENTS);
         this.attributeModifiers = buildModifiers(tag, ATTRIBUTES);
+
+        if (tag.contains(TRIM.NBT)) {
+            NBTTagCompound trimCompound = tag.getCompound(TRIM.NBT);
+
+            if (trimCompound.contains(TRIM_MATERIAL.NBT) && trimCompound.contains(TRIM_PATTERN.NBT)) {
+                TrimMaterial trimMaterial = Registry.TRIM_MATERIAL.get(NamespacedKey.fromString(trimCompound.getString(TRIM_MATERIAL.NBT)));
+                TrimPattern trimPattern = Registry.TRIM_PATTERN.get(NamespacedKey.fromString(trimCompound.getString(TRIM_PATTERN.NBT)));
+
+                this.trim = new ArmorTrim(trimMaterial, trimPattern);
+            }
+        }
 
         if (tag.contains(REPAIR.NBT)) {
             repairCost = tag.getInt(REPAIR.NBT);
@@ -485,6 +508,26 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         enchantments = buildEnchantments(map, ENCHANTMENTS);
         attributeModifiers = buildModifiers(map, ATTRIBUTES);
+
+        Map trimData = SerializableMeta.getObject(Map.class, map, TRIM.BUKKIT, true);
+        if (trimData != null) {
+            String materialKeyString = SerializableMeta.getString(trimData, TRIM_MATERIAL.BUKKIT, true);
+            String patternKeyString = SerializableMeta.getString(trimData, TRIM_PATTERN.BUKKIT, true);
+
+            if (materialKeyString != null && patternKeyString != null) {
+                NamespacedKey materialKey = NamespacedKey.fromString(materialKeyString);
+                NamespacedKey patternKey = NamespacedKey.fromString(patternKeyString);
+
+                if (materialKey != null && patternKey != null) {
+                    TrimMaterial trimMaterial = Registry.TRIM_MATERIAL.get(materialKey);
+                    TrimPattern trimPattern = Registry.TRIM_PATTERN.get(patternKey);
+
+                    if (trimMaterial != null && trimPattern != null) {
+                        this.trim = new ArmorTrim(trimMaterial, trimPattern);
+                    }
+                }
+            }
+        }
 
         Integer repairCost = SerializableMeta.getObject(Integer.class, map, REPAIR.BUKKIT, true);
         if (repairCost != null) {
@@ -631,6 +674,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         applyEnchantments(enchantments, itemTag, ENCHANTMENTS);
         applyModifiers(attributeModifiers, itemTag, ATTRIBUTES);
 
+        if (hasTrim()) {
+            NBTTagCompound trimCompound = new NBTTagCompound();
+            trimCompound.putString(TRIM_MATERIAL.NBT, trim.getMaterial().getKey().toString());
+            trimCompound.putString(TRIM_PATTERN.NBT, trim.getPattern().getKey().toString());
+            itemTag.put(TRIM.NBT, trimCompound);
+        }
+
         if (hasRepairCost()) {
             itemTag.putInt(REPAIR.NBT, repairCost);
         }
@@ -741,7 +791,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Overridden
     boolean isEmpty() {
-        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || (lore != null) || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers());
+        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || (lore != null) || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers() || hasTrim());
     }
 
     @Override
@@ -1059,6 +1109,21 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
+    public boolean hasTrim() {
+        return trim != null;
+    }
+
+    @Override
+    public void setTrim(ArmorTrim trim) {
+        this.trim = trim;
+    }
+
+    @Override
+    public ArmorTrim getTrim() {
+        return trim;
+    }
+
+    @Override
     public String getAsString() {
         NBTTagCompound tag = new NBTTagCompound();
         applyToItem(tag);
@@ -1136,6 +1201,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 && (this.hasBlockData() ? that.hasBlockData() && this.blockData.equals(that.blockData) : !that.hasBlockData())
                 && (this.hasRepairCost() ? that.hasRepairCost() && this.repairCost == that.repairCost : !that.hasRepairCost())
                 && (this.hasAttributeModifiers() ? that.hasAttributeModifiers() && compareModifiers(this.attributeModifiers, that.attributeModifiers) : !that.hasAttributeModifiers())
+                && (this.hasTrim() ? that.hasTrim() && this.trim.equals(that.trim) : !that.hasTrim())
                 && (this.unhandledTags.equals(that.unhandledTags))
                 && (this.persistentDataContainer.equals(that.persistentDataContainer))
                 && (this.hideFlag == that.hideFlag)
@@ -1175,6 +1241,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         hash = 61 * hash + (isUnbreakable() ? 1231 : 1237);
         hash = 61 * hash + (hasDamage() ? this.damage : 0);
         hash = 61 * hash + (hasAttributeModifiers() ? this.attributeModifiers.hashCode() : 0);
+        hash = 61 * hash + (hasTrim() ? this.trim.hashCode() : 0);
         hash = 61 * hash + version;
         return hash;
     }
@@ -1195,6 +1262,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             if (this.hasAttributeModifiers()) {
                 clone.attributeModifiers = LinkedHashMultimap.create(this.attributeModifiers);
             }
+            clone.trim = this.trim;
             clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getRaw(), DATA_TYPE_REGISTRY);
             clone.hideFlag = this.hideFlag;
             clone.unbreakable = this.unbreakable;
@@ -1236,6 +1304,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         serializeEnchantments(enchantments, builder, ENCHANTMENTS);
         serializeModifiers(attributeModifiers, builder, ATTRIBUTES);
+
+        if (hasTrim()) {
+            Map<String, String> trimData = new HashMap<>();
+            trimData.put(TRIM_MATERIAL.BUKKIT, trim.getMaterial().getKey().toString());
+            trimData.put(TRIM_PATTERN.BUKKIT, trim.getPattern().getKey().toString());
+            builder.put(TRIM.BUKKIT, trimData);
+        }
 
         if (hasRepairCost()) {
             builder.put(REPAIR.BUKKIT, repairCost);
@@ -1391,6 +1466,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         ATTRIBUTES_UUID_HIGH.NBT,
                         ATTRIBUTES_UUID_LOW.NBT,
                         ATTRIBUTES_SLOT.NBT,
+                        TRIM.NBT,
+                        TRIM_MATERIAL.NBT,
+                        TRIM_PATTERN.NBT,
                         CraftMetaMap.MAP_SCALING.NBT,
                         CraftMetaMap.MAP_COLOR.NBT,
                         CraftMetaMap.MAP_ID.NBT,
