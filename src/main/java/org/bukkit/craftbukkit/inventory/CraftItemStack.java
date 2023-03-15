@@ -365,10 +365,11 @@ public final class CraftItemStack extends ItemStack {
             case TURTLE_HELMET:
                 return new CraftMetaArmor(item.getTag());
             case LEATHER_HELMET:
-            case LEATHER_HORSE_ARMOR:
             case LEATHER_CHESTPLATE:
             case LEATHER_LEGGINGS:
             case LEATHER_BOOTS:
+                return new CraftMetaPlayerLeatherArmor(item.getTag());
+            case LEATHER_HORSE_ARMOR:
                 return new CraftMetaLeatherArmor(item.getTag());
             case POTION:
             case SPLASH_POTION:

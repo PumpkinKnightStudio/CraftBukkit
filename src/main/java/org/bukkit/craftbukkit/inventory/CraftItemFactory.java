@@ -102,10 +102,11 @@ public final class CraftItemFactory implements ItemFactory {
         case TURTLE_HELMET:
             return meta != null && meta.getClass().equals(CraftMetaArmor.class) ? meta : new CraftMetaArmor(meta);
         case LEATHER_HELMET:
-        case LEATHER_HORSE_ARMOR:
         case LEATHER_CHESTPLATE:
         case LEATHER_LEGGINGS:
         case LEATHER_BOOTS:
+            return meta instanceof CraftMetaPlayerLeatherArmor ? meta : new CraftMetaPlayerLeatherArmor(meta);
+        case LEATHER_HORSE_ARMOR:
             return meta instanceof CraftMetaLeatherArmor ? meta : new CraftMetaLeatherArmor(meta);
         case POTION:
         case SPLASH_POTION:

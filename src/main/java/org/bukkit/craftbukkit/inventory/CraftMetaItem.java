@@ -146,6 +146,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     .put(CraftMetaSkull.class, "SKULL")
                     .put(CraftMetaLeatherArmor.class, "LEATHER_ARMOR")
                     .put(CraftMetaMap.class, "MAP")
+                    .put(CraftMetaPlayerLeatherArmor.class, "PLAYER_LEATHER_ARMOR")
                     .put(CraftMetaPotion.class, "POTION")
                     .put(CraftMetaSpawnEgg.class, "SPAWN_EGG")
                     .put(CraftMetaEnchantedBook.class, "ENCHANTED")
