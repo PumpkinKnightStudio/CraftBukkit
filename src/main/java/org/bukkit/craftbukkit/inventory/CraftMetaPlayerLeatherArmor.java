@@ -10,8 +10,6 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements LeatherArmorMeta {
@@ -68,13 +66,12 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
     }
 
     @Override
-    @NotNull
     public Color getColor() {
         return color;
     }
 
     @Override
-    public void setColor(@Nullable Color color) {
+    public void setColor(Color color) {
         this.color = color;
     }
 
