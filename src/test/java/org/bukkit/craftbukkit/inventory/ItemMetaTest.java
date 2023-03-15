@@ -53,7 +53,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.KnowledgeBookMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.MapMeta;
-import org.bukkit.inventory.meta.PlayerLeatherArmorMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
@@ -266,9 +265,9 @@ public class ItemMetaTest extends AbstractTestingBase {
             },
             new StackProvider(Material.LEATHER_CHESTPLATE) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
-                    final PlayerLeatherArmorMeta meta = (PlayerLeatherArmorMeta) cleanStack.getItemMeta();
-                    meta.setTrim(new ArmorTrim(TrimMaterial.COPPER, TrimPattern.DUNE));
-                    meta.setColor(Color.MAROON);
+                    final ItemMeta meta = cleanStack.getItemMeta();
+                    ((ArmorMeta) meta).setTrim(new ArmorTrim(TrimMaterial.COPPER, TrimPattern.DUNE));
+                    ((LeatherArmorMeta) meta).setColor(Color.MAROON);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }

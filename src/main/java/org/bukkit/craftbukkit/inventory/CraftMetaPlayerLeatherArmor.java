@@ -9,12 +9,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.inventory.meta.PlayerLeatherArmorMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
-public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements PlayerLeatherArmorMeta {
+public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements LeatherArmorMeta {
 
     private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
             Material.LEATHER_HELMET,
