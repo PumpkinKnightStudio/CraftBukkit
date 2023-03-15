@@ -14,7 +14,7 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
-class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
+class CraftMetaLeatherArmor extends CraftMetaArmor implements LeatherArmorMeta {
 
     private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
             Material.LEATHER_HELMET,
@@ -135,6 +135,6 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
         if (hasColor()) {
             hash ^= color.hashCode();
         }
-        return original != hash ? CraftMetaSkull.class.hashCode() ^ hash : hash;
+        return original != hash ? CraftMetaLeatherArmor.class.hashCode() ^ hash : hash;
     }
 }

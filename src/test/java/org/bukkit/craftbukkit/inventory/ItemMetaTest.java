@@ -34,7 +34,11 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
+import org.bukkit.inventory.ArmorTrim;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.TrimMaterial;
+import org.bukkit.inventory.TrimPattern;
+import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.AxolotlBucketMeta;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.BlockDataMeta;
@@ -239,6 +243,14 @@ public class ItemMetaTest extends AbstractTestingBase {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final MapMeta meta = (MapMeta) cleanStack.getItemMeta();
                     meta.setScaling(true);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.DIAMOND_CHESTPLATE) {
+                @Override ItemStack operate(final ItemStack cleanStack) {
+                    final ArmorMeta meta = (ArmorMeta) cleanStack.getItemMeta();
+                    meta.setTrim(new ArmorTrim(TrimMaterial.AMETHYST, TrimPattern.COAST));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
