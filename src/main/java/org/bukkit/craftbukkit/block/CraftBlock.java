@@ -643,4 +643,9 @@ public class CraftBlock implements Block {
     public String getTranslationKey() {
         return getNMS().getBlock().getDescriptionId();
     }
+
+    @Override
+    public Material getPlacementMaterial() {
+        return CraftMagicNumbers.getMaterial(getNMS().getBlock().asItem());
+    }
 }
