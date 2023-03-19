@@ -39,10 +39,8 @@ public class CraftSniffer extends CraftAnimals implements Sniffer {
     @Override
     public void removeExploredLocation(Location location) {
         Preconditions.checkArgument(location != null, "location cannot be null");
-        Collection<Location> locationsExplored = this.getExploredLocations();
-        // remove locations based in the argument but only with the comparation of block x,y,z because Sniffer only use this cross every world
-        locationsExplored.removeIf(locationExplored -> locationExplored.getBlockX() == location.getBlockX() && locationExplored.getBlockY() == location.getBlockY() && locationExplored.getBlockZ() == location.getBlockZ());
-        this.getHandle().getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, locationsExplored.stream().map(locationExplored -> new BlockPosition(locationExplored.getBlockX(), locationExplored.getBlockY(), locationExplored.getBlockZ())).collect(Collectors.toList()));
+        BlockPosition blockPosition = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        this.getHandle().getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, this.getHandle().getExploredPositions().filter(blockPositionExplored -> !blockPositionExplored.equals(blockPosition)).collect(Collectors.toList()));
     }
 
     @Override
