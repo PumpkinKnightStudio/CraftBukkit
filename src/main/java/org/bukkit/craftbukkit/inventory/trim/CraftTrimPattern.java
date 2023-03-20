@@ -1,7 +1,7 @@
-package org.bukkit.craftbukkit.inventory;
+package org.bukkit.craftbukkit.inventory.trim;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.TrimPattern;
+import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftTrimPattern implements TrimPattern {

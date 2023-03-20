@@ -11,10 +11,10 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.inventory.ArmorTrim;
-import org.bukkit.inventory.TrimMaterial;
-import org.bukkit.inventory.TrimPattern;
 import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.trim.ArmorTrim;
+import org.bukkit.inventory.meta.trim.TrimMaterial;
+import org.bukkit.inventory.meta.trim.TrimPattern;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
