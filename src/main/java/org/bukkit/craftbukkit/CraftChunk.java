@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.mojang.serialization.Codec;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -51,7 +50,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 
 public class CraftChunk implements Chunk {
-    private WeakReference<IChunkAccess> weakChunk;
     private final WorldServer worldServer;
     private final int x;
     private final int z;
@@ -59,15 +57,12 @@ public class CraftChunk implements Chunk {
     private static final byte[] emptyLight = new byte[2048];
 
     public CraftChunk(net.minecraft.world.level.chunk.Chunk chunk) {
-        this.weakChunk = new WeakReference<>(chunk);
-
         worldServer = chunk.level;
         x = chunk.getPos().x;
         z = chunk.getPos().z;
     }
 
     public CraftChunk(WorldServer worldServer, int x, int z) {
-        this.weakChunk = new WeakReference<>(null);
         this.worldServer = worldServer;
         this.x = x;
         this.z = z;
@@ -83,19 +78,7 @@ public class CraftChunk implements Chunk {
     }
 
     public IChunkAccess getHandle(ChunkStatus chunkStatus) {
-        IChunkAccess c = weakChunk.get();
-
-        if (c == null || !c.getStatus().isOrAfter(chunkStatus)) {
-            c = worldServer.getChunk(x, z, chunkStatus);
-
-            weakChunk = new WeakReference<>(c);
-        }
-
-        return c;
-    }
-
-    void breakLink() {
-        weakChunk.clear();
+        return worldServer.getChunk(x, z, chunkStatus);
     }
 
     @Override
@@ -196,6 +179,12 @@ public class CraftChunk implements Chunk {
     }
 
     @Override
+    public boolean isGenerated() {
+        IChunkAccess chunk = getHandle(ChunkStatus.EMPTY);
+        return chunk.getStatus().isOrAfter(ChunkStatus.FULL);
+    }
+
+    @Override
     public boolean isLoaded() {
         return getWorld().isChunkLoaded(this);
     }
@@ -281,8 +270,9 @@ public class CraftChunk implements Chunk {
     public boolean contains(Biome biome) {
         Preconditions.checkArgument(biome != null, "Biome cannot be null");
 
-        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(getHandle(ChunkStatus.BIOMES).biomeRegistry, biome));
-        for (ChunkSection section : getHandle(ChunkStatus.BIOMES).getSections()) {
+        IChunkAccess chunk = getHandle(ChunkStatus.BIOMES);
+        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(chunk.biomeRegistry, biome));
+        for (ChunkSection section : chunk.getSections()) {
             if (section != null && section.getBiomes().maybeHas(nms)) {
                 return true;
             }
