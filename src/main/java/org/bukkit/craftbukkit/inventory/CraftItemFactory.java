@@ -105,7 +105,7 @@ public final class CraftItemFactory implements ItemFactory {
         case LEATHER_CHESTPLATE:
         case LEATHER_LEGGINGS:
         case LEATHER_BOOTS:
-            return meta instanceof CraftMetaPlayerLeatherArmor ? meta : new CraftMetaPlayerLeatherArmor(meta);
+            return meta instanceof CraftMetaColorableArmor ? meta : new CraftMetaColorableArmor(meta);
         case LEATHER_HORSE_ARMOR:
             return meta instanceof CraftMetaLeatherArmor ? meta : new CraftMetaLeatherArmor(meta);
         case POTION:

@@ -9,10 +9,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.ColorableArmorMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
-public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements LeatherArmorMeta {
+public class CraftMetaColorableArmor extends CraftMetaArmor implements ColorableArmorMeta {
 
     private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
             Material.LEATHER_HELMET,
@@ -23,17 +23,17 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
 
     private Color color = DEFAULT_LEATHER_COLOR;
 
-    CraftMetaPlayerLeatherArmor(CraftMetaItem meta) {
+    CraftMetaColorableArmor(CraftMetaItem meta) {
         super(meta);
         CraftMetaLeatherArmor.readColor(this, meta);
     }
 
-    CraftMetaPlayerLeatherArmor(NBTTagCompound tag) {
+    CraftMetaColorableArmor(NBTTagCompound tag) {
         super(tag);
         CraftMetaLeatherArmor.readColor(this, tag);
     }
 
-    CraftMetaPlayerLeatherArmor(Map<String, Object> map) {
+    CraftMetaColorableArmor(Map<String, Object> map) {
         super(map);
         CraftMetaLeatherArmor.readColor(this, map);
     }
@@ -59,8 +59,8 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
     }
 
     @Override
-    public CraftMetaPlayerLeatherArmor clone() {
-        CraftMetaPlayerLeatherArmor clone = (CraftMetaPlayerLeatherArmor) super.clone();
+    public CraftMetaColorableArmor clone() {
+        CraftMetaColorableArmor clone = (CraftMetaColorableArmor) super.clone();
         clone.color = this.color;
         return clone;
     }
@@ -93,8 +93,8 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaPlayerLeatherArmor) {
-            CraftMetaPlayerLeatherArmor that = (CraftMetaPlayerLeatherArmor) meta;
+        if (meta instanceof CraftMetaColorableArmor) {
+            CraftMetaColorableArmor that = (CraftMetaColorableArmor) meta;
 
             return color.equals(that.color);
         }
@@ -103,7 +103,7 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta) && (meta instanceof CraftMetaPlayerLeatherArmor || isLeatherArmorEmpty());
+        return super.notUncommon(meta) && (meta instanceof CraftMetaColorableArmor || isLeatherArmorEmpty());
     }
 
     @Override
@@ -113,7 +113,7 @@ public class CraftMetaPlayerLeatherArmor extends CraftMetaArmor implements Leath
         if (hasColor()) {
             hash ^= color.hashCode();
         }
-        return original != hash ? CraftMetaPlayerLeatherArmor.class.hashCode() ^ hash : hash;
+        return original != hash ? CraftMetaColorableArmor.class.hashCode() ^ hash : hash;
     }
 
 }

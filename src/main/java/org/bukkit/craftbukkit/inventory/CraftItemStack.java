@@ -368,7 +368,7 @@ public final class CraftItemStack extends ItemStack {
             case LEATHER_CHESTPLATE:
             case LEATHER_LEGGINGS:
             case LEATHER_BOOTS:
-                return new CraftMetaPlayerLeatherArmor(item.getTag());
+                return new CraftMetaColorableArmor(item.getTag());
             case LEATHER_HORSE_ARMOR:
                 return new CraftMetaLeatherArmor(item.getTag());
             case POTION:
