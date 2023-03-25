@@ -50,33 +50,21 @@ public class CraftBell extends CraftBlockEntityState<TileEntityBell> implements 
 
     @Override
     public boolean isShaking() {
-        requirePlaced();
-
-        TileEntity tileEntity = getTileEntityFromWorld();
-        return tileEntity instanceof TileEntityBell bell && bell.shaking;
+        return getSnapshot().shaking;
     }
 
     @Override
     public int getShakingTicks() {
-        requirePlaced();
-
-        TileEntity tileEntity = getTileEntityFromWorld();
-        return tileEntity instanceof TileEntityBell bell ? bell.ticks : 0;
+        return getSnapshot().ticks;
     }
 
     @Override
     public boolean isResonating() {
-        requirePlaced();
-
-        TileEntity tileEntity = getTileEntityFromWorld();
-        return tileEntity instanceof TileEntityBell bell && bell.resonating;
+        return getSnapshot().resonating;
     }
 
     @Override
     public int getResonatingTicks() {
-        requirePlaced();
-
-        TileEntity tileEntity = getTileEntityFromWorld();
-        return tileEntity instanceof TileEntityBell bell ? bell.resonationTicks : 0;
+        return isResonating() ? getSnapshot().ticks : 0;
     }
 }

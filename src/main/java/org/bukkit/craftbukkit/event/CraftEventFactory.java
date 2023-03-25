@@ -353,7 +353,7 @@ public class CraftEventFactory {
         BellResonateEvent event = new BellResonateEvent(block, bukkitEntities);
         Bukkit.getPluginManager().callEvent(event);
 
-        List<EntityLiving> entities = new ArrayList<>(bukkitEntities.size() + 1);
+        List<EntityLiving> entities = new ArrayList<>(event.getResonatedEntities().size() + 1);
         for (LivingEntity bukkitEntity : event.getResonatedEntities()) {
             entities.add(((CraftLivingEntity) bukkitEntity).getHandle());
         }
