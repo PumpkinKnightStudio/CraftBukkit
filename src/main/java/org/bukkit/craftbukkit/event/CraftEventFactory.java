@@ -16,7 +16,6 @@ import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
 import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
 import net.minecraft.resources.MinecraftKey;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.tags.DamageTypeTags;
@@ -24,7 +23,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.IInventory;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
@@ -131,6 +129,8 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BellResonateEvent;
+import org.bukkit.event.block.BellRingEvent;
 import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
@@ -338,6 +338,27 @@ public class CraftEventFactory {
         TradeSelectEvent tradeSelectEvent = new TradeSelectEvent(merchant.getBukkitView(), newIndex);
         Bukkit.getPluginManager().callEvent(tradeSelectEvent);
         return tradeSelectEvent;
+    }
+
+    public static boolean handleBellRingEvent(World world, BlockPosition position, EnumDirection direction, Entity entity) {
+        Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+        BlockFace bukkitDirection = BlockFace.valueOf(direction.name());
+        BellRingEvent event = new BellRingEvent(block, bukkitDirection, (entity != null) ? entity.getBukkitEntity() : null);
+        Bukkit.getPluginManager().callEvent(event);
+        return !event.isCancelled();
+    }
+
+    public static List<EntityLiving> handleBellResonateEvent(World world, BlockPosition position, List<LivingEntity> bukkitEntities) {
+        Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+        BellResonateEvent event = new BellResonateEvent(block, bukkitEntities);
+        Bukkit.getPluginManager().callEvent(event);
+
+        List<EntityLiving> entities = new ArrayList<>(bukkitEntities.size() + 1);
+        for (LivingEntity bukkitEntity : event.getResonatedEntities()) {
+            entities.add(((CraftLivingEntity) bukkitEntity).getHandle());
+        }
+
+        return entities;
     }
 
     /**
