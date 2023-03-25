@@ -11,6 +11,41 @@ final class CraftMinecartTNT extends CraftMinecart implements ExplosiveMinecart 
     }
 
     @Override
+    public void setFuseTicks(int ticks) {
+        getHandle().fuse = ticks;
+    }
+
+    @Override
+    public int getFuseTicks() {
+        return getHandle().getFuse();
+    }
+
+    @Override
+    public void ignite() {
+        getHandle().primeFuse();
+    }
+
+    @Override
+    public boolean isIgnited() {
+        return getHandle().isPrimed();
+    }
+
+    @Override
+    public void explode() {
+        getHandle().explode(getHandle().getDeltaMovement().horizontalDistanceSqr());
+    }
+
+    @Override
+    public void explode(double power) {
+        getHandle().explode(power);
+    }
+
+    @Override
+    public EntityMinecartTNT getHandle() {
+        return (EntityMinecartTNT) super.getHandle();
+    }
+
+    @Override
     public String toString() {
         return "CraftMinecartTNT";
     }
