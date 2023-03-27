@@ -1094,6 +1094,18 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         return CraftSpawnCategory.toBukkit(getHandle().getType().getCategory());
     }
 
+    @Override
+    public EntitySnapshot createSnapshot() {
+        org.spigotmc.AsyncCatcher.catchOp("createSnapshot");
+
+        if (!isValid())
+            throw new IllegalStateException("entity despawned or got removed");
+        if (getType() == EntityType.PLAYER)
+            throw new IllegalStateException("may not create a snapshot for " + getType().name());
+
+        return CraftEntitySnapshot.fetchFrom(this);
+    }
+
     public void storeBukkitValues(NBTTagCompound c) {
         if (!this.persistentDataContainer.isEmpty()) {
             c.put("BukkitValues", this.persistentDataContainer.toTagCompound());
