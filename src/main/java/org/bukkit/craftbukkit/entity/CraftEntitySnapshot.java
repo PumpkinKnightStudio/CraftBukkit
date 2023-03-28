@@ -120,11 +120,11 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     public static CraftEntitySnapshot deserialize(Map<String, Object> map) throws Throwable {
         Validate.notNull(map, "Cannot deserialize null map");
 
-        if (map.containsKey("Type"))
+        if (!map.containsKey("Type"))
             throw new NoSuchElementException(map + " does not contain Type");
-        if (map.containsKey("WorldName"))
+        if (!map.containsKey("WorldName"))
             throw new NoSuchElementException(map + " does not contain WorldName");
-        if (map.containsKey("NBT"))
+        if (!map.containsKey("NBT"))
             throw new NoSuchElementException(map + " does not contain NBT");
 
         String serializedNBT = (String) map.get("NBT");
