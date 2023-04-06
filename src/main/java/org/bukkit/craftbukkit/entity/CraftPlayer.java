@@ -191,6 +191,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
             // Transfer some previously kept values in NMS
             EntityPlayer to = this.getHandle();
+
+            // EntityPlayer
             to.displayName = entityPlayer.displayName;
             to.listName = entityPlayer.listName;
             to.compassTarget = entityPlayer.compassTarget;
@@ -201,13 +203,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             to.maxHealthCache = entityPlayer.maxHealthCache;
             to.sentListPacket = entityPlayer.sentListPacket;
             to.clientViewDistance = entityPlayer.clientViewDistance;
-            to.oldLevel = entityPlayer.oldLevel;
             to.locale = entityPlayer.locale;
             to.timeOffset = entityPlayer.timeOffset;
             to.relativeTime = entityPlayer.relativeTime;
             to.pluginRainPosition = entityPlayer.pluginRainPosition;
             to.pluginRainPositionPrevious = entityPlayer.pluginRainPositionPrevious;
-
+            // EntityHuman
+            to.oldLevel = entityPlayer.oldLevel;
+            // EntityLiving
+            to.expToDrop = entityPlayer.expToDrop;
+            to.collides = entityPlayer.collides;
+            to.collidableExemptions = entityPlayer.collidableExemptions;
+            to.bukkitPickUpLoot = entityPlayer.bukkitPickUpLoot;
+            // Entity
+            to.persist = entityPlayer.persist;
+            to.visibleByDefault = entityPlayer.visibleByDefault;
+            to.maxAirTicks = entityPlayer.maxAirTicks;
+            to.persistentInvisibility = entityPlayer.persistentInvisibility;
+            
             // Simulate removing potions from previous owning entity
             entityPlayer.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
             // Add any "cancelled" removal of potion effects to the new player entity
