@@ -75,6 +75,7 @@ import net.minecraft.server.level.WorldServer;
 import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.server.players.WhiteListEntry;
 import net.minecraft.sounds.SoundEffect;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EnumItemSlot;
@@ -179,6 +180,41 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         super(server, entity);
 
         firstPlayed = System.currentTimeMillis();
+    }
+
+    @Override
+    public void setHandle(Entity entity) {
+        super.setHandle(entity);
+        // Ensure health is transfered to the new craft entity
+        if (entity instanceof EntityPlayer entityPlayer) {
+            this.setRealHealth(entityPlayer.getHealth());
+
+            // Transfer some previously kept values in NMS
+            EntityPlayer to = this.getHandle();
+            to.displayName = entityPlayer.displayName;
+            to.listName = entityPlayer.listName;
+            to.compassTarget = entityPlayer.compassTarget;
+            to.newExp = entityPlayer.newExp;
+            to.newLevel = entityPlayer.newLevel;
+            to.newTotalExp = entityPlayer.newTotalExp;
+            to.keepLevel = entityPlayer.keepLevel;
+            to.maxHealthCache = entityPlayer.maxHealthCache;
+            to.sentListPacket = entityPlayer.sentListPacket;
+            to.clientViewDistance = entityPlayer.clientViewDistance;
+            to.oldLevel = entityPlayer.oldLevel;
+            to.locale = entityPlayer.locale;
+            to.timeOffset = entityPlayer.timeOffset;
+            to.relativeTime = entityPlayer.relativeTime;
+            to.pluginRainPosition = entityPlayer.pluginRainPosition;
+            to.pluginRainPositionPrevious = entityPlayer.pluginRainPositionPrevious;
+
+            // Simulate removing potions from previous owning entity
+            entityPlayer.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
+            // Add any "cancelled" removal of potion effects to the new player entity
+            for (MobEffect effect : entityPlayer.getActiveEffects()) {
+                to.addEffect(effect);
+            }
+        }
     }
 
     public GameProfile getProfile() {

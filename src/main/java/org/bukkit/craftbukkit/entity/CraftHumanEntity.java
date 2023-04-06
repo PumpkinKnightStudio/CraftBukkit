@@ -69,7 +69,7 @@ import org.bukkit.plugin.Plugin;
 
 public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     private CraftInventoryPlayer inventory;
-    private final CraftInventory enderChest;
+    private CraftInventory enderChest;
     protected final PermissibleBase perm = new PermissibleBase(this);
     private boolean op;
     private GameMode mode;
@@ -258,9 +258,13 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         return (EntityHuman) entity;
     }
 
-    public void setHandle(final EntityHuman entity) {
+    @Override
+    public void setHandle(Entity entity) {
         super.setHandle(entity);
-        this.inventory = new CraftInventoryPlayer(entity.getInventory());
+        if (entity instanceof EntityHuman human) {
+            this.inventory = new CraftInventoryPlayer(human.getInventory());
+            this.enderChest = new CraftInventory(human.getEnderChestInventory());
+        }
     }
 
     @Override

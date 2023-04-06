@@ -575,14 +575,14 @@
 +        // CraftBukkit start
 +        ResourceKey<World> maindimensionkey = CraftDimensionUtil.getMainDimensionKey(worldserver);
 +        ResourceKey<World> maindimensionkey1 = CraftDimensionUtil.getMainDimensionKey(this.level);
-+
+ 
+-        CriterionTriggers.CHANGED_DIMENSION.trigger(this, resourcekey, resourcekey1);
+-        if (resourcekey == World.NETHER && resourcekey1 == World.OVERWORLD && this.enteredNetherPosition != null) {
 +        CriterionTriggers.CHANGED_DIMENSION.trigger(this, maindimensionkey, maindimensionkey1);
 +        if (maindimensionkey != resourcekey || maindimensionkey1 != resourcekey1) {
 +            CriterionTriggers.CHANGED_DIMENSION.trigger(this, resourcekey, resourcekey1);
 +        }
- 
--        CriterionTriggers.CHANGED_DIMENSION.trigger(this, resourcekey, resourcekey1);
--        if (resourcekey == World.NETHER && resourcekey1 == World.OVERWORLD && this.enteredNetherPosition != null) {
++
 +        if (maindimensionkey == World.NETHER && maindimensionkey1 == World.OVERWORLD && this.enteredNetherPosition != null) {
 +            // CraftBukkit end
              CriterionTriggers.NETHER_TRAVEL.trigger(this, this.enteredNetherPosition);
@@ -831,15 +831,6 @@
      }
  
      @Override
-@@ -1252,7 +1630,7 @@
-         this.lastSentExp = -1;
-         this.lastSentHealth = -1.0F;
-         this.lastSentFood = -1;
--        this.recipeBook.copyOverData(entityplayer.recipeBook);
-+        // this.recipeBook.copyOverData(entityplayer.recipeBook); // CraftBukkit
-         this.seenCredits = entityplayer.seenCredits;
-         this.enteredNetherPosition = entityplayer.enteredNetherPosition;
-         this.setShoulderEntityLeft(entityplayer.getShoulderEntityLeft());
 @@ -1302,6 +1680,12 @@
  
      @Override
@@ -931,7 +922,7 @@
  
      }
  
-@@ -1762,4 +2169,146 @@
+@@ -1762,4 +2169,110 @@
          this.hurtDir = (float) (MathHelper.atan2(d1, d0) * 57.2957763671875D - (double) this.getYRot());
          this.connection.send(new ClientboundHurtAnimationPacket(this));
      }
@@ -972,8 +963,8 @@
 +        }
 +    }
 +
-+    private float pluginRainPosition;
-+    private float pluginRainPositionPrevious;
++    public float pluginRainPosition;
++    public float pluginRainPositionPrevious;
 +
 +    public void updateWeather(float oldRain, float newRain, float oldThunder, float newThunder) {
 +        if (this.weather == null) {
@@ -1034,42 +1025,6 @@
 +    @Override
 +    public Scoreboard getScoreboard() {
 +        return getBukkitEntity().getScoreboard().getHandle();
-+    }
-+
-+    public void reset() {
-+        float exp = 0;
-+        boolean keepInventory = this.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
-+
-+        if (this.keepLevel) { // CraftBukkit - SPIGOT-6687: Only use keepLevel (was pre-set with RULE_KEEPINVENTORY value in PlayerDeathEvent)
-+            exp = this.experienceProgress;
-+            this.newTotalExp = this.totalExperience;
-+            this.newLevel = this.experienceLevel;
-+        }
-+
-+        this.setHealth(this.getMaxHealth());
-+        this.stopUsingItem(); // CraftBukkit - SPIGOT-6682: Clear active item on reset
-+        this.remainingFireTicks = 0;
-+        this.fallDistance = 0;
-+        this.foodData = new FoodMetaData(this);
-+        this.experienceLevel = this.newLevel;
-+        this.totalExperience = this.newTotalExp;
-+        this.experienceProgress = 0;
-+        this.deathTime = 0;
-+        this.setArrowCount(0, true); // CraftBukkit - ArrowBodyCountChangeEvent
-+        this.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
-+        this.effectsDirty = true;
-+        this.containerMenu = this.inventoryMenu;
-+        this.lastHurtByPlayer = null;
-+        this.lastHurtByMob = null;
-+        this.combatTracker = new CombatTracker(this);
-+        this.lastSentExp = -1;
-+        if (this.keepLevel) { // CraftBukkit - SPIGOT-6687: Only use keepLevel (was pre-set with RULE_KEEPINVENTORY value in PlayerDeathEvent)
-+            this.experienceProgress = exp;
-+        } else {
-+            this.giveExperiencePoints(this.newExp);
-+        }
-+        this.keepLevel = false;
-+        this.setDeltaMovement(0, 0, 0); // CraftBukkit - SPIGOT-6948: Reset velocity on death
 +    }
 +
 +    @Override
