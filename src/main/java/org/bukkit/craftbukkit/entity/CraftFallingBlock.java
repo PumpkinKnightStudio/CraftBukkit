@@ -84,12 +84,12 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
     }
 
     @Override
-    public int getDamageMax() {
+    public int getMaxDamage() {
         return getHandle().fallDamageMax;
     }
 
     @Override
-    public void setDamageMax(int damage) {
+    public void setMaxDamage(int damage) {
         Preconditions.checkArgument(damage >= 0, "damage must be >= 0, given %s", damage);
 
         getHandle().fallDamageMax = damage;
