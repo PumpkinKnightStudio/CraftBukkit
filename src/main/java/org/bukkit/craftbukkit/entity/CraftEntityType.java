@@ -97,6 +97,10 @@ public class CraftEntityType extends EntityType {
 
     @Override
     public String getName() {
+        // UNKNOWN has no name and entityType
+        if (entityType == null) {
+            return null;
+        }
         return name.toLowerCase();
     }
 
