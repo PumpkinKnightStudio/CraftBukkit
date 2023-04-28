@@ -29,6 +29,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -132,6 +133,9 @@ public enum CraftParticle {
     SCULK_CHARGE("sculk_charge"),
     SCULK_CHARGE_POP("sculk_charge_pop"),
     SHRIEK("shriek"),
+    DRIPPING_CHERRY_LEAVES("dripping_cherry_leaves"),
+    FALLING_CHERRY_LEAVES("falling_cherry_leaves"),
+    LANDING_CHERRY_LEAVES("landing_cherry_leaves"),
     // ----- Legacy Separator -----
     LEGACY_BLOCK_CRACK("block"),
     LEGACY_BLOCK_DUST("block"),
@@ -203,12 +207,11 @@ public enum CraftParticle {
         }
         if (particle.getDataType() == Vibration.class) {
             Vibration vibration = (Vibration) obj;
-            Location origin = vibration.getOrigin();
 
             PositionSource source;
             if (vibration.getDestination() instanceof Vibration.Destination.BlockDestination) {
                 Location destination = ((Vibration.Destination.BlockDestination) vibration.getDestination()).getLocation();
-                source = new BlockPositionSource(new BlockPosition(destination.getBlockX(), destination.getBlockY(), destination.getBlockZ()));
+                source = new BlockPositionSource(CraftLocation.toBlockPosition(destination));
             } else if (vibration.getDestination() instanceof Vibration.Destination.EntityDestination) {
                 Entity destination = ((CraftEntity) ((Vibration.Destination.EntityDestination) vibration.getDestination()).getEntity()).getHandle();
                 source = new EntityPositionSource(destination, destination.getEyeHeight());

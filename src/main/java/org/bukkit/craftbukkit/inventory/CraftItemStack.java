@@ -340,9 +340,24 @@ public final class CraftItemStack extends ItemStack {
                 || type == Material.ZOMBIE_HEAD || type == Material.ZOMBIE_WALL_HEAD) {
             return new CraftMetaSkull(item.getTag());
         }
-        if (type == Material.LEATHER_HELMET || type == Material.LEATHER_HORSE_ARMOR
-                || type == Material.LEATHER_CHESTPLATE || type == Material.LEATHER_LEGGINGS
-                || type == Material.LEATHER_BOOTS) {
+        if (type == Material.CHAINMAIL_HELMET || type == Material.CHAINMAIL_CHESTPLATE
+                || type == Material.CHAINMAIL_LEGGINGS || type == Material.CHAINMAIL_BOOTS
+                || type == Material.DIAMOND_HELMET || type == Material.DIAMOND_CHESTPLATE
+                || type == Material.DIAMOND_LEGGINGS || type == Material.DIAMOND_BOOTS
+                || type == Material.GOLDEN_HELMET || type == Material.GOLDEN_CHESTPLATE
+                || type == Material.GOLDEN_LEGGINGS || type == Material.GOLDEN_BOOTS
+                || type == Material.IRON_HELMET || type == Material.IRON_CHESTPLATE
+                || type == Material.IRON_LEGGINGS || type == Material.IRON_BOOTS
+                || type == Material.NETHERITE_HELMET || type == Material.NETHERITE_CHESTPLATE
+                || type == Material.NETHERITE_LEGGINGS || type == Material.NETHERITE_BOOTS
+                || type == Material.TURTLE_HELMET) {
+            return new CraftMetaArmor(item.getTag());
+        }
+        if (type == Material.LEATHER_HELMET || type == Material.LEATHER_CHESTPLATE
+                || type == Material.LEATHER_LEGGINGS || type == Material.LEATHER_BOOTS) {
+            return new CraftMetaColorableArmor(item.getTag());
+        }
+        if (type == Material.LEATHER_HORSE_ARMOR) {
             return new CraftMetaLeatherArmor(item.getTag());
         }
         if (type == Material.POTION || type == Material.SPLASH_POTION
@@ -405,18 +420,19 @@ public final class CraftItemStack extends ItemStack {
                 || type == Material.SALMON_SPAWN_EGG || type == Material.SHEEP_SPAWN_EGG
                 || type == Material.SHULKER_SPAWN_EGG || type == Material.SILVERFISH_SPAWN_EGG
                 || type == Material.SKELETON_HORSE_SPAWN_EGG || type == Material.SKELETON_SPAWN_EGG
-                || type == Material.SLIME_SPAWN_EGG || type == Material.SNOW_GOLEM_SPAWN_EGG
-                || type == Material.SPIDER_SPAWN_EGG || type == Material.SQUID_SPAWN_EGG
-                || type == Material.STRAY_SPAWN_EGG || type == Material.STRIDER_SPAWN_EGG
-                || type == Material.TADPOLE_SPAWN_EGG || type == Material.TRADER_LLAMA_SPAWN_EGG
-                || type == Material.TROPICAL_FISH_SPAWN_EGG || type == Material.TURTLE_SPAWN_EGG
-                || type == Material.VEX_SPAWN_EGG || type == Material.VILLAGER_SPAWN_EGG
-                || type == Material.VINDICATOR_SPAWN_EGG || type == Material.WANDERING_TRADER_SPAWN_EGG
-                || type == Material.WARDEN_SPAWN_EGG || type == Material.WITCH_SPAWN_EGG
-                || type == Material.WITHER_SKELETON_SPAWN_EGG || type == Material.WITHER_SPAWN_EGG
-                || type == Material.WOLF_SPAWN_EGG || type == Material.ZOGLIN_SPAWN_EGG
-                || type == Material.ZOMBIE_HORSE_SPAWN_EGG || type == Material.ZOMBIE_SPAWN_EGG
-                || type == Material.ZOMBIE_VILLAGER_SPAWN_EGG || type == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || type == Material.SLIME_SPAWN_EGG || type == Material.SNIFFER_SPAWN_EGG
+                || type == Material.SNOW_GOLEM_SPAWN_EGG || type == Material.SPIDER_SPAWN_EGG
+                || type == Material.SQUID_SPAWN_EGG || type == Material.STRAY_SPAWN_EGG
+                || type == Material.STRIDER_SPAWN_EGG || type == Material.TADPOLE_SPAWN_EGG
+                || type == Material.TRADER_LLAMA_SPAWN_EGG || type == Material.TROPICAL_FISH_SPAWN_EGG
+                || type == Material.TURTLE_SPAWN_EGG || type == Material.VEX_SPAWN_EGG
+                || type == Material.VILLAGER_SPAWN_EGG || type == Material.VINDICATOR_SPAWN_EGG
+                || type == Material.WANDERING_TRADER_SPAWN_EGG || type == Material.WARDEN_SPAWN_EGG
+                || type == Material.WITCH_SPAWN_EGG || type == Material.WITHER_SKELETON_SPAWN_EGG
+                || type == Material.WITHER_SPAWN_EGG || type == Material.WOLF_SPAWN_EGG
+                || type == Material.ZOGLIN_SPAWN_EGG || type == Material.ZOMBIE_HORSE_SPAWN_EGG
+                || type == Material.ZOMBIE_SPAWN_EGG || type == Material.ZOMBIE_VILLAGER_SPAWN_EGG
+                || type == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
             return new CraftMetaSpawnEgg(item.getTag());
         }
         if (type == Material.ARMOR_STAND) {
@@ -442,7 +458,8 @@ public final class CraftItemStack extends ItemStack {
                 || type == Material.SMOKER || type == Material.BEEHIVE
                 || type == Material.BEE_NEST || type == Material.SCULK_CATALYST
                 || type == Material.SCULK_SHRIEKER || type == Material.SCULK_SENSOR
-                || type == Material.CHISELED_BOOKSHELF) {
+                || type == Material.CHISELED_BOOKSHELF || type == Material.DECORATED_POT
+                || type == Material.SUSPICIOUS_SAND) {
             return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
         }
         if (type == Material.TROPICAL_FISH_BUCKET) {

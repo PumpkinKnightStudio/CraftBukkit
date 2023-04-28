@@ -80,9 +80,24 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.ZOMBIE_HEAD || material == Material.ZOMBIE_WALL_HEAD) {
             return meta instanceof CraftMetaSkull ? meta : new CraftMetaSkull(meta);
         }
-        if (material == Material.LEATHER_HELMET || material == Material.LEATHER_HORSE_ARMOR
-                || material == Material.LEATHER_CHESTPLATE || material == Material.LEATHER_LEGGINGS
-                || material == Material.LEATHER_BOOTS) {
+        if (material == Material.CHAINMAIL_HELMET || material == Material.CHAINMAIL_CHESTPLATE
+                || material == Material.CHAINMAIL_LEGGINGS || material == Material.CHAINMAIL_BOOTS
+                || material == Material.DIAMOND_HELMET || material == Material.DIAMOND_CHESTPLATE
+                || material == Material.DIAMOND_LEGGINGS || material == Material.DIAMOND_BOOTS
+                || material == Material.GOLDEN_HELMET || material == Material.GOLDEN_CHESTPLATE
+                || material == Material.GOLDEN_LEGGINGS || material == Material.GOLDEN_BOOTS
+                || material == Material.IRON_HELMET || material == Material.IRON_CHESTPLATE
+                || material == Material.IRON_LEGGINGS || material == Material.IRON_BOOTS
+                || material == Material.NETHERITE_HELMET || material == Material.NETHERITE_CHESTPLATE
+                || material == Material.NETHERITE_LEGGINGS || material == Material.NETHERITE_BOOTS
+                || material == Material.TURTLE_HELMET) {
+            return meta != null && meta.getClass().equals(CraftMetaArmor.class) ? meta : new CraftMetaArmor(meta);
+        }
+        if (material == Material.LEATHER_HELMET || material == Material.LEATHER_CHESTPLATE
+                || material == Material.LEATHER_LEGGINGS || material == Material.LEATHER_BOOTS) {
+            return meta instanceof CraftMetaColorableArmor ? meta : new CraftMetaColorableArmor(meta);
+        }
+        if (material == Material.LEATHER_HORSE_ARMOR) {
             return meta instanceof CraftMetaLeatherArmor ? meta : new CraftMetaLeatherArmor(meta);
         }
         if (material == Material.POTION || material == Material.SPLASH_POTION
@@ -130,18 +145,19 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.SALMON_SPAWN_EGG || material == Material.SHEEP_SPAWN_EGG
                 || material == Material.SHULKER_SPAWN_EGG || material == Material.SILVERFISH_SPAWN_EGG
                 || material == Material.SKELETON_HORSE_SPAWN_EGG || material == Material.SKELETON_SPAWN_EGG
-                || material == Material.SLIME_SPAWN_EGG || material == Material.SNOW_GOLEM_SPAWN_EGG
-                || material == Material.SPIDER_SPAWN_EGG || material == Material.SQUID_SPAWN_EGG
-                || material == Material.STRAY_SPAWN_EGG || material == Material.STRIDER_SPAWN_EGG
-                || material == Material.TADPOLE_SPAWN_EGG || material == Material.TRADER_LLAMA_SPAWN_EGG
-                || material == Material.TROPICAL_FISH_SPAWN_EGG || material == Material.TURTLE_SPAWN_EGG
-                || material == Material.VEX_SPAWN_EGG || material == Material.VILLAGER_SPAWN_EGG
-                || material == Material.VINDICATOR_SPAWN_EGG || material == Material.WANDERING_TRADER_SPAWN_EGG
-                || material == Material.WARDEN_SPAWN_EGG || material == Material.WITCH_SPAWN_EGG
-                || material == Material.WITHER_SKELETON_SPAWN_EGG || material == Material.WITHER_SPAWN_EGG
-                || material == Material.WOLF_SPAWN_EGG || material == Material.ZOGLIN_SPAWN_EGG
-                || material == Material.ZOMBIE_HORSE_SPAWN_EGG || material == Material.ZOMBIE_SPAWN_EGG
-                || material == Material.ZOMBIE_VILLAGER_SPAWN_EGG || material == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || material == Material.SLIME_SPAWN_EGG || material == Material.SNIFFER_SPAWN_EGG
+                || material == Material.SNOW_GOLEM_SPAWN_EGG || material == Material.SPIDER_SPAWN_EGG
+                || material == Material.SQUID_SPAWN_EGG || material == Material.STRAY_SPAWN_EGG
+                || material == Material.STRIDER_SPAWN_EGG || material == Material.TADPOLE_SPAWN_EGG
+                || material == Material.TRADER_LLAMA_SPAWN_EGG || material == Material.TROPICAL_FISH_SPAWN_EGG
+                || material == Material.TURTLE_SPAWN_EGG || material == Material.VEX_SPAWN_EGG
+                || material == Material.VILLAGER_SPAWN_EGG || material == Material.VINDICATOR_SPAWN_EGG
+                || material == Material.WANDERING_TRADER_SPAWN_EGG || material == Material.WARDEN_SPAWN_EGG
+                || material == Material.WITCH_SPAWN_EGG || material == Material.WITHER_SKELETON_SPAWN_EGG
+                || material == Material.WITHER_SPAWN_EGG || material == Material.WOLF_SPAWN_EGG
+                || material == Material.ZOGLIN_SPAWN_EGG || material == Material.ZOMBIE_HORSE_SPAWN_EGG
+                || material == Material.ZOMBIE_SPAWN_EGG || material == Material.ZOMBIE_VILLAGER_SPAWN_EGG
+                || material == Material.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
             return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
         }
         if (material == Material.ARMOR_STAND) {
@@ -167,7 +183,8 @@ public final class CraftItemFactory implements ItemFactory {
                 || material == Material.SMOKER || material == Material.BEEHIVE
                 || material == Material.BEE_NEST || material == Material.SCULK_CATALYST
                 || material == Material.SCULK_SHRIEKER || material == Material.SCULK_SENSOR
-                || material == Material.CHISELED_BOOKSHELF) {
+                || material == Material.CHISELED_BOOKSHELF || material == Material.DECORATED_POT
+                || material == Material.SUSPICIOUS_SAND) {
             return new CraftMetaBlockState(meta, material);
         }
         if (material == Material.TROPICAL_FISH_BUCKET) {

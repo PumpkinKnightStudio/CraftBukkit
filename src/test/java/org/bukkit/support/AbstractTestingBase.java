@@ -3,7 +3,6 @@ package org.bukkit.support;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.MoreExecutors;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.SharedConstants;
@@ -18,6 +17,8 @@ import net.minecraft.server.DispenserRegistry;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.EnumResourcePackType;
+import net.minecraft.server.packs.repository.ResourcePackLoader;
+import net.minecraft.server.packs.repository.ResourcePackRepository;
 import net.minecraft.server.packs.repository.ResourcePackSourceVanilla;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.flag.FeatureFlags;
@@ -47,8 +48,11 @@ public abstract class AbstractTestingBase {
     static {
         SharedConstants.tryDetectVersion();
         DispenserRegistry.bootStrap();
+        // Populate available packs
+        ResourcePackRepository resourceRepository = new ResourcePackRepository(new ResourcePackSourceVanilla());
+        resourceRepository.reload();
         // Set up resource manager
-        ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA, Collections.singletonList(new ResourcePackSourceVanilla().getVanillaPack()));
+        ResourceManager resourceManager = new ResourceManager(EnumResourcePackType.SERVER_DATA, resourceRepository.getAvailablePacks().stream().map(ResourcePackLoader::open).toList());
         // add tags and loot tables for unit tests
         LayeredRegistryAccess<RegistryLayer> layers = RegistryLayer.createRegistryAccess();
         layers = WorldLoader.loadAndReplaceLayer(resourceManager, layers, RegistryLayer.WORLDGEN, RegistryDataLoader.WORLDGEN_REGISTRIES);
@@ -70,6 +74,6 @@ public abstract class AbstractTestingBase {
             }
         }
         INVALIDATED_MATERIALS = builder.build();
-        Assert.assertEquals("Expected 604 invalidated materials (got " + INVALIDATED_MATERIALS.size() + ")", 604, INVALIDATED_MATERIALS.size());
+        Assert.assertEquals("Expected 609 invalidated materials (got " + INVALIDATED_MATERIALS.size() + ")", 609, INVALIDATED_MATERIALS.size());
     }
 }

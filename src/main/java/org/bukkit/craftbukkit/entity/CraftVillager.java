@@ -20,6 +20,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
@@ -101,7 +102,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkArgument(location.getWorld().equals(getWorld()), "Cannot sleep across worlds");
         Preconditions.checkState(!getHandle().generation, "Cannot sleep during world generation");
 
-        BlockPosition position = new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        BlockPosition position = CraftLocation.toBlockPosition(location);
         IBlockData iblockdata = getHandle().level.getBlockState(position);
         if (!(iblockdata.getBlock() instanceof BlockBed)) {
             return false;
