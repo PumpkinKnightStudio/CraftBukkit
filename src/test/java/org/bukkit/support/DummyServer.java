@@ -41,10 +41,10 @@ public final class DummyServer {
     static {
         try {
 
-            DedicatedServer dedicatedServer = Mockito.mock(DedicatedServer.class);
+            DedicatedServer dedicatedServer = Mockito.mock(Mockito.withSettings().stubOnly());
             Mockito.when(dedicatedServer.registryAccess()).then(mock -> AbstractTestingBase.REGISTRY_CUSTOM);
 
-            CraftServer instance = Mockito.mock(CraftServer.class);
+            CraftServer instance = Mockito.mock(Mockito.withSettings().stubOnly());
 
             Mockito.when(instance.getServer()).then(mock -> dedicatedServer);
 
