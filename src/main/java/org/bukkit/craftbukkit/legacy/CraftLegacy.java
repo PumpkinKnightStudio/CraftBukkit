@@ -9,8 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockStateList;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.properties.IBlockState;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
@@ -336,7 +336,7 @@ public final class CraftLegacy {
                     }
 
                     String name = blockTag.get("Name").asString("");
-                    Block block = BuiltInRegistries.BLOCK.get(new MinecraftKey(name));
+                    Block block = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).get(new MinecraftKey(name));
                     if (block == null) {
                         continue;
                     }
@@ -414,7 +414,7 @@ public final class CraftLegacy {
                 }
 
                 // Preconditions.checkState(newId.contains("minecraft:"), "Unknown new material for " + matData);
-                Item newMaterial = BuiltInRegistries.ITEM.get(new MinecraftKey(newId));
+                Item newMaterial = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM).get(new MinecraftKey(newId));
 
                 if (newMaterial == Items.AIR) {
                     continue;

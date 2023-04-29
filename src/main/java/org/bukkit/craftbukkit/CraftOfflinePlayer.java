@@ -428,7 +428,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             getPlayer().incrementStatistic(statistic, entityType);
         } else {
             ServerStatisticManager manager = getStatisticManager();
-            CraftStatistic.incrementStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType);
+            CraftStatistic.incrementStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType);
             manager.save();
         }
     }
@@ -439,7 +439,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             getPlayer().decrementStatistic(statistic, entityType);
         } else {
             ServerStatisticManager manager = getStatisticManager();
-            CraftStatistic.decrementStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType);
+            CraftStatistic.decrementStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType);
             manager.save();
         }
     }
@@ -449,7 +449,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (isOnline()) {
             return getPlayer().getStatistic(statistic, entityType);
         } else {
-            return CraftStatistic.getStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), getStatisticManager(), statistic, entityType);
+            return CraftStatistic.getStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), getStatisticManager(), statistic, entityType);
         }
     }
 
@@ -459,7 +459,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             getPlayer().incrementStatistic(statistic, entityType, amount);
         } else {
             ServerStatisticManager manager = getStatisticManager();
-            CraftStatistic.incrementStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, amount);
+            CraftStatistic.incrementStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, amount);
             manager.save();
         }
     }
@@ -470,7 +470,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             getPlayer().decrementStatistic(statistic, entityType, amount);
         } else {
             ServerStatisticManager manager = getStatisticManager();
-            CraftStatistic.decrementStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, amount);
+            CraftStatistic.decrementStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, amount);
             manager.save();
         }
     }
@@ -481,7 +481,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             getPlayer().setStatistic(statistic, entityType, newValue);
         } else {
             ServerStatisticManager manager = getStatisticManager();
-            CraftStatistic.setStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, newValue);
+            CraftStatistic.setStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE), manager, statistic, entityType, newValue);
             manager.save();
         }
     }

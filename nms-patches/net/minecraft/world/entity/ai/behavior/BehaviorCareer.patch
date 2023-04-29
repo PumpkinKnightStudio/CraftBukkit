@@ -1,13 +1,12 @@
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorCareer.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorCareer.java
-@@ -9,6 +9,15 @@
+@@ -9,6 +9,14 @@
  import net.minecraft.world.entity.npc.EntityVillager;
  import net.minecraft.world.entity.npc.VillagerProfession;
  
 +// CraftBukkit start
 +import net.minecraft.core.registries.Registries;
-+import org.bukkit.Bukkit;
-+import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.CraftRegistry;
 +import org.bukkit.craftbukkit.entity.CraftVillager;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.VillagerCareerChangeEvent;
@@ -16,13 +15,13 @@
  public class BehaviorCareer {
  
      public BehaviorCareer() {}
-@@ -37,7 +46,14 @@
+@@ -37,7 +45,14 @@
                                      return villagerprofession.heldJobSite().test(holder);
                                  }).findFirst();
                              }).ifPresent((villagerprofession) -> {
 -                                entityvillager.setVillagerData(entityvillager.getVillagerData().setProfession(villagerprofession));
 +                                // CraftBukkit start - Fire VillagerCareerChangeEvent where Villager gets employed
-+                                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entityvillager, CraftVillager.CraftProfession.minecraftToBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.VILLAGER_PROFESSION), villagerprofession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
++                                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entityvillager, CraftVillager.CraftProfession.minecraftToBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.VILLAGER_PROFESSION), villagerprofession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
 +                                if (event.isCancelled()) {
 +                                    return;
 +                                }

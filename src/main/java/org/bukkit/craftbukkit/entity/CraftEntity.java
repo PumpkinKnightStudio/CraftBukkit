@@ -170,6 +170,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -1162,6 +1163,6 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     protected IRegistryCustom getRegistryAccess() {
-        return ((CraftServer) getServer()).getServer().registryAccess();
+        return CraftRegistry.getMinecraftRegistry();
     }
 }

@@ -9,8 +9,7 @@ import java.util.Map;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.alchemy.PotionRegistry;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.potion.PotionBrewer;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -29,7 +28,7 @@ public class CraftPotionBrewer implements PotionBrewer {
 
         ImmutableList.Builder<PotionEffect> builder = new ImmutableList.Builder<PotionEffect>();
         for (MobEffect effect : mcEffects) {
-            builder.add(CraftPotionUtil.toBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.MOB_EFFECT), effect));
+            builder.add(CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), effect));
         }
 
         cache.put(damage, builder.build());

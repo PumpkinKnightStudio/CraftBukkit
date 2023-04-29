@@ -9,6 +9,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.Registries;
 import org.bukkit.Art;
+import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
@@ -39,6 +40,10 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffectType;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
+
+    public static IRegistryCustom getMinecraftRegistry() {
+        return ((CraftServer) Bukkit.getServer()).getServer().registryAccess();
+    }
 
     public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == Structure.class) {

@@ -84,6 +84,7 @@ import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRaid;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -1441,7 +1442,7 @@ public class CraftEventFactory {
         Player player = ((EntityPlayer) entityHuman).getBukkitEntity();
         Event event;
         if (true) {
-            org.bukkit.Statistic stat = CraftStatistic.getBukkitStatistic(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.STAT_TYPE), statistic);
+            org.bukkit.Statistic stat = CraftStatistic.getBukkitStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.STAT_TYPE), statistic);
             if (stat == null) {
                 System.err.println("Unhandled statistic: " + statistic);
                 return null;
@@ -1568,8 +1569,8 @@ public class CraftEventFactory {
     }
 
     public static EntityPotionEffectEvent callEntityPotionEffectChangeEvent(EntityLiving entity, @Nullable MobEffect oldEffect, @Nullable MobEffect newEffect, EntityPotionEffectEvent.Cause cause, EntityPotionEffectEvent.Action action, boolean willOverride) {
-        PotionEffect bukkitOldEffect = (oldEffect == null) ? null : CraftPotionUtil.toBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.MOB_EFFECT), oldEffect);
-        PotionEffect bukkitNewEffect = (newEffect == null) ? null : CraftPotionUtil.toBukkit(((CraftServer) Bukkit.getServer()).getServer().registryAccess().registryOrThrow(Registries.MOB_EFFECT), newEffect);
+        PotionEffect bukkitOldEffect = (oldEffect == null) ? null : CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), oldEffect);
+        PotionEffect bukkitNewEffect = (newEffect == null) ? null : CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), newEffect);
 
         if (bukkitOldEffect == null && bukkitNewEffect == null) {
             throw new IllegalStateException("Old and new potion effect are both null");
