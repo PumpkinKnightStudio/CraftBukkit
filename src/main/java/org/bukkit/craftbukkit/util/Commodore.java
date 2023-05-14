@@ -705,26 +705,27 @@ public class Commodore
                     public void visitInvokeDynamicInsn( String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments )
                     {
                         // Handle lambda expression
-                        if ( enumCompatibility )
+                        List<Object> methodArgs = new ArrayList<>();
+                        for ( Object object : bootstrapMethodArguments )
                         {
-                            List<Object> methodArgs = new ArrayList<>();
-                            for ( Object object : bootstrapMethodArguments )
+                            if ( enumCompatibility && object instanceof Handle handle && handle.getOwner().equals( "java/util/EnumMap" ) )
                             {
-                                if ( object instanceof Handle handle && handle.getOwner().equals( "java/util/EnumMap" ) )
-                                {
-                                    Handle newHandle = new Handle( handle.getTag(), "org/bukkit/craftbukkit/legacy/ImposterEnumMap", handle.getName(), handle.getDesc(), handle.isInterface() );
-                                    methodArgs.add( newHandle );
-                                    continue;
-                                }
-
-                                methodArgs.add( object );
+                                Handle newHandle = new Handle( handle.getTag(), "org/bukkit/craftbukkit/legacy/ImposterEnumMap", handle.getName(), handle.getDesc(), handle.isInterface() );
+                                methodArgs.add( newHandle );
+                                continue;
                             }
 
-                            super.visitInvokeDynamicInsn( name, descriptor, bootstrapMethodHandle, methodArgs.toArray(Object[]::new) );
-                            return;
+                            if ( object instanceof Handle handle && handle.getOwner().equals( "org/bukkit/Material" ) )
+                            {
+                                Handle newHandle = new Handle( Opcodes.H_INVOKEINTERFACE, handle.getOwner(), handle.getName(), handle.getDesc(), true );
+                                methodArgs.add( newHandle );
+                                continue;
+                            }
+
+                            methodArgs.add( object );
                         }
 
-                        super.visitInvokeDynamicInsn( name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments );
+                        super.visitInvokeDynamicInsn( name, descriptor, bootstrapMethodHandle, methodArgs.toArray(Object[]::new) );
                     }
                 };
             }
