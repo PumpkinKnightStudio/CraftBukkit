@@ -507,6 +507,12 @@ public class Commodore
                         }
 
                         if ( enumCompatibility ) {
+                            if ( owner.equals( "java/lang/Class" ) && name.equals( "getEnumConstants" ) )
+                            {
+                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", "getEnumConstants", "(Ljava/lang/Class;)Ljava/lang/Object;", false);
+                                return;
+                            }
+
                             // Convert EnumMap to ImposterEnumMap
                             // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
                             if ( owner.equals( "java/util/EnumMap" ) && opcode == Opcodes.INVOKESPECIAL )
