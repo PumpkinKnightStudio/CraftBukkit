@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.util;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -18,6 +21,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.legacy.EnumEvil;
 import org.bukkit.plugin.AuthorNagException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -360,12 +364,6 @@ public class Commodore
                             }
                         }
 
-                        if ( owner.equals( "org/bukkit/Material" )  && name.equals( "data" ) )
-                        {
-                            super.visitMethodInsn( Opcodes.INVOKEINTERFACE, owner, "getBlockDataClass", "()Ljava/lang/Class;", true );
-                            return;
-                        }
-
                         // SPIGOT-7335
                         if ( owner.equals( "org/bukkit/entity/TextDisplay$TextAligment" ) )
                         {
@@ -595,13 +593,18 @@ public class Commodore
                                         super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/util/CraftLegacy", "modern_" + name, "(Lorg/bukkit/Material;)I", false );
                                         return;
                                 }
+                            }
 
-                                itf = true;
-                                if ( opcode == Opcodes.INVOKEVIRTUAL )
+                            if ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/Material" ) )
+                            {
+                                if ( replaceMaterialMethod( owner, name, desc, ( newName, newDesc ) -> {
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false );
+                                } ) )
                                 {
-                                    opcode = Opcodes.INVOKEINTERFACE;
+                                    return;
                                 }
                             }
+                            // TODO: 5/18/23 Change Tags, static methods and piglin methods
                             super.visitMethodInsn( opcode, owner, name, desc, itf );
                             return;
                         }
@@ -661,12 +664,6 @@ public class Commodore
                                     super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/CraftLegacy", name, "(Lorg/bukkit/Material;)Ljava/lang/String;", false );
                                     return;
                             }
-
-                            itf = true;
-                            if ( opcode == Opcodes.INVOKEVIRTUAL )
-                            {
-                                opcode = Opcodes.INVOKEINTERFACE;
-                            }
                         }
 
                         if ( retType.getSort() == Type.OBJECT && retType.getInternalName().equals( "org/bukkit/Material" ) && owner.startsWith( "org/bukkit" ) )
@@ -718,13 +715,6 @@ public class Commodore
                                 continue;
                             }
 
-                            if ( object instanceof Handle handle && handle.getOwner().equals( "org/bukkit/Material" ) )
-                            {
-                                Handle newHandle = new Handle( Opcodes.H_INVOKEINTERFACE, handle.getOwner(), handle.getName(), handle.getDesc(), true );
-                                methodArgs.add( newHandle );
-                                continue;
-                            }
-
                             methodArgs.add( object );
                         }
 
@@ -735,5 +725,102 @@ public class Commodore
         }, 0 );
 
         return cw.toByteArray();
+    }
+
+    public static boolean replaceMaterialMethod( String owner, String name, String desc, BiConsumer<String, String> consumer )
+    {
+        Type[] args = Type.getArgumentTypes( desc );
+        Type ownerType = Type.getObjectType( owner );
+        Class<?> ownerClass;
+        try
+        {
+            ownerClass = Class.forName( ownerType.getClassName() );
+        } catch ( ClassNotFoundException e )
+        {
+            return false;
+        }
+
+        List<Class<?>> argClass = new ArrayList<>();
+        for ( Type arg : args )
+        {
+            try
+            {
+                argClass.add( Class.forName(arg.getClassName()) );
+            } catch ( ClassNotFoundException e )
+            {
+                return false;
+            }
+        }
+        Class<?>[] argClassArray = argClass.toArray( new Class<?>[ 0 ] );
+
+        ClassTraverser it = new ClassTraverser( ownerClass );
+        while ( it.hasNext() )
+        {
+            Class<?> clazz = it.next();
+            Class<?>[] newArgsClasses = new Class[ argClassArray.length + 1 ];
+            System.arraycopy( argClassArray, 0, newArgsClasses, 1, argClassArray.length );
+            newArgsClasses[ 0 ] = clazz;
+            try
+            {
+                EnumEvil.class.getMethod( name, newArgsClasses );
+            } catch (NoSuchMethodException e)
+            {
+                continue;
+            }
+
+            Type retType = Type.getReturnType( desc );
+            Type[] newArgs = new Type[ args.length + 1 ];
+            newArgs[ 0 ] = Type.getType( clazz );
+            System.arraycopy( args, 0, newArgs, 1, args.length );
+            consumer.accept( name, Type.getMethodDescriptor( retType, newArgs ) );
+            return true;
+        }
+
+        return false;
+    }
+
+    public static class ClassTraverser implements Iterator<Class<?>>
+    {
+
+        private final Set<Class<?>> visit = new HashSet<>();
+        private final Set<Class<?>> toVisit = new HashSet<>();
+
+        private Class<?> next;
+
+        public ClassTraverser( Class<?> next )
+        {
+            this.next = next;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return next != null;
+        }
+
+        @Override
+        public Class<?> next()
+        {
+            Class<?> clazz = next;
+
+            visit.add( next );
+
+            Set<Class<?>> classes = Sets.newHashSet( clazz.getInterfaces() );
+            classes.add( clazz.getSuperclass() );
+            classes.remove( null );
+            classes.removeAll( visit );
+            toVisit.addAll( classes );
+
+            if ( toVisit.isEmpty() )
+            {
+                next = null;
+                return clazz;
+            }
+
+            next = toVisit.iterator().next();
+            toVisit.remove( next );
+
+            return clazz;
+        }
     }
 }
