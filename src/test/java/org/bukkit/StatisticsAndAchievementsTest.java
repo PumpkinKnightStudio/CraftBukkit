@@ -78,8 +78,10 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
                 Statistic subject = CraftStatistic.getBukkitStatistic(BuiltInRegistries.STAT_TYPE, statistic);
                 assertThat(message, subject, is(not(nullValue())));
 
-                if (wrapper.getRegistry() == BuiltInRegistries.BLOCK || wrapper.getRegistry() == BuiltInRegistries.ITEM) {
-                    assertNotNull("Material type map missing for " + wrapper.getRegistry().getKey(child), CraftStatistic.getMaterialFromStatistic(statistic));
+                if (wrapper.getRegistry() == BuiltInRegistries.ITEM) {
+                    assertNotNull("Item type map missing for " + wrapper.getRegistry().getKey(child), CraftStatistic.getItemTypeFromStatistic(statistic));
+                } else if (wrapper.getRegistry() == BuiltInRegistries.BLOCK) {
+                    assertNotNull("Block type map missing for " + wrapper.getRegistry().getKey(child), CraftStatistic.getBlockTypeFromStatistic(statistic));
                 } else if (wrapper.getRegistry() == BuiltInRegistries.ENTITY_TYPE) {
                     assertNotNull("Entity type map missing for " + EntityTypes.getKey((EntityTypes<?>) child), CraftStatistic.getEntityTypeFromStatistic((net.minecraft.stats.Statistic<EntityTypes<?>>) statistic));
                 }

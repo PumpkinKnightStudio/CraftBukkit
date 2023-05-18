@@ -19,7 +19,6 @@ import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EnumBlockMirror;
 import net.minecraft.world.level.block.EnumBlockRotation;
-import net.minecraft.world.level.block.state.BlockBase;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
 import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
@@ -27,10 +26,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.structure.Mirror;
@@ -40,10 +39,13 @@ import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
 
@@ -59,8 +61,8 @@ public class CraftBlockData implements BlockData {
     }
 
     @Override
-    public Material getMaterial() {
-        return CraftMagicNumbers.getMaterial(state.getBlock());
+    public BlockType<?> getBlockType() {
+        return CraftBlockType.minecraftToBukkit(state.getBlock());
     }
 
     public IBlockData getState() {
@@ -524,11 +526,9 @@ public class CraftBlockData implements BlockData {
         Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
     }
 
-    public static CraftBlockData newData(Material material, String data) {
-        Preconditions.checkArgument(material == null || material.isBlock(), "Cannot get data for not block %s", material);
-
+    public static <B extends BlockData> B newData(BlockType<B> blockType, String data) {
         IBlockData blockData;
-        Block block = CraftMagicNumbers.getBlock(material);
+        Block block = blockType != null ? ((CraftBlockType<B>) blockType).getHandle() : null;
         Map<IBlockState<?>, Comparable<?>> parsed = null;
 
         // Data provided, use it
@@ -554,7 +554,7 @@ public class CraftBlockData implements BlockData {
 
         CraftBlockData craft = fromData(blockData);
         craft.parsedStates = parsed;
-        return craft;
+        return (B) craft;
     }
 
     public static CraftBlockData fromData(IBlockData data) {
@@ -625,9 +625,10 @@ public class CraftBlockData implements BlockData {
         return state.isFaceSturdy(BlockAccessAir.INSTANCE, BlockPosition.ZERO, CraftBlock.blockFaceToNotch(face), CraftBlockSupport.toNMS(support));
     }
 
+    @NotNull
     @Override
-    public Material getPlacementMaterial() {
-        return CraftMagicNumbers.getMaterial(state.getBlock().asItem());
+    public ItemType getPlacementType() {
+        return CraftItemType.minecraftToBukkit(state.getBlock().asItem());
     }
 
     @Override

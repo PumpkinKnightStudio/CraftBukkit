@@ -9,11 +9,11 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.SuspiciousStewMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -100,8 +100,8 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.SUSPICIOUS_STEW;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.SUSPICIOUS_STEW;
     }
 
     @Override

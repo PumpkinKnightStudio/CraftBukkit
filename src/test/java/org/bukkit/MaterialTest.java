@@ -19,7 +19,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.material.MaterialData;
@@ -129,8 +128,7 @@ public class MaterialTest extends AbstractTestingBase {
     @Test
     public void verifyMapping() {
         Map<MinecraftKey, Material> materials = Maps.newHashMap();
-        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
-            Material material = it.next();
+        for (Material material : Material.values()) {
             if (INVALIDATED_MATERIALS.contains(material)) {
                 continue;
             }
@@ -158,8 +156,7 @@ public class MaterialTest extends AbstractTestingBase {
 
     @Test
     public void verifyMaterialOrder() {
-        Material[] materials = Lists.newArrayList(Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator())).toArray(new Material[0]);
-        List<Material> expectedOrder = new ArrayList<>(materials.length);
+        List<Material> expectedOrder = new ArrayList<>(Material.values().length);
 
         // Start with items in the same order as BuiltInRegistries.ITEM
         StreamSupport.stream(BuiltInRegistries.ITEM.spliterator(), false)
@@ -173,11 +170,11 @@ public class MaterialTest extends AbstractTestingBase {
                 .forEach(expectedOrder::add);
 
         // Then legacy materials in order of ID
-        Arrays.stream(materials)
+        Arrays.stream(Material.values())
                 .filter(Material::isLegacy)
                 .sorted(Comparator.comparingInt(Material::getId))
                 .forEach(expectedOrder::add);
 
-        assertArrayEquals(expectedOrder.toArray(), materials);
+        assertArrayEquals(expectedOrder.toArray(), Material.values());
     }
 }

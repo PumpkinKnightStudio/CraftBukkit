@@ -25,7 +25,6 @@ import net.minecraft.world.phys.MovingObjectPositionBlock;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.EquipmentSlot;
@@ -39,7 +38,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * Since ItemType and BlockType are pulling directly from the minecraft it is no longer needed for them
+ */
 @RunWith(Parameterized.class)
+@Deprecated
 public class PerMaterialTest extends AbstractTestingBase {
     private static Map<Block, Integer> fireValues;
 
@@ -51,8 +54,7 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Parameters(name = "{index}: {0}")
     public static List<Object[]> data() {
         List<Object[]> list = Lists.newArrayList();
-        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
-            Material material = it.next();
+        for (Material material : Material.values()) {
             if (!material.isLegacy()) {
                 list.add(new Object[] {material});
             }
@@ -109,6 +111,7 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Test
     public void maxStackSize() {
         if (INVALIDATED_MATERIALS.contains(material)) return;
+        if (!material.isItem()) return;
 
         final ItemStack bukkit = new ItemStack(material);
         final CraftItemStack craft = CraftItemStack.asCraftCopy(bukkit);
@@ -179,10 +182,11 @@ public class PerMaterialTest extends AbstractTestingBase {
 
     @Test
     public void usesDurability() {
+        if (!material.isItem()) return;
         if (!material.isBlock()) {
-            assertThat(EnchantmentTarget.BREAKABLE.includes(material), is(CraftMagicNumbers.getItem(material).canBeDepleted()));
+            assertThat(EnchantmentTarget.BREAKABLE.includes(material.asItemType()), is(CraftMagicNumbers.getItem(material).canBeDepleted()));
         } else {
-            assertFalse(EnchantmentTarget.BREAKABLE.includes(material));
+            assertFalse(EnchantmentTarget.BREAKABLE.includes(material.asItemType()));
         }
     }
 
@@ -283,9 +287,9 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Test
     public void testBlockDataClass() {
         if (material.isBlock()) {
-            Class<?> expectedClass = material.getBlockDataClass();
+            Class<?> expectedClass = material.data;
             if (expectedClass != MaterialData.class) {
-                BlockData blockData = Bukkit.createBlockData(material);
+                BlockData blockData = Bukkit.createBlockData(material.asBlockType());
                 assertTrue(expectedClass + " <> " + blockData.getClass(), expectedClass.isInstance(blockData));
             }
         }

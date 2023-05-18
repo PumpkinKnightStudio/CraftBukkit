@@ -12,11 +12,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -26,11 +26,11 @@ import org.bukkit.potion.PotionType;
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
-    private static final Set<Material> POTION_MATERIALS = Sets.newHashSet(
-            Material.POTION,
-            Material.SPLASH_POTION,
-            Material.LINGERING_POTION,
-            Material.TIPPED_ARROW
+    private static final Set<ItemType> POTION_ITEM_TYPES = Sets.newHashSet(
+            ItemType.POTION,
+            ItemType.SPLASH_POTION,
+            ItemType.LINGERING_POTION,
+            ItemType.TIPPED_ARROW
     );
 
     static final ItemMetaKey AMPLIFIER = new ItemMetaKey("Amplifier", "amplifier");
@@ -156,8 +156,8 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return POTION_MATERIALS.contains(type);
+    boolean applicableTo(ItemType type) {
+        return POTION_ITEM_TYPES.contains(type);
     }
 
     @Override

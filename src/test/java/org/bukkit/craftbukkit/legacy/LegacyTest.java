@@ -8,6 +8,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Assert;
@@ -119,8 +120,7 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void toLegacyMaterial() {
-        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
-            Material material = it.next();
+        for (Material material : Material.values()) {
             if (!INVALIDATED_MATERIALS.contains(material) && !material.isLegacy()) {
                 MaterialData converted = CraftLegacy.toLegacyData(material);
 
@@ -140,8 +140,7 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void fromLegacyMaterial() {
-        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
-            Material material = it.next();
+        for (Material material : Material.values()) {
             if (!INVALIDATED_MATERIALS.contains(material) && material.isLegacy()) {
                 Material converted = CraftLegacy.fromLegacy(material);
                 Assert.assertNotEquals("Could not fromLegacy " + material, Material.AIR, converted);
@@ -169,7 +168,6 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void testManual() {
-        Assert.assertEquals(Material.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getMaterial("dandelion_yellow", 1631));
-        Assert.assertEquals(Material.OAK_WALL_SIGN, CraftMagicNumbers.INSTANCE.getMaterial("wall_sign", 1631));
+        Assert.assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemTyp("dandelion_yellow", 1631));
     }
 }

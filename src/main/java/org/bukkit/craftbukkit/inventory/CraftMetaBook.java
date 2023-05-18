@@ -18,6 +18,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.BookMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -192,8 +193,8 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.WRITTEN_BOOK || type == ItemType.WRITABLE_BOOK;
     }
 
     @Override

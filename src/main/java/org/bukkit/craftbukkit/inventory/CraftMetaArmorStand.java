@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.inventory.ItemType;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaArmorStand extends CraftMetaItem {
@@ -62,8 +62,8 @@ public class CraftMetaArmorStand extends CraftMetaItem {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.ARMOR_STAND;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.ARMOR_STAND;
     }
 
     @Override

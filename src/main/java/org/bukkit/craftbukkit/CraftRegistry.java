@@ -19,13 +19,16 @@ import org.bukkit.Sound;
 import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.CraftBiome;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.craftbukkit.generator.strucutre.CraftStructure;
 import org.bukkit.craftbukkit.generator.strucutre.CraftStructureType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
@@ -35,6 +38,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffectType;
@@ -82,9 +86,6 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         if (bukkitClass == Sound.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.SOUND_EVENT), CraftSound::new);
         }
-        if (bukkitClass == Material.class) {
-            return new CraftMaterial.CraftMaterialRegistry(registryHolder.registryOrThrow(Registries.BLOCK), registryHolder.registryOrThrow(Registries.ITEM));
-        }
         if (bukkitClass == Statistic.class) {
             return new CraftStatistic.CraftStatisticRegistry(registryHolder.registryOrThrow(Registries.STAT_TYPE));
         }
@@ -93,6 +94,12 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == TrimPattern.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.TRIM_PATTERN), CraftTrimPattern::new);
+        }
+        if (bukkitClass == BlockType.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.BLOCK), CraftBlockType::new);
+        }
+        if (bukkitClass == ItemType.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.ITEM), CraftItemType::new);
         }
 
         return null;

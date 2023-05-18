@@ -9,10 +9,10 @@ import java.util.UUID;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagString;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagAdapterContext;
@@ -80,7 +80,7 @@ public class DeprecatedItemMetaCustomValueTest extends AbstractTestingBase {
     }
 
     private ItemMeta createNewItemMeta() {
-        return Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        return Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
     }
 
     private NamespacedKey requestKey(String keyName) {
@@ -110,7 +110,7 @@ public class DeprecatedItemMetaCustomValueTest extends AbstractTestingBase {
 
     @Test
     public void testYAMLStoring() {
-        ItemStack stack = new ItemStack(Material.DIAMOND);
+        ItemStack stack = new ItemStack(ItemType.DIAMOND);
         CraftMetaItem meta = createComplexItemMeta();
         stack.setItemMeta(meta);
 
@@ -121,12 +121,12 @@ public class DeprecatedItemMetaCustomValueTest extends AbstractTestingBase {
         YamlConfiguration loadedConfig = YamlConfiguration.loadConfiguration(new StringReader(configValue));
 
         assertEquals(stack, loadedConfig.getSerializable("testpath", ItemStack.class));
-        assertNotEquals(new ItemStack(Material.DIAMOND), loadedConfig.getSerializable("testpath", ItemStack.class));
+        assertNotEquals(new ItemStack(ItemType.DIAMOND), loadedConfig.getSerializable("testpath", ItemStack.class));
     }
 
     @Test
     public void testCorrectType() {
-        ItemStack stack = new ItemStack(Material.DIAMOND);
+        ItemStack stack = new ItemStack(ItemType.DIAMOND);
         CraftMetaItem meta = createComplexItemMeta();
 
         meta.getCustomTagContainer().setCustomTag(requestKey("int"), ItemTagType.STRING, "1");

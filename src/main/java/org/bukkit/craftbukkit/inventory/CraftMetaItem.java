@@ -52,6 +52,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -60,6 +61,7 @@ import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.Overridden;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.tags.DeprecatedCustomTagContainer;
@@ -72,6 +74,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -87,7 +90,7 @@ import org.bukkit.persistence.PersistentDataContainer;
  * <li> Constructor(Map&lt;String, Object&gt; map)
  * <br><br>
  * <li> void applyToItem(NBTTagCompound tag)
- * <li> boolean applicableTo(Material type)
+ * <li> boolean applicableTo(ItemType type)
  * <br><br>
  * <li> boolean equalsCommon(CraftMetaItem meta)
  * <li> boolean notUncommon(CraftMetaItem meta)
@@ -739,8 +742,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Overridden
-    boolean applicableTo(Material type) {
-        return type != Material.AIR;
+    boolean applicableTo(ItemType type) {
+        return type != ItemType.AIR;
     }
 
     @Overridden
@@ -917,8 +920,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
-    public BlockData getBlockData(Material material) {
-        return CraftBlockData.fromData(ItemBlock.getBlockState(CraftMagicNumbers.getBlock(material).defaultBlockState(), blockData));
+    public BlockData getBlockData(BlockType<?> blockType) {
+        return CraftBlockData.fromData(ItemBlock.getBlockState(((CraftBlockType<?>) blockType).getHandle().defaultBlockState(), blockData));
     }
 
     @Override
@@ -1287,8 +1290,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     void serializeInternal(final Map<String, NBTBase> unhandledTags) {
     }
 
-    Material updateMaterial(Material material) {
-        return material;
+    ItemType updateMaterial(ItemType itemType) {
+        return itemType;
     }
 
     static void serializeEnchantments(Map<Enchantment, Integer> enchantments, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {

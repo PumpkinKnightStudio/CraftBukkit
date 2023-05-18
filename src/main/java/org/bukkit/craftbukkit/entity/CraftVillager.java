@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import java.util.Locale;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
@@ -12,13 +11,10 @@ import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.block.BlockBed;
 import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.material.FluidType;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Fluid;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;

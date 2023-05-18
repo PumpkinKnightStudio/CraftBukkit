@@ -8,7 +8,10 @@ import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.Potion;
 
 public class CraftEffect {
@@ -25,8 +28,13 @@ public class CraftEffect {
             datavalue = ((Color) data).asRGB();
             break;
         case RECORD_PLAY:
-            Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
-            datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
+            if (data instanceof Material) {
+                Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
+                datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
+            } else {
+                Validate.isTrue(data == ItemType.AIR || ((ItemType) data).isRecord(), "Invalid record type!");
+                datavalue = Item.getId(((CraftItemType) data).getHandle());
+            }
             break;
         case SMOKE:
             switch ((BlockFace) data) {
@@ -59,8 +67,12 @@ public class CraftEffect {
             }
             break;
         case STEP_SOUND:
-            Validate.isTrue(((Material) data).isBlock(), "Material is not a block!");
-            datavalue = Block.getId(CraftMagicNumbers.getBlock((Material) data).defaultBlockState());
+            if (data instanceof Material) {
+                Validate.isTrue(((Material) data).isBlock(), "Material is not a block!");
+                datavalue = Block.getId(CraftMagicNumbers.getBlock((Material) data).defaultBlockState());
+            } else {
+                datavalue = Block.getId(((CraftBlockType<?>) data).getHandle().defaultBlockState());
+            }
             break;
         case COMPOSTER_FILL_ATTEMPT:
             datavalue = ((Boolean) data) ? 1 : 0;

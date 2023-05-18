@@ -2,9 +2,9 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.animal.EntityPig;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Pig;
+import org.bukkit.inventory.ItemType;
 
 public class CraftPig extends CraftAnimals implements Pig {
 
@@ -52,8 +52,8 @@ public class CraftPig extends CraftAnimals implements Pig {
     }
 
     @Override
-    public Material getSteerMaterial() {
-        return Material.CARROT_ON_A_STICK;
+    public ItemType getSteerItemType() {
+        return ItemType.CARROT_ON_A_STICK;
     }
 
     @Override

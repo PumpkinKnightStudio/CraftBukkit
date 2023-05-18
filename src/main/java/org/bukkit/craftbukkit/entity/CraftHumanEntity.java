@@ -33,9 +33,9 @@ import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -46,6 +46,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -59,6 +60,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
@@ -337,7 +339,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
         if (!force) {
             Block block = location.getBlock();
-            if (block.getType() != Material.CRAFTING_TABLE) {
+            if (block.getType() != BlockType.CRAFTING_TABLE) {
                 return null;
             }
         }
@@ -355,7 +357,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
         if (!force) {
             Block block = location.getBlock();
-            if (block.getType() != Material.ENCHANTING_TABLE) {
+            if (block.getType() != BlockType.ENCHANTING_TABLE) {
                 return null;
             }
         }
@@ -487,29 +489,26 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
-    public boolean hasCooldown(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        Preconditions.checkArgument(material.isItem(), "Material %s is not an item", material);
+    public boolean hasCooldown(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
 
-        return getHandle().getCooldowns().isOnCooldown(CraftMagicNumbers.getItem(material));
+        return getHandle().getCooldowns().isOnCooldown(((CraftItemType) itemType).getHandle());
     }
 
     @Override
-    public int getCooldown(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        Preconditions.checkArgument(material.isItem(), "Material %s is not an item", material);
+    public int getCooldown(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
 
-        ItemCooldown.Info cooldown = getHandle().getCooldowns().cooldowns.get(CraftMagicNumbers.getItem(material));
+        ItemCooldown.Info cooldown = getHandle().getCooldowns().cooldowns.get(((CraftItemType) itemType).getHandle());
         return (cooldown == null) ? 0 : Math.max(0, cooldown.endTime - getHandle().getCooldowns().tickCount);
     }
 
     @Override
-    public void setCooldown(Material material, int ticks) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        Preconditions.checkArgument(material.isItem(), "Material %s is not an item", material);
+    public void setCooldown(ItemType itemType, int ticks) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         Preconditions.checkArgument(ticks >= 0, "Cannot have negative cooldown");
 
-        getHandle().getCooldowns().addCooldown(CraftMagicNumbers.getItem(material), ticks);
+        getHandle().getCooldowns().addCooldown(((CraftItemType) itemType).getHandle(), ticks);
     }
 
     @Override
@@ -679,7 +678,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     @Override
     public Firework fireworkBoost(ItemStack fireworkItemStack) {
         Preconditions.checkArgument(fireworkItemStack != null, "fireworkItemStack must not be null");
-        Preconditions.checkArgument(fireworkItemStack.getType() == Material.FIREWORK_ROCKET, "fireworkItemStack must be of type %s", Material.FIREWORK_ROCKET);
+        Preconditions.checkArgument(fireworkItemStack.getType() == ItemType.FIREWORK_ROCKET, "fireworkItemStack must be of type %s", ItemType.FIREWORK_ROCKET);
 
         EntityFireworks fireworks = new EntityFireworks(getHandle().level, CraftItemStack.asNMSCopy(fireworkItemStack), getHandle());
         boolean success = getHandle().level.addFreshEntity(fireworks, SpawnReason.CUSTOM);

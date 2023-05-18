@@ -31,13 +31,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftFluidCollisionMode;
@@ -152,7 +152,7 @@ public class CraftBlock implements Block {
     }
 
     private void setData(final byte data, int flag) {
-        world.setBlock(position, CraftMagicNumbers.getBlock(getType(), data), flag);
+        world.setBlock(position, CraftMagicNumbers.getBlock(CraftMagicNumbers.toMaterial(getType()), data), flag);
     }
 
     @Override
@@ -167,13 +167,13 @@ public class CraftBlock implements Block {
     }
 
     @Override
-    public void setType(final Material type) {
+    public void setType(final BlockType<?> type) {
         setType(type, true);
     }
 
     @Override
-    public void setType(Material type, boolean applyPhysics) {
-        Preconditions.checkArgument(type != null, "Material cannot be null");
+    public void setType(BlockType<?> type, boolean applyPhysics) {
+        Preconditions.checkArgument(type != null, "BlockType cannot be null");
         setBlockData(type.createBlockData(), applyPhysics);
     }
 
@@ -220,8 +220,8 @@ public class CraftBlock implements Block {
     }
 
     @Override
-    public Material getType() {
-        return CraftMagicNumbers.getMaterial(world.getBlockState(position).getBlock());
+    public BlockType<?> getType() {
+        return CraftBlockType.minecraftToBukkit(world.getBlockState(position).getBlock());
     }
 
     @Override
@@ -384,7 +384,7 @@ public class CraftBlock implements Block {
         int power = world.getMinecraftWorld().getSignal(position, blockFaceToNotch(face));
 
         Block relative = getRelative(face);
-        if (relative.getType() == Material.REDSTONE_WIRE) {
+        if (relative.getType() == BlockType.REDSTONE_WIRE) {
             return Math.max(power, relative.getData()) > 0;
         }
 

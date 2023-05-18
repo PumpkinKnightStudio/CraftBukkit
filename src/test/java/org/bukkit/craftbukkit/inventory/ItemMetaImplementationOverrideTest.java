@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.Overridden;
+import org.bukkit.inventory.ItemType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -24,8 +24,8 @@ public class ItemMetaImplementationOverrideTest {
         final List<Object[]> testData = new ArrayList<Object[]>();
         List<Class<? extends CraftMetaItem>> classes = new ArrayList<Class<? extends CraftMetaItem>>();
 
-        for (Material material : ItemStackTest.COMPOUND_MATERIALS) {
-            Class<? extends CraftMetaItem> clazz = CraftItemFactory.instance().getItemMeta(material).getClass().asSubclass(parent);
+        for (ItemType itemType : ItemStackTest.COMPOUND_ITEM_TYPES) {
+            Class<? extends CraftMetaItem> clazz = CraftItemFactory.instance().getItemMeta(itemType).getClass().asSubclass(parent);
             if (clazz != parent) {
                 classes.add(clazz);
             }

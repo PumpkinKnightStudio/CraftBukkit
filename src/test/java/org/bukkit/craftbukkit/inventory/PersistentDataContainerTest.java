@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -79,7 +80,7 @@ public class PersistentDataContainerTest extends AbstractTestingBase {
     }
 
     private ItemMeta createNewItemMeta() {
-        return Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        return Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
     }
 
     private NamespacedKey requestKey(String keyName) {

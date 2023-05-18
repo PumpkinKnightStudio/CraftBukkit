@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
+import org.bukkit.Material;
 import org.bukkit.plugin.AuthorNagException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -409,7 +409,10 @@ public class Commodore
 
                         if ( owner.equals( "org/bukkit/Material" ) )
                         {
-                            if ( CraftLegacyMaterial.getLegacyMaterial( "LEGACY_" + name ) == null )
+                            try
+                            {
+                                Material.valueOf( "LEGACY_" + name );
+                            } catch ( IllegalArgumentException ex )
                             {
                                 throw new AuthorNagException( "No legacy enum constant for " + name + ". Did you forget to define a modern (1.13+) api-version in your plugin.yml?" );
                             }

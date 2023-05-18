@@ -2,15 +2,13 @@ package org.bukkit.craftbukkit.inventory;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Material;
 import org.bukkit.Registry;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
@@ -23,46 +21,37 @@ import org.junit.runners.Parameterized.Parameters;
 public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final ItemFactory factory = CraftItemFactory.instance();
     static final StringBuilder buffer = new StringBuilder();
-    static final Material[] materials;
+    static final ItemType[] itemTypes;
 
     static {
-        Material[] local_materials = Lists.newArrayList(Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator())).toArray(new Material[0]);
-        List<Material> list = new ArrayList<Material>(local_materials.length);
-        for (Material material : local_materials) {
-            if (INVALIDATED_MATERIALS.contains(material)) {
-                continue;
-            }
-
-            list.add(material);
-        }
-        materials = list.toArray(new Material[list.size()]);
+        itemTypes = Lists.newArrayList(Registry.ITEM_TYPE).toArray(new ItemType[0]);
     }
 
-    static String name(Material from, Material to) {
+    static String name(ItemType from, ItemType to) {
         if (from.getClass() == to.getClass()) {
-            return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append(' ').append(from.name()).append(" to ").append(to.name()).toString();
+            return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append(' ').append(from.getKey()).append(" to ").append(to.getKey()).toString();
         }
-        return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append('(').append(from.name()).append(") to ").append(to.getClass().getName()).append('(').append(to.name()).append(')').toString();
+        return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append('(').append(from.getKey()).append(") to ").append(to.getClass().getName()).append('(').append(to.getKey()).append(')').toString();
     }
 
-    @Parameters(name = "Material[{index}]:{0}")
+    @Parameters(name = "ItemType[{index}]:{0}")
     public static List<Object[]> data() {
         List<Object[]> list = new ArrayList<Object[]>();
-        for (Material material : materials) {
-            list.add(new Object[] {material});
+        for (ItemType itemType : itemTypes) {
+            list.add(new Object[] {itemType});
         }
         return list;
     }
 
-    @Parameter(0) public Material material;
+    @Parameter(0) public ItemType itemType;
 
     @Test
     public void itemStack() {
-        ItemStack bukkitStack = new ItemStack(material);
+        ItemStack bukkitStack = new ItemStack(itemType);
         CraftItemStack craftStack = CraftItemStack.asCraftCopy(bukkitStack);
-        ItemMeta meta = factory.getItemMeta(material);
+        ItemMeta meta = factory.getItemMeta(itemType);
         if (meta == null) {
-            assertThat(material, is(Material.AIR));
+            assertThat(itemType, is(ItemType.AIR));
         } else {
             assertTrue(factory.isApplicable(meta, bukkitStack));
             assertTrue(factory.isApplicable(meta, craftStack));
@@ -71,36 +60,36 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
 
     @Test
     public void generalCase() {
-        CraftMetaItem meta = (CraftMetaItem) factory.getItemMeta(material);
+        CraftMetaItem meta = (CraftMetaItem) factory.getItemMeta(itemType);
         if (meta == null) {
-            assertThat(material, is(Material.AIR));
+            assertThat(itemType, is(ItemType.AIR));
         } else {
-            assertTrue(factory.isApplicable(meta, material));
-            assertTrue(meta.applicableTo(material));
+            assertTrue(factory.isApplicable(meta, itemType));
+            assertTrue(meta.applicableTo(itemType));
 
             meta = meta.clone();
-            assertTrue(factory.isApplicable(meta, material));
-            assertTrue(meta.applicableTo(material));
+            assertTrue(factory.isApplicable(meta, itemType));
+            assertTrue(meta.applicableTo(itemType));
         }
     }
 
     @Test
     public void asMetaFor() {
-        final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(material);
+        final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(itemType);
         if (baseMeta == null) {
-            assertThat(material, is(Material.AIR));
+            assertThat(itemType, is(ItemType.AIR));
             return;
         }
 
-        for (Material other : materials) {
+        for (ItemType other : itemTypes) {
             final ItemStack bukkitStack = new ItemStack(other);
             final CraftItemStack craftStack = CraftItemStack.asCraftCopy(bukkitStack);
             final CraftMetaItem otherMeta = (CraftMetaItem) factory.asMetaFor(baseMeta, other);
 
-            final String testName = name(material, other);
+            final String testName = name(itemType, other);
 
             if (otherMeta == null) {
-                assertThat(testName, other, is(Material.AIR));
+                assertThat(testName, other, is(ItemType.AIR));
                 continue;
             }
 
@@ -113,13 +102,13 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
 
     @Test
     public void blankEqualities() {
-        if (material == Material.AIR) {
+        if (itemType == ItemType.AIR) {
             return;
         }
-        final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(material);
+        final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(itemType);
         final CraftMetaItem baseMetaClone = baseMeta.clone();
 
-        final ItemStack baseMetaStack = new ItemStack(material);
+        final ItemStack baseMetaStack = new ItemStack(itemType);
         baseMetaStack.setItemMeta(baseMeta);
 
         assertThat(baseMeta, is(not(sameInstance(baseMetaStack.getItemMeta()))));
@@ -135,13 +124,13 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         assertThat(baseMeta, is(baseMetaClone));
         assertThat(baseMetaClone, is(baseMeta));
 
-        for (Material other : materials) {
-            final String testName = name(material, other);
+        for (ItemType other : itemTypes) {
+            final String testName = name(itemType, other);
 
             final CraftMetaItem otherMeta = (CraftMetaItem) factory.asMetaFor(baseMetaClone, other);
 
             if (otherMeta == null) {
-                assertThat(testName, other, is(Material.AIR));
+                assertThat(testName, other, is(ItemType.AIR));
                 continue;
             }
 

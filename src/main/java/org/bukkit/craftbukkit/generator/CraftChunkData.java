@@ -7,11 +7,12 @@ import net.minecraft.world.level.block.ITileEntity;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.IChunkAccess;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBiome;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -65,8 +66,8 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Material material) {
-        setBlock(x, y, z, material.createBlockData());
+    public void setBlock(int x, int y, int z, BlockType<?> blockType) {
+        setBlock(x, y, z, blockType.createBlockData());
     }
 
     @Override
@@ -80,8 +81,8 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, Material material) {
-        setRegion(xMin, yMin, zMin, xMax, yMax, zMax, material.createBlockData());
+    public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, BlockType<?> blockType) {
+        setRegion(xMin, yMin, zMin, xMax, yMax, zMax, blockType.createBlockData());
     }
 
     @Override
@@ -95,8 +96,8 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public Material getType(int x, int y, int z) {
-        return CraftMagicNumbers.getMaterial(getTypeId(x, y, z).getBlock());
+    public BlockType<?> getType(int x, int y, int z) {
+        return CraftBlockType.minecraftToBukkit(getTypeId(x, y, z).getBlock());
     }
 
     @Override
@@ -170,7 +171,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
         if (type.hasBlockEntity()) {
             TileEntity tileEntity = ((ITileEntity) type.getBlock()).newBlockEntity(blockPosition, type);
 
-            // createTile can return null, currently only the case with material MOVING_PISTON
+            // createTile can return null, currently only the case with block type MOVING_PISTON
             if (tileEntity == null) {
                 access.removeBlockEntity(blockPosition);
             } else {

@@ -221,17 +221,12 @@ public final class CraftLegacy {
     }
 
     public static Material[] values() {
-        return CraftLegacyMaterial.MATERIAL_MAP.values().toArray(new CraftLegacyMaterial[0]);
+        Material[] values = Material.values();
+        return Arrays.copyOfRange(values, Material.LEGACY_AIR.ordinal(), values.length);
     }
 
     public static Material valueOf(String name) {
-        Material material = (name.startsWith(Material.LEGACY_PREFIX)) ? CraftLegacyMaterial.getLegacyMaterial(name) : CraftLegacyMaterial.getLegacyMaterial(Material.LEGACY_PREFIX + name);
-
-        if (material == null) {
-            throw new IllegalArgumentException("No legacy material with the name " + name);
-        }
-
-        return material;
+        return (name.startsWith(Material.LEGACY_PREFIX)) ? Material.valueOf(name) : Material.valueOf(Material.LEGACY_PREFIX + name);
     }
 
     public static Material getMaterial(String name) {
@@ -322,8 +317,10 @@ public final class CraftLegacy {
         SharedConstants.tryDetectVersion();
         DispenserRegistry.bootStrap();
 
-        for (Material material : CraftLegacyMaterial.MATERIAL_MAP.values()) {
-
+        for (Material material : Material.values()) {
+            if (!material.isLegacy()) {
+                continue;
+            }
             // Handle blocks
             if (material.isBlock()) {
                 for (byte data = 0; data < 16; data++) {

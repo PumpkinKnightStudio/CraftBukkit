@@ -2,9 +2,8 @@ package org.bukkit.craftbukkit.util;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -46,16 +45,20 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
+import org.bukkit.inventory.CreativeCategory;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -84,6 +87,15 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return getItem(material);
+    }
+
+    public static Material toMaterial(BlockType<?> blockType) {
+        Material material = Material.matchMaterial(blockType.getKey().toString());
+        if (material == null) {
+            return Material.AIR;
+        }
+
+        return material;
     }
 
     public static MaterialData getMaterialData(Item item) {
@@ -178,28 +190,38 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     @Override
+    public Material toMaterial(ItemType itemType) {
+        return null;
+    }
+
+    @Override
     public BlockData fromLegacy(Material material, byte data) {
         return CraftBlockData.fromData(getBlock(material, data));
     }
 
     @Override
-    public Material getMaterial(String material, int version) {
-        Preconditions.checkArgument(material != null, "material == null");
+    public ItemType getItemTyp(String itemType, int version) {
+        Preconditions.checkArgument(itemType != null, "itemType == null");
         Preconditions.checkArgument(version <= this.getDataVersion(), "Newer version! Server downgrades are not supported!");
 
         // Fastpath up to date materials
         if (version == this.getDataVersion()) {
-            return Material.getMaterial(material);
+            return Registry.ITEM_TYPE.get(NamespacedKey.fromString(itemType));
         }
 
-        Dynamic<NBTBase> name = new Dynamic<>(DynamicOpsNBT.INSTANCE, NBTTagString.valueOf("minecraft:" + material.toLowerCase(Locale.ROOT)));
+        itemType = itemType.toLowerCase(Locale.ROOT);
+        if (!itemType.startsWith("minecraft:")) {
+            itemType = "minecraft:" + itemType;
+        }
+
+        Dynamic<NBTBase> name = new Dynamic<>(DynamicOpsNBT.INSTANCE, NBTTagString.valueOf(itemType));
         Dynamic<NBTBase> converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.ITEM_NAME, name, version, this.getDataVersion());
 
         if (name.equals(converted)) {
             converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.BLOCK_NAME, name, version, this.getDataVersion());
         }
 
-        return Material.matchMaterial(converted.asString(""));
+        return Registry.ITEM_TYPE.get(NamespacedKey.fromString(converted.asString("")));
     }
 
     /**
@@ -285,13 +307,23 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     @Override
-    public Material createLegacyMaterial(String name, int id, int maxStackSize, short maxDurability, Class<? extends MaterialData> materialData) {
-        return CraftLegacyMaterial.createLegacyMaterial(name, id, maxStackSize, maxDurability, materialData);
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot equipmentSlot) {
+        return null;
     }
 
     @Override
-    public Material getLegacyMaterial(String name) {
-        return CraftLegacyMaterial.getLegacyMaterial(name);
+    public CreativeCategory getCreativeCategory(Material material) {
+        return null;
+    }
+
+    @Override
+    public String getBlockTranslationKey(Material material) {
+        return null;
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        return null;
     }
 
     private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19");

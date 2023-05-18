@@ -5,13 +5,14 @@ import net.minecraft.world.level.block.BlockJukeBox;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityJukeBox;
 import org.bukkit.Effect;
-import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventoryJukebox;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.JukeboxInventory;
 
 public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> implements Jukebox {
@@ -38,14 +39,14 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
     public boolean update(boolean force, boolean applyPhysics) {
         boolean result = super.update(force, applyPhysics);
 
-        if (result && this.isPlaced() && this.getType() == Material.JUKEBOX) {
-            Material record = this.getPlaying();
+        if (result && this.isPlaced() && this.getType() == BlockType.JUKEBOX) {
+            ItemType record = this.getPlaying();
             getWorldHandle().setBlock(this.getPosition(), data, 3);
 
             TileEntity tileEntity = this.getTileEntityFromWorld();
             if (tileEntity instanceof TileEntityJukeBox jukebox) {
                 CraftWorld world = (CraftWorld) this.getWorld();
-                if (record.isAir()) {
+                if (record == ItemType.AIR) {
                     jukebox.setRecordWithoutPlaying(ItemStack.EMPTY);
                     world.playEffect(this.getLocation(), Effect.IRON_DOOR_CLOSE, 0); // TODO: Fix this enum constant. This stops jukeboxes
                 } else {
@@ -58,14 +59,14 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
     }
 
     @Override
-    public Material getPlaying() {
+    public ItemType getPlaying() {
         return getRecord().getType();
     }
 
     @Override
-    public void setPlaying(Material record) {
-        if (record == null || CraftMagicNumbers.getItem(record) == null) {
-            record = Material.AIR;
+    public void setPlaying(ItemType record) {
+        if (record == null) {
+            record = ItemType.AIR;
         }
 
         setRecord(new org.bukkit.inventory.ItemStack(record));
@@ -73,7 +74,7 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
 
     @Override
     public boolean hasRecord() {
-        return getHandle().getValue(BlockJukeBox.HAS_RECORD) && !getPlaying().isAir();
+        return getHandle().getValue(BlockJukeBox.HAS_RECORD) && getPlaying() != ItemType.AIR;
     }
 
     @Override

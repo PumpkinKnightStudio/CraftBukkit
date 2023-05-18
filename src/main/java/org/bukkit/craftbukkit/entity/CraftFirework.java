@@ -6,11 +6,11 @@ import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.projectile.EntityFireworks;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 public class CraftFirework extends CraftProjectile implements Firework {
@@ -31,8 +31,8 @@ public class CraftFirework extends CraftProjectile implements Firework {
         this.item = CraftItemStack.asCraftMirror(item);
 
         // Ensure the item is a firework...
-        if (this.item.getType() != Material.FIREWORK_ROCKET) {
-            this.item.setType(Material.FIREWORK_ROCKET);
+        if (this.item.getType() != ItemType.FIREWORK_ROCKET) {
+            this.item.setType(ItemType.FIREWORK_ROCKET);
         }
     }
 

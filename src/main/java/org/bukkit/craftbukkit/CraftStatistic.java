@@ -18,13 +18,15 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Statistic;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.block.BlockType;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemType;
 
 public class CraftStatistic extends Statistic {
     private static int count = 0;
@@ -49,25 +51,33 @@ public class CraftStatistic extends Statistic {
         return nms;
     }
 
-    public static net.minecraft.stats.Statistic getMaterialStatistic(org.bukkit.Statistic stat, Material material) {
+    public static net.minecraft.stats.Statistic getItemTypeStatistic(org.bukkit.Statistic stat, ItemType itemType) {
         try {
-            if (stat == Statistic.MINE_BLOCK) {
-                return StatisticList.BLOCK_MINED.get(CraftMagicNumbers.getBlock(material));
-            }
             if (stat == Statistic.CRAFT_ITEM) {
-                return StatisticList.ITEM_CRAFTED.get(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_CRAFTED.get(((CraftItemType) itemType).getHandle());
             }
             if (stat == Statistic.USE_ITEM) {
-                return StatisticList.ITEM_USED.get(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_USED.get(((CraftItemType) itemType).getHandle());
             }
             if (stat == Statistic.BREAK_ITEM) {
-                return StatisticList.ITEM_BROKEN.get(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_BROKEN.get(((CraftItemType) itemType).getHandle());
             }
             if (stat == Statistic.PICKUP) {
-                return StatisticList.ITEM_PICKED_UP.get(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_PICKED_UP.get(((CraftItemType) itemType).getHandle());
             }
             if (stat == Statistic.DROP) {
-                return StatisticList.ITEM_DROPPED.get(CraftMagicNumbers.getItem(material));
+                return StatisticList.ITEM_DROPPED.get(((CraftItemType) itemType).getHandle());
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+        return null;
+    }
+
+    public static net.minecraft.stats.Statistic getBlockTypeStatistic(org.bukkit.Statistic stat, BlockType<?> blockType) {
+        try {
+            if (stat == Statistic.MINE_BLOCK) {
+                return StatisticList.BLOCK_MINED.get(((CraftBlockType<?>) blockType).getHandle());
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;
@@ -94,12 +104,16 @@ public class CraftStatistic extends Statistic {
         return EntityType.fromName(name.getPath());
     }
 
-    public static Material getMaterialFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
+    public static ItemType getItemTypeFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
         if (statistic.getValue() instanceof Item) {
-            return CraftMagicNumbers.getMaterial((Item) statistic.getValue());
+            return CraftItemType.minecraftToBukkit((Item) statistic.getValue());
         }
+        return null;
+    }
+
+    public static BlockType<?> getBlockTypeFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
         if (statistic.getValue() instanceof Block) {
-            return CraftMagicNumbers.getMaterial((Block) statistic.getValue());
+            return CraftBlockType.minecraftToBukkit((Block) statistic.getValue());
         }
         return null;
     }
@@ -136,40 +150,77 @@ public class CraftStatistic extends Statistic {
         manager.setValue(null, nmsStatistic, newValue);;
     }
 
-    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material) {
-        incrementStatistic(manager, statistic, material, 1);
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType) {
+        incrementStatistic(manager, statistic, itemType, 1);
     }
 
-    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material) {
-        decrementStatistic(manager, statistic, material, 1);
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType) {
+        decrementStatistic(manager, statistic, itemType, 1);
     }
 
-    public static int getStatistic(ServerStatisticManager manager, Statistic statistic, Material material) {
+    public static int getStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType) {
         Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(material, "Material cannot be null");
-        Validate.isTrue(statistic.getType() == Type.BLOCK || statistic.getType() == Type.ITEM, "This statistic does not take a Material parameter");
-        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
-        Validate.notNull(nmsStatistic, "The supplied Material does not have a corresponding statistic");
+        Validate.notNull(itemType, "ItemType cannot be null");
+        Validate.isTrue(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getItemTypeStatistic(statistic, itemType);
+        Validate.notNull(nmsStatistic, "The supplied ItemType does not have a corresponding statistic");
         return manager.getValue(nmsStatistic);
     }
 
-    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material, int amount) {
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int amount) {
         Validate.isTrue(amount > 0, "Amount must be greater than 0");
-        setStatistic(manager, statistic, material, getStatistic(manager, statistic, material) + amount);
+        setStatistic(manager, statistic, itemType, getStatistic(manager, statistic, itemType) + amount);
     }
 
-    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, Material material, int amount) {
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int amount) {
         Validate.isTrue(amount > 0, "Amount must be greater than 0");
-        setStatistic(manager, statistic, material, getStatistic(manager, statistic, material) - amount);
+        setStatistic(manager, statistic, itemType, getStatistic(manager, statistic, itemType) - amount);
     }
 
-    public static void setStatistic(ServerStatisticManager manager, Statistic statistic, Material material, int newValue) {
+    public static void setStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int newValue) {
         Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(material, "Material cannot be null");
+        Validate.notNull(itemType, "ItemType cannot be null");
         Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
-        Validate.isTrue(statistic.getType() == Type.BLOCK || statistic.getType() == Type.ITEM, "This statistic does not take a Material parameter");
-        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getMaterialStatistic(statistic, material);
-        Validate.notNull(nmsStatistic, "The supplied Material does not have a corresponding statistic");
+        Validate.isTrue(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getItemTypeStatistic(statistic, itemType);
+        Validate.notNull(nmsStatistic, "The supplied ItemType does not have a corresponding statistic");
+        manager.setValue(null, nmsStatistic, newValue);
+    }
+
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType) {
+        incrementStatistic(manager, statistic, blockType, 1);
+    }
+
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType) {
+        decrementStatistic(manager, statistic, blockType, 1);
+    }
+
+    public static int getStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType) {
+        Validate.notNull(statistic, "Statistic cannot be null");
+        Validate.notNull(blockType, "BlockType cannot be null");
+        Validate.isTrue(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getBlockTypeStatistic(statistic, blockType);
+        Validate.notNull(nmsStatistic, "The supplied BlockType does not have a corresponding statistic");
+        return manager.getValue(nmsStatistic);
+    }
+
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int amount) {
+        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        setStatistic(manager, statistic, blockType, getStatistic(manager, statistic, blockType) + amount);
+    }
+
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int amount) {
+        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        setStatistic(manager, statistic, blockType, getStatistic(manager, statistic, blockType) - amount);
+    }
+
+    public static void setStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int newValue) {
+        Validate.notNull(statistic, "Statistic cannot be null");
+        Validate.notNull(blockType, "BlocKType cannot be null");
+        Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
+        Validate.isTrue(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getBlockTypeStatistic(statistic, blockType);
+        Validate.notNull(nmsStatistic, "The supplied BlockType does not have a corresponding statistic");
         manager.setValue(null, nmsStatistic, newValue);
     }
 

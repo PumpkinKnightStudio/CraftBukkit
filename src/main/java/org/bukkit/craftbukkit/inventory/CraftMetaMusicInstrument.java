@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
@@ -52,8 +53,8 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.GOAT_HORN;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.GOAT_HORN;
     }
 
     @Override

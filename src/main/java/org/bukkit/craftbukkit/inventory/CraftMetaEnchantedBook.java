@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -55,8 +56,8 @@ class CraftMetaEnchantedBook extends CraftMetaItem implements EnchantmentStorage
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.ENCHANTED_BOOK;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.ENCHANTED_BOOK;
     }
 
     @Override

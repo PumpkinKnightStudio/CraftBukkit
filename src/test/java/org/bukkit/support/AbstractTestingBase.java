@@ -1,9 +1,7 @@
 package org.bukkit.support;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.MoreExecutors;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandDispatcher;
@@ -24,8 +22,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.Material;
-import org.bukkit.Registry;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.junit.Assert;
 
@@ -67,8 +63,7 @@ public abstract class AbstractTestingBase {
         DummyServer.setup();
 
         ImmutableList.Builder<Material> builder = ImmutableList.builder();
-        for (Iterator<Material> it = Iterators.concat(Registry.MATERIAL.iterator(), CraftLegacyMaterial.getLegacyMaterials().iterator()); it.hasNext(); ) {
-            Material m = it.next();
+        for (Material m : Material.values()) {
             if (m.isLegacy() || CraftMagicNumbers.getItem(m) == null) {
                 builder.add(m);
             }

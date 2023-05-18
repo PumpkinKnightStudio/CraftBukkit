@@ -53,21 +53,21 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.WorldGenFeatureConfigured;
 import net.minecraft.world.phys.AxisAlignedBB;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.RegionAccessor;
 import org.bukkit.TreeType;
 import org.bukkit.block.Biome;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractHorse;
@@ -211,6 +211,7 @@ import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.Consumer;
@@ -269,13 +270,13 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @Override
-    public Material getType(Location location) {
+    public BlockType<?> getType(Location location) {
         return getType(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Override
-    public Material getType(int x, int y, int z) {
-        return CraftMagicNumbers.getMaterial(getData(x, y, z).getBlock());
+    public BlockType<?> getType(int x, int y, int z) {
+        return CraftBlockType.minecraftToBukkit(getData(x, y, z).getBlock());
     }
 
     private IBlockData getData(int x, int y, int z) {
@@ -297,13 +298,13 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @Override
-    public void setType(Location location, Material material) {
-        setType(location.getBlockX(), location.getBlockY(), location.getBlockZ(), material);
+    public void setType(Location location, BlockType<?> blockType) {
+        setType(location.getBlockX(), location.getBlockY(), location.getBlockZ(), blockType);
     }
 
     @Override
-    public void setType(int x, int y, int z, Material material) {
-        setBlockData(x, y, z, material.createBlockData());
+    public void setType(int x, int y, int z, BlockType<?> blockType) {
+        setBlockData(x, y, z, blockType.createBlockData());
     }
 
     @Override
@@ -636,10 +637,10 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             } else if (ThrownPotion.class.isAssignableFrom(clazz)) {
                 if (LingeringPotion.class.isAssignableFrom(clazz)) {
                     entity = new EntityPotion(world, x, y, z);
-                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
+                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.LINGERING_POTION, 1)));
                 } else {
                     entity = new EntityPotion(world, x, y, z);
-                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
+                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.SPLASH_POTION, 1)));
                 }
             } else if (Fireball.class.isAssignableFrom(clazz)) {
                 if (SmallFireball.class.isAssignableFrom(clazz)) {

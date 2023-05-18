@@ -29,4 +29,8 @@ public abstract class CraftTag<N, B extends Keyed> implements Tag<B> {
     public NamespacedKey getKey() {
         return CraftNamespacedKey.fromMinecraft(tag.location());
     }
+
+    public TagKey<N> getTagKey() {
+        return tag;
+    }
 }

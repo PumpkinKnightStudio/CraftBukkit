@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
@@ -16,10 +15,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.FluidType;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.Server;
+import org.bukkit.block.BlockType;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -66,7 +65,7 @@ public final class DummyServer {
 
             Mockito.when(instance.getUnsafe()).then(mock -> CraftMagicNumbers.INSTANCE);
 
-            Mockito.when(instance.createBlockData((Material) Mockito.any())).then(mock -> CraftBlockData.newData(mock.getArgument(0), null));
+            Mockito.when(instance.createBlockData((BlockType<BlockData>) Mockito.any())).then(mock -> CraftBlockData.newData(mock.getArgument(0), null));
 
             Mockito.when(instance.getLootTable(Mockito.any())).then(mock -> {
                 NamespacedKey key = mock.getArgument(0);
@@ -89,14 +88,14 @@ public final class DummyServer {
 
                 switch (registry) {
                     case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                        Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
+                        Preconditions.checkArgument(clazz == org.bukkit.block.BlockType.class, "Block namespace must have block type");
                         TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, key);
                         if (BuiltInRegistries.BLOCK.getTag(blockTagKey).isPresent()) {
                             return new CraftBlockTag(BuiltInRegistries.BLOCK, blockTagKey);
                         }
                     }
                     case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                        Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
+                        Preconditions.checkArgument(clazz == org.bukkit.inventory.ItemType.class, "Item namespace must have item type");
                         TagKey<Item> itemTagKey = TagKey.create(Registries.ITEM, key);
                         if (BuiltInRegistries.ITEM.getTag(itemTagKey).isPresent()) {
                             return new CraftItemTag(BuiltInRegistries.ITEM, itemTagKey);

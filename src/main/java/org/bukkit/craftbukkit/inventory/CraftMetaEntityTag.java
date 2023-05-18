@@ -8,17 +8,18 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.inventory.ItemType;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaEntityTag extends CraftMetaItem {
 
-    private static final Set<Material> ENTITY_TAGGABLE_MATERIALS = Sets.newHashSet(
-            Material.COD_BUCKET,
-            Material.PUFFERFISH_BUCKET,
-            Material.SALMON_BUCKET,
-            Material.ITEM_FRAME,
-            Material.GLOW_ITEM_FRAME,
-            Material.PAINTING
+    private static final Set<ItemType> ENTITY_TAGGABLE_ITEM_TYPES = Sets.newHashSet(
+            ItemType.COD_BUCKET,
+            ItemType.PUFFERFISH_BUCKET,
+            ItemType.SALMON_BUCKET,
+            ItemType.ITEM_FRAME,
+            ItemType.GLOW_ITEM_FRAME,
+            ItemType.PAINTING
     );
 
     static final ItemMetaKey ENTITY_TAG = new ItemMetaKey("EntityTag", "entity-tag");
@@ -73,8 +74,8 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return ENTITY_TAGGABLE_MATERIALS.contains(type);
+    boolean applicableTo(ItemType type) {
+        return ENTITY_TAGGABLE_ITEM_TYPES.contains(type);
     }
 
     @Override

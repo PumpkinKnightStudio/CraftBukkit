@@ -1,13 +1,12 @@
 package org.bukkit.craftbukkit.block;
 
-import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.DecoratedPot;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
+import org.bukkit.inventory.ItemType;
 
 public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEntity> implements DecoratedPot {
 
@@ -16,23 +15,21 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
     }
 
     @Override
-    public List<Material> getShards() {
-        return getSnapshot().getShards().stream().map(CraftMagicNumbers::getMaterial).collect(Collectors.toUnmodifiableList());
+    public List<ItemType> getShards() {
+        return getSnapshot().getShards().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
-    public void addShard(Material material) {
-        Preconditions.checkArgument(material != null && material.isItem(), "Material must be an item");
-
-        getSnapshot().getShards().add(CraftMagicNumbers.getItem(material));
+    public void addShard(ItemType itemType) {
+        getSnapshot().getShards().add(((CraftItemType) itemType).getHandle());
     }
 
     @Override
-    public void setShards(List<Material> shard) {
+    public void setShards(List<ItemType> shard) {
         getSnapshot().getShards().clear();
 
-        for (Material material : shard) {
-            addShard(material);
+        for (ItemType itemType : shard) {
+            addShard(itemType);
         }
     }
 }

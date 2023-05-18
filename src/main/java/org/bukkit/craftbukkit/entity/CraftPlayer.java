@@ -99,7 +99,6 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
@@ -110,6 +109,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -155,6 +155,7 @@ import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.map.MapCursor;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
@@ -626,14 +627,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendBlockChange(Location loc, Material material, byte data) {
-        if (getHandle().connection == null) return;
-
-        PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(CraftLocation.toBlockPosition(loc), CraftMagicNumbers.getBlock(material, data));
-        getHandle().connection.send(packet);
-    }
-
-    @Override
     public void sendBlockChange(Location loc, BlockData block) {
         if (getHandle().connection == null) return;
 
@@ -1093,33 +1086,63 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, Material material) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, material);
+    public void incrementStatistic(Statistic statistic, ItemType itemType) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, Material material) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, material);
+    public void decrementStatistic(Statistic statistic, ItemType itemType) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public int getStatistic(Statistic statistic, Material material) {
-        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, material);
+    public int getStatistic(Statistic statistic, ItemType itemType) {
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, Material material, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, material, amount);
+    public void incrementStatistic(Statistic statistic, ItemType itemType, int amount) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType, amount);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, Material material, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, material, amount);
+    public void decrementStatistic(Statistic statistic, ItemType itemType, int amount) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType, amount);
     }
 
     @Override
-    public void setStatistic(Statistic statistic, Material material, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, material, newValue);
+    public void setStatistic(Statistic statistic, ItemType itemType, int newValue) {
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, itemType, newValue);
+    }
+
+    @Override
+    public void incrementStatistic(Statistic statistic, BlockType<?> blockType) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType);
+    }
+
+    @Override
+    public void decrementStatistic(Statistic statistic, BlockType<?> blockType) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType);
+    }
+
+    @Override
+    public int getStatistic(Statistic statistic, BlockType<?> blockType) {
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, blockType);
+    }
+
+    @Override
+    public void incrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType, amount);
+    }
+
+    @Override
+    public void decrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType, amount);
+    }
+
+    @Override
+    public void setStatistic(Statistic statistic, BlockType<?> blockType, int newValue) {
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, blockType, newValue);
     }
 
     @Override
@@ -2075,7 +2098,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void openBook(ItemStack book) {
         Validate.isTrue(book != null, "book == null");
-        Validate.isTrue(book.getType() == Material.WRITTEN_BOOK, "Book must be Material.WRITTEN_BOOK");
+        Validate.isTrue(book.getType() == ItemType.WRITTEN_BOOK, "Book must be ItemType.WRITTEN_BOOK");
 
         ItemStack hand = getInventory().getItemInMainHand();
         getInventory().setItemInMainHand(book);

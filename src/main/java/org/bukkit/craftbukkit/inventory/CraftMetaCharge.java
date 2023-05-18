@@ -7,6 +7,7 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -66,8 +67,8 @@ class CraftMetaCharge extends CraftMetaItem implements FireworkEffectMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.FIREWORK_STAR;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.FIREWORK_STAR;
     }
 
     @Override

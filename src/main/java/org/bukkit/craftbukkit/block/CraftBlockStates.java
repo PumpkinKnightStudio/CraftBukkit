@@ -53,12 +53,11 @@ import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import net.minecraft.world.level.block.entity.TileEntityStructure;
 import net.minecraft.world.level.block.piston.TileEntityPiston;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
 public final class CraftBlockStates {
 
@@ -109,7 +108,7 @@ public final class CraftBlockStates {
         }
     }
 
-    private static final Map<Material, BlockStateFactory<?>> FACTORIES = new HashMap<>();
+    private static final Map<BlockType<?>, BlockStateFactory<?>> FACTORIES = new HashMap<>();
     private static final BlockStateFactory<?> DEFAULT_FACTORY = new BlockStateFactory<CraftBlockState>(CraftBlockState.class) {
         @Override
         public CraftBlockState createBlockState(World world, BlockPosition blockPosition, IBlockData blockData, TileEntity tileEntity) {
@@ -118,7 +117,7 @@ public final class CraftBlockStates {
                 // block with unhandled TileEntity:
                 return new CraftBlockEntityState<>(world, tileEntity);
             }
-            Preconditions.checkState(tileEntity == null, "Unexpected BlockState for %s", CraftMagicNumbers.getMaterial(blockData.getBlock()));
+            Preconditions.checkState(tileEntity == null, "Unexpected BlockState for %s", CraftBlockType.minecraftToBukkit(blockData.getBlock()).getKey());
             return new CraftBlockState(world, blockPosition, blockData);
         }
     };
@@ -126,218 +125,218 @@ public final class CraftBlockStates {
     static {
         register(
                 Arrays.asList(
-                        Material.ACACIA_SIGN,
-                        Material.ACACIA_WALL_SIGN,
-                        Material.BAMBOO_SIGN,
-                        Material.BAMBOO_WALL_SIGN,
-                        Material.BIRCH_SIGN,
-                        Material.BIRCH_WALL_SIGN,
-                        Material.CHERRY_SIGN,
-                        Material.CHERRY_WALL_SIGN,
-                        Material.CRIMSON_SIGN,
-                        Material.CRIMSON_WALL_SIGN,
-                        Material.DARK_OAK_SIGN,
-                        Material.DARK_OAK_WALL_SIGN,
-                        Material.JUNGLE_SIGN,
-                        Material.JUNGLE_WALL_SIGN,
-                        Material.MANGROVE_SIGN,
-                        Material.MANGROVE_WALL_SIGN,
-                        Material.OAK_SIGN,
-                        Material.OAK_WALL_SIGN,
-                        Material.SPRUCE_SIGN,
-                        Material.SPRUCE_WALL_SIGN,
-                        Material.WARPED_SIGN,
-                        Material.WARPED_WALL_SIGN
+                        BlockType.ACACIA_SIGN,
+                        BlockType.ACACIA_WALL_SIGN,
+                        BlockType.BAMBOO_SIGN,
+                        BlockType.BAMBOO_WALL_SIGN,
+                        BlockType.BIRCH_SIGN,
+                        BlockType.BIRCH_WALL_SIGN,
+                        BlockType.CHERRY_SIGN,
+                        BlockType.CHERRY_WALL_SIGN,
+                        BlockType.CRIMSON_SIGN,
+                        BlockType.CRIMSON_WALL_SIGN,
+                        BlockType.DARK_OAK_SIGN,
+                        BlockType.DARK_OAK_WALL_SIGN,
+                        BlockType.JUNGLE_SIGN,
+                        BlockType.JUNGLE_WALL_SIGN,
+                        BlockType.MANGROVE_SIGN,
+                        BlockType.MANGROVE_WALL_SIGN,
+                        BlockType.OAK_SIGN,
+                        BlockType.OAK_WALL_SIGN,
+                        BlockType.SPRUCE_SIGN,
+                        BlockType.SPRUCE_WALL_SIGN,
+                        BlockType.WARPED_SIGN,
+                        BlockType.WARPED_WALL_SIGN
                 ), CraftSign.class, CraftSign::new, TileEntitySign::new
         );
 
         register(
                 Arrays.asList(
-                        Material.ACACIA_HANGING_SIGN,
-                        Material.ACACIA_WALL_HANGING_SIGN,
-                        Material.BAMBOO_HANGING_SIGN,
-                        Material.BAMBOO_WALL_HANGING_SIGN,
-                        Material.BIRCH_HANGING_SIGN,
-                        Material.BIRCH_WALL_HANGING_SIGN,
-                        Material.CHERRY_HANGING_SIGN,
-                        Material.CHERRY_WALL_HANGING_SIGN,
-                        Material.CRIMSON_HANGING_SIGN,
-                        Material.CRIMSON_WALL_HANGING_SIGN,
-                        Material.DARK_OAK_HANGING_SIGN,
-                        Material.DARK_OAK_WALL_HANGING_SIGN,
-                        Material.JUNGLE_HANGING_SIGN,
-                        Material.JUNGLE_WALL_HANGING_SIGN,
-                        Material.MANGROVE_HANGING_SIGN,
-                        Material.MANGROVE_WALL_HANGING_SIGN,
-                        Material.OAK_HANGING_SIGN,
-                        Material.OAK_WALL_HANGING_SIGN,
-                        Material.SPRUCE_HANGING_SIGN,
-                        Material.SPRUCE_WALL_HANGING_SIGN,
-                        Material.WARPED_HANGING_SIGN,
-                        Material.WARPED_WALL_HANGING_SIGN
+                        BlockType.ACACIA_HANGING_SIGN,
+                        BlockType.ACACIA_WALL_HANGING_SIGN,
+                        BlockType.BAMBOO_HANGING_SIGN,
+                        BlockType.BAMBOO_WALL_HANGING_SIGN,
+                        BlockType.BIRCH_HANGING_SIGN,
+                        BlockType.BIRCH_WALL_HANGING_SIGN,
+                        BlockType.CHERRY_HANGING_SIGN,
+                        BlockType.CHERRY_WALL_HANGING_SIGN,
+                        BlockType.CRIMSON_HANGING_SIGN,
+                        BlockType.CRIMSON_WALL_HANGING_SIGN,
+                        BlockType.DARK_OAK_HANGING_SIGN,
+                        BlockType.DARK_OAK_WALL_HANGING_SIGN,
+                        BlockType.JUNGLE_HANGING_SIGN,
+                        BlockType.JUNGLE_WALL_HANGING_SIGN,
+                        BlockType.MANGROVE_HANGING_SIGN,
+                        BlockType.MANGROVE_WALL_HANGING_SIGN,
+                        BlockType.OAK_HANGING_SIGN,
+                        BlockType.OAK_WALL_HANGING_SIGN,
+                        BlockType.SPRUCE_HANGING_SIGN,
+                        BlockType.SPRUCE_WALL_HANGING_SIGN,
+                        BlockType.WARPED_HANGING_SIGN,
+                        BlockType.WARPED_WALL_HANGING_SIGN
                 ), CraftHangingSign.class, CraftHangingSign::new, HangingSignBlockEntity::new
         );
 
         register(
                 Arrays.asList(
-                        Material.CREEPER_HEAD,
-                        Material.CREEPER_WALL_HEAD,
-                        Material.DRAGON_HEAD,
-                        Material.DRAGON_WALL_HEAD,
-                        Material.PIGLIN_HEAD,
-                        Material.PIGLIN_WALL_HEAD,
-                        Material.PLAYER_HEAD,
-                        Material.PLAYER_WALL_HEAD,
-                        Material.SKELETON_SKULL,
-                        Material.SKELETON_WALL_SKULL,
-                        Material.WITHER_SKELETON_SKULL,
-                        Material.WITHER_SKELETON_WALL_SKULL,
-                        Material.ZOMBIE_HEAD,
-                        Material.ZOMBIE_WALL_HEAD
+                        BlockType.CREEPER_HEAD,
+                        BlockType.CREEPER_WALL_HEAD,
+                        BlockType.DRAGON_HEAD,
+                        BlockType.DRAGON_WALL_HEAD,
+                        BlockType.PIGLIN_HEAD,
+                        BlockType.PIGLIN_WALL_HEAD,
+                        BlockType.PLAYER_HEAD,
+                        BlockType.PLAYER_WALL_HEAD,
+                        BlockType.SKELETON_SKULL,
+                        BlockType.SKELETON_WALL_SKULL,
+                        BlockType.WITHER_SKELETON_SKULL,
+                        BlockType.WITHER_SKELETON_WALL_SKULL,
+                        BlockType.ZOMBIE_HEAD,
+                        BlockType.ZOMBIE_WALL_HEAD
                 ), CraftSkull.class, CraftSkull::new, TileEntitySkull::new
         );
 
         register(
                 Arrays.asList(
-                        Material.COMMAND_BLOCK,
-                        Material.REPEATING_COMMAND_BLOCK,
-                        Material.CHAIN_COMMAND_BLOCK
+                        BlockType.COMMAND_BLOCK,
+                        BlockType.REPEATING_COMMAND_BLOCK,
+                        BlockType.CHAIN_COMMAND_BLOCK
                 ), CraftCommandBlock.class, CraftCommandBlock::new, TileEntityCommand::new
         );
 
         register(
                 Arrays.asList(
-                        Material.BLACK_BANNER,
-                        Material.BLACK_WALL_BANNER,
-                        Material.BLUE_BANNER,
-                        Material.BLUE_WALL_BANNER,
-                        Material.BROWN_BANNER,
-                        Material.BROWN_WALL_BANNER,
-                        Material.CYAN_BANNER,
-                        Material.CYAN_WALL_BANNER,
-                        Material.GRAY_BANNER,
-                        Material.GRAY_WALL_BANNER,
-                        Material.GREEN_BANNER,
-                        Material.GREEN_WALL_BANNER,
-                        Material.LIGHT_BLUE_BANNER,
-                        Material.LIGHT_BLUE_WALL_BANNER,
-                        Material.LIGHT_GRAY_BANNER,
-                        Material.LIGHT_GRAY_WALL_BANNER,
-                        Material.LIME_BANNER,
-                        Material.LIME_WALL_BANNER,
-                        Material.MAGENTA_BANNER,
-                        Material.MAGENTA_WALL_BANNER,
-                        Material.ORANGE_BANNER,
-                        Material.ORANGE_WALL_BANNER,
-                        Material.PINK_BANNER,
-                        Material.PINK_WALL_BANNER,
-                        Material.PURPLE_BANNER,
-                        Material.PURPLE_WALL_BANNER,
-                        Material.RED_BANNER,
-                        Material.RED_WALL_BANNER,
-                        Material.WHITE_BANNER,
-                        Material.WHITE_WALL_BANNER,
-                        Material.YELLOW_BANNER,
-                        Material.YELLOW_WALL_BANNER
+                        BlockType.BLACK_BANNER,
+                        BlockType.BLACK_WALL_BANNER,
+                        BlockType.BLUE_BANNER,
+                        BlockType.BLUE_WALL_BANNER,
+                        BlockType.BROWN_BANNER,
+                        BlockType.BROWN_WALL_BANNER,
+                        BlockType.CYAN_BANNER,
+                        BlockType.CYAN_WALL_BANNER,
+                        BlockType.GRAY_BANNER,
+                        BlockType.GRAY_WALL_BANNER,
+                        BlockType.GREEN_BANNER,
+                        BlockType.GREEN_WALL_BANNER,
+                        BlockType.LIGHT_BLUE_BANNER,
+                        BlockType.LIGHT_BLUE_WALL_BANNER,
+                        BlockType.LIGHT_GRAY_BANNER,
+                        BlockType.LIGHT_GRAY_WALL_BANNER,
+                        BlockType.LIME_BANNER,
+                        BlockType.LIME_WALL_BANNER,
+                        BlockType.MAGENTA_BANNER,
+                        BlockType.MAGENTA_WALL_BANNER,
+                        BlockType.ORANGE_BANNER,
+                        BlockType.ORANGE_WALL_BANNER,
+                        BlockType.PINK_BANNER,
+                        BlockType.PINK_WALL_BANNER,
+                        BlockType.PURPLE_BANNER,
+                        BlockType.PURPLE_WALL_BANNER,
+                        BlockType.RED_BANNER,
+                        BlockType.RED_WALL_BANNER,
+                        BlockType.WHITE_BANNER,
+                        BlockType.WHITE_WALL_BANNER,
+                        BlockType.YELLOW_BANNER,
+                        BlockType.YELLOW_WALL_BANNER
                 ), CraftBanner.class, CraftBanner::new, TileEntityBanner::new
         );
 
         register(
                 Arrays.asList(
-                        Material.SHULKER_BOX,
-                        Material.WHITE_SHULKER_BOX,
-                        Material.ORANGE_SHULKER_BOX,
-                        Material.MAGENTA_SHULKER_BOX,
-                        Material.LIGHT_BLUE_SHULKER_BOX,
-                        Material.YELLOW_SHULKER_BOX,
-                        Material.LIME_SHULKER_BOX,
-                        Material.PINK_SHULKER_BOX,
-                        Material.GRAY_SHULKER_BOX,
-                        Material.LIGHT_GRAY_SHULKER_BOX,
-                        Material.CYAN_SHULKER_BOX,
-                        Material.PURPLE_SHULKER_BOX,
-                        Material.BLUE_SHULKER_BOX,
-                        Material.BROWN_SHULKER_BOX,
-                        Material.GREEN_SHULKER_BOX,
-                        Material.RED_SHULKER_BOX,
-                        Material.BLACK_SHULKER_BOX
+                        BlockType.SHULKER_BOX,
+                        BlockType.WHITE_SHULKER_BOX,
+                        BlockType.ORANGE_SHULKER_BOX,
+                        BlockType.MAGENTA_SHULKER_BOX,
+                        BlockType.LIGHT_BLUE_SHULKER_BOX,
+                        BlockType.YELLOW_SHULKER_BOX,
+                        BlockType.LIME_SHULKER_BOX,
+                        BlockType.PINK_SHULKER_BOX,
+                        BlockType.GRAY_SHULKER_BOX,
+                        BlockType.LIGHT_GRAY_SHULKER_BOX,
+                        BlockType.CYAN_SHULKER_BOX,
+                        BlockType.PURPLE_SHULKER_BOX,
+                        BlockType.BLUE_SHULKER_BOX,
+                        BlockType.BROWN_SHULKER_BOX,
+                        BlockType.GREEN_SHULKER_BOX,
+                        BlockType.RED_SHULKER_BOX,
+                        BlockType.BLACK_SHULKER_BOX
                 ), CraftShulkerBox.class, CraftShulkerBox::new, TileEntityShulkerBox::new
         );
 
         register(
                 Arrays.asList(
-                        Material.BLACK_BED,
-                        Material.BLUE_BED,
-                        Material.BROWN_BED,
-                        Material.CYAN_BED,
-                        Material.GRAY_BED,
-                        Material.GREEN_BED,
-                        Material.LIGHT_BLUE_BED,
-                        Material.LIGHT_GRAY_BED,
-                        Material.LIME_BED,
-                        Material.MAGENTA_BED,
-                        Material.ORANGE_BED,
-                        Material.PINK_BED,
-                        Material.PURPLE_BED,
-                        Material.RED_BED,
-                        Material.WHITE_BED,
-                        Material.YELLOW_BED
+                        BlockType.BLACK_BED,
+                        BlockType.BLUE_BED,
+                        BlockType.BROWN_BED,
+                        BlockType.CYAN_BED,
+                        BlockType.GRAY_BED,
+                        BlockType.GREEN_BED,
+                        BlockType.LIGHT_BLUE_BED,
+                        BlockType.LIGHT_GRAY_BED,
+                        BlockType.LIME_BED,
+                        BlockType.MAGENTA_BED,
+                        BlockType.ORANGE_BED,
+                        BlockType.PINK_BED,
+                        BlockType.PURPLE_BED,
+                        BlockType.RED_BED,
+                        BlockType.WHITE_BED,
+                        BlockType.YELLOW_BED
                 ), CraftBed.class, CraftBed::new, TileEntityBed::new
         );
 
         register(
                 Arrays.asList(
-                        Material.BEEHIVE,
-                        Material.BEE_NEST
+                        BlockType.BEEHIVE,
+                        BlockType.BEE_NEST
                 ), CraftBeehive.class, CraftBeehive::new, TileEntityBeehive::new
         );
 
         register(
                 Arrays.asList(
-                        Material.CAMPFIRE,
-                        Material.SOUL_CAMPFIRE
+                        BlockType.CAMPFIRE,
+                        BlockType.SOUL_CAMPFIRE
                 ), CraftCampfire.class, CraftCampfire::new, TileEntityCampfire::new
         );
 
-        register(Material.BARREL, CraftBarrel.class, CraftBarrel::new, TileEntityBarrel::new);
-        register(Material.BEACON, CraftBeacon.class, CraftBeacon::new, TileEntityBeacon::new);
-        register(Material.BELL, CraftBell.class, CraftBell::new, TileEntityBell::new);
-        register(Material.BLAST_FURNACE, CraftBlastFurnace.class, CraftBlastFurnace::new, TileEntityBlastFurnace::new);
-        register(Material.BREWING_STAND, CraftBrewingStand.class, CraftBrewingStand::new, TileEntityBrewingStand::new);
-        register(Material.CHEST, CraftChest.class, CraftChest::new, TileEntityChest::new);
-        register(Material.CHISELED_BOOKSHELF, CraftChiseledBookshelf.class, CraftChiseledBookshelf::new, ChiseledBookShelfBlockEntity::new);
-        register(Material.COMPARATOR, CraftComparator.class, CraftComparator::new, TileEntityComparator::new);
-        register(Material.CONDUIT, CraftConduit.class, CraftConduit::new, TileEntityConduit::new);
-        register(Material.DAYLIGHT_DETECTOR, CraftDaylightDetector.class, CraftDaylightDetector::new, TileEntityLightDetector::new);
-        register(Material.DECORATED_POT, CraftDecoratedPot.class, CraftDecoratedPot::new, DecoratedPotBlockEntity::new);
-        register(Material.DISPENSER, CraftDispenser.class, CraftDispenser::new, TileEntityDispenser::new);
-        register(Material.DROPPER, CraftDropper.class, CraftDropper::new, TileEntityDropper::new);
-        register(Material.ENCHANTING_TABLE, CraftEnchantingTable.class, CraftEnchantingTable::new, TileEntityEnchantTable::new);
-        register(Material.ENDER_CHEST, CraftEnderChest.class, CraftEnderChest::new, TileEntityEnderChest::new);
-        register(Material.END_GATEWAY, CraftEndGateway.class, CraftEndGateway::new, TileEntityEndGateway::new);
-        register(Material.END_PORTAL, CraftEndPortal.class, CraftEndPortal::new, TileEntityEnderPortal::new);
-        register(Material.FURNACE, CraftFurnaceFurnace.class, CraftFurnaceFurnace::new, TileEntityFurnaceFurnace::new);
-        register(Material.HOPPER, CraftHopper.class, CraftHopper::new, TileEntityHopper::new);
-        register(Material.JIGSAW, CraftJigsaw.class, CraftJigsaw::new, TileEntityJigsaw::new);
-        register(Material.JUKEBOX, CraftJukebox.class, CraftJukebox::new, TileEntityJukeBox::new);
-        register(Material.LECTERN, CraftLectern.class, CraftLectern::new, TileEntityLectern::new);
-        register(Material.MOVING_PISTON, CraftMovingPiston.class, CraftMovingPiston::new, TileEntityPiston::new);
-        register(Material.SCULK_CATALYST, CraftSculkCatalyst.class, CraftSculkCatalyst::new, SculkCatalystBlockEntity::new);
-        register(Material.SCULK_SENSOR, CraftSculkSensor.class, CraftSculkSensor::new, SculkSensorBlockEntity::new);
-        register(Material.SCULK_SHRIEKER, CraftSculkShrieker.class, CraftSculkShrieker::new, SculkShriekerBlockEntity::new);
-        register(Material.SMOKER, CraftSmoker.class, CraftSmoker::new, TileEntitySmoker::new);
-        register(Material.SPAWNER, CraftCreatureSpawner.class, CraftCreatureSpawner::new, TileEntityMobSpawner::new);
-        register(Material.STRUCTURE_BLOCK, CraftStructureBlock.class, CraftStructureBlock::new, TileEntityStructure::new);
-        register(Material.SUSPICIOUS_SAND, CraftSuspiciousSand.class, CraftSuspiciousSand::new, SuspiciousSandBlockEntity::new);
-        register(Material.TRAPPED_CHEST, CraftChest.class, CraftChest::new, TileEntityChestTrapped::new);
+        register(BlockType.BARREL, CraftBarrel.class, CraftBarrel::new, TileEntityBarrel::new);
+        register(BlockType.BEACON, CraftBeacon.class, CraftBeacon::new, TileEntityBeacon::new);
+        register(BlockType.BELL, CraftBell.class, CraftBell::new, TileEntityBell::new);
+        register(BlockType.BLAST_FURNACE, CraftBlastFurnace.class, CraftBlastFurnace::new, TileEntityBlastFurnace::new);
+        register(BlockType.BREWING_STAND, CraftBrewingStand.class, CraftBrewingStand::new, TileEntityBrewingStand::new);
+        register(BlockType.CHEST, CraftChest.class, CraftChest::new, TileEntityChest::new);
+        register(BlockType.CHISELED_BOOKSHELF, CraftChiseledBookshelf.class, CraftChiseledBookshelf::new, ChiseledBookShelfBlockEntity::new);
+        register(BlockType.COMPARATOR, CraftComparator.class, CraftComparator::new, TileEntityComparator::new);
+        register(BlockType.CONDUIT, CraftConduit.class, CraftConduit::new, TileEntityConduit::new);
+        register(BlockType.DAYLIGHT_DETECTOR, CraftDaylightDetector.class, CraftDaylightDetector::new, TileEntityLightDetector::new);
+        register(BlockType.DECORATED_POT, CraftDecoratedPot.class, CraftDecoratedPot::new, DecoratedPotBlockEntity::new);
+        register(BlockType.DISPENSER, CraftDispenser.class, CraftDispenser::new, TileEntityDispenser::new);
+        register(BlockType.DROPPER, CraftDropper.class, CraftDropper::new, TileEntityDropper::new);
+        register(BlockType.ENCHANTING_TABLE, CraftEnchantingTable.class, CraftEnchantingTable::new, TileEntityEnchantTable::new);
+        register(BlockType.ENDER_CHEST, CraftEnderChest.class, CraftEnderChest::new, TileEntityEnderChest::new);
+        register(BlockType.END_GATEWAY, CraftEndGateway.class, CraftEndGateway::new, TileEntityEndGateway::new);
+        register(BlockType.END_PORTAL, CraftEndPortal.class, CraftEndPortal::new, TileEntityEnderPortal::new);
+        register(BlockType.FURNACE, CraftFurnaceFurnace.class, CraftFurnaceFurnace::new, TileEntityFurnaceFurnace::new);
+        register(BlockType.HOPPER, CraftHopper.class, CraftHopper::new, TileEntityHopper::new);
+        register(BlockType.JIGSAW, CraftJigsaw.class, CraftJigsaw::new, TileEntityJigsaw::new);
+        register(BlockType.JUKEBOX, CraftJukebox.class, CraftJukebox::new, TileEntityJukeBox::new);
+        register(BlockType.LECTERN, CraftLectern.class, CraftLectern::new, TileEntityLectern::new);
+        register(BlockType.MOVING_PISTON, CraftMovingPiston.class, CraftMovingPiston::new, TileEntityPiston::new);
+        register(BlockType.SCULK_CATALYST, CraftSculkCatalyst.class, CraftSculkCatalyst::new, SculkCatalystBlockEntity::new);
+        register(BlockType.SCULK_SENSOR, CraftSculkSensor.class, CraftSculkSensor::new, SculkSensorBlockEntity::new);
+        register(BlockType.SCULK_SHRIEKER, CraftSculkShrieker.class, CraftSculkShrieker::new, SculkShriekerBlockEntity::new);
+        register(BlockType.SMOKER, CraftSmoker.class, CraftSmoker::new, TileEntitySmoker::new);
+        register(BlockType.SPAWNER, CraftCreatureSpawner.class, CraftCreatureSpawner::new, TileEntityMobSpawner::new);
+        register(BlockType.STRUCTURE_BLOCK, CraftStructureBlock.class, CraftStructureBlock::new, TileEntityStructure::new);
+        register(BlockType.SUSPICIOUS_SAND, CraftSuspiciousSand.class, CraftSuspiciousSand::new, SuspiciousSandBlockEntity::new);
+        register(BlockType.TRAPPED_CHEST, CraftChest.class, CraftChest::new, TileEntityChestTrapped::new);
     }
 
-    private static void register(Material blockType, BlockStateFactory<?> factory) {
+    private static void register(BlockType<?> blockType, BlockStateFactory<?> factory) {
         FACTORIES.put(blockType, factory);
     }
 
     private static <T extends TileEntity, B extends CraftBlockEntityState<T>> void register(
-            Material blockType,
+            BlockType<?> blockType,
             Class<B> blockStateType,
             BiFunction<World, T, B> blockStateConstructor,
             BiFunction<BlockPosition, IBlockData, T> tileEntityConstructor
@@ -346,31 +345,31 @@ public final class CraftBlockStates {
     }
 
     private static <T extends TileEntity, B extends CraftBlockEntityState<T>> void register(
-            List<Material> blockTypes,
+            List<BlockType<?>> blockTypes,
             Class<B> blockStateType,
             BiFunction<World, T, B> blockStateConstructor,
             BiFunction<BlockPosition, IBlockData, T> tileEntityConstructor
     ) {
         BlockStateFactory<B> factory = new BlockEntityStateFactory<>(blockStateType, blockStateConstructor, tileEntityConstructor);
-        for (Material blockType : blockTypes) {
+        for (BlockType<?> blockType : blockTypes) {
             register(blockType, factory);
         }
     }
 
-    private static BlockStateFactory<?> getFactory(Material material) {
-        return FACTORIES.getOrDefault(material, DEFAULT_FACTORY);
+    private static BlockStateFactory<?> getFactory(BlockType<?> blockType) {
+        return FACTORIES.getOrDefault(blockType, DEFAULT_FACTORY);
     }
 
-    public static Class<? extends CraftBlockState> getBlockStateType(Material material) {
-        Preconditions.checkNotNull(material, "material is null");
-        return getFactory(material).blockStateType;
+    public static Class<? extends CraftBlockState> getBlockStateType(BlockType<?> blockType) {
+        Preconditions.checkNotNull(blockType, "blockType is null");
+        return getFactory(blockType).blockStateType;
     }
 
-    public static TileEntity createNewTileEntity(Material material) {
-        BlockStateFactory<?> factory = getFactory(material);
+    public static TileEntity createNewTileEntity(BlockType<?> blockType) {
+        BlockStateFactory<?> factory = getFactory(blockType);
 
         if (factory instanceof BlockEntityStateFactory) {
-            return ((BlockEntityStateFactory<?, ?>) factory).createTileEntity(BlockPosition.ZERO, CraftMagicNumbers.getBlock(material).defaultBlockState());
+            return ((BlockEntityStateFactory<?, ?>) factory).createTileEntity(BlockPosition.ZERO, ((CraftBlockType) blockType).getHandle().defaultBlockState());
         }
 
         return null;
@@ -388,13 +387,13 @@ public final class CraftBlockStates {
         return blockState;
     }
 
-    public static BlockState getBlockState(Material material, @Nullable NBTTagCompound blockEntityTag) {
-        return getBlockState(BlockPosition.ZERO, material, blockEntityTag);
+    public static BlockState getBlockState(BlockType<?> blockType, @Nullable NBTTagCompound blockEntityTag) {
+        return getBlockState(BlockPosition.ZERO, blockType, blockEntityTag);
     }
 
-    public static BlockState getBlockState(BlockPosition blockPosition, Material material, @Nullable NBTTagCompound blockEntityTag) {
-        Preconditions.checkNotNull(material, "material is null");
-        IBlockData blockData = CraftMagicNumbers.getBlock(material).defaultBlockState();
+    public static BlockState getBlockState(BlockPosition blockPosition, BlockType<?> blockType, @Nullable NBTTagCompound blockEntityTag) {
+        Preconditions.checkNotNull(blockType, "block type is null");
+        IBlockData blockData = ((CraftBlockType<?>) blockType).getHandle().defaultBlockState();
         return getBlockState(blockPosition, blockData, blockEntityTag);
     }
 
@@ -411,20 +410,20 @@ public final class CraftBlockStates {
 
     // See BlockStateFactory#createBlockState(World, BlockPosition, IBlockData, TileEntity)
     private static CraftBlockState getBlockState(World world, BlockPosition blockPosition, IBlockData blockData, TileEntity tileEntity) {
-        Material material = CraftMagicNumbers.getMaterial(blockData.getBlock());
+        BlockType<?> blockType = CraftBlockType.minecraftToBukkit(blockData.getBlock());
         BlockStateFactory<?> factory;
         // For some types of TileEntity blocks (eg. moving pistons), Minecraft may in some situations (eg. when using Block#setType or the
         // setBlock command) not create a corresponding TileEntity in the world. We return a normal BlockState in this case.
-        if (world != null && tileEntity == null && isTileEntityOptional(material)) {
+        if (world != null && tileEntity == null && isTileEntityOptional(blockType)) {
             factory = DEFAULT_FACTORY;
         } else {
-            factory = getFactory(material);
+            factory = getFactory(blockType);
         }
         return factory.createBlockState(world, blockPosition, blockData, tileEntity);
     }
 
-    public static boolean isTileEntityOptional(Material material) {
-        return material == Material.MOVING_PISTON;
+    public static boolean isTileEntityOptional(BlockType<?> blockType) {
+        return blockType == BlockType.MOVING_PISTON;
     }
 
     // This ignores tile entity data.

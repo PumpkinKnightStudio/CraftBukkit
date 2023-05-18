@@ -1,6 +1,7 @@
 package org.bukkit;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -27,7 +28,7 @@ public class ParticleTest extends AbstractTestingBase {
             } else if (bukkit.getDataType() == Vibration.class) {
                 data = new Vibration(new Location(null, 0, 0, 0), new Vibration.Destination.BlockDestination(new Location(null, 0, 0, 0)), 0);
             } else if (bukkit.getDataType() == BlockData.class) {
-                data = CraftBlockData.newData(Material.STONE, "");
+                data = CraftBlockData.newData(BlockType.STONE, "");
             } else if (bukkit.getDataType() == Float.class) {
                 data = 1.0F;
             } else if (bukkit.getDataType() == Integer.class) {

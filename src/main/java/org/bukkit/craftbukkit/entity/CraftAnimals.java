@@ -3,11 +3,11 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import java.util.UUID;
 import net.minecraft.world.entity.animal.EntityAnimal;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Animals;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 
 public class CraftAnimals extends CraftAgeable implements Animals {
 
@@ -57,7 +57,7 @@ public class CraftAnimals extends CraftAgeable implements Animals {
     }
 
     @Override
-    public boolean isBreedItem(Material material) {
-        return isBreedItem(new ItemStack(material));
+    public boolean isBreedItem(ItemType itemType) {
+        return isBreedItem(new ItemStack(itemType));
     }
 }

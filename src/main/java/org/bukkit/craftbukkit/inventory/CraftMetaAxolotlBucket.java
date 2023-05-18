@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Axolotl;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.AxolotlBucketMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
@@ -82,8 +82,8 @@ public class CraftMetaAxolotlBucket extends CraftMetaItem implements AxolotlBuck
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.AXOLOTL_BUCKET;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.AXOLOTL_BUCKET;
     }
 
     @Override

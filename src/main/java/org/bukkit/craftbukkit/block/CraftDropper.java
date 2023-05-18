@@ -1,12 +1,11 @@
 package org.bukkit.craftbukkit.block;
 
-import com.google.common.base.Preconditions;
 import net.minecraft.world.level.block.BlockDropper;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityDropper;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Dropper;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -36,7 +35,7 @@ public class CraftDropper extends CraftLootable<TileEntityDropper> implements Dr
     public void drop() {
         ensureNoWorldGeneration();
         Block block = getBlock();
-        if (block.getType() == Material.DROPPER) {
+        if (block.getType() == BlockType.DROPPER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDropper drop = (BlockDropper) Blocks.DROPPER;
 

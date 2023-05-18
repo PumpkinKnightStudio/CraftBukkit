@@ -76,7 +76,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.MobSpawnerCat;
@@ -92,7 +91,6 @@ import net.minecraft.world.item.crafting.IRecipe;
 import net.minecraft.world.item.crafting.RecipeCrafting;
 import net.minecraft.world.item.crafting.RecipeRepair;
 import net.minecraft.world.item.crafting.Recipes;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
@@ -117,6 +115,7 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Fluid;
 import org.bukkit.GameMode;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
@@ -131,6 +130,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -174,7 +174,6 @@ import org.bukkit.craftbukkit.inventory.CraftSmokingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftStonecuttingRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
 import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
-import org.bukkit.craftbukkit.legacy.CraftLegacyMaterial;
 import org.bukkit.craftbukkit.map.CraftMapColorCache;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
@@ -221,6 +220,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -245,7 +245,6 @@ import org.bukkit.plugin.java.JavaPluginLoader;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.Potion;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scheduler.BukkitWorker;
 import org.bukkit.scoreboard.Criteria;
@@ -314,7 +313,6 @@ public final class CraftServer implements Server {
 
         Bukkit.setServer(this);
 
-        CraftLegacyMaterial.blockCreating();
         Potion.setPotionBrewer(new CraftPotionBrewer());
         // Ugly hack :(
 
@@ -2163,15 +2161,15 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material) {
-        Validate.isTrue(material != null, "Must provide material");
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType) {
+        Validate.isTrue(blockType != null, "Must provide block type");
 
-        return createBlockData(material, (String) null);
+        return createBlockData(blockType, (String) null);
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material, Consumer<BlockData> consumer) {
-        BlockData data = createBlockData(material);
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType, Consumer<B> consumer) {
+        B data = createBlockData(blockType);
 
         if (consumer != null) {
             consumer.accept(data);
@@ -2188,10 +2186,10 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material, String data) {
-        Validate.isTrue(material != null || data != null, "Must provide one of material or data");
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType, String data) {
+        Validate.isTrue(blockType != null || data != null, "Must provide one of blocktype or data");
 
-        return CraftBlockData.newData(material, data);
+        return CraftBlockData.newData(blockType, data);
     }
 
     @Override
@@ -2204,14 +2202,14 @@ public final class CraftServer implements Server {
 
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
+                Preconditions.checkArgument(clazz == BlockType.class, "Block namespace must have BlockType type");
                 TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, key);
                 if (getServer().registryAccess().registryOrThrow(Registries.BLOCK).getTag(blockTagKey).isPresent()) {
                     return (org.bukkit.Tag<T>) new CraftBlockTag(getServer().registryAccess().registryOrThrow(Registries.BLOCK), blockTagKey);
                 }
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
+                Preconditions.checkArgument(clazz == ItemType.class, "Item namespace must have ItemType type");
                 TagKey<Item> itemTagKey = TagKey.create(Registries.ITEM, key);
                 if (getServer().registryAccess().registryOrThrow(Registries.ITEM).getTag(itemTagKey).isPresent()) {
                     return (org.bukkit.Tag<T>) new CraftItemTag(getServer().registryAccess().registryOrThrow(Registries.ITEM), itemTagKey);
@@ -2244,17 +2242,17 @@ public final class CraftServer implements Server {
         Validate.notNull(clazz, "Class cannot be null");
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace must have material type");
+                Preconditions.checkArgument(clazz == BlockType.class, "Block namespace must have BlockType type");
                 IRegistry<Block> blockTags = getServer().registryAccess().registryOrThrow(Registries.BLOCK);
                 return blockTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace must have material type");
+                Preconditions.checkArgument(clazz == ItemType.class, "Item namespace must have ItemType type");
                 IRegistry<Item> itemTags = getServer().registryAccess().registryOrThrow(Registries.ITEM);
                 return itemTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_FLUIDS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Fluid namespace must have fluid type");
+                Preconditions.checkArgument(clazz == Fluid.class, "Fluid namespace must have fluid type");
                 IRegistry<FluidType> fluidTags = getServer().registryAccess().registryOrThrow(Registries.FLUID);
                 return fluidTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftFluidTag(fluidTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }

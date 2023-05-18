@@ -5,8 +5,8 @@ import net.minecraft.world.level.block.BlockChest;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityChest;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -43,7 +43,7 @@ public class CraftChest extends CraftLootable<TileEntityChest> implements Chest 
         // The logic here is basically identical to the logic in BlockChest.interact
         CraftWorld world = (CraftWorld) this.getWorld();
 
-        BlockChest blockChest = (BlockChest) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
+        BlockChest blockChest = (BlockChest) (this.getType() == BlockType.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
         ITileInventory nms = blockChest.getMenuProvider(data, world.getHandle(), this.getPosition(), true);
 
         if (nms instanceof BlockChest.DoubleInventory) {

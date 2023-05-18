@@ -91,6 +91,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -1146,16 +1147,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public FallingBlock spawnFallingBlock(Location location, MaterialData data) throws IllegalArgumentException {
         Validate.notNull(data, "MaterialData cannot be null");
-        return spawnFallingBlock(location, data.getItemType(), data.getData());
-    }
-
-    @Override
-    public FallingBlock spawnFallingBlock(Location location, org.bukkit.Material material, byte data) throws IllegalArgumentException {
         Validate.notNull(location, "Location cannot be null");
-        Validate.notNull(material, "Material cannot be null");
-        Validate.isTrue(material.isBlock(), "Material must be a block");
 
-        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), CraftMagicNumbers.getBlock(material).defaultBlockState(), SpawnReason.CUSTOM);
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), ((CraftBlockType<?>) data.getItemType().asBlockType()).getHandle().defaultBlockState(), SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
     }
 

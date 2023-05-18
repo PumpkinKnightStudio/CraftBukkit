@@ -6,12 +6,12 @@ import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
@@ -159,26 +159,26 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     @Override
     public SkullType getSkullType() {
-        Material type = getType();
-        if (type == Material.SKELETON_SKULL || type == Material.SKELETON_WALL_SKULL) {
+        BlockType<?> type = getType();
+        if (type == BlockType.SKELETON_SKULL || type == BlockType.SKELETON_WALL_SKULL) {
             return SkullType.SKELETON;
         }
-        if (type == Material.WITHER_SKELETON_SKULL || type == Material.WITHER_SKELETON_WALL_SKULL) {
+        if (type == BlockType.WITHER_SKELETON_SKULL || type == BlockType.WITHER_SKELETON_WALL_SKULL) {
             return SkullType.WITHER;
         }
-        if (type == Material.ZOMBIE_HEAD || type == Material.ZOMBIE_WALL_HEAD) {
+        if (type == BlockType.ZOMBIE_HEAD || type == BlockType.ZOMBIE_WALL_HEAD) {
             return SkullType.ZOMBIE;
         }
-        if (type == Material.PIGLIN_HEAD || type == Material.PIGLIN_WALL_HEAD) {
+        if (type == BlockType.PIGLIN_HEAD || type == BlockType.PIGLIN_WALL_HEAD) {
             return SkullType.PIGLIN;
         }
-        if (type == Material.PLAYER_HEAD || type == Material.PLAYER_WALL_HEAD) {
+        if (type == BlockType.PLAYER_HEAD || type == BlockType.PLAYER_WALL_HEAD) {
             return SkullType.PLAYER;
         }
-        if (type == Material.CREEPER_HEAD || type == Material.CREEPER_WALL_HEAD) {
+        if (type == BlockType.CREEPER_HEAD || type == BlockType.CREEPER_WALL_HEAD) {
             return SkullType.CREEPER;
         }
-        if (type == Material.DRAGON_HEAD || type == Material.DRAGON_WALL_HEAD) {
+        if (type == BlockType.DRAGON_HEAD || type == BlockType.DRAGON_WALL_HEAD) {
             return SkullType.DRAGON;
         }
 

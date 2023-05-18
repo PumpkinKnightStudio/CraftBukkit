@@ -12,7 +12,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -21,27 +20,21 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
-    private static final Set<Material> SKULL_MATERIALS = Sets.newHashSet(
-            Material.CREEPER_HEAD,
-            Material.CREEPER_WALL_HEAD,
-            Material.DRAGON_HEAD,
-            Material.DRAGON_WALL_HEAD,
-            Material.PIGLIN_HEAD,
-            Material.PIGLIN_WALL_HEAD,
-            Material.PLAYER_HEAD,
-            Material.PLAYER_WALL_HEAD,
-            Material.SKELETON_SKULL,
-            Material.SKELETON_WALL_SKULL,
-            Material.WITHER_SKELETON_SKULL,
-            Material.WITHER_SKELETON_WALL_SKULL,
-            Material.ZOMBIE_HEAD,
-            Material.ZOMBIE_WALL_HEAD
+    private static final Set<ItemType> SKULL_ITEM_TYPES = Sets.newHashSet(
+            ItemType.CREEPER_HEAD,
+            ItemType.DRAGON_HEAD,
+            ItemType.PIGLIN_HEAD,
+            ItemType.PLAYER_HEAD,
+            ItemType.SKELETON_SKULL,
+            ItemType.WITHER_SKELETON_SKULL,
+            ItemType.ZOMBIE_HEAD
     );
 
     @ItemMetaKey.Specific(ItemMetaKey.Specific.To.NBT)
@@ -165,8 +158,8 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return SKULL_MATERIALS.contains(type);
+    boolean applicableTo(ItemType type) {
+        return SKULL_ITEM_TYPES.contains(type);
     }
 
     @Override
