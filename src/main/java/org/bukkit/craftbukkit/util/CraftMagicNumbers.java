@@ -211,7 +211,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     @Override
-    public ItemType getItemTyp(String itemType, int version) {
+    public ItemType getItemType(String itemType, int version) {
         Preconditions.checkArgument(itemType != null, "itemType == null");
         Preconditions.checkArgument(version <= this.getDataVersion(), "Newer version! Server downgrades are not supported!");
 

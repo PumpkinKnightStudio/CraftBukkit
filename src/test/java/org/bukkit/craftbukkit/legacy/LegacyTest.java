@@ -168,6 +168,6 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void testManual() {
-        Assert.assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemTyp("dandelion_yellow", 1631));
+        Assert.assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemType("dandelion_yellow", 1631));
     }
 }
