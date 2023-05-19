@@ -196,19 +196,19 @@ public class EnumEvil {
     }
 
     public static boolean addBarterMaterial(Piglin piglin, Material material) {
-        return piglin.addBarterItemType(material.asItemType());
+        return piglin.addBarterItem(material.asItemType());
     }
 
     public static boolean removeBarterMaterial(Piglin piglin, Material material) {
-        return piglin.removeBarterItemType(material.asItemType());
+        return piglin.removeBarterItem(material.asItemType());
     }
 
     public static boolean addMaterialOfInterest(Piglin piglin, Material material) {
-        return piglin.addItemTypeOfInterest(material.asItemType());
+        return piglin.addItemOfInterest(material.asItemType());
     }
 
     public static boolean removeMaterialOfInterest(Piglin piglin, Material material) {
-        return piglin.removeItemTypeOfInterest(material.asItemType());
+        return piglin.removeItemOfInterest(material.asItemType());
     }
 
     public static Set<Material> getInterestList(Piglin piglin) {

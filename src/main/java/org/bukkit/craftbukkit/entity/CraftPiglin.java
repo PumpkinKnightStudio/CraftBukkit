@@ -30,7 +30,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     }
 
     @Override
-    public boolean addBarterItemType(ItemType itemType) {
+    public boolean addBarterItem(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
         Item item = ((CraftItemType) itemType).getHandle();
@@ -38,7 +38,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     }
 
     @Override
-    public boolean removeBarterItemType(ItemType itemType) {
+    public boolean removeBarterItem(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
         Item item = ((CraftItemType) itemType).getHandle();
@@ -46,7 +46,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     }
 
     @Override
-    public boolean addItemTypeOfInterest(ItemType itemType) {
+    public boolean addItemOfInterest(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
         Item item = ((CraftItemType) itemType).getHandle();
@@ -54,7 +54,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     }
 
     @Override
-    public boolean removeItemTypeOfInterest(ItemType itemType) {
+    public boolean removeItemOfInterest(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
         Item item = ((CraftItemType) itemType).getHandle();
