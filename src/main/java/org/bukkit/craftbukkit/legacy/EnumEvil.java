@@ -224,7 +224,7 @@ public class EnumEvil {
     }
 
     public static Material getSteerMaterial(Steerable steerable) {
-        return CraftMagicNumbers.INSTANCE.toMaterial(steerable.getSteerItemType());
+        return CraftMagicNumbers.INSTANCE.toMaterial(steerable.getSteerItem());
     }
 
     public static Material getMaterial(BlockCanBuildEvent event) {

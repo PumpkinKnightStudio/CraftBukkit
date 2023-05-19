@@ -52,7 +52,7 @@ public class CraftPig extends CraftAnimals implements Pig {
     }
 
     @Override
-    public ItemType getSteerItemType() {
+    public ItemType getSteerItem() {
         return ItemType.CARROT_ON_A_STICK;
     }
 
