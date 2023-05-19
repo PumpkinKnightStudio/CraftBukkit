@@ -32,7 +32,6 @@ import org.bukkit.block.BlockType;
 import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.tag.CraftTag;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
@@ -370,7 +369,7 @@ public class EnumEvil {
         return blockDataMeta.getBlockData(material.asBlockType());
     }
 
-    public static Criteria statistic(Statistic statistic, Material material) { // TODO: 5/18/23 Static method
+    public static Criteria statistic(Statistic statistic, Material material) {
         if (statistic.getType() == Statistic.Type.ITEM) {
             return Criteria.statistic(statistic, material.asItemType());
         } else if (statistic.getType() == Statistic.Type.BLOCK) {
@@ -379,15 +378,15 @@ public class EnumEvil {
         return Criteria.statistic(statistic);
     }
 
-    public static BlockData createBlockData(Material material) { // TODO: 5/18/23 Static method
+    public static BlockData createBlockData(Material material) {
         return Bukkit.createBlockData(material.asBlockType());
     }
 
-    public static BlockData createBlockData(Material material, Consumer<BlockData> consumer) { // TODO: 5/18/23 Static method
+    public static BlockData createBlockData(Material material, Consumer<BlockData> consumer) {
         return Bukkit.createBlockData(material.asBlockType(), consumer::accept);
     }
 
-    public static BlockData createBlockData(Material material, String data) { // TODO: 5/18/23 Static method
+    public static BlockData createBlockData(Material material, String data) {
         return Bukkit.createBlockData(material.asBlockType(), data);
     }
 

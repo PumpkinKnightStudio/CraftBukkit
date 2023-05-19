@@ -378,11 +378,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return pdf.getAPIVersion() == null;
     }
 
-    public static boolean enumCompatibilityMode(PluginDescriptionFile pdf) {
-        if (!((CraftServer) Bukkit.getServer()).enumCompatibilityMode) {
-            return false;
-        }
+    public static boolean enumCompatibilityMode() {
+        return ((CraftServer) Bukkit.getServer()).enumCompatibilityMode;
+    }
 
+    public static boolean preEnumKilling(PluginDescriptionFile pdf) {
         if (pdf.getAPIVersion() == null) {
             return true;
         }
@@ -396,7 +396,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
         try {
-            clazz = Commodore.convert(clazz, !isLegacy(pdf), enumCompatibilityMode(pdf));
+            clazz = Commodore.convert(clazz, !isLegacy(pdf), preEnumKilling(pdf), enumCompatibilityMode());
         } catch (Exception ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
         }

@@ -50,7 +50,8 @@ public class Commodore
             "org/bukkit/block/Block (B)V setData",
             "org/bukkit/block/Block (BZ)V setData",
             "org/bukkit/inventory/ItemStack ()I getTypeId",
-            "org/bukkit/inventory/ItemStack (I)V setTypeId"
+            "org/bukkit/inventory/ItemStack (I)V setTypeId",
+            "org/bukkit/inventory/ItemStack ()Lorg/bukkit/Material; getType"
     ) );
 
     public static void main(String[] args)
@@ -111,7 +112,7 @@ public class Commodore
 
                             if ( entry.getName().endsWith( ".class" ) )
                             {
-                                b = convert( b, false , true );
+                                b = convert( b, false, false, true );
                                 entry = new JarEntry( entry.getName() );
                             }
 
@@ -130,7 +131,7 @@ public class Commodore
         }
     }
 
-    public static byte[] convert(byte[] b, final boolean modern, final boolean enumCompatibility )
+    public static byte[] convert(byte[] b, final boolean modern, final boolean preEnumKilling, final boolean enumCompatibility )
     {
         ClassReader cr = new ClassReader( b );
         ClassWriter cw = new ClassWriter( cr, 0 );
@@ -507,7 +508,7 @@ public class Commodore
                             return;
                         }
 
-                        if ( enumCompatibility ) {
+                        if ( enumCompatibility && preEnumKilling ) {
                             if ( owner.equals( "java/lang/Class" ) && name.equals( "getEnumConstants" ) )
                             {
                                 super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", "getEnumConstants", "(Ljava/lang/Class;)Ljava/lang/Object;", false);
@@ -595,16 +596,33 @@ public class Commodore
                                 }
                             }
 
-                            if ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/Material" ) )
+                            if ( !preEnumKilling )
                             {
-                                if ( replaceMaterialMethod( owner, name, desc, ( newName, newDesc ) -> {
-                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false );
-                                } ) )
+                                super.visitMethodInsn( opcode, owner, name, desc, itf );
+                                return;
+                            }
+
+                            if ( ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/Material" ) ) || owner.equals( "org/bukkit/Tag" ) || owner.equals( "org/bukkit/entity/Piglin" ) )
+                            {
+                                if ( replaceMaterialMethod( owner, name, desc, ( newName, newDesc ) ->
+                                    super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false ) ) )
                                 {
                                     return;
                                 }
                             }
-                            // TODO: 5/18/23 Change Tags, static methods and piglin methods
+
+                            if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) )
+                            {
+                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
+                                return;
+                            }
+
+                            if ( owner.equals( "org/bukkit/scoreboard/Criteria" ) && name.equals( "statistic" ) && desc.contains( "Material" ) )
+                            {
+                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
+                                return;
+                            }
+
                             super.visitMethodInsn( opcode, owner, name, desc, itf );
                             return;
                         }
@@ -673,6 +691,27 @@ public class Commodore
                             return;
                         }
 
+                        if ( ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/Material" ) ) || owner.equals( "org/bukkit/Tag" ) || owner.equals( "org/bukkit/entity/Piglin" ) )
+                        {
+                            if ( replaceMaterialMethod( owner, name, desc, ( newName, newDesc ) ->
+                                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false ) ) )
+                            {
+                                return;
+                            }
+                        }
+
+                        if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) )
+                        {
+                            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
+                            return;
+                        }
+
+                        if ( owner.equals( "org/bukkit/scoreboard/Criteria" ) && name.equals( "statistic" ) && desc.contains( "Material" ) )
+                        {
+                            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
+                            return;
+                        }
+
                         super.visitMethodInsn( opcode, owner, name, desc, itf );
                     }
 
@@ -693,7 +732,7 @@ public class Commodore
                     {
                         // Need to also change class type when changing the creation of a new Object
                         // Fore more info see org.bukkit.craftbukkit.legacy.ImposterEnumMap
-                        if ( enumCompatibility && Opcodes.NEW == opcode && type.equals( "java/util/EnumMap" ) )
+                        if ( enumCompatibility && preEnumKilling && Opcodes.NEW == opcode && type.equals( "java/util/EnumMap" ) )
                         {
                             super.visitTypeInsn( opcode, "org/bukkit/craftbukkit/legacy/ImposterEnumMap" );
                             return;
@@ -708,11 +747,33 @@ public class Commodore
                         List<Object> methodArgs = new ArrayList<>();
                         for ( Object object : bootstrapMethodArguments )
                         {
-                            if ( enumCompatibility && object instanceof Handle handle && handle.getOwner().equals( "java/util/EnumMap" ) )
+                            if ( enumCompatibility && preEnumKilling && object instanceof Handle handle && handle.getOwner().equals( "java/util/EnumMap" ) )
                             {
                                 Handle newHandle = new Handle( handle.getTag(), "org/bukkit/craftbukkit/legacy/ImposterEnumMap", handle.getName(), handle.getDesc(), handle.isInterface() );
                                 methodArgs.add( newHandle );
                                 continue;
+                            }
+
+                            if ( preEnumKilling && object instanceof Handle handle ) {
+                                if ( ( handle.getOwner().startsWith( "org/bukkit" ) && handle.getDesc().contains( "org/bukkit/Material" ) ) || handle.getOwner().equals( "org/bukkit/Tag" ) || handle.getOwner().equals( "org/bukkit/entity/Piglin" ) )
+                                {
+                                    if ( replaceMaterialMethod( handle.getOwner(), handle.getName(), handle.getDesc(), ( newName, newDesc ) ->
+                                            methodArgs.add( new Handle( Opcodes.H_INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false ) ) ) )
+                                    {
+                                        continue;
+                                    }
+                                } else if ( handle.getOwner().equals( "org/bukkit/Bukkit" ) && handle.getName().equals( "createBlockData" ) )
+                                {
+                                    methodArgs.add( new Handle( Opcodes.H_INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", handle.getName(), handle.getDesc(), false ) );
+                                    continue;
+
+                                } else if ( handle.getOwner().equals( "org/bukkit/scoreboard/Criteria" ) && handle.getName().equals( "statistic" ) && handle.getDesc().contains( "Material" ) )
+                                {
+                                    methodArgs.add( new Handle( Opcodes.H_INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", handle.getName(), handle.getDesc(), false ) );
+                                    continue;
+                                }
+
+                                methodArgs.add( object );
                             }
 
                             methodArgs.add( object );
@@ -727,6 +788,33 @@ public class Commodore
         return cw.toByteArray();
     }
 
+    /*
+    This method looks (and probably is) overengineered, but it gives the most flexible when it comes to remapping normal methods to static one.
+    The problem with normal owner and desc replacement is that child classes have them as an owner, instead there parents for there parents methods
+
+    For example, if we have following two interfaces org.bukkit.BlockData and org.bukkit.Orientable extents BlockData
+    and BlockData has the method org.bukkit.Material getType which we want to reroute to the static method
+    org.bukkit.Material org.bukkit.craftbukkit.legacy.EnumEvil#getType(org.bukkit.BlockData)
+
+    If we now call BlockData#getType we get as the owner org/bukkit/BlockData and as desc ()Lorg/bukkit/Material;
+    Which we can nicely reroute by checking if the owner is BlockData and the name getType
+    The problem, starts if we use Orientable#getType no we get as owner org/bukkit/Orientable and as desc ()Lorg/bukkit/Material;
+    Now we can now longer safely say to which getType method we need to reroute (assume there are multiple getType methods from different classes,
+    which are not related to BlockData), simple using the owner class will not work, since would reroute to
+    EnumEvil#getType(org.bukkit.Orientable) which is not EnumEvil#getType(org.bukkit.BlockData) and will throw a method not found error
+    at runtime.
+
+    Meaning we would need to add checks for each subclass, which would be pur insanity.
+
+    To solve this, we go through each super class and interfaces (and their super class and interfaces etc.) and try to get an owner
+    which matches with one of our replacement methods. Based on how inheritance works in java, this method should be safe to use.
+
+    As a site note: This method could also be used for the other method reroute, e.g. legacy method rerouting, where only the replacement
+    method needs to be written, and this method figures out the rest, which could reduce the size and complexity of the Commodore class.
+    The question then becomes one about performance (since this is not the most performance way) and convenience.
+    But since it is only applied for each class and method call once when they get first loaded, it should not be that bad.
+    (Although some load time testing could be done)
+     */
     public static boolean replaceMaterialMethod( String owner, String name, String desc, BiConsumer<String, String> consumer )
     {
         Type[] args = Type.getArgumentTypes( desc );
@@ -807,7 +895,7 @@ public class Commodore
 
             Set<Class<?>> classes = Sets.newHashSet( clazz.getInterfaces() );
             classes.add( clazz.getSuperclass() );
-            classes.remove( null );
+            classes.remove( null ); // Super class can be null, remove it if this is the case
             classes.removeAll( visit );
             toVisit.addAll( classes );
 
