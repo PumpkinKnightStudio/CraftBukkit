@@ -321,7 +321,7 @@ public class ItemStackTest extends AbstractTestingBase {
         final ItemFactory factory = CraftItemFactory.instance();
         final Map<Class<? extends ItemMeta>, ItemType> possibleItemTypes = new HashMap<Class<? extends ItemMeta>, ItemType>();
         ItemMeta meta;
-        for (final ItemType itemType: Registry.ITEM_TYPE) {
+        for (final ItemType itemType: Registry.ITEM) {
             meta = factory.getItemMeta(itemType);
             if (meta == null || possibleItemTypes.containsKey(meta.getClass()))
                 continue;

@@ -146,7 +146,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         if (m != null) {
             itemType = m.asItemType();
         } else {
-            ItemType type = Registry.ITEM_TYPE.get(NamespacedKey.fromString(matName));
+            ItemType type = Registry.ITEM.get(NamespacedKey.fromString(matName));
             if (type != null) {
                 itemType = type;
             } else {

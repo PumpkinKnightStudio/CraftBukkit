@@ -24,7 +24,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final ItemType[] itemTypes;
 
     static {
-        itemTypes = Lists.newArrayList(Registry.ITEM_TYPE).toArray(new ItemType[0]);
+        itemTypes = Lists.newArrayList(Registry.ITEM).toArray(new ItemType[0]);
     }
 
     static String name(ItemType from, ItemType to) {

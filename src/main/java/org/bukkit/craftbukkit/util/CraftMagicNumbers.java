@@ -217,7 +217,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         // Fastpath up to date materials
         if (version == this.getDataVersion()) {
-            return Registry.ITEM_TYPE.get(NamespacedKey.fromString(itemType));
+            return Registry.ITEM.get(NamespacedKey.fromString(itemType));
         }
 
         itemType = itemType.toLowerCase(Locale.ROOT);
@@ -232,7 +232,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
             converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.BLOCK_NAME, name, version, this.getDataVersion());
         }
 
-        return Registry.ITEM_TYPE.get(NamespacedKey.fromString(converted.asString("")));
+        return Registry.ITEM.get(NamespacedKey.fromString(converted.asString("")));
     }
 
     /**

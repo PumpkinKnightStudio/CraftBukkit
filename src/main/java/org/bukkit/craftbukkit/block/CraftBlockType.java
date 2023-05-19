@@ -36,7 +36,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     public static BlockType<?> minecraftToBukkit(Block minecraft) {
         Preconditions.checkArgument(minecraft != null);
         IRegistry<Block> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK);
-        BlockType<?> bukkit = Registry.BLOCK_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        BlockType<?> bukkit = Registry.BLOCK.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
         Preconditions.checkArgument(bukkit != null);
         return bukkit;
     }
@@ -64,13 +64,13 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean hasItemType() {
-        return Registry.ITEM_TYPE.get(getKey()) != null;
+        return Registry.ITEM.get(getKey()) != null;
     }
 
     @NotNull
     @Override
     public ItemType getItemType() {
-        ItemType itemType = Registry.ITEM_TYPE.get(getKey());
+        ItemType itemType = Registry.ITEM.get(getKey());
         Preconditions.checkNotNull(itemType, "The block type %s has no corresponding item type", getKey());
         return itemType;
     }
