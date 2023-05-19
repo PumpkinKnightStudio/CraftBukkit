@@ -27,7 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftItemType extends ItemType {
+public class CraftItemType implements ItemType {
     private final NamespacedKey key;
     private final Item item;
 

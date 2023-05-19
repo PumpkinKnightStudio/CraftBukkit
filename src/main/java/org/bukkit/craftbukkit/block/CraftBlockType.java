@@ -26,7 +26,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftBlockType<B extends BlockData> extends BlockType<B> {
+public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     private final NamespacedKey key;
     private final Block block;
