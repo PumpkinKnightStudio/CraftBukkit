@@ -106,6 +106,6 @@ public final class CraftEvil {
     }
 
     public static Material getType(ItemStack itemStack) {
-        return CraftMagicNumbers.INSTANCE.toMaterial(itemStack.getType());
+        return CraftLegacy.toLegacy(CraftMagicNumbers.INSTANCE.toMaterial(itemStack.getType()));
     }
 }

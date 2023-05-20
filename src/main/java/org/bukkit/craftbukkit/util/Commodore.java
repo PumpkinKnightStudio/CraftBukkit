@@ -611,7 +611,7 @@ public class Commodore
                                 }
                             }
 
-                            if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) )
+                            if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) && desc.contains( "org/bukkit/Material" ) )
                             {
                                 super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
                                 return;
@@ -700,7 +700,7 @@ public class Commodore
                             }
                         }
 
-                        if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) )
+                        if ( owner.equals( "org/bukkit/Bukkit" ) && name.equals( "createBlockData" ) && desc.contains( "org/bukkit/Material" ) )
                         {
                             super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", name, desc, false );
                             return;
@@ -762,7 +762,7 @@ public class Commodore
                                     {
                                         continue;
                                     }
-                                } else if ( handle.getOwner().equals( "org/bukkit/Bukkit" ) && handle.getName().equals( "createBlockData" ) )
+                                } else if ( handle.getOwner().equals( "org/bukkit/Bukkit" ) && handle.getName().equals( "createBlockData" ) && desc.contains( "org/bukkit/Material" ) )
                                 {
                                     methodArgs.add( new Handle( Opcodes.H_INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", handle.getName(), handle.getDesc(), false ) );
                                     continue;
@@ -772,8 +772,6 @@ public class Commodore
                                     methodArgs.add( new Handle( Opcodes.H_INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", handle.getName(), handle.getDesc(), false ) );
                                     continue;
                                 }
-
-                                methodArgs.add( object );
                             }
 
                             methodArgs.add( object );
@@ -833,7 +831,7 @@ public class Commodore
         {
             try
             {
-                argClass.add( Class.forName(arg.getClassName()) );
+                argClass.add( Class.forName( arg.getClassName() ) );
             } catch ( ClassNotFoundException e )
             {
                 return false;
