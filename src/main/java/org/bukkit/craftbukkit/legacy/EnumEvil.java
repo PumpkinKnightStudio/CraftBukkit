@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.bukkit.Fluid;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.RegionAccessor;
 import org.bukkit.Registry;
@@ -64,6 +66,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Criteria;
+import org.bukkit.util.OldEnum;
 
 /**
  * @deprecated only for legacy use, do not use
@@ -535,5 +538,42 @@ public class EnumEvil {
         }
 
         return values;
+    }
+
+    public static String name(Object object) {
+        if (object instanceof OldEnum<?>) {
+            return ((OldEnum<?>) object).name();
+        }
+
+        return ((Enum<?>) object).name();
+    }
+
+    public static int compareTo(Object object, Object other) {
+        if (object instanceof OldEnum<?>) {
+            return ((OldEnum) object).compareTo((OldEnum) other);
+        }
+
+        return ((Enum) object).compareTo((Enum) other);
+    }
+
+    public static Class<?> getDeclaringClass(Object object) {
+        Class<?> clazz = object.getClass();
+        Class<?> zuper = clazz.getSuperclass();
+        return (zuper == Enum.class) ? clazz : zuper;
+    }
+
+    public static Optional<Enum.EnumDesc> describeConstable(Object object) {
+        return getDeclaringClass(object)
+                .describeConstable()
+                .map(c -> Enum.EnumDesc.of(c, name(object)));
+    }
+
+    public static Object valueOf(Class enumClass, String name) {
+        Registry registry = REGISTRIES.get(enumClass);
+        if (registry != null) {
+            return registry.get(NamespacedKey.fromString(name.toLowerCase()));
+        }
+
+        return Enum.valueOf(enumClass, name);
     }
 }
