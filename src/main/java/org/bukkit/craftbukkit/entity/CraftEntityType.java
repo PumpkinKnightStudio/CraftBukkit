@@ -33,6 +33,7 @@ import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftEntityType extends EntityType {
@@ -105,7 +106,7 @@ public class CraftEntityType extends EntityType {
     }
 
     @Override
-    public int compareTo(EntityType entityType) {
+    public int compareTo(OldEnum entityType) {
         return ordinal - entityType.ordinal();
     }
 
@@ -150,14 +151,8 @@ public class CraftEntityType extends EntityType {
     }
 
     public static class CraftEntityTypeRegistry extends CraftRegistry<EntityType, EntityTypes<?>> {
-        private static final NamespacedKey UNKNOWN = NamespacedKey.minecraft("unknown");
-        private static final Map<NamespacedKey, NamespacedKey> NAME_MAP = new HashMap<>();
         private static final Map<NamespacedKey, Class<? extends Entity>> CLASS_MAP = new HashMap<>();
         private static final Map<NamespacedKey, Boolean> SPAWNABLE = new HashMap<>();
-
-        private static void add(String oldName, String newName) {
-            NAME_MAP.put(NamespacedKey.fromString(oldName), NamespacedKey.fromString(newName));
-        }
 
         private static void add(String name, Class<? extends Entity> clazz) {
             CLASS_MAP.put(NamespacedKey.fromString(name), clazz);
@@ -166,37 +161,6 @@ public class CraftEntityType extends EntityType {
             SPAWNABLE.put(NamespacedKey.fromString(name), false);
         }
         static {
-            // Add legacy names
-            add("xp_orb", "experience_orb");
-            add("eye_of_ender_signal", "eye_of_ender");
-            add("xp_boottle", "experience_bottle");
-            add("fireworks_rocket", "firework_rocket");
-            add("evocation_fangs", "evoker_fangs");
-            add("evocation_illager", "evoker");
-            add("vindication_illager", "vindicator");
-            add("illusion_illager", "illusioner");
-            add("commandblock_minecart", "command_block_minecart");
-            add("snowman", "snow_golem");
-            add("villager_golem", "iron_golem");
-            add("ender_crystal", "end_crystal");
-            add("dropped_item", "item");
-            add("leash_hitch", "leash_knot");
-            add("ender_signal", "eye_of_ender");
-            add("splash_potion", "potion");
-            add("thrown_exp_bottle", "experience_bottle");
-            add("primed_tnt", "tnt");
-            add("firework", "firework_rocket");
-            add("minecart_command", "command_block_minecart");
-            add("minecart_chest", "chest_minecart");
-            add("minecart_furnace", "furnace_minecart");
-            add("minecart_tnt", "tnt_minecart");
-            add("minecart_hopper", "hopper_minecart");
-            add("minecart_mob_spawner", "spawner_minecart");
-            add("mushroom_cow", "mooshroom");
-            add("ender_crystal", "end_crystal");
-            add("fishing_hook", "fishing_bobber");
-            add("lightning", "lightning_bolt");
-
             // Add class which cannot be automatically be detected
             add("leash_knot", LeashHitch.class);
             add("eye_of_ender", EnderSignal.class);
@@ -235,16 +199,6 @@ public class CraftEntityType extends EntityType {
 
         @Override
         public EntityType createBukkit(NamespacedKey namespacedKey, EntityTypes<?> entityType) {
-            // For backwards compatibility
-            if (UNKNOWN.equals(namespacedKey)) {
-                return new CraftEntityType(namespacedKey, null, null, false);
-            }
-
-            // convert legacy names to new one
-            if (NAME_MAP.containsKey(namespacedKey)) {
-                return get(NAME_MAP.get(namespacedKey));
-            }
-
             if (entityType == null) {
                 return null;
             }
@@ -273,11 +227,6 @@ public class CraftEntityType extends EntityType {
             }
 
             return clazz;
-        }
-
-        @Override
-        public Stream<EntityType> values() {
-            return Stream.concat(super.values(), Stream.of(get(UNKNOWN)));
         }
     }
 }

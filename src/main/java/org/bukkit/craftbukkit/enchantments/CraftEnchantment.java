@@ -1,13 +1,8 @@
 package org.bukkit.craftbukkit.enchantments;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiFunction;
-import net.minecraft.core.IRegistry;
 import net.minecraft.world.item.enchantment.EnchantmentBinding;
 import net.minecraft.world.item.enchantment.EnchantmentVanishing;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
@@ -153,54 +148,5 @@ public class CraftEnchantment extends Enchantment {
     @Override
     public String toString() {
         return "CraftEnchantment[" + getKey() + "]";
-    }
-
-    public static class CraftEnchantmentRegistry extends CraftRegistry<Enchantment, net.minecraft.world.item.enchantment.Enchantment> {
-        private static final Map<NamespacedKey, NamespacedKey> NAME_MAP = new HashMap<>();
-
-        private static void add(String oldName, String newName) {
-            NAME_MAP.put(NamespacedKey.fromString(oldName), NamespacedKey.fromString(newName));
-        }
-        static {
-            // Add legacy names
-            add("protection_environmental", "protection");
-            add("protection_fire", "fire_protection");
-            add("protection_fall", "feather_falling");
-            add("protection_explosions", "blast_protection");
-            add("protection_projectile", "projectile_protection");
-            add("oxygen", "respiration");
-            add("water_worker", "aqua_affinity");
-            add("damage_all", "sharpness");
-            add("damage_undead", "smite");
-            add("damage_arthropods", "bane_of_arthropods");
-            add("loot_bonus_mobs", "looting");
-            add("sweeping_edge", "sweeping");
-            add("dig_speed", "efficiency");
-            add("durability", "unbreaking");
-            add("loot_bonus_blocks", "fortune");
-            add("arrow_damage", "power");
-            add("arrow_knockback", "punch");
-            add("arrow_fire", "flame");
-            add("arrow_infinite", "infinity");
-            add("luck", "luck_of_the_sea");
-        }
-
-        public CraftEnchantmentRegistry(IRegistry<net.minecraft.world.item.enchantment.Enchantment> minecraftRegistry, BiFunction<NamespacedKey, net.minecraft.world.item.enchantment.Enchantment, Enchantment> minecraftToBukkit) {
-            super(minecraftRegistry, minecraftToBukkit);
-        }
-
-        @Override
-        public Enchantment createBukkit(NamespacedKey namespacedKey, net.minecraft.world.item.enchantment.Enchantment enchantment) {
-            // convert legacy names to new one
-            if (NAME_MAP.containsKey(namespacedKey)) {
-                return get(NAME_MAP.get(namespacedKey));
-            }
-
-            if (enchantment == null) {
-                return null;
-            }
-
-            return super.createBukkit(namespacedKey, enchantment);
-        }
     }
 }

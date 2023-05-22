@@ -24,6 +24,11 @@ public class BiomeTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
+
+            if (name.equals("CUSTOM")) {
+                continue;
+            }
+
             Assert.assertNotNull("No Biome for field name " + name, Registry.BIOME.get(NamespacedKey.fromString(name.toLowerCase())));
         }
     }

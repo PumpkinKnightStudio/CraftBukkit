@@ -1,14 +1,10 @@
 package org.bukkit.craftbukkit.potion;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiFunction;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.effect.MobEffectList;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionEffectType;
 
@@ -106,43 +102,5 @@ public class CraftPotionEffectType extends PotionEffectType {
     @Override
     public String toString() {
         return "CraftPotionEffectType[" + getKey() + "]";
-    }
-
-    public static class CraftPotionEffectTypeRegistry extends CraftRegistry<PotionEffectType, MobEffectList> {
-        private static final Map<NamespacedKey, NamespacedKey> NAME_MAP = new HashMap<>();
-
-        private static void add(String oldName, String newName) {
-            NAME_MAP.put(NamespacedKey.fromString(oldName), NamespacedKey.fromString(newName));
-        }
-        static {
-            // Add legacy names
-            add("slow", "slowness");
-            add("fast_digging", "haste");
-            add("slow_digging", "mining_fatigue");
-            add("increase_damage", "strength");
-            add("heal", "instant_health");
-            add("harm", "instant_damage");
-            add("jump", "jump_boost");
-            add("confusion", "nausea");
-            add("damage_resistance", "resistance");
-        }
-
-        public CraftPotionEffectTypeRegistry(IRegistry<MobEffectList> minecraftRegistry, BiFunction<NamespacedKey, MobEffectList, PotionEffectType> minecraftToBukkit) {
-            super(minecraftRegistry, minecraftToBukkit);
-        }
-
-        @Override
-        public PotionEffectType createBukkit(NamespacedKey namespacedKey, MobEffectList mobEffectList) {
-            // convert legacy names to new one
-            if (NAME_MAP.containsKey(namespacedKey)) {
-                return get(NAME_MAP.get(namespacedKey));
-            }
-
-            if (mobEffectList == null) {
-                return null;
-            }
-
-            return super.createBukkit(namespacedKey, mobEffectList);
-        }
     }
 }

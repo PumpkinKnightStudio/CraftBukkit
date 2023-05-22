@@ -1,7 +1,5 @@
 package org.bukkit.craftbukkit.block;
 
-import java.util.function.BiFunction;
-import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
@@ -10,7 +8,6 @@ import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftBiome extends Biome {
@@ -102,28 +99,5 @@ public class CraftBiome extends Biome {
     @Override
     public int hashCode() {
         return getKey().hashCode();
-    }
-
-    public static class CraftBiomeRegistry extends CraftRegistry<Biome, BiomeBase> {
-        private static final NamespacedKey CUSTOM = NamespacedKey.minecraft("custom");
-
-        public CraftBiomeRegistry(IRegistry<BiomeBase> minecraftRegistry, BiFunction<NamespacedKey, BiomeBase, Biome> minecraftToBukkit) {
-            super(minecraftRegistry, minecraftToBukkit);
-        }
-
-        @Override
-        public Biome createBukkit(NamespacedKey namespacedKey, BiomeBase minecraft) {
-            // For backwards compatibility
-            if (CUSTOM.equals(namespacedKey)) {
-                return new CraftBiome(namespacedKey, minecraft);
-            }
-
-            return super.createBukkit(namespacedKey, minecraft);
-        }
-
-        @Override
-        public Stream<Biome> values() {
-            return Stream.concat(super.values(), Stream.of(get(CUSTOM)));
-        }
     }
 }

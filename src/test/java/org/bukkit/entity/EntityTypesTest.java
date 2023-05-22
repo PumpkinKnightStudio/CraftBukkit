@@ -28,6 +28,11 @@ public class EntityTypesTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
+
+            if (name.equals("UNKNOWN")) {
+                continue;
+            }
+
             Assert.assertNotNull("No entityType for field name " + name, Registry.ENTITY_TYPE.get(NamespacedKey.fromString(name.toLowerCase())));
         }
     }

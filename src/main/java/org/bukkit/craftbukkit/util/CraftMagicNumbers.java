@@ -50,6 +50,7 @@ import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
@@ -58,9 +59,13 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -409,6 +414,31 @@ public final class CraftMagicNumbers implements UnsafeValues {
         net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
         return nmsItemStack.getItem().getDescriptionId(nmsItemStack);
     }
+
+    private EntityType<Entity> unkownEntityType;
+    @Override
+    public EntityType<Entity> getUnkownEntityType() {
+        if (unkownEntityType != null) {
+            return unkownEntityType;
+        }
+
+        unkownEntityType = new CraftEntityType(NamespacedKey.minecraft("unkown"), null, null, false);
+
+        return unkownEntityType;
+    }
+
+    private Biome customBiome;
+    @Override
+    public Biome getCustomBiome() {
+        if (customBiome != null) {
+            return customBiome;
+        }
+
+        customBiome = new CraftBiome(NamespacedKey.minecraft("custom"), null);
+
+        return customBiome;
+    }
+
     /**
      * This helper class represents the different NBT Tags.
      * <p>

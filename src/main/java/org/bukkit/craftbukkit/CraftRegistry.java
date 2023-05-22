@@ -57,7 +57,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE_TYPE), CraftStructureType::new);
         }
         if (bukkitClass == Biome.class) {
-            return new CraftBiome.CraftBiomeRegistry(registryHolder.registryOrThrow(Registries.BIOME), CraftBiome::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.BIOME), CraftBiome::new);
         }
         if (bukkitClass == Art.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.PAINTING_VARIANT), CraftArt::new);
@@ -78,10 +78,10 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.VILLAGER_PROFESSION), CraftVillager.CraftProfession::new);
         }
         if (bukkitClass == PotionEffectType.class) {
-            return new CraftPotionEffectType.CraftPotionEffectTypeRegistry(registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
         }
         if (bukkitClass == Enchantment.class) {
-            return new CraftEnchantment.CraftEnchantmentRegistry(registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
         }
         if (bukkitClass == Sound.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.SOUND_EVENT), CraftSound::new);
