@@ -110,7 +110,7 @@ public class DeprecatedItemMetaCustomValueTest extends AbstractTestingBase {
 
     @Test
     public void testYAMLStoring() {
-        ItemStack stack = new ItemStack(ItemType.DIAMOND);
+        ItemStack stack = ItemStack.of(ItemType.DIAMOND);
         CraftMetaItem meta = createComplexItemMeta();
         stack.setItemMeta(meta);
 
@@ -121,12 +121,12 @@ public class DeprecatedItemMetaCustomValueTest extends AbstractTestingBase {
         YamlConfiguration loadedConfig = YamlConfiguration.loadConfiguration(new StringReader(configValue));
 
         assertEquals(stack, loadedConfig.getSerializable("testpath", ItemStack.class));
-        assertNotEquals(new ItemStack(ItemType.DIAMOND), loadedConfig.getSerializable("testpath", ItemStack.class));
+        assertNotEquals(ItemStack.of(ItemType.DIAMOND), loadedConfig.getSerializable("testpath", ItemStack.class));
     }
 
     @Test
     public void testCorrectType() {
-        ItemStack stack = new ItemStack(ItemType.DIAMOND);
+        ItemStack stack = ItemStack.of(ItemType.DIAMOND);
         CraftMetaItem meta = createComplexItemMeta();
 
         meta.getCustomTagContainer().setCustomTag(requestKey("int"), ItemTagType.STRING, "1");

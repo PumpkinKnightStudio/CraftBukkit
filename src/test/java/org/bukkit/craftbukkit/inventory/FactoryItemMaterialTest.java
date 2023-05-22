@@ -47,7 +47,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
 
     @Test
     public void itemStack() {
-        ItemStack bukkitStack = new ItemStack(itemType);
+        ItemStack bukkitStack = ItemStack.of(itemType);
         CraftItemStack craftStack = CraftItemStack.asCraftCopy(bukkitStack);
         ItemMeta meta = factory.getItemMeta(itemType);
         if (meta == null) {
@@ -82,7 +82,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         }
 
         for (ItemType other : itemTypes) {
-            final ItemStack bukkitStack = new ItemStack(other);
+            final ItemStack bukkitStack = ItemStack.of(other);
             final CraftItemStack craftStack = CraftItemStack.asCraftCopy(bukkitStack);
             final CraftMetaItem otherMeta = (CraftMetaItem) factory.asMetaFor(baseMeta, other);
 
@@ -108,7 +108,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(itemType);
         final CraftMetaItem baseMetaClone = baseMeta.clone();
 
-        final ItemStack baseMetaStack = new ItemStack(itemType);
+        final ItemStack baseMetaStack = ItemStack.of(itemType);
         baseMetaStack.setItemMeta(baseMeta);
 
         assertThat(baseMeta, is(not(sameInstance(baseMetaStack.getItemMeta()))));

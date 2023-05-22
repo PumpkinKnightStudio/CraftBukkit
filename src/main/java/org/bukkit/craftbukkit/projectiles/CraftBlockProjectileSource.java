@@ -85,10 +85,10 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
                 launch = new EntityPotion(world, iposition.x(), iposition.y(), iposition.z());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.LINGERING_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.LINGERING_POTION, 1)));
             } else {
                 launch = new EntityPotion(world, iposition.x(), iposition.y(), iposition.z());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.SPLASH_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.SPLASH_POTION, 1)));
             }
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {

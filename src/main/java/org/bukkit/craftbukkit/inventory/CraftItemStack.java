@@ -56,9 +56,9 @@ public final class CraftItemStack extends ItemStack {
      */
     public static ItemStack asBukkitCopy(net.minecraft.world.item.ItemStack original) {
         if (original.isEmpty()) {
-            return new ItemStack(ItemType.AIR);
+            return ItemStack.of(ItemType.AIR);
         }
-        ItemStack stack = new ItemStack(CraftItemType.minecraftToBukkit(original.getItem()), original.getCount());
+        ItemStack stack = ItemStack.of(CraftItemType.minecraftToBukkit(original.getItem()), original.getCount());
         if (hasItemMeta(original)) {
             stack.setItemMeta(getItemMeta(original));
         }

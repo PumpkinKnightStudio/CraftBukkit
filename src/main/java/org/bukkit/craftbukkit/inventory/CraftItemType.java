@@ -99,7 +99,7 @@ public class CraftItemType implements ItemType {
 
     @Override
     public EquipmentSlot getEquipmentSlot() {
-        return CraftEquipmentSlot.getSlot(EntityInsentient.getEquipmentSlotForItem(CraftItemStack.asNMSCopy(new ItemStack(this))));
+        return CraftEquipmentSlot.getSlot(EntityInsentient.getEquipmentSlotForItem(CraftItemStack.asNMSCopy(ItemStack.of(this))));
     }
 
     @Override

@@ -58,6 +58,6 @@ public class CraftAnimals extends CraftAgeable implements Animals {
 
     @Override
     public boolean isBreedItem(ItemType itemType) {
-        return isBreedItem(new ItemStack(itemType));
+        return isBreedItem(ItemStack.of(itemType));
     }
 }

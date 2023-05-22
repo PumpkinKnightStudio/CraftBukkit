@@ -69,7 +69,7 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
             record = ItemType.AIR;
         }
 
-        setRecord(new org.bukkit.inventory.ItemStack(record));
+        setRecord(org.bukkit.inventory.ItemStack.of(record));
     }
 
     @Override

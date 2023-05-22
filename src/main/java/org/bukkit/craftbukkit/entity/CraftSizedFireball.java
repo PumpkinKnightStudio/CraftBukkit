@@ -16,7 +16,7 @@ public class CraftSizedFireball extends CraftFireball implements SizedFireball {
     @Override
     public ItemStack getDisplayItem() {
         if (getHandle().getItemRaw().isEmpty()) {
-            return new ItemStack(ItemType.FIRE_CHARGE);
+            return ItemStack.of(ItemType.FIRE_CHARGE);
         } else {
             return CraftItemStack.asBukkitCopy(getHandle().getItemRaw());
         }

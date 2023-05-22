@@ -151,7 +151,7 @@ public class ItemMetaTest extends AbstractTestingBase {
 
     @Test
     public void testCrazyEquality() {
-        CraftItemStack craft = CraftItemStack.asCraftCopy(new ItemStack(ItemType.STONE));
+        CraftItemStack craft = CraftItemStack.asCraftCopy(ItemStack.of(ItemType.STONE));
         craft.setItemMeta(craft.getItemMeta());
         ItemStack bukkit = new ItemStack(craft);
         assertThat(craft, is(bukkit));
@@ -357,7 +357,7 @@ public class ItemMetaTest extends AbstractTestingBase {
             new StackProvider(ItemType.CROSSBOW) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CrossbowMeta meta = (CrossbowMeta) cleanStack.getItemMeta();
-                    meta.addChargedProjectile(new ItemStack(ItemType.ARROW));
+                    meta.addChargedProjectile(ItemStack.of(ItemType.ARROW));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
@@ -399,7 +399,7 @@ public class ItemMetaTest extends AbstractTestingBase {
             new StackProvider(ItemType.BUNDLE) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final BundleMeta meta = (BundleMeta) cleanStack.getItemMeta();
-                    meta.addItem(new ItemStack(ItemType.STONE));
+                    meta.addItem(ItemStack.of(ItemType.STONE));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
@@ -451,7 +451,7 @@ public class ItemMetaTest extends AbstractTestingBase {
 
     private void downCastTest(final StackWrapper provider) {
         final String name = provider.toString();
-        final ItemStack blank = new ItemStack(ItemType.STONE);
+        final ItemStack blank = ItemStack.of(ItemType.STONE);
         final ItemStack craftBlank = CraftItemStack.asCraftCopy(blank);
 
         // Check that equality and similarity works for each meta implementation

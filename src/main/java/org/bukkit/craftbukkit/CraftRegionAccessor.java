@@ -637,10 +637,10 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             } else if (ThrownPotion.class.isAssignableFrom(clazz)) {
                 if (LingeringPotion.class.isAssignableFrom(clazz)) {
                     entity = new EntityPotion(world, x, y, z);
-                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.LINGERING_POTION, 1)));
+                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.LINGERING_POTION, 1)));
                 } else {
                     entity = new EntityPotion(world, x, y, z);
-                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.SPLASH_POTION, 1)));
+                    ((EntityPotion) entity).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.SPLASH_POTION, 1)));
                 }
             } else if (Fireball.class.isAssignableFrom(clazz)) {
                 if (SmallFireball.class.isAssignableFrom(clazz)) {

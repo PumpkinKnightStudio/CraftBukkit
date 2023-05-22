@@ -440,10 +440,10 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
                 launch = new EntityPotion(world, getHandle());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.LINGERING_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.LINGERING_POTION, 1)));
             } else {
                 launch = new EntityPotion(world, getHandle());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(ItemType.SPLASH_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.SPLASH_POTION, 1)));
             }
             ((EntityProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), -20.0F, 0.5F, 1.0F); // ItemSplashPotion
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {

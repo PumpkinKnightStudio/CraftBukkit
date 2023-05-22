@@ -52,7 +52,7 @@ public class ItemStackTest extends AbstractTestingBase {
         abstract ItemStack operate(ItemStack cleanStack);
 
         static ItemStack cleanStack(ItemType itemType, boolean craft) {
-            final ItemStack stack = new ItemStack(itemType);
+            final ItemStack stack = ItemStack.of(itemType);
             return craft ? CraftItemStack.asCraftCopy(stack) : stack;
         }
 

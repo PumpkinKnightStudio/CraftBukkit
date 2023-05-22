@@ -22,7 +22,7 @@ public interface CraftRecipe extends Recipe {
         } else if (bukkit instanceof RecipeChoice.MaterialChoice) {
             stack = new RecipeItemStack(((RecipeChoice.MaterialChoice) bukkit).getChoices().stream().map((mat) -> new net.minecraft.world.item.crafting.RecipeItemStack.StackProvider(CraftItemStack.asNMSCopy(new ItemStack(mat)))));
         } else if (bukkit instanceof RecipeChoice.ItemTypeChoice) {
-            stack = new RecipeItemStack(((RecipeChoice.ItemTypeChoice) bukkit).getChoices().stream().map((itemType) -> new net.minecraft.world.item.crafting.RecipeItemStack.StackProvider(CraftItemStack.asNMSCopy(new ItemStack(itemType)))));
+            stack = new RecipeItemStack(((RecipeChoice.ItemTypeChoice) bukkit).getChoices().stream().map((itemType) -> new net.minecraft.world.item.crafting.RecipeItemStack.StackProvider(CraftItemStack.asNMSCopy(ItemStack.of(itemType)))));
         } else if (bukkit instanceof RecipeChoice.ExactChoice) {
             stack = new RecipeItemStack(((RecipeChoice.ExactChoice) bukkit).getChoices().stream().map((mat) -> new net.minecraft.world.item.crafting.RecipeItemStack.StackProvider(CraftItemStack.asNMSCopy(mat))));
             stack.exact = true;
