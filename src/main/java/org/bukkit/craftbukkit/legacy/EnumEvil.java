@@ -576,4 +576,16 @@ public class EnumEvil {
 
         return Enum.valueOf(enumClass, name);
     }
+
+    public static String toString(Object object) {
+        return object.toString();
+    }
+
+    public static int ordinal(Object object) {
+        if (object instanceof OldEnum<?>) {
+            return ((OldEnum<?>) object).ordinal();
+        }
+
+        return ((Enum<?>) object).ordinal();
+    }
 }
