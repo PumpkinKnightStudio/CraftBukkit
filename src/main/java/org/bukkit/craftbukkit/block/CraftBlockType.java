@@ -7,6 +7,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockFalling;
@@ -22,6 +23,7 @@ import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
@@ -64,15 +66,15 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean hasItemType() {
-        return Registry.ITEM.get(getKey()) != null;
+        return block.asItem() != null;
     }
 
     @NotNull
     @Override
     public ItemType getItemType() {
-        ItemType itemType = Registry.ITEM.get(getKey());
-        Preconditions.checkNotNull(itemType, "The block type %s has no corresponding item type", getKey());
-        return itemType;
+        Item item = block.asItem();
+        Preconditions.checkNotNull(item, "The block type %s has no corresponding item type", getKey());
+        return CraftItemType.minecraftToBukkit(item);
     }
 
     @Override

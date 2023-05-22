@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemBlock;
 import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
 import org.bukkit.NamespacedKey;
@@ -20,6 +21,7 @@ import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
@@ -50,20 +52,22 @@ public class CraftItemType implements ItemType {
 
     @Override
     public boolean hasBlockType() {
-        return Registry.BLOCK.get(getKey()) != null;
+        return item instanceof ItemBlock;
     }
 
     @NotNull
     @Override
     public BlockType<?> getBlockType() {
-        BlockType<?> blockType = Registry.BLOCK.get(getKey());
-        Preconditions.checkNotNull(blockType, "The item type %s has no corresponding block type", getKey());
-        return blockType;
+        if (!(item instanceof ItemBlock block)) {
+            throw new IllegalStateException("The item type " + getKey() + " has no corresponding block type");
+        }
+
+        return CraftBlockType.minecraftToBukkit(block.getBlock());
     }
 
     @Override
     public int getMaxStackSize() {
-        // Based  of the material enum air is only 0, in PerMaterialTest it is also set as special case
+        // Based of the material enum air is only 0, in PerMaterialTest it is also set as special case
         // the item info itself would return 64
         if (this == AIR) {
             return 0;
