@@ -59,7 +59,7 @@ public class BiomeTest extends AbstractTestingBase {
                 continue;
             }
 
-            Assert.assertNotNull("No NMS mapping for " + biome, CraftBiome.bukkitToMinecraft(BIOMES, biome));
+            Assert.assertNotNull("No NMS mapping for " + biome, CraftBiome.bukkitToMinecraft(biome));
         }
     }
 
@@ -67,7 +67,7 @@ public class BiomeTest extends AbstractTestingBase {
     public void testMinecraftToBukkit() {
         for (BiomeBase biomeBase : BIOMES) {
             // Should always return a biome, since we create the biome from the biome base
-            Biome biome = CraftBiome.minecraftToBukkit(BIOMES, biomeBase);
+            Biome biome = CraftBiome.minecraftToBukkit(biomeBase);
             Assert.assertTrue("No Bukkit mapping for " + biomeBase, biome != null && biome != Biome.CUSTOM);
         }
     }

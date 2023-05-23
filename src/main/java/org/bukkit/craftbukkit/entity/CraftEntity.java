@@ -211,7 +211,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
         this.entity = entity;
-        this.entityType = CraftEntityType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), entity.getType());
+        this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
     }
 
     public static CraftEntity getEntity(CraftServer server, Entity entity) {
@@ -785,17 +785,17 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public Sound getSwimSound() {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimSound0());
     }
 
     @Override
     public Sound getSwimSplashSound() {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimSplashSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimSplashSound0());
     }
 
     @Override
     public Sound getSwimHighSpeedSplashSound() {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getSwimHighSpeedSplashSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimHighSpeedSplashSound0());
     }
 
     public void setHandle(final Entity entity) {

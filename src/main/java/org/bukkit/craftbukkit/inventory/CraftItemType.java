@@ -35,9 +35,12 @@ public class CraftItemType implements ItemType {
 
     public static ItemType minecraftToBukkit(Item minecraft) {
         Preconditions.checkArgument(minecraft != null);
+
         IRegistry<Item> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM);
         ItemType bukkit = Registry.ITEM.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
         Preconditions.checkArgument(bukkit != null);
+
         return bukkit;
     }
 

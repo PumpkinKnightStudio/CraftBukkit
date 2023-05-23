@@ -3,8 +3,8 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityTypes;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.NamespacedKey;
@@ -39,10 +39,14 @@ import org.jetbrains.annotations.NotNull;
 public class CraftEntityType extends EntityType {
     private static int count = 0;
 
-    public static EntityType minecraftToBukkit(IRegistry<EntityTypes<?>> registry, EntityTypes<?> minecraft) {
+    public static EntityType<?> minecraftToBukkit(EntityTypes<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
-        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        IRegistry<EntityTypes<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE);
+        EntityType<?> bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
         Preconditions.checkArgument(bukkit != null);
+
         return bukkit;
     }
 

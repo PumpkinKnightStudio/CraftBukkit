@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.potion;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import net.minecraft.core.IRegistry;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import org.bukkit.potion.PotionData;
@@ -105,8 +104,8 @@ public class CraftPotionUtil {
         return new MobEffect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
     }
 
-    public static PotionEffect toBukkit(IRegistry<MobEffectList> registry, MobEffect effect) {
-        PotionEffectType type = CraftPotionEffectType.minecraftToBukkit(registry, effect.getEffect());
+    public static PotionEffect toBukkit(MobEffect effect) {
+        PotionEffectType type = CraftPotionEffectType.minecraftToBukkit(effect.getEffect());
         int amp = effect.getAmplifier();
         int duration = effect.getDuration();
         boolean ambient = effect.isAmbient();
@@ -114,8 +113,8 @@ public class CraftPotionUtil {
         return new PotionEffect(type, duration, amp, ambient, particles);
     }
 
-    public static boolean equals(IRegistry<MobEffectList> registry, MobEffectList mobEffect, PotionEffectType type) {
-        PotionEffectType typeV = CraftPotionEffectType.minecraftToBukkit(registry, mobEffect);
+    public static boolean equals(MobEffectList mobEffect, PotionEffectType type) {
+        PotionEffectType typeV = CraftPotionEffectType.minecraftToBukkit(mobEffect);
         return typeV.equals(type);
     }
 }

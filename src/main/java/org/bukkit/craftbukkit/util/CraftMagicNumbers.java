@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.critereon.LootDeserializationContext;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.MojangsonParser;
@@ -148,7 +147,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static Fluid getFluid(FluidType fluid) {
-        return CraftFluid.minecraftToBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.FLUID), fluid);
+        return CraftFluid.minecraftToBukkit(fluid);
     }
 
     public static Item getItem(Material material) {
@@ -168,7 +167,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static FluidType getFluid(Fluid fluid) {
-        return CraftFluid.bukkitToMinecraft(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.FLUID), fluid);
+        return CraftFluid.bukkitToMinecraft(fluid);
     }
 
     public static MinecraftKey key(Material mat) {

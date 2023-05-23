@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.sounds.SoundEffect;
 import org.bukkit.NamespacedKey;
@@ -12,19 +13,28 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftSound extends Sound {
     private static int count = 0;
 
-    public static SoundEffect getSoundEffect(IRegistry<SoundEffect> registry, String s) {
-        SoundEffect effect = registry.get(new MinecraftKey(s));
-        Preconditions.checkArgument(effect != null, "Sound effect %s does not exist", s);
+    public static SoundEffect stringToMinecraft(String string) {
+        Preconditions.checkArgument(string != null);
 
-        return effect;
+        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.SOUND_EVENT);
+        return registry.get(MinecraftKey.tryParse(string));
     }
 
-    public static SoundEffect getSoundEffect(Sound s) {
-        return ((CraftSound) s).getHandle();
+    public static SoundEffect bukkitToMinecraft(Sound bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftSound) bukkit).getHandle();
     }
 
-    public static Sound getBukkit(IRegistry<SoundEffect> registry, SoundEffect soundEffect) {
-        return Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(registry.getKey(soundEffect)));
+    public static Sound minecraftToBukkit(SoundEffect minecraft) {
+        Preconditions.checkArgument(minecraft != null);
+
+        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.SOUND_EVENT);
+        Sound bukkit = Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
     private final NamespacedKey key;

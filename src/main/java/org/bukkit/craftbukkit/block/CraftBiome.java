@@ -1,36 +1,38 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.Biome;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftBiome extends Biome {
     private static int count = 0;
 
-    public static Biome minecraftToBukkit(IRegistry<BiomeBase> registry, Holder<BiomeBase> minecraft) {
-        return minecraftToBukkit(registry, minecraft.value());
+    public static Biome minecraftToBukkit(Holder<BiomeBase> minecraft) {
+        return minecraftToBukkit(minecraft.value());
     }
 
-    public static Biome minecraftToBukkit(IRegistry<BiomeBase> registry, BiomeBase minecraft) {
-        if (minecraft == null) {
-            return null;
-        }
+    public static Biome minecraftToBukkit(BiomeBase minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        return Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BIOME);
+        Biome bukkit = Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
-    public static Holder<BiomeBase> bukkitToMinecraft(IRegistry<BiomeBase> registry, Biome bukkit) {
-        if (bukkit == null || bukkit == Biome.CUSTOM) {
-            return null;
-        }
+    public static Holder<BiomeBase> bukkitToMinecraft(Biome bukkit) {
+        Preconditions.checkArgument(bukkit != null);
 
-        return registry.getHolderOrThrow(ResourceKey.create(Registries.BIOME, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
+        return Holder.direct(((CraftBiome) bukkit).getHandle());
     }
 
     private final NamespacedKey key;

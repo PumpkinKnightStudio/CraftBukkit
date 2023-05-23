@@ -386,7 +386,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public PotionEffect getPotionEffect(PotionEffectType type) {
         MobEffect handle = getHandle().getEffect(MobEffectList.byId(type.getId()));
-        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
+        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
     }
 
     @Override
@@ -398,7 +398,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
         for (MobEffect handle : getHandle().activeEffects.values()) {
-            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
+            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
         }
         return effects;
     }
@@ -700,40 +700,40 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public Sound getHurtSound() {
         SoundEffect sound = getHandle().getHurtSound0(getHandle().damageSources().generic());
-        return (sound != null) ? CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), sound) : null;
+        return (sound != null) ? CraftSound.minecraftToBukkit(sound) : null;
     }
 
     @Override
     public Sound getDeathSound() {
         SoundEffect sound = getHandle().getDeathSound0();
-        return (sound != null) ? CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), sound) : null;
+        return (sound != null) ? CraftSound.minecraftToBukkit(sound) : null;
     }
 
     @Override
     public Sound getFallDamageSound(int fallHeight) {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallDamageSound0(fallHeight));
+        return CraftSound.minecraftToBukkit(getHandle().getFallDamageSound0(fallHeight));
     }
 
     @Override
     public Sound getFallDamageSoundSmall() {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallSounds().small());
+        return CraftSound.minecraftToBukkit(getHandle().getFallSounds().small());
     }
 
     @Override
     public Sound getFallDamageSoundBig() {
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getFallSounds().big());
+        return CraftSound.minecraftToBukkit(getHandle().getFallSounds().big());
     }
 
     @Override
     public Sound getDrinkingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.minecraftToBukkit(getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override
     public Sound getEatingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT), getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.minecraftToBukkit(getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override

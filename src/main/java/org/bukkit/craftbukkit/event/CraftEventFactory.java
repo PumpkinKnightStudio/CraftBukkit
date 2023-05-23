@@ -1576,8 +1576,8 @@ public class CraftEventFactory {
     }
 
     public static EntityPotionEffectEvent callEntityPotionEffectChangeEvent(EntityLiving entity, @Nullable MobEffect oldEffect, @Nullable MobEffect newEffect, EntityPotionEffectEvent.Cause cause, EntityPotionEffectEvent.Action action, boolean willOverride) {
-        PotionEffect bukkitOldEffect = (oldEffect == null) ? null : CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), oldEffect);
-        PotionEffect bukkitNewEffect = (newEffect == null) ? null : CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), newEffect);
+        PotionEffect bukkitOldEffect = (oldEffect == null) ? null : CraftPotionUtil.toBukkit(oldEffect);
+        PotionEffect bukkitNewEffect = (newEffect == null) ? null : CraftPotionUtil.toBukkit(newEffect);
 
         if (bukkitOldEffect == null && bukkitNewEffect == null) {
             throw new IllegalStateException("Old and new potion effect are both null");

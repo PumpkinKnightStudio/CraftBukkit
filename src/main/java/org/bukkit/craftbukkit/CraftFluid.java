@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.material.FluidType;
 import org.bukkit.Fluid;
 import org.bukkit.NamespacedKey;
@@ -10,18 +12,19 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftFluid extends Fluid {
     private static int count = 0;
 
-    public static Fluid minecraftToBukkit(IRegistry<FluidType> registry, FluidType minecraft) {
-        if (minecraft == null) {
-            return null;
-        }
+    public static Fluid minecraftToBukkit(FluidType minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        return Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<FluidType> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.FLUID);
+        Fluid bukkit = Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
-    public static FluidType bukkitToMinecraft(IRegistry<FluidType> registry, Fluid bukkit) {
-        if (bukkit == null) {
-            return null;
-        }
+    public static FluidType bukkitToMinecraft(Fluid bukkit) {
+        Preconditions.checkArgument(bukkit != null);
 
         return ((CraftFluid) bukkit).getHandle();
     }

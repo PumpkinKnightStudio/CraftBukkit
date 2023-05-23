@@ -161,7 +161,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     public List<PotionEffect> getCustomEffects() {
         ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
         for (MobEffect effect : getHandle().effects) {
-            builder.add(CraftPotionUtil.toBukkit(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), effect));
+            builder.add(CraftPotionUtil.toBukkit(effect));
         }
         return builder.build();
     }
@@ -169,7 +169,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     @Override
     public boolean hasCustomEffect(PotionEffectType type) {
         for (MobEffect effect : getHandle().effects) {
-            if (CraftPotionUtil.equals(getRegistryAccess().registryOrThrow(Registries.MOB_EFFECT), effect.getEffect(), type)) {
+            if (CraftPotionUtil.equals(effect.getEffect(), type)) {
                 return true;
             }
         }

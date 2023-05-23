@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.decoration.EntityPainting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
@@ -19,7 +18,7 @@ public class CraftPainting extends CraftHanging implements Painting {
     @Override
     public Art getArt() {
         Holder<PaintingVariant> art = getHandle().getVariant();
-        return CraftArt.minecraftToBukkit(getRegistryAccess().registryOrThrow(Registries.PAINTING_VARIANT), art);
+        return CraftArt.minecraftToBukkit(art);
     }
 
     @Override
@@ -31,7 +30,7 @@ public class CraftPainting extends CraftHanging implements Painting {
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
         Holder<PaintingVariant> oldArt = painting.getVariant();
-        painting.setVariant(CraftArt.bukkitToMinecraft(getRegistryAccess().registryOrThrow(Registries.PAINTING_VARIANT), art));
+        painting.setVariant(CraftArt.bukkitToMinecraft(art));
         painting.setDirection(painting.getDirection());
         if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit

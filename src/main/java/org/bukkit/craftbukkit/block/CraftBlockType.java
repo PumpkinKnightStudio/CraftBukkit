@@ -38,9 +38,12 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     public static BlockType<?> minecraftToBukkit(Block minecraft) {
         Preconditions.checkArgument(minecraft != null);
+
         IRegistry<Block> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK);
         BlockType<?> bukkit = Registry.BLOCK.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
         Preconditions.checkArgument(bukkit != null);
+
         return bukkit;
     }
 

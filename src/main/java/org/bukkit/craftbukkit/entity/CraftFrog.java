@@ -65,16 +65,17 @@ public class CraftFrog extends CraftAnimals implements org.bukkit.entity.Frog {
 
         public static Variant minecraftToBukkit(FrogVariant minecraft) {
             Preconditions.checkArgument(minecraft != null);
+
             IRegistry<FrogVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.FROG_VARIANT);
             Variant bukkit = Registry.FROG_VARIANT.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
             Preconditions.checkArgument(bukkit != null);
+
             return bukkit;
         }
 
         public static FrogVariant bukkitToMinecraft(Variant bukkit) {
-            if (bukkit == null) {
-                return null;
-            }
+            Preconditions.checkArgument(bukkit != null);
 
             return ((CraftVariant) bukkit).getHandle();
         }

@@ -2,13 +2,11 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
-import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.Arrow;
@@ -62,7 +60,7 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
     public List<PotionEffect> getCustomEffects() {
         ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
         for (MobEffect effect : getHandle().effects) {
-            builder.add(CraftPotionUtil.toBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), effect));
+            builder.add(CraftPotionUtil.toBukkit(effect));
         }
         return builder.build();
     }
@@ -70,7 +68,7 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
     @Override
     public boolean hasCustomEffect(PotionEffectType type) {
         for (MobEffect effect : getHandle().effects) {
-            if (CraftPotionUtil.equals(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT), effect.getEffect(), type)) {
+            if (CraftPotionUtil.equals(effect.getEffect(), type)) {
                 return true;
             }
         }

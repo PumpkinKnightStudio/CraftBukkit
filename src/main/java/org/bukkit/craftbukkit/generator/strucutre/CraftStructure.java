@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.generator.strucutre;
 
-import net.minecraft.core.IRegistryCustom;
+import com.google.common.base.Preconditions;
+import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -11,18 +12,19 @@ import org.bukkit.generator.structure.StructureType;
 
 public class CraftStructure extends Structure {
 
-    public static Structure minecraftToBukkit(net.minecraft.world.level.levelgen.structure.Structure minecraft, IRegistryCustom registryHolder) {
-        if (minecraft == null) {
-            return null;
-        }
+    public static Structure minecraftToBukkit(net.minecraft.world.level.levelgen.structure.Structure minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        return Registry.STRUCTURE.get(CraftNamespacedKey.fromMinecraft(registryHolder.registryOrThrow(Registries.STRUCTURE).getKey(minecraft)));
+        IRegistry<net.minecraft.world.level.levelgen.structure.Structure> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.STRUCTURE);
+        Structure bukkit = Registry.STRUCTURE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
     public static net.minecraft.world.level.levelgen.structure.Structure bukkitToMinecraft(Structure bukkit) {
-        if (bukkit == null) {
-            return null;
-        }
+        Preconditions.checkArgument(bukkit != null);
 
         return ((CraftStructure) bukkit).getHandle();
     }
@@ -34,7 +36,7 @@ public class CraftStructure extends Structure {
     public CraftStructure(NamespacedKey key, net.minecraft.world.level.levelgen.structure.Structure structure) {
         this.key = key;
         this.structure = structure;
-        this.structureType = CraftStructureType.minecraftToBukkit(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.STRUCTURE_TYPE), structure.type());
+        this.structureType = CraftStructureType.minecraftToBukkit(structure.type());
     }
 
     public net.minecraft.world.level.levelgen.structure.Structure getHandle() {

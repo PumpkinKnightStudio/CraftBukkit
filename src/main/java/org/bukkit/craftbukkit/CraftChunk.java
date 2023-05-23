@@ -280,7 +280,7 @@ public class CraftChunk implements Chunk {
         Preconditions.checkArgument(biome != null, "Biome cannot be null");
 
         IChunkAccess chunk = getHandle(ChunkStatus.BIOMES);
-        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBiome.bukkitToMinecraft(chunk.biomeRegistry, biome));
+        Predicate<Holder<BiomeBase>> nms = Predicates.equalTo(CraftBiome.bukkitToMinecraft(biome));
         for (ChunkSection section : chunk.getSections()) {
             if (section != null && section.getBiomes().maybeHas(nms)) {
                 return true;
