@@ -8,6 +8,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockFalling;
@@ -66,14 +67,22 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean hasItemType() {
-        return block.asItem() != null;
+        if (this == AIR) {
+            return true;
+        }
+
+        return block.asItem() != Items.AIR;
     }
 
     @NotNull
     @Override
     public ItemType getItemType() {
+        if (this == AIR) {
+            return ItemType.AIR;
+        }
+
         Item item = block.asItem();
-        Preconditions.checkNotNull(item, "The block type %s has no corresponding item type", getKey());
+        Preconditions.checkArgument(item != Items.AIR, "The block type %s has no corresponding item type", getKey());
         return CraftItemType.minecraftToBukkit(item);
     }
 
