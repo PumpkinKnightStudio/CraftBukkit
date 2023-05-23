@@ -1,18 +1,13 @@
 package org.bukkit.craftbukkit.util;
 
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -218,17 +213,7 @@ public class Commodore {
         ClassReader cr = new ClassReader(b);
         ClassWriter cw = new ClassWriter(cr, 0);
 
-        boolean[] save = new boolean[]{false};
-
         cr.accept(new ClassVisitor(Opcodes.ASM9, cw) {
-            @Override
-            public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-                if (name.contains("TestPlugin")) {
-                    save[0] = true;
-                }
-                super.visit(version, access, name, signature, superName, interfaces);
-            }
-
             @Override
             public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
                 for (TypeInstructionInfo typeInstructionInfo : TYPE_INSTRUCTIONS) {
@@ -1005,16 +990,6 @@ public class Commodore {
                 };
             }
         }, 0);
-
-        if (save[0]) {
-            try (OutputStream out = new FileOutputStream(new File("test-plugin.class"))) {
-                out.write(cw.toByteArray());
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
 
         return cw.toByteArray();
     }
