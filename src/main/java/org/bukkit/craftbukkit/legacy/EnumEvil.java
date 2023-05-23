@@ -42,6 +42,7 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Frog;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Piglin;
@@ -87,6 +88,7 @@ public class EnumEvil {
         REGISTRIES.put(Attribute.class, Registry.ATTRIBUTE);
         REGISTRIES.put(Villager.Type.class, Registry.VILLAGER_TYPE);
         REGISTRIES.put(Villager.Profession.class, Registry.VILLAGER_PROFESSION);
+        REGISTRIES.put(Frog.Variant.class, Registry.FROG_VARIANT);
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {

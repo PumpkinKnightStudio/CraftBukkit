@@ -12,7 +12,6 @@ import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
@@ -25,6 +24,7 @@ import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
+import org.bukkit.craftbukkit.entity.CraftFrog;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.craftbukkit.generator.strucutre.CraftStructure;
 import org.bukkit.craftbukkit.generator.strucutre.CraftStructureType;
@@ -35,6 +35,7 @@ import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Frog;
 import org.bukkit.entity.Villager;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
@@ -100,6 +101,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == ItemType.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.ITEM), CraftItemType::new);
+        }
+        if (bukkitClass == Frog.Variant.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.FROG_VARIANT), CraftFrog.CraftVariant::new);
         }
 
         return null;
