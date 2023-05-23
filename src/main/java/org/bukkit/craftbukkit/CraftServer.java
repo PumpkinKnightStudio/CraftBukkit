@@ -373,7 +373,19 @@ public final class CraftServer implements Server {
 
         enumCompatibilityMode = configuration.getBoolean("settings.enum-compatibility-mode", false);
         if (enumCompatibilityMode) {
-            getLogger().warning("Loading Plugins in Enum compatibility mode. This is not recommended, use at own risk!");
+            getLogger().warning("""
+
+
+                    /*********************************************************/
+                    /*                                                       */
+                    /*      Loading Plugins in Enum compatibility mode.      */
+                    /*          This will affect Plugin performance.         */
+                    /*                                                       */
+                    /*         Only use as transition period or when         */
+                    /*                 absolutely necessary.                 */
+                    /*                                                       */
+                    /*********************************************************/
+                    """);
         }
     }
 

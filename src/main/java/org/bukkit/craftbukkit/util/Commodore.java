@@ -3,8 +3,11 @@ package org.bukkit.craftbukkit.util;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -82,6 +85,26 @@ public class Commodore {
         rerouteToStatic(true, true, eq("java/lang/Class"), eq("getEnumConstants"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Class;)Ljava/lang/Object;"));
 
         rerouteClass(true, true, true, "java/util/EnumMap", "org/bukkit/craftbukkit/legacy/ImposterEnumMap", same);
+
+        Predicate<String> enumSet = eq("java/util/EnumSet");
+        // Need to do it in such a way for maven to correctly insert the version in the package
+        String imposterSetString = "org/bukkit/craftbukkit/legacy/ImposterEnumSet";
+        String imposterReturn = "L" + imposterSetString + ";";
+        Function<String, String> imposterSet = cons("org/bukkit/craftbukkit/legacy/ImposterEnumSet");
+
+        rerouteToStatic(true, true, enumSet, eq("noneOf"), all, imposterSet, same, cons("(Ljava/lang/Class;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("allOf"), all, imposterSet, same, cons("(Ljava/lang/Class;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("copyOf"), eq("(Ljava/util/EnumSet;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/util/Set;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("copyOf"), eq("(Ljava/util/Collection;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/util/Collection;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("complementOf"), all, imposterSet, same, cons("(Ljava/util/Set;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;[Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;[Ljava/lang/Object;)" + imposterReturn));
+        rerouteToStatic(true, true, enumSet, eq("range"), all, imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+        rerouteClass(true, true, true, "java/util/EnumSet", "org/bukkit/craftbukkit/legacy/ImposterEnumSet", same);
 
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("name"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)Ljava/lang/String;"));
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("compareTo"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;Ljava/lang/Object;)I"));
@@ -195,7 +218,17 @@ public class Commodore {
         ClassReader cr = new ClassReader(b);
         ClassWriter cw = new ClassWriter(cr, 0);
 
+        boolean[] save = new boolean[]{false};
+
         cr.accept(new ClassVisitor(Opcodes.ASM9, cw) {
+            @Override
+            public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+                if (name.contains("TestPlugin")) {
+                    save[0] = true;
+                }
+                super.visit(version, access, name, signature, superName, interfaces);
+            }
+
             @Override
             public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
                 for (TypeInstructionInfo typeInstructionInfo : TYPE_INSTRUCTIONS) {
@@ -973,6 +1006,16 @@ public class Commodore {
             }
         }, 0);
 
+        if (save[0]) {
+            try (OutputStream out = new FileOutputStream(new File("test-plugin.class"))) {
+                out.write(cw.toByteArray());
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         return cw.toByteArray();
     }
 
@@ -1044,46 +1087,6 @@ public class Commodore {
         }
 
         return false;
-    }
-
-    public static class ClassTraverser implements Iterator<Class<?>> {
-
-        private final Set<Class<?>> visit = new HashSet<>();
-        private final Set<Class<?>> toVisit = new HashSet<>();
-
-        private Class<?> next;
-
-        public ClassTraverser(Class<?> next) {
-            this.next = next;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return next != null;
-        }
-
-        @Override
-        public Class<?> next() {
-            Class<?> clazz = next;
-
-            visit.add(next);
-
-            Set<Class<?>> classes = Sets.newHashSet(clazz.getInterfaces());
-            classes.add(clazz.getSuperclass());
-            classes.remove(null); // Super class can be null, remove it if this is the case
-            classes.removeAll(visit);
-            toVisit.addAll(classes);
-
-            if (toVisit.isEmpty()) {
-                next = null;
-                return clazz;
-            }
-
-            next = toVisit.iterator().next();
-            toVisit.remove(next);
-
-            return clazz;
-        }
     }
 
     public record InvocationInfo(boolean preEnumKill, boolean enumCompatibility, boolean fromSpecial, boolean toSpecial,

@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 /**
  * The "I can't believe it works" map.
- * It replaces every EnumMap with the ImposterEnumMap and uses a HasMap instead of an object array.
+ * It replaces every EnumMap with the ImposterEnumMap and uses a HashMap instead of an object array.
  * Used so that plugins which use an EnumMap still work.
  *
  * @deprecated only for legacy use, do not use
@@ -58,7 +58,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
 
     private static Map getMap(Class<?> objectClass) {
         // Since we replace every enum map we might also replace some maps which are for real enums.
-        // If this is the case use a EnumMap instead of a HasMap
+        // If this is the case use a EnumMap instead of a HashMap
         if (objectClass.isEnum()) {
             return new EnumMap(objectClass);
         } else {

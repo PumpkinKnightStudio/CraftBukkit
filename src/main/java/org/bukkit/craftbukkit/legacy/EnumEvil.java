@@ -35,6 +35,7 @@ import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.tag.CraftTag;
+import org.bukkit.craftbukkit.util.ClassTraverser;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Animals;
@@ -88,12 +89,25 @@ public class EnumEvil {
         REGISTRIES.put(Villager.Profession.class, Registry.VILLAGER_PROFESSION);
     }
 
+    public static Registry<?> getRegistry(Class<?> clazz) {
+        ClassTraverser it = new ClassTraverser(clazz);
+        Registry registry;
+        while (it.hasNext()) {
+            registry = REGISTRIES.get(it.next());
+            if (registry != null) {
+                return registry;
+            }
+        }
+
+        return null;
+    }
+
     public static Object getEnumConstants(Class<?> clazz) {
         if (clazz.isEnum()) {
             return clazz.getEnumConstants();
         }
 
-        Registry<?> registry = REGISTRIES.get(clazz);
+        Registry<?> registry = getRegistry(clazz);
 
         if (registry == null) {
             return clazz.getEnumConstants();
@@ -569,7 +583,7 @@ public class EnumEvil {
     }
 
     public static Object valueOf(Class enumClass, String name) {
-        Registry registry = REGISTRIES.get(enumClass);
+        Registry registry = getRegistry(enumClass);
         if (registry != null) {
             return registry.get(NamespacedKey.fromString(name.toLowerCase()));
         }
