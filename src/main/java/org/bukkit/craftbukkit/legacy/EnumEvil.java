@@ -40,6 +40,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.Cat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Frog;
@@ -89,6 +90,7 @@ public class EnumEvil {
         REGISTRIES.put(Villager.Type.class, Registry.VILLAGER_TYPE);
         REGISTRIES.put(Villager.Profession.class, Registry.VILLAGER_PROFESSION);
         REGISTRIES.put(Frog.Variant.class, Registry.FROG_VARIANT);
+        REGISTRIES.put(Cat.Type.class, Registry.CAT_TYPE);
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {

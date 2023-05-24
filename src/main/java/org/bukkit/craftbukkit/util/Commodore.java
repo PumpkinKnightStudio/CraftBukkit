@@ -615,7 +615,8 @@ public class Commodore {
                                 || owner.equals("org/bukkit/attribute/Attribute")
                                 || owner.equals("org/bukkit/entity/Villager$Type")
                                 || owner.equals("org/bukkit/entity/Villager$Profession")
-                                || owner.equals("org/bukkit/entity/Frog$Variant")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
+                                || owner.equals("org/bukkit/entity/Frog$Variant")
+                                || owner.equals("org/bukkit/entity/Cat$Type")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
                             super.visitMethodInsn(opcode, owner, name, "(Ljava/lang/Object;)I", itf);
                             return;
                         }
