@@ -33,6 +33,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.Jukebox;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.tag.CraftTag;
 import org.bukkit.craftbukkit.util.ClassTraverser;
@@ -91,6 +92,7 @@ public class EnumEvil {
         REGISTRIES.put(Villager.Profession.class, Registry.VILLAGER_PROFESSION);
         REGISTRIES.put(Frog.Variant.class, Registry.FROG_VARIANT);
         REGISTRIES.put(Cat.Type.class, Registry.CAT_TYPE);
+        REGISTRIES.put(PatternType.class, Registry.BANNER_PATTERN);
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {

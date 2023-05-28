@@ -19,9 +19,11 @@ import org.bukkit.Statistic;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.block.banner.CraftPatternType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftCat;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
@@ -109,6 +111,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == Cat.Type.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.CAT_VARIANT), CraftCat.CraftType::new);
+        }
+        if (bukkitClass == PatternType.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.BANNER_PATTERN), CraftPatternType::new);
         }
 
         return null;

@@ -486,6 +486,35 @@ public class Commodore {
                             }
                         }
 
+                        if (preEnumKilling && owner.equals("org/bukkit/block/banner/PatternType")) {
+                            switch (name) {
+                                case "STRIPE_SMALL":
+                                    super.visitFieldInsn(opcode, owner, "SMALL_STRIPES", desc);
+                                    return;
+                                case "DIAGONAL_RIGHT":
+                                    super.visitFieldInsn(opcode, owner, "DIAGONAL_UP_RIGHT", desc);
+                                    return;
+                                case "DIAGONAL_LEFT_MIRROR":
+                                    super.visitFieldInsn(opcode, owner, "DIAGONAL_UP_LEFT", desc);
+                                    return;
+                                case "DIAGONAL_RIGHT_MIRROR":
+                                    super.visitFieldInsn(opcode, owner, "DIAGONAL_RIGHT", desc);
+                                    return;
+                                case "CIRCLE_MIDDLE":
+                                    super.visitFieldInsn(opcode, owner, "CIRCLE", desc);
+                                    return;
+                                case "RHOMBUS_MIDDLE":
+                                    super.visitFieldInsn(opcode, owner, "RHOMBUS", desc);
+                                    return;
+                                case "HALF_VERTICAL_MIRROR":
+                                    super.visitFieldInsn(opcode, owner, "HALF_VERTICAL_RIGHT", desc);
+                                    return;
+                                case "HALF_HORIZONTAL_MIRROR":
+                                    super.visitFieldInsn(opcode, owner, "HALF_HORIZONTAL_BOTTOM", desc);
+                                    return;
+                            }
+                        }
+
                         // SPIGOT-7335
                         if (owner.equals("org/bukkit/entity/TextDisplay$TextAligment")) {
                             super.visitFieldInsn(opcode, "org/bukkit/entity/TextDisplay$TextAlignment", name, desc);
@@ -616,7 +645,8 @@ public class Commodore {
                                 || owner.equals("org/bukkit/entity/Villager$Type")
                                 || owner.equals("org/bukkit/entity/Villager$Profession")
                                 || owner.equals("org/bukkit/entity/Frog$Variant")
-                                || owner.equals("org/bukkit/entity/Cat$Type")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
+                                || owner.equals("org/bukkit/entity/Cat$Type")
+                                || owner.equals("org/bukkit/block/banner/PatternType")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
                             super.visitMethodInsn(opcode, owner, name, "(Ljava/lang/Object;)I", itf);
                             return;
                         }
