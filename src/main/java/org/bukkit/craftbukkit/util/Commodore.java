@@ -515,6 +515,110 @@ public class Commodore {
                             }
                         }
 
+                        if (owner.equals("org/bukkit/Particle")) {
+                            switch (name) {
+                                case "EXPLOSION_NORMAL":
+                                    super.visitFieldInsn(opcode, owner, "POOF" + name, desc);
+                                    return;
+                                case "EXPLOSION_LARGE":
+                                    super.visitFieldInsn(opcode, owner, "EXPLOSION" + name, desc);
+                                    return;
+                                case "EXPLOSION_HUGE":
+                                    super.visitFieldInsn(opcode, owner, "EXPLOSION_EMITTER" + name, desc);
+                                    return;
+                                case "FIREWORKS_SPARK":
+                                    super.visitFieldInsn(opcode, owner, "FIREWORK" + name, desc);
+                                    return;
+                                case "WATER_BUBBLE":
+                                    super.visitFieldInsn(opcode, owner, "BUBBLE" + name, desc);
+                                    return;
+                                case "WATER_SPLASH":
+                                    super.visitFieldInsn(opcode, owner, "SPLASH" + name, desc);
+                                    return;
+                                case "WATER_WAKE":
+                                    super.visitFieldInsn(opcode, owner, "FISHING" + name, desc);
+                                    return;
+                                case "SUSPENDED":
+                                    super.visitFieldInsn(opcode, owner, "UNDERWATER" + name, desc);
+                                    return;
+                                case "SUSPENDED_DEPTH":
+                                    super.visitFieldInsn(opcode, owner, "UNDERWATER" + name, desc);
+                                    return;
+                                case "CRIT_MAGIC":
+                                    super.visitFieldInsn(opcode, owner, "ENCHANTED_HIT" + name, desc);
+                                    return;
+                                case "SMOKE_NORMAL":
+                                    super.visitFieldInsn(opcode, owner, "SMOKE" + name, desc);
+                                    return;
+                                case "SMOKE_LARGE":
+                                    super.visitFieldInsn(opcode, owner, "LARGE_SMOKE" + name, desc);
+                                    return;
+                                case "SPELL":
+                                    super.visitFieldInsn(opcode, owner, "EFFECT" + name, desc);
+                                    return;
+                                case "SPELL_INSTANT":
+                                    super.visitFieldInsn(opcode, owner, "INSTANT_EFFECT" + name, desc);
+                                    return;
+                                case "SPELL_MOB":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_EFFECT" + name, desc);
+                                    return;
+                                case "SPELL_MOB_AMBIENT":
+                                    super.visitFieldInsn(opcode, owner, "AMBIENT_ENTITY_EFFECT" + name, desc);
+                                    return;
+                                case "SPELL_WITCH":
+                                    super.visitFieldInsn(opcode, owner, "WITCH" + name, desc);
+                                    return;
+                                case "DRIP_WATER":
+                                    super.visitFieldInsn(opcode, owner, "DRIPPING_WATER" + name, desc);
+                                    return;
+                                case "DRIP_LAVA":
+                                    super.visitFieldInsn(opcode, owner, "DRIPPING_LAVA" + name, desc);
+                                    return;
+                                case "VILLAGER_ANGRY":
+                                    super.visitFieldInsn(opcode, owner, "ANGRY_VILLAGER" + name, desc);
+                                    return;
+                                case "VILLAGER_HAPPY":
+                                    super.visitFieldInsn(opcode, owner, "HAPPY_VILLAGER" + name, desc);
+                                    return;
+                                case "TOWN_AURA":
+                                    super.visitFieldInsn(opcode, owner, "MYCELIUM" + name, desc);
+                                    return;
+                                case "ENCHANTMENT_TABLE":
+                                    super.visitFieldInsn(opcode, owner, "ENCHANT" + name, desc);
+                                    return;
+                                case "REDSTONE":
+                                    super.visitFieldInsn(opcode, owner, "DUST" + name, desc);
+                                    return;
+                                case "SNOWBALL":
+                                    super.visitFieldInsn(opcode, owner, "ITEM_SNOWBALL" + name, desc);
+                                    return;
+                                case "SNOW_SHOVEL":
+                                    super.visitFieldInsn(opcode, owner, "ITEM_SNOWBALL" + name, desc);
+                                    return;
+                                case "SLIME":
+                                    super.visitFieldInsn(opcode, owner, "ITEM_SLIME" + name, desc);
+                                    return;
+                                case "ITEM_CRACK":
+                                    super.visitFieldInsn(opcode, owner, "ITEM" + name, desc);
+                                    return;
+                                case "BLOCK_CRACK":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK" + name, desc);
+                                    return;
+                                case "BLOCK_DUST":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK" + name, desc);
+                                    return;
+                                case "WATER_DROP":
+                                    super.visitFieldInsn(opcode, owner, "RAIN" + name, desc);
+                                    return;
+                                case "MOB_APPEARANCE":
+                                    super.visitFieldInsn(opcode, owner, "ELDER_GUARDIAN" + name, desc);
+                                    return;
+                                case "TOTEM":
+                                    super.visitFieldInsn(opcode, owner, "TOTEM_OF_UNDYING" + name, desc);
+                                    return;
+                            }
+                        }
+
                         // SPIGOT-7335
                         if (owner.equals("org/bukkit/entity/TextDisplay$TextAligment")) {
                             super.visitFieldInsn(opcode, "org/bukkit/entity/TextDisplay$TextAlignment", name, desc);
@@ -578,16 +682,6 @@ public class Commodore {
                                         return;
                                 }
                             }
-
-                            if (owner.equals("org/bukkit/Particle")) {
-                                switch (name) {
-                                    case "BLOCK_CRACK":
-                                    case "BLOCK_DUST":
-                                    case "FALLING_DUST":
-                                        super.visitFieldInsn(opcode, owner, "LEGACY_" + name, desc);
-                                        return;
-                                }
-                            }
                         }
 
                         for (TypeInstructionInfo typeInstructionInfo : TYPE_INSTRUCTIONS) {
@@ -646,7 +740,8 @@ public class Commodore {
                                 || owner.equals("org/bukkit/entity/Villager$Profession")
                                 || owner.equals("org/bukkit/entity/Frog$Variant")
                                 || owner.equals("org/bukkit/entity/Cat$Type")
-                                || owner.equals("org/bukkit/block/banner/PatternType")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
+                                || owner.equals("org/bukkit/block/banner/PatternType")
+                                || owner.equals("org/bukkit/Particle")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
                             super.visitMethodInsn(opcode, owner, name, "(Ljava/lang/Object;)I", itf);
                             return;
                         }

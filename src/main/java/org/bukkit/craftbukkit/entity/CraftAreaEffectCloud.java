@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -107,18 +106,18 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     }
 
     @Override
-    public Particle getParticle() {
-        return CraftParticle.toBukkit(getRegistryAccess().registryOrThrow(Registries.PARTICLE_TYPE), getHandle().getParticle());
+    public Particle<?> getParticle() {
+        return CraftParticle.minecraftToBukkit(getHandle().getParticle().getType());
     }
 
     @Override
-    public void setParticle(Particle particle) {
+    public void setParticle(Particle<?> particle) {
         setParticle(particle, null);
     }
 
     @Override
-    public <T> void setParticle(Particle particle, T data) {
-        getHandle().setParticle(CraftParticle.toNMS(getRegistryAccess().registryOrThrow(Registries.PARTICLE_TYPE), particle, data));
+    public <T> void setParticle(Particle<T> particle, T data) {
+        getHandle().setParticle(((CraftParticle<T>) particle).createParticleParam(CraftParticle.convertLegacy(data)));
     }
 
     @Override

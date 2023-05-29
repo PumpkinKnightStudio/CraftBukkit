@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
@@ -114,6 +115,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == PatternType.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.BANNER_PATTERN), CraftPatternType::new);
+        }
+        if (bukkitClass == Particle.class) {
+            return new CraftParticle.CraftParticleRegistry(registryHolder.registryOrThrow(Registries.PARTICLE_TYPE));
         }
 
         return null;

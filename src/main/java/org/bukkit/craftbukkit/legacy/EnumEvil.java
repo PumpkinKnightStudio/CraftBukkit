@@ -19,6 +19,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.RegionAccessor;
 import org.bukkit.Registry;
 import org.bukkit.Server;
@@ -93,6 +94,7 @@ public class EnumEvil {
         REGISTRIES.put(Frog.Variant.class, Registry.FROG_VARIANT);
         REGISTRIES.put(Cat.Type.class, Registry.CAT_TYPE);
         REGISTRIES.put(PatternType.class, Registry.BANNER_PATTERN);
+        REGISTRIES.put(Particle.class, Registry.PARTICLE_TYPE);
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {
