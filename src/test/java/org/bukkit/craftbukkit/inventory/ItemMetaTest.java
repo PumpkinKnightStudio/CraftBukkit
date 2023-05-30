@@ -279,7 +279,7 @@ public class ItemMetaTest extends AbstractTestingBase {
             new StackProvider(ItemType.POTION) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                    meta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE, false, false));
+                    meta.setBasePotionData(new PotionData(PotionType.EMPTY, false, false));
                     meta.addCustomEffect(PotionEffectType.NAUSEA.createEffect(1, 1), false);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;

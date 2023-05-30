@@ -36,6 +36,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Cat;
@@ -48,6 +49,7 @@ import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
@@ -118,6 +120,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == Particle.class) {
             return new CraftParticle.CraftParticleRegistry(registryHolder.registryOrThrow(Registries.PARTICLE_TYPE));
+        }
+        if (bukkitClass == PotionType.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.POTION), CraftPotionType::new);
         }
 
         return null;

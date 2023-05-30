@@ -619,6 +619,29 @@ public class Commodore {
                             }
                         }
 
+                        if (owner.equals("org/bukkit/potion/PotionType")) {
+                            switch (name) {
+                                case "UNCRAFTABLE":
+                                    super.visitFieldInsn(opcode, owner, "EMPTY", desc);
+                                    return;
+                                case "JUMP":
+                                    super.visitFieldInsn(opcode, owner, "LEAPING", desc);
+                                    return;
+                                case "SPEED":
+                                    super.visitFieldInsn(opcode, owner, "SWIFTNESS", desc);
+                                    return;
+                                case "INSTANT_HEAL":
+                                    super.visitFieldInsn(opcode, owner, "HEALING", desc);
+                                    return;
+                                case "INSTANT_DAMAGE":
+                                    super.visitFieldInsn(opcode, owner, "HARMING", desc);
+                                    return;
+                                case "REGEN":
+                                    super.visitFieldInsn(opcode, owner, "REGENERATION", desc);
+                                    return;
+                            }
+                        }
+
                         // SPIGOT-7335
                         if (owner.equals("org/bukkit/entity/TextDisplay$TextAligment")) {
                             super.visitFieldInsn(opcode, "org/bukkit/entity/TextDisplay$TextAlignment", name, desc);
@@ -741,7 +764,8 @@ public class Commodore {
                                 || owner.equals("org/bukkit/entity/Frog$Variant")
                                 || owner.equals("org/bukkit/entity/Cat$Type")
                                 || owner.equals("org/bukkit/block/banner/PatternType")
-                                || owner.equals("org/bukkit/Particle")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
+                                || owner.equals("org/bukkit/Particle")
+                                || owner.equals("org/bukkit/potion/PotionType")) && name.equals("compareTo") && desc.equals("(Ljava/lang/Enum;)I")) {
                             super.visitMethodInsn(opcode, owner, name, "(Ljava/lang/Object;)I", itf);
                             return;
                         }

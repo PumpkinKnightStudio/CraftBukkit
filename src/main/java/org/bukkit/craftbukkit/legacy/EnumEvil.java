@@ -70,6 +70,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.util.OldEnum;
 
@@ -95,6 +96,7 @@ public class EnumEvil {
         REGISTRIES.put(Cat.Type.class, Registry.CAT_TYPE);
         REGISTRIES.put(PatternType.class, Registry.BANNER_PATTERN);
         REGISTRIES.put(Particle.class, Registry.PARTICLE_TYPE);
+        REGISTRIES.put(PotionType.class, Registry.POTION);
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {

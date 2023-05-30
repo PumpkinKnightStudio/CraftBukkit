@@ -26,7 +26,7 @@ public class ItemTypeTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
-            Assert.assertNotNull("No ItemType for field name " + name, Registry.MATERIAL.get(NamespacedKey.fromString(name.toLowerCase())));
+            Assert.assertNotNull("No ItemType for field name " + name, Registry.ITEM.get(NamespacedKey.fromString(name.toLowerCase())));
         }
     }
 

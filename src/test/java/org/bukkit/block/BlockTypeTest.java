@@ -25,7 +25,7 @@ public class BlockTypeTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
-            Assert.assertNotNull("No BlockType for field name " + name, Registry.MATERIAL.get(NamespacedKey.fromString(name.toLowerCase())));
+            Assert.assertNotNull("No BlockType for field name " + name, Registry.BLOCK.get(NamespacedKey.fromString(name.toLowerCase())));
         }
     }
 
