@@ -692,6 +692,35 @@ public class Commodore {
                             }
                         }
 
+                        if (owner.equals("org/bukkit/potion/PotionType")) {
+                            switch (name) {
+                                case "PONDER":
+                                    super.visitFieldInsn(opcode, owner, "PONDER_GOAT_HORN", desc);
+                                    return;
+                                case "SING":
+                                    super.visitFieldInsn(opcode, owner, "SING_GOAT_HORN", desc);
+                                    return;
+                                case "SEEK":
+                                    super.visitFieldInsn(opcode, owner, "SEEK_GOAT_HORN", desc);
+                                    return;
+                                case "FEEL":
+                                    super.visitFieldInsn(opcode, owner, "FEEL_GOAT_HORN", desc);
+                                    return;
+                                case "ADMIRE":
+                                    super.visitFieldInsn(opcode, owner, "ADMIRE_GOAT_HORN", desc);
+                                    return;
+                                case "CALL":
+                                    super.visitFieldInsn(opcode, owner, "CALL_GOAT_HORN", desc);
+                                    return;
+                                case "YEARN":
+                                    super.visitFieldInsn(opcode, owner, "YEARN_GOAT_HORN", desc);
+                                    return;
+                                case "DREAM":
+                                    super.visitFieldInsn(opcode, owner, "DREAM_GOAT_HORN", desc);
+                                    return;
+                            }
+                        }
+
                         // SPIGOT-7335
                         if (owner.equals("org/bukkit/entity/TextDisplay$TextAligment")) {
                             super.visitFieldInsn(opcode, "org/bukkit/entity/TextDisplay$TextAlignment", name, desc);

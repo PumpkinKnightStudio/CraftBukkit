@@ -407,7 +407,7 @@ public class ItemMetaTest extends AbstractTestingBase {
             new StackProvider(ItemType.GOAT_HORN) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) cleanStack.getItemMeta();
-                    meta.setInstrument(MusicInstrument.ADMIRE);
+                    meta.setInstrument(MusicInstrument.ADMIRE_GOAT_HORN);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
