@@ -642,6 +642,56 @@ public class Commodore {
                             }
                         }
 
+                        if (owner.equals("org/bukkit/GameEvent")) {
+                            switch (name) {
+                                case "BLOCK_PRESS":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
+                                    return;
+                                case "BLOCK_SWITCH":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
+                                    return;
+                                case "BLOCK_UNPRESS":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_DEACTIVATE", desc);
+                                    return;
+                                case "BLOCK_UNSWITCH":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_DEACTIVATE", desc);
+                                    return;
+                                case "DRINKING_FINISH":
+                                    super.visitFieldInsn(opcode, owner, "DRINK", desc);
+                                    return;
+                                case "ELYTRA_FREE_FALL":
+                                    super.visitFieldInsn(opcode, owner, "ELYTRA_GLIDE", desc);
+                                    return;
+                                case "ENTITY_DAMAGED":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_DAMAGE", desc);
+                                    return;
+                                case "ENTITY_DYING":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_DIE", desc);
+                                    return;
+                                case "ENTITY_KILLED":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_DIE", desc);
+                                    return;
+                                case "MOB_INTERACT":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_INTERACT", desc);
+                                    return;
+                                case "RAVAGER_ROAR":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_ROAR", desc);
+                                    return;
+                                case "RING_BELL":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_CHANGE", desc);
+                                    return;
+                                case "SHULKER_CLOSE":
+                                    super.visitFieldInsn(opcode, owner, "CONTAINER_CLOSE", desc);
+                                    return;
+                                case "SHULKER_OPEN":
+                                    super.visitFieldInsn(opcode, owner, "CONTAINER_OPEN", desc);
+                                    return;
+                                case "WOLF_SHAKING":
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_SHAKE", desc);
+                                    return;
+                            }
+                        }
+
                         // SPIGOT-7335
                         if (owner.equals("org/bukkit/entity/TextDisplay$TextAligment")) {
                             super.visitFieldInsn(opcode, "org/bukkit/entity/TextDisplay$TextAlignment", name, desc);

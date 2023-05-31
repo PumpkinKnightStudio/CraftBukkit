@@ -3,6 +3,7 @@ package org.bukkit.potion;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.alchemy.PotionRegistry;
 import org.bukkit.NamespacedKey;

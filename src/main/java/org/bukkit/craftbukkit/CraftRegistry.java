@@ -11,6 +11,7 @@ import net.minecraft.core.registries.Registries;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
+import org.bukkit.GameEvent;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -123,6 +124,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == PotionType.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.POTION), CraftPotionType::new);
+        }
+        if (bukkitClass == GameEvent.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
         }
 
         return null;
