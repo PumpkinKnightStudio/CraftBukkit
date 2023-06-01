@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.storage.SavedFile;
 import org.bukkit.Bukkit;
+import org.bukkit.FeatureFlag;
 import org.bukkit.Fluid;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -53,6 +54,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -436,6 +438,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
         customBiome = new CraftBiome(NamespacedKey.minecraft("custom"), null);
 
         return customBiome;
+    }
+
+    @Override
+    public FeatureFlag getFeatureFlag(NamespacedKey namespacedKey) {
+        Preconditions.checkArgument(namespacedKey != null, "NamespaceKey cannot be null");
+        return CraftFeatureFlag.getFromNMS(namespacedKey);
     }
 
     /**
