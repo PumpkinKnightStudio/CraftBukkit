@@ -692,7 +692,7 @@ public class Commodore {
                             }
                         }
 
-                        if (owner.equals("org/bukkit/potion/PotionType")) {
+                        if (owner.equals("org/bukkit/MusicInstrument")) {
                             switch (name) {
                                 case "PONDER":
                                     super.visitFieldInsn(opcode, owner, "PONDER_GOAT_HORN", desc);
