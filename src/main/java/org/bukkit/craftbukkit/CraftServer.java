@@ -120,6 +120,7 @@ import org.bukkit.Fluid;
 import org.bukkit.GameMode;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Registry;
@@ -2232,16 +2233,17 @@ public final class CraftServer implements Server {
         Validate.notNull(clazz, "Class cannot be null");
         MinecraftKey key = CraftNamespacedKey.toMinecraft(tag);
 
+        //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == BlockType.class, "Block namespace must have BlockType type");
+                Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace must have BlockType type");
                 TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, key);
                 if (getServer().registryAccess().registryOrThrow(Registries.BLOCK).getTag(blockTagKey).isPresent()) {
                     return (org.bukkit.Tag<T>) new CraftBlockTag(getServer().registryAccess().registryOrThrow(Registries.BLOCK), blockTagKey);
                 }
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == ItemType.class, "Item namespace must have ItemType type");
+                Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace must have ItemType type");
                 TagKey<Item> itemTagKey = TagKey.create(Registries.ITEM, key);
                 if (getServer().registryAccess().registryOrThrow(Registries.ITEM).getTag(itemTagKey).isPresent()) {
                     return (org.bukkit.Tag<T>) new CraftItemTag(getServer().registryAccess().registryOrThrow(Registries.ITEM), itemTagKey);
@@ -2272,14 +2274,15 @@ public final class CraftServer implements Server {
     public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<T> clazz) {
         Validate.notNull(registry, "registry cannot be null");
         Validate.notNull(clazz, "Class cannot be null");
+        //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == BlockType.class, "Block namespace must have BlockType type");
+                Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace must have BlockType type");
                 IRegistry<Block> blockTags = getServer().registryAccess().registryOrThrow(Registries.BLOCK);
                 return blockTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == ItemType.class, "Item namespace must have ItemType type");
+                Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace must have ItemType type");
                 IRegistry<Item> itemTags = getServer().registryAccess().registryOrThrow(Registries.ITEM);
                 return itemTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
