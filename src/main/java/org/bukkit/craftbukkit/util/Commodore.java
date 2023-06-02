@@ -87,6 +87,7 @@ public class Commodore {
         String imposterReturn = "L" + imposterSetString + ";";
         Function<String, String> imposterSet = cons("org/bukkit/craftbukkit/legacy/ImposterEnumSet");
 
+        // Standard enum set
         rerouteToStatic(true, true, enumSet, eq("noneOf"), all, imposterSet, same, cons("(Ljava/lang/Class;)" + imposterReturn));
         rerouteToStatic(true, true, enumSet, eq("allOf"), all, imposterSet, same, cons("(Ljava/lang/Class;)" + imposterReturn));
         rerouteToStatic(true, true, enumSet, eq("copyOf"), eq("(Ljava/util/EnumSet;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/util/Set;)" + imposterReturn));
@@ -99,6 +100,14 @@ public class Commodore {
         rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
         rerouteToStatic(true, true, enumSet, eq("of"), eq("(Ljava/lang/Enum;[Ljava/lang/Enum;)Ljava/util/EnumSet;"), imposterSet, same, cons("(Ljava/lang/Object;[Ljava/lang/Object;)" + imposterReturn));
         rerouteToStatic(true, true, enumSet, eq("range"), all, imposterSet, same, cons("(Ljava/lang/Object;Ljava/lang/Object;)" + imposterReturn));
+
+        // Google enum set methods
+        Predicate<String> googleSets = eq("com/google/common/collect/Sets");
+        rerouteToStatic(true, true, googleSets, eq("toImmutableEnumSet"), all, imposterSet, same, cons("()Ljava/util/stream/Collector;"));
+        rerouteToStatic(true, true, googleSets, eq("newEnumSet"), all, imposterSet, same, cons("(Ljava/lang/Iterable;Ljava/lang/Class;)" + imposterReturn));
+        rerouteToStatic(true, true, googleSets, eq("immutableEnumSet"), eq("(Ljava/lang/Iterable;)Lcom/google/common/collect/ImmutableSet;"), imposterSet, same, same);
+        rerouteToStatic(true, true, googleSets, eq("immutableEnumSet"), eq("(Ljava/lang/Enum;[Ljava/lang/Enum;)Lcom/google/common/collect/ImmutableSet;"), imposterSet, same, cons("(Ljava/lang/Object;[Ljava/lang/Object;)Lcom/google/common/collect/ImmutableSet;"));
+
         rerouteClass(true, true, true, "java/util/EnumSet", "org/bukkit/craftbukkit/legacy/ImposterEnumSet", same);
 
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("name"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)Ljava/lang/String;"));

@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.legacy;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,6 +8,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import org.bukkit.Registry;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
@@ -230,6 +233,28 @@ public class ImposterEnumSet extends AbstractSet<Object> {
         }
 
         return new ImposterEnumSet(set, from.getClass());
+    }
+
+    public static Collector<?, ?, ?> toImmutableEnumSet() {
+        return Collectors.toUnmodifiableSet();
+    }
+
+    public static ImposterEnumSet newEnumSet(Iterable<?> iterable, Class<?> clazz) {
+        ImposterEnumSet set = noneOf(clazz);
+
+        for (Object some : iterable) {
+            set.add(some);
+        }
+
+        return set;
+    }
+
+    public static ImmutableSet<?> immutableEnumSet(Iterable<?> iterable) {
+        return ImmutableSet.of(iterable);
+    }
+
+    public static ImmutableSet<?> immutableEnumSet(Object first, Object... rest) {
+        return ImmutableSet.of(first, rest);
     }
 
     private ImposterEnumSet(Set set, Class<?> objectClass) {
