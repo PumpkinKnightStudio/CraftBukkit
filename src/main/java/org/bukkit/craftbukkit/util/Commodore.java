@@ -248,12 +248,7 @@ public class Commodore {
                         }
 
                         if (!methodInfo.desc.test(desc)) {
-                            if (signature == null) {
-                                continue;
-                            }
-                            if (!methodInfo.desc.test(signature)) {
-                                continue;
-                            }
+                            continue;
                         }
 
                         name = methodInfo.newName.apply(name);
@@ -1146,6 +1141,29 @@ public class Commodore {
                                 String newDesc = invocationInfo.newDesc.apply(implMethod.getDesc());
 
                                 implMethod = new Handle(opcode, newOwner, newName, newDesc, invocationInfo.isInterface);
+
+                                break;
+                            }
+
+                            for (MethodInfo methodInfo : METHOD_INFO) {
+                                if (preEnumKilling != methodInfo.preEnumKill) {
+                                    continue;
+                                }
+
+                                if (enumCompatibility != methodInfo.enumCompatibility) {
+                                    continue;
+                                }
+
+                                if (!methodInfo.name.test(implMethod.getName())) {
+                                    continue;
+                                }
+
+                                if (!methodInfo.desc.test(implMethod.getDesc())) {
+                                    continue;
+                                }
+
+                                String newName = methodInfo.newName.apply(implMethod.getName());
+                                implMethod = new Handle(implMethod.getTag(), implMethod.getOwner(), newName, implMethod.getDesc(), implMethod.isInterface());
 
                                 break;
                             }
