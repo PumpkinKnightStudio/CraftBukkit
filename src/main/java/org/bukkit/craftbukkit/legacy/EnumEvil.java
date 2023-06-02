@@ -112,7 +112,7 @@ public class EnumEvil {
         return null;
     }
 
-    public static Object getEnumConstants(Class<?> clazz) {
+    public static Object[] getEnumConstants(Class<?> clazz) {
         if (clazz.isEnum()) {
             return clazz.getEnumConstants();
         }
@@ -131,7 +131,7 @@ public class EnumEvil {
             Array.set(array, i, values.get(i));
         }
 
-        return array;
+        return (Object[]) array;
     }
 
     public static Material getMaterial(BlockData blockData) {

@@ -1,12 +1,11 @@
 package org.bukkit.craftbukkit.legacy;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * The "I can't believe it works" map.
@@ -16,35 +15,22 @@ import java.util.function.Function;
  * @deprecated only for legacy use, do not use
  */
 @Deprecated
-public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
-
-    private static boolean WARN_PUT = true;
+public class ImposterEnumMap extends AbstractMap<Object, Object> {
 
     private final Class<?> objectClass;
     private final Map map;
 
     public ImposterEnumMap(Class<?> objectClass) {
-        super(DummyEnum.class);
         this.objectClass = objectClass;
         this.map = getMap(objectClass);
     }
 
     public ImposterEnumMap(EnumMap enumMap) {
-        super(DummyEnum.class);
-
-        if (enumMap instanceof ImposterEnumMap) {
-            this.objectClass = ((ImposterEnumMap) enumMap).objectClass;
-            this.map = getMap(objectClass);
-            this.map.putAll(enumMap);
-        } else {
-            this.objectClass = DummyEnum.class;
-            this.map = enumMap.clone();
-        }
+        this.objectClass = DummyEnum.class;
+        this.map = enumMap.clone();
     }
 
     public ImposterEnumMap(Map map) {
-        super(DummyEnum.class);
-
         if (map instanceof ImposterEnumMap) {
             this.objectClass = ((ImposterEnumMap) map).objectClass;
             this.map = getMap(objectClass);
@@ -66,86 +52,11 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
         }
     }
 
-    // The normal put method relies as key on an Enum, which causes a ClasCastException
-    // So we rout every put call to this method and handle it accordingly
-    public static Object putToMap(Map map, Object key, Object value) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.put(key, value);
-        }
-
-        return map.put(key, value);
-    }
-
-    public static void putAllToMap(Map map, Map other) {
-        if (map instanceof ImposterEnumMap) {
-            ((ImposterEnumMap) map).map.putAll(other);
-            return;
-        }
-
-        map.putAll(other);
-    }
-
-    public static Object putIfAbsentToMap(Map map, Object key, Object value) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.putIfAbsent(key, value);
-        }
-
-        return map.putIfAbsent(key, value);
-    }
-
-    public static boolean replaceToMap(Map map, Object key, Object oldValue, Object value) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.replace(key, oldValue, value);
-        }
-
-        return map.replace(key, oldValue, value);
-    }
-
-    public static Object replaceToMap(Map map, Object key, Object value) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.replace(key, value);
-        }
-
-        return map.replace(key, value);
-    }
-
-    public static Object computeIfAbsentToMap(Map map, Object key, Function function) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.computeIfAbsent(key, function);
-        }
-
-        return map.computeIfAbsent(key, function);
-    }
-
-    public static Object computeIfPresentToMap(Map map, Object key, BiFunction function) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.computeIfPresent(key, function);
-        }
-
-        return map.computeIfPresent(key, function);
-    }
-
-    public static Object computeToMap(Map map, Object key, BiFunction function) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.compute(key, function);
-        }
-
-        return map.compute(key, function);
-    }
-
-    public static Object mergeToMap(Map map, Object key, Object value, BiFunction function) {
-        if (map instanceof ImposterEnumMap) {
-            return ((ImposterEnumMap) map).map.merge(key, value, function);
-        }
-
-        return map.merge(key, value, function);
-    }
-
-    public static EnumMap newEnumMap(Class<?> objectClass) {
+    public static ImposterEnumMap newEnumMap(Class<?> objectClass) {
         return new ImposterEnumMap(objectClass);
     }
 
-    public static EnumMap newEnumMap(Map map) {
+    public static ImposterEnumMap newEnumMap(Map map) {
         return new ImposterEnumMap(map);
     }
 
@@ -170,14 +81,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
     }
 
     @Override
-    public Object put(DummyEnum key, Object value) {
-        // Should never be called since we rout every put call to #putToMap
-        if (WARN_PUT) {
-            System.err.println("Got a direct put call to an ImposterEnumMap, this should not happen. Trying to put anyway.");
-            new Exception().printStackTrace();
-            WARN_PUT = false;
-        }
-
+    public Object put(Object key, Object value) {
         return map.put(key, value);
     }
 
@@ -187,7 +91,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
     }
 
     @Override
-    public void putAll(Map<? extends DummyEnum, ?> m) {
+    public void putAll(Map<? extends Object, ?> m) {
         map.putAll(m);
     }
 
@@ -197,7 +101,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
     }
 
     @Override
-    public Set<DummyEnum> keySet() {
+    public Set<Object> keySet() {
         return map.keySet();
     }
 
@@ -207,7 +111,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
     }
 
     @Override
-    public Set<Entry<DummyEnum, Object>> entrySet() {
+    public Set<Entry<Object, Object>> entrySet() {
         return map.entrySet();
     }
 
@@ -222,11 +126,7 @@ public class ImposterEnumMap extends EnumMap<DummyEnum, Object> {
     }
 
     @Override
-    public EnumMap<DummyEnum, Object> clone() {
-        if (map instanceof EnumMap) {
-            return ((EnumMap) map).clone();
-        }
-
+    public ImposterEnumMap clone() {
         ImposterEnumMap enumMap = new ImposterEnumMap(objectClass);
         enumMap.putAll(map);
         return enumMap;

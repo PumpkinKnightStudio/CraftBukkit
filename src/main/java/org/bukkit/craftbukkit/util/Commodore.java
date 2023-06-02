@@ -63,23 +63,17 @@ public class Commodore {
 
     static {
         Predicate<String> enumOrNormalMap = eq("java/util/EnumMap").or(eq("java/util/Map"));
+        // Need to do it in such a way for maven to correctly insert the version in the package
+        String imposterMapString = "org/bukkit/craftbukkit/legacy/ImposterEnumMap";
+        String imposterMapReturn = "L" + imposterMapString + ";";
         Function<String, String> imposterEnumMap = cons("org/bukkit/craftbukkit/legacy/ImposterEnumMap");
 
-        rerouteToStatic(true, true, enumOrNormalMap, eq("put"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("putAll"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/util/Map;)V"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("putIfAbsent"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("replace"), eq("(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z"), imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("replace"), eq("(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"), imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("computeIfAbsent"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("computeIfPresent"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("compute"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;"));
-        rerouteToStatic(true, true, enumOrNormalMap, eq("merge"), all, imposterEnumMap, append("ToMap"), cons("(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;"));
+        rerouteToStatic(true, true, eq("com/google/common/collect/Maps"), eq("newEnumMap"), contains("(Ljava/lang/Class;)"), imposterEnumMap, same, cons("(Ljava/lang/Class;)" + imposterMapReturn));
+        rerouteToStatic(true, true, eq("com/google/common/collect/Maps"), eq("newEnumMap"), contains("(Ljava/util/Map;)"), imposterEnumMap, same, cons("(Ljava/util/Map;)" + imposterMapReturn));
 
-        rerouteToStatic(true, true, eq("com/google/common/collect/Maps"), eq("newEnumMap"), all, cons("org/bukkit/craftbukkit/legacy/ImposterEnumMap"), same, same);
+        rerouteToStatic(true, true, eq("java/lang/Class"), eq("getEnumConstants"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Class;)[Ljava/lang/Object;"));
 
-        rerouteToStatic(true, true, eq("java/lang/Class"), eq("getEnumConstants"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Class;)Ljava/lang/Object;"));
-
-        rerouteClass(true, true, true, "java/util/EnumMap", "org/bukkit/craftbukkit/legacy/ImposterEnumMap", same);
+        rerouteClass(true, true, true, "java/util/EnumMap", "org/bukkit/craftbukkit/legacy/ImposterEnumMap", value -> value.replace("java/lang/Enum", "java/lang/Object"));
 
         Predicate<String> enumSet = eq("java/util/EnumSet");
         // Need to do it in such a way for maven to correctly insert the version in the package
@@ -108,7 +102,7 @@ public class Commodore {
         rerouteToStatic(true, true, googleSets, eq("immutableEnumSet"), eq("(Ljava/lang/Iterable;)Lcom/google/common/collect/ImmutableSet;"), imposterSet, same, same);
         rerouteToStatic(true, true, googleSets, eq("immutableEnumSet"), eq("(Ljava/lang/Enum;[Ljava/lang/Enum;)Lcom/google/common/collect/ImmutableSet;"), imposterSet, same, cons("(Ljava/lang/Object;[Ljava/lang/Object;)Lcom/google/common/collect/ImmutableSet;"));
 
-        rerouteClass(true, true, true, "java/util/EnumSet", "org/bukkit/craftbukkit/legacy/ImposterEnumSet", same);
+        rerouteClass(true, true, true, "java/util/EnumSet", "org/bukkit/craftbukkit/legacy/ImposterEnumSet", value -> value.replace("java/lang/Enum", "java/lang/Object"));
 
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("name"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)Ljava/lang/String;"));
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("compareTo"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;Ljava/lang/Object;)I"));
