@@ -1285,7 +1285,7 @@ public class Commodore {
         List<Class<?>> argClass = new ArrayList<>();
         for (Type arg : args) {
             try {
-                argClass.add(Class.forName(arg.getClassName()));
+                argClass.add(getClass(arg.getClassName()));
             } catch (ClassNotFoundException e) {
                 return false;
             }
@@ -1313,6 +1313,21 @@ public class Commodore {
         }
 
         return false;
+    }
+
+    public static Class<?> getClass(String clazz) throws ClassNotFoundException {
+        return switch (clazz) {
+            case "void" -> Void.TYPE;
+            case "boolean" -> Boolean.TYPE;
+            case "char" -> Character.TYPE;
+            case "byte" -> Byte.TYPE;
+            case "short" -> Short.TYPE;
+            case "int" -> Integer.TYPE;
+            case "float" -> Float.TYPE;
+            case "long" -> Long.TYPE;
+            case "double" -> Double.TYPE;
+            default -> Class.forName(clazz);
+        };
     }
 
     public record InvocationInfo(boolean preEnumKill, boolean enumCompatibility, boolean fromSpecial, boolean toSpecial,
