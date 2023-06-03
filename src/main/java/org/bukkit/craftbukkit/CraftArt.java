@@ -8,6 +8,7 @@ import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftArt extends Art {
@@ -27,8 +28,9 @@ public class CraftArt extends Art {
 
     public static Holder<PaintingVariant> bukkitToMinecraft(Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
+        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PAINTING_VARIANT);
 
-        return Holder.direct(((CraftArt) bukkit).painting);
+        return registry.wrapAsHolder(((CraftArt) bukkit).getHandle());
     }
 
     private final NamespacedKey key;

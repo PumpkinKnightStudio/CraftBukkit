@@ -68,6 +68,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionType;
@@ -318,6 +319,10 @@ public class EnumEvil {
 
     public static FurnaceRecipe setInput(FurnaceRecipe furnaceRecipe, Material input, int data) {
         return furnaceRecipe.setInput(input.asItemType());
+    }
+
+    public static StonecuttingRecipe setInput(StonecuttingRecipe stonecuttingRecipe, Material input, int data) {
+        return stonecuttingRecipe.setInput(input.asItemType());
     }
 
     public static boolean contains(Inventory inventory, Material material) {

@@ -43,7 +43,7 @@ public class EntityTypesTest extends AbstractTestingBase {
             MinecraftKey minecraftKey = BuiltInRegistries.ENTITY_TYPE.getKey(entityTypes);
 
             try {
-                EntityType entityType = (EntityType) EntityType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
+                EntityType<?> entityType = (EntityType<?>) EntityType.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
                 Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(entityType.getKey()));
             } catch (NoSuchFieldException e) {
@@ -58,7 +58,7 @@ public class EntityTypesTest extends AbstractTestingBase {
 
     @Test
     public void testClasses() {
-       for (EntityType entityType : Registry.ENTITY_TYPE) {
+       for (EntityType<?> entityType : Registry.ENTITY_TYPE) {
            if (entityType == EntityType.UNKNOWN) {
                continue;
            }
@@ -69,12 +69,12 @@ public class EntityTypesTest extends AbstractTestingBase {
 
     @Test
     public void testMaps() {
-        Set<EntityType> allBukkit = Arrays.stream(EntityType.values()).filter((b) -> b != EntityType.UNKNOWN).collect(Collectors.toSet());
+        Set<EntityType<?>> allBukkit = Arrays.stream(EntityType.values()).filter((b) -> b != EntityType.UNKNOWN).collect(Collectors.toSet());
 
         for (EntityTypes<?> nms : BuiltInRegistries.ENTITY_TYPE) {
             MinecraftKey key = EntityTypes.getKey(nms);
 
-            EntityType bukkit = EntityType.fromName(key.getPath());
+            EntityType<?> bukkit = EntityType.fromName(key.getPath());
             Assert.assertNotNull("Missing nms->bukkit " + key, bukkit);
 
             Assert.assertTrue("Duplicate entity nms->" + bukkit, allBukkit.remove(bukkit));
@@ -85,7 +85,7 @@ public class EntityTypesTest extends AbstractTestingBase {
 
     @Test
     public void testTranslationKey() {
-        for (EntityType entityType : EntityType.values()) {
+        for (EntityType<?> entityType : EntityType.values()) {
             // Currently EntityType#getTranslationKey has a validation for null name then for test skip this and check correct names.
             if (entityType.getName() != null) {
                 Assert.assertNotNull("Nulllable translation key for " + entityType, entityType.getTranslationKey());

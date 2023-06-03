@@ -488,7 +488,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType) {
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
         if (isOnline()) {
             getPlayer().incrementStatistic(statistic, entityType);
         } else {
@@ -499,7 +499,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType) {
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
         if (isOnline()) {
             getPlayer().decrementStatistic(statistic, entityType);
         } else {
@@ -510,7 +510,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public int getStatistic(Statistic statistic, EntityType entityType) {
+    public int getStatistic(Statistic statistic, EntityType<?> entityType) {
         if (isOnline()) {
             return getPlayer().getStatistic(statistic, entityType);
         } else {
@@ -519,7 +519,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType, int amount) {
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
         if (isOnline()) {
             getPlayer().incrementStatistic(statistic, entityType, amount);
         } else {
@@ -530,7 +530,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType, int amount) {
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
         if (isOnline()) {
             getPlayer().decrementStatistic(statistic, entityType, amount);
         } else {
@@ -541,7 +541,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     @Override
-    public void setStatistic(Statistic statistic, EntityType entityType, int newValue) {
+    public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
         if (isOnline()) {
             getPlayer().setStatistic(statistic, entityType, newValue);
         } else {

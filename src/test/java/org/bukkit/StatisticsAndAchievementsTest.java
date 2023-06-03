@@ -57,7 +57,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
     public void verifyEntityMapping() throws Throwable {
         for (Statistic statistic : Statistic.values()) {
             if (statistic.getType() == Statistic.Type.ENTITY) {
-                for (EntityType entity : EntityType.values()) {
+                for (EntityType<?> entity : EntityType.values()) {
                     if (entity.getName() != null) {
                         assertNotNull(statistic + " missing for " + entity, CraftStatistic.getEntityStatistic(BuiltInRegistries.ENTITY_TYPE, statistic, entity));
                     }

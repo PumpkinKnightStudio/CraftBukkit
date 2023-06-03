@@ -33,10 +33,9 @@ import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftEntityType extends EntityType {
+public class CraftEntityType<E extends Entity> extends EntityType<E> {
     private static int count = 0;
 
     public static EntityType<?> minecraftToBukkit(EntityTypes<?> minecraft) {
@@ -50,15 +49,21 @@ public class CraftEntityType extends EntityType {
         return bukkit;
     }
 
+    public static EntityTypes<?> bukkitToMinecraft(EntityType<?> bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftEntityType<?>) bukkit).getHandle();
+    }
+
     private final NamespacedKey key;
-    private final EntityTypes entityType;
-    private final Class<? extends Entity> clazz;
+    private final EntityTypes<?> entityType;
+    private final Class<E> clazz;
     private final boolean spawnAble;
     private final boolean alive;
     private final String name;
     private final int ordinal;
 
-    public CraftEntityType(NamespacedKey key, EntityTypes entityType, Class<? extends Entity> clazz, boolean spawnAble) {
+    public CraftEntityType(NamespacedKey key, EntityTypes<?> entityType, Class<E> clazz, boolean spawnAble) {
         this.key = key;
         this.entityType = entityType;
         this.clazz = clazz;
@@ -76,7 +81,7 @@ public class CraftEntityType extends EntityType {
         this.ordinal = count++;
     }
 
-    public EntityTypes getHandle() {
+    public EntityTypes<?> getHandle() {
         return entityType;
     }
 
@@ -91,7 +96,7 @@ public class CraftEntityType extends EntityType {
     }
 
     @Override
-    public Class<? extends Entity> getEntityClass() {
+    public Class<E> getEntityClass() {
         return clazz;
     }
 
@@ -110,7 +115,7 @@ public class CraftEntityType extends EntityType {
     }
 
     @Override
-    public int compareTo(OldEnum entityType) {
+    public int compareTo(EntityType<E> entityType) {
         return ordinal - entityType.ordinal();
     }
 
@@ -140,7 +145,7 @@ public class CraftEntityType extends EntityType {
             return false;
         }
 
-        return getKey().equals(((EntityType) other).getKey());
+        return getKey().equals(((EntityType<?>) other).getKey());
     }
 
     @Override
@@ -154,7 +159,7 @@ public class CraftEntityType extends EntityType {
         return entityType.getDescriptionId();
     }
 
-    public static class CraftEntityTypeRegistry extends CraftRegistry<EntityType, EntityTypes<?>> {
+    public static class CraftEntityTypeRegistry extends CraftRegistry<EntityType<?>, EntityTypes<?>> {
         private static final Map<NamespacedKey, Class<? extends Entity>> CLASS_MAP = new HashMap<>();
         private static final Map<NamespacedKey, Boolean> SPAWNABLE = new HashMap<>();
 
@@ -202,14 +207,14 @@ public class CraftEntityType extends EntityType {
         }
 
         @Override
-        public EntityType createBukkit(NamespacedKey namespacedKey, EntityTypes<?> entityType) {
+        public EntityType<?> createBukkit(NamespacedKey namespacedKey, EntityTypes<?> entityType) {
             if (entityType == null) {
                 return null;
             }
 
             Class<? extends Entity> clazz = getEntityClass(namespacedKey);
 
-            return new CraftEntityType(namespacedKey, entityType, clazz, SPAWNABLE.getOrDefault(namespacedKey, clazz != null));
+            return new CraftEntityType<>(namespacedKey, entityType, clazz, SPAWNABLE.getOrDefault(namespacedKey, clazz != null));
         }
 
         public Class<? extends Entity> getEntityClass(NamespacedKey namespacedKey) {

@@ -32,7 +32,9 @@ public class CraftBiome extends Biome {
     public static Holder<BiomeBase> bukkitToMinecraft(Biome bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        return Holder.direct(((CraftBiome) bukkit).getHandle());
+        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BIOME);
+
+        return registry.wrapAsHolder(((CraftBiome) bukkit).getHandle());
     }
 
     private final NamespacedKey key;

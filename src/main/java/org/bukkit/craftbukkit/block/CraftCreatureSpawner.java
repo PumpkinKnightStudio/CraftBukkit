@@ -17,7 +17,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     }
 
     @Override
-    public EntityType getSpawnedType() {
+    public EntityType<?> getSpawnedType() {
         MobSpawnerData spawnData = this.getSnapshot().getSpawner().nextSpawnData;
         if (spawnData == null) {
             return EntityType.PIG; // TODO: Change API contract to nullable?
@@ -28,7 +28,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     }
 
     @Override
-    public void setSpawnedType(EntityType entityType) {
+    public void setSpawnedType(EntityType<?> entityType) {
         if (entityType == null || entityType.getName() == null) {
             throw new IllegalArgumentException("Can't spawn EntityType " + entityType + " from mobspawners!");
         }
@@ -51,7 +51,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     @Override
     public void setCreatureTypeByName(String creatureType) {
         // Verify input
-        EntityType type = EntityType.fromName(creatureType);
+        EntityType<?> type = EntityType.fromName(creatureType);
         if (type == null) {
             return;
         }

@@ -85,7 +85,7 @@ public class CraftStatistic extends Statistic {
         return null;
     }
 
-    public static net.minecraft.stats.Statistic getEntityStatistic(IRegistry<EntityTypes<?>> registry, org.bukkit.Statistic stat, EntityType entity) {
+    public static net.minecraft.stats.Statistic getEntityStatistic(IRegistry<EntityTypes<?>> registry, org.bukkit.Statistic stat, EntityType<?> entity) {
         if (entity.getName() != null) {
             EntityTypes<?> nmsEntity = registry.get(new MinecraftKey(entity.getName()));
 
@@ -99,7 +99,7 @@ public class CraftStatistic extends Statistic {
         return null;
     }
 
-    public static EntityType getEntityTypeFromStatistic(net.minecraft.stats.Statistic<EntityTypes<?>> statistic) {
+    public static EntityType<?> getEntityTypeFromStatistic(net.minecraft.stats.Statistic<EntityTypes<?>> statistic) {
         MinecraftKey name = EntityTypes.getKey(statistic.getValue());
         return EntityType.fromName(name.getPath());
     }
@@ -224,15 +224,15 @@ public class CraftStatistic extends Statistic {
         manager.setValue(null, nmsStatistic, newValue);
     }
 
-    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType) {
+    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
         incrementStatistic(registry, manager, statistic, entityType, 1);
     }
 
-    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType) {
+    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
         decrementStatistic(registry, manager, statistic, entityType, 1);
     }
 
-    public static int getStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType) {
+    public static int getStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.notNull(entityType, "EntityType cannot be null");
         Validate.isTrue(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
@@ -241,17 +241,17 @@ public class CraftStatistic extends Statistic {
         return manager.getValue(nmsStatistic);
     }
 
-    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType, int amount) {
+    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
         Validate.isTrue(amount > 0, "Amount must be greater than 0");
         setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) + amount);
     }
 
-    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType, int amount) {
+    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
         Validate.isTrue(amount > 0, "Amount must be greater than 0");
         setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) - amount);
     }
 
-    public static void setStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType entityType, int newValue) {
+    public static void setStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int newValue) {
         Validate.notNull(statistic, "Statistic cannot be null");
         Validate.notNull(entityType, "EntityType cannot be null");
         Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");

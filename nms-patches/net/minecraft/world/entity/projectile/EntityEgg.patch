@@ -35,7 +35,7 @@
 +                if (!hatching) {
 +                    b0 = 0;
 +                }
-+                EntityType hatchingType = EntityType.CHICKEN;
++                EntityType<?> hatchingType = EntityType.CHICKEN;
 +
 +                Entity shooter = this.getOwner();
 +                if (shooter instanceof EntityPlayer) {

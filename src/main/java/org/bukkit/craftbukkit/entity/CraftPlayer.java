@@ -1147,32 +1147,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType) {
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
         CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType) {
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
         CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
     }
 
     @Override
-    public int getStatistic(Statistic statistic, EntityType entityType) {
+    public int getStatistic(Statistic statistic, EntityType<?> entityType) {
         return CraftStatistic.getStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType, int amount) {
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
         CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType, int amount) {
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
         CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
-    public void setStatistic(Statistic statistic, EntityType entityType, int newValue) {
+    public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
         CraftStatistic.setStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, newValue);
     }
 

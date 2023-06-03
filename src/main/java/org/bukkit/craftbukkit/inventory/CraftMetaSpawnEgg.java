@@ -102,7 +102,7 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
     @ItemMetaKey.Specific(ItemMetaKey.Specific.To.NBT)
     static final ItemMetaKey ENTITY_ID = new ItemMetaKey("id");
 
-    private EntityType spawnedType;
+    private EntityType<?> spawnedType;
     private NBTTagCompound entityTag;
 
     CraftMetaSpawnEgg(CraftMetaItem meta) {
@@ -208,12 +208,12 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
     }
 
     @Override
-    public EntityType getSpawnedType() {
+    public EntityType<?> getSpawnedType() {
         throw new UnsupportedOperationException("Must check item type to get spawned type");
     }
 
     @Override
-    public void setSpawnedType(EntityType type) {
+    public void setSpawnedType(EntityType<?> type) {
         throw new UnsupportedOperationException("Must change item type to set spawned type");
     }
 

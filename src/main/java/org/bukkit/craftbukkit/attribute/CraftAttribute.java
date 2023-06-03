@@ -1,11 +1,34 @@
 package org.bukkit.craftbukkit.attribute;
 
+import com.google.common.base.Preconditions;
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftAttribute extends Attribute {
     private static int count = 0;
+
+    public static Attribute minecraftToBukkit(AttributeBase minecraft) {
+        Preconditions.checkArgument(minecraft != null);
+
+        IRegistry<AttributeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ATTRIBUTE);
+        Attribute bukkit = Registry.ATTRIBUTE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
+    }
+
+    public static AttributeBase bukkitToMinecraft(Attribute bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftAttribute) bukkit).getHandle();
+    }
 
     private final NamespacedKey key;
     private final AttributeBase attributeBase;

@@ -96,17 +96,17 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public B createBlockData() {
-        return (B) Bukkit.createBlockData(this);
+        return Bukkit.createBlockData(this);
     }
 
     @Override
     public B createBlockData(Consumer<B> consumer) {
-        return (B) Bukkit.createBlockData(this, consumer);
+        return Bukkit.createBlockData(this, consumer);
     }
 
     @Override
     public B createBlockData(String data) {
-        return (B) Bukkit.createBlockData(this, data);
+        return Bukkit.createBlockData(this, data);
     }
 
     @Override
