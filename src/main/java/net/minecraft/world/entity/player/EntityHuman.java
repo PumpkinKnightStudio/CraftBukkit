@@ -1226,7 +1226,7 @@ public abstract class EntityHuman extends EntityLiving {
                     byte b0 = 0;
                     int i = b0 + EnchantmentManager.getKnockbackBonus(this);
 
-                    if (this.allowStrongKnockBack && flag) { // CraftBukkit - check strong knock back
+                    if (this.isSprinting() && this.allowStrongKnockBack && flag) { // CraftBukkit - check strong knock back
                         this.level.playSound((EntityHuman) null, this.getX(), this.getY(), this.getZ(), SoundEffects.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
                         ++i;
                         flag1 = true;
@@ -1234,7 +1234,7 @@ public abstract class EntityHuman extends EntityLiving {
 
                     boolean flag2 = flag && this.fallDistance > 0.0F && !this.onGround && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && entity instanceof EntityLiving;
 
-                    flag2 = flag2 && !this.allowStrongKnockBack; // CraftBukkit - check strong knock back
+                    flag2 = flag2 && !this.allowStrongKnockBack || !this.isSprinting(); // CraftBukkit - check strong knock back
                     if (flag2) {
                         f *= 1.5F;
                     }
