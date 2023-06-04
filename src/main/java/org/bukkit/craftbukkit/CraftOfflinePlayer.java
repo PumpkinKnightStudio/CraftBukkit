@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -26,14 +27,17 @@ import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.profile.PlayerProfile;
 
 @SerializableAs("Player")
-public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
+public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable, PersistentDataHolder {
     private final GameProfile profile;
     private final CraftServer server;
     private final WorldNBTStorage storage;
+    private CraftOfflinePlayerData data;
 
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;
@@ -483,5 +487,78 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             CraftStatistic.setStatistic(manager, statistic, entityType, newValue);
             manager.save();
         }
+    }
+
+    @Override
+    public boolean loadSavedData() {
+        if (!hasPlayedBefore()) {
+            return false;
+        }
+
+        this.data = new CraftOfflinePlayerData(getData());
+        return true;
+    }
+
+    @Override
+    public void saveData() {
+        if (isDataLoaded()) {
+           NBTTagCompound compound = getData();
+           this.data.save(compound);
+           this.storage.save(compound, getUniqueId().toString());
+        }
+    }
+
+    @Override
+    public boolean isDataLoaded() {
+        return this.data != null;
+    }
+
+    private void ensureDataLoaded() {
+        Preconditions.checkArgument(isDataLoaded(), "player data not loaded");
+    }
+
+    @Override
+    public PersistentDataContainer getPersistentDataContainer() {
+        ensureDataLoaded();
+        return this.data.persistentDataContainer;
+    }
+
+    @Override
+    public float getExp() {
+        ensureDataLoaded();
+        return this.data.experienceProgress;
+    }
+
+    @Override
+    public void setExp(float exp) {
+        ensureDataLoaded();
+        Preconditions.checkArgument(exp >= 0.0 && exp <= 1.0, "Experience progress must be between 0.0 and 1.0 (%s)", exp);
+        this.data.experienceProgress = exp;
+    }
+
+    @Override
+    public int getLevel() {
+        ensureDataLoaded();
+        return this.data.experienceLevel;
+    }
+
+    @Override
+    public void setLevel(int level) {
+        ensureDataLoaded();
+        Preconditions.checkArgument(level >= 0, "Experience level must not be negative (%s)", level);
+        this.data.experienceLevel = level;
+    }
+
+    @Override
+    public int getTotalExperience() {
+        ensureDataLoaded();
+        return this.data.totalExperience;
+    }
+
+    @Override
+    public void setTotalExperience(int exp) {
+        ensureDataLoaded();
+        Preconditions.checkArgument(exp >= 0, "Total experience points must not be negative (%s)", exp);
+        this.data.totalExperience = exp;
     }
 }

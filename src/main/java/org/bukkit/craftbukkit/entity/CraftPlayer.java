@@ -2111,4 +2111,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public boolean isAllowingServerListings() {
         return getHandle().allowsListing();
     }
+
+    // Required as Player extends OfflinePlayer
+    @Override
+    public boolean loadSavedData() {
+        loadData();
+        return true;
+    }
+
+    @Override
+    public boolean isDataLoaded() {
+       return true;
+    }
 }
