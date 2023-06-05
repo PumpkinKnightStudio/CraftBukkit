@@ -272,7 +272,7 @@
                      int i = b0 + EnchantmentManager.getKnockbackBonus(this);
  
 -                    if (this.isSprinting() && flag) {
-+                    if (this.isSprinting() && this.allowStrongKnockBack && flag) { // CraftBukkit - check strong knock back
++                    if (this.isSprinting() && this.allowStrongKnockBack && flag) { // CraftBukkit - SPIGOT-7364 : Check Strong Knock Back
                          this.level.playSound((EntityHuman) null, this.getX(), this.getY(), this.getZ(), SoundEffects.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
                          ++i;
                          flag1 = true;
@@ -281,7 +281,7 @@
                      boolean flag2 = flag && this.fallDistance > 0.0F && !this.onGround && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && entity instanceof EntityLiving;
  
 -                    flag2 = flag2 && !this.isSprinting();
-+                    flag2 = flag2 && !this.allowStrongKnockBack || !this.isSprinting(); // CraftBukkit - check strong knock back
++                    flag2 = flag2 && !this.isSprinting() || !this.allowStrongKnockBack; // CraftBukkit - SPIGOT-7364 : Check Strong Knock Back
                      if (flag2) {
                          f *= 1.5F;
                      }
@@ -305,24 +305,27 @@
  
                      Vec3D vec3d = entity.getDeltaMovement();
                      boolean flag5 = entity.hurt(this.damageSources().playerAttack(this), f);
-+                    // CraftBukkit start
++                    // CraftBukkit start - SPIGOT-7365: Prevent knock back if damage is blocked
 +                    if (this.isDamageSourceBlocked(this.damageSources().playerAttack(this))) {
-+                        i = 0;
++                        return;
 +                    }
 +                    // CraftBukkit end
  
                      if (flag5) {
                          if (i > 0) {
-@@ -1177,7 +1287,7 @@
+@@ -1177,7 +1287,10 @@
                              }
  
                              this.setDeltaMovement(this.getDeltaMovement().multiply(0.6D, 1.0D, 0.6D));
 -                            this.setSprinting(false);
-+                            this.setAllowStrongKnockBack(false); // CraftBukkit - Disable strong knockback
++
++                            // CraftBukkit start - SPIGOT-7364: Disable strong knock back instead of sprinting
++                            // this.setSprinting(false);
++                            this.allowStrongKnockBack = false;
                          }
  
                          if (flag3) {
-@@ -1189,8 +1299,11 @@
+@@ -1189,8 +1302,11 @@
                                  EntityLiving entityliving = (EntityLiving) iterator.next();
  
                                  if (entityliving != this && entityliving != entity && !this.isAlliedTo((Entity) entityliving) && (!(entityliving instanceof EntityArmorStand) || !((EntityArmorStand) entityliving).isMarker()) && this.distanceToSqr((Entity) entityliving) < 9.0D) {
@@ -335,7 +338,7 @@
                                  }
                              }
  
-@@ -1199,9 +1312,26 @@
+@@ -1199,9 +1315,26 @@
                          }
  
                          if (entity instanceof EntityPlayer && entity.hurtMarked) {
@@ -362,7 +365,7 @@
                          }
  
                          if (flag2) {
-@@ -1246,7 +1376,14 @@
+@@ -1246,7 +1379,14 @@
  
                              this.awardStat(StatisticList.DAMAGE_DEALT, Math.round(f5 * 10.0F));
                              if (j > 0) {
@@ -378,12 +381,12 @@
                              }
  
                              if (this.level instanceof WorldServer && f5 > 2.0F) {
-@@ -1256,12 +1393,17 @@
+@@ -1256,12 +1396,17 @@
                              }
                          }
  
 -                        this.causeFoodExhaustion(0.1F);
-+                        this.causeFoodExhaustion(0.1F, EntityExhaustionEvent.ExhaustionReason.ATTACK); // CraftBukkit - EntityExhaustionEvent
++                        this.causeFoodExhaustion(level.spigotConfig.combatExhaustion, EntityExhaustionEvent.ExhaustionReason.ATTACK); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value
                      } else {
                          this.level.playSound((EntityHuman) null, this.getX(), this.getY(), this.getZ(), SoundEffects.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
                          if (flag4) {
@@ -397,7 +400,7 @@
                      }
                  }
  
-@@ -1338,6 +1480,12 @@
+@@ -1338,6 +1483,12 @@
      }
  
      public Either<EntityHuman.EnumBedResult, Unit> startSleepInBed(BlockPosition blockposition) {
@@ -410,19 +413,19 @@
          this.startSleeping(blockposition);
          this.sleepCounter = 0;
          return Either.right(Unit.INSTANCE);
-@@ -1422,9 +1570,9 @@
+@@ -1422,9 +1573,9 @@
          super.jumpFromGround();
          this.awardStat(StatisticList.JUMP);
          if (this.isSprinting()) {
 -            this.causeFoodExhaustion(0.2F);
-+            this.causeFoodExhaustion(0.2F, EntityExhaustionEvent.ExhaustionReason.JUMP_SPRINT); // CraftBukkit - EntityExhaustionEvent
++            this.causeFoodExhaustion(level.spigotConfig.jumpSprintExhaustion, EntityExhaustionEvent.ExhaustionReason.JUMP_SPRINT); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value
          } else {
 -            this.causeFoodExhaustion(0.05F);
-+            this.causeFoodExhaustion(0.05F, EntityExhaustionEvent.ExhaustionReason.JUMP); // CraftBukkit - EntityExhaustionEvent
++            this.causeFoodExhaustion(level.spigotConfig.jumpWalkExhaustion, EntityExhaustionEvent.ExhaustionReason.JUMP); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value
          }
  
      }
-@@ -1454,7 +1602,11 @@
+@@ -1454,7 +1605,11 @@
  
              this.setDeltaMovement(vec3d2.x, d3 * 0.6D, vec3d2.z);
              this.resetFallDistance();
@@ -435,47 +438,47 @@
          } else {
              super.travel(vec3d);
          }
-@@ -1489,19 +1641,19 @@
+@@ -1489,19 +1644,19 @@
                  i = Math.round((float) Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2) * 100.0F);
                  if (i > 0) {
                      this.awardStat(StatisticList.SWIM_ONE_CM, i);
 -                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F);
-+                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.SWIM); // CraftBukkit - EntityExhaustionEvent
++                    this.causeFoodExhaustion(level.spigotConfig.swimMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.SWIM); // CraftBukkit - EntityExhaustionEvent // Spigot
                  }
              } else if (this.isEyeInFluid(TagsFluid.WATER)) {
                  i = Math.round((float) Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2) * 100.0F);
                  if (i > 0) {
                      this.awardStat(StatisticList.WALK_UNDER_WATER_ONE_CM, i);
 -                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F);
-+                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK_UNDERWATER); // CraftBukkit - EntityExhaustionEvent
++                    this.causeFoodExhaustion(level.spigotConfig.swimMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK_UNDERWATER); // CraftBukkit - EntityExhaustionEvent // Spigot
                  }
              } else if (this.isInWater()) {
                  i = Math.round((float) Math.sqrt(d0 * d0 + d2 * d2) * 100.0F);
                  if (i > 0) {
                      this.awardStat(StatisticList.WALK_ON_WATER_ONE_CM, i);
 -                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F);
-+                    this.causeFoodExhaustion(0.01F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK_ON_WATER); // CraftBukkit - EntityExhaustionEvent
++                    this.causeFoodExhaustion(level.spigotConfig.swimMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK_ON_WATER); // CraftBukkit - EntityExhaustionEvent // Spigot
                  }
              } else if (this.onClimbable()) {
                  if (d1 > 0.0D) {
-@@ -1512,13 +1664,13 @@
+@@ -1512,13 +1667,13 @@
                  if (i > 0) {
                      if (this.isSprinting()) {
                          this.awardStat(StatisticList.SPRINT_ONE_CM, i);
 -                        this.causeFoodExhaustion(0.1F * (float) i * 0.01F);
-+                        this.causeFoodExhaustion(0.1F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.SPRINT); // CraftBukkit - EntityExhaustionEvent
++                        this.causeFoodExhaustion(level.spigotConfig.sprintMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.SPRINT); // CraftBukkit - EntityExhaustionEvent // Spigot
                      } else if (this.isCrouching()) {
                          this.awardStat(StatisticList.CROUCH_ONE_CM, i);
 -                        this.causeFoodExhaustion(0.0F * (float) i * 0.01F);
-+                        this.causeFoodExhaustion(0.0F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.CROUCH); // CraftBukkit - EntityExhaustionEvent
++                        this.causeFoodExhaustion(level.spigotConfig.otherMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.CROUCH); // CraftBukkit - EntityExhaustionEvent // Spigot
                      } else {
                          this.awardStat(StatisticList.WALK_ONE_CM, i);
 -                        this.causeFoodExhaustion(0.0F * (float) i * 0.01F);
-+                        this.causeFoodExhaustion(0.0F * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK); // CraftBukkit - EntityExhaustionEvent
++                        this.causeFoodExhaustion(level.spigotConfig.otherMultiplier * (float) i * 0.01F, EntityExhaustionEvent.ExhaustionReason.WALK); // CraftBukkit - EntityExhaustionEvent // Spigot
                      }
                  }
              } else if (this.isFallFlying()) {
-@@ -1584,12 +1736,24 @@
+@@ -1584,12 +1739,24 @@
      }
  
      public void startFallFlying() {
@@ -501,7 +504,7 @@
      }
  
      @Override
-@@ -1680,10 +1844,21 @@
+@@ -1680,10 +1847,21 @@
          return this.experienceLevel >= 30 ? 112 + (this.experienceLevel - 30) * 9 : (this.experienceLevel >= 15 ? 37 + (this.experienceLevel - 15) * 5 : 7 + this.experienceLevel * 2);
      }
  
@@ -524,7 +527,7 @@
              }
  
          }
-@@ -1769,13 +1944,20 @@
+@@ -1769,13 +1947,20 @@
  
      @Override
      public void setItemSlot(EnumItemSlot enumitemslot, ItemStack itemstack) {
@@ -548,7 +551,7 @@
          }
  
      }
-@@ -1814,26 +1996,31 @@
+@@ -1814,26 +1999,31 @@
  
      protected void removeEntitiesOnShoulder() {
          if (this.timeEntitySatOnShoulder + 20L < this.level.getGameTime()) {
@@ -588,12 +591,12 @@
      }
  
      @Override
-@@ -2150,4 +2337,13 @@
+@@ -2150,4 +2340,13 @@
              return this.message;
          }
      }
 +
-+    // CraftBukkit start - Spigot-7364
++    // CraftBukkit start - SPIGOT-7364
 +    public boolean isAllowStrongKnockBack() {
 +        return this.allowStrongKnockBack;
 +    }
