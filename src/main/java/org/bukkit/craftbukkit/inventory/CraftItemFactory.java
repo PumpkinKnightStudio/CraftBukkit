@@ -173,8 +173,9 @@ public final class CraftItemFactory implements ItemFactory {
                 || itemType == ItemType.SMOKER || itemType == ItemType.BEEHIVE
                 || itemType == ItemType.BEE_NEST || itemType == ItemType.SCULK_CATALYST
                 || itemType == ItemType.SCULK_SHRIEKER || itemType == ItemType.SCULK_SENSOR
-                || itemType == ItemType.CHISELED_BOOKSHELF || itemType == ItemType.DECORATED_POT
-                || itemType == ItemType.SUSPICIOUS_SAND) {
+                || itemType == ItemType.CALIBRATED_SCULK_SENSOR || itemType == ItemType.CHISELED_BOOKSHELF
+                || itemType == ItemType.DECORATED_POT || itemType == ItemType.SUSPICIOUS_SAND
+                || itemType == ItemType.SUSPICIOUS_GRAVEL) {
             return new CraftMetaBlockState(meta, itemType);
         }
         if (itemType == ItemType.TROPICAL_FISH_BUCKET) {

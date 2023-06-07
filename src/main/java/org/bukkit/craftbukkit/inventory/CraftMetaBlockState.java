@@ -97,10 +97,12 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             ItemType.BEE_NEST,
             ItemType.SCULK_CATALYST,
             ItemType.SCULK_SHRIEKER,
+            ItemType.CALIBRATED_SCULK_SENSOR,
             ItemType.SCULK_SENSOR,
             ItemType.CHISELED_BOOKSHELF,
             ItemType.DECORATED_POT,
-            ItemType.SUSPICIOUS_SAND
+            ItemType.SUSPICIOUS_SAND,
+            ItemType.SUSPICIOUS_GRAVEL
     );
 
     static {

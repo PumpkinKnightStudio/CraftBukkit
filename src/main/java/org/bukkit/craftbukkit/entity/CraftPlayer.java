@@ -85,6 +85,7 @@ import net.minecraft.world.inventory.Container;
 import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.entity.TileEntitySign;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.border.IWorldBorderListener;
@@ -147,7 +148,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerHideEntityEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
-import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
 import org.bukkit.event.player.PlayerShowEntityEvent;
 import org.bukkit.event.player.PlayerSpawnChangeEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -636,7 +636,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendBlockChanges(Collection<BlockState> blocks, boolean suppressLightUpdates) {
+    public void sendBlockChanges(Collection<BlockState> blocks) {
         Preconditions.checkArgument(blocks != null, "blocks must not be null");
 
         if (getHandle().connection == null || blocks.isEmpty()) {
@@ -661,9 +661,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // Construct the packets using the data allocated above and send then to the players
         for (Map.Entry<SectionPosition, ChunkSectionChanges> entry : changes.entrySet()) {
             ChunkSectionChanges chunkChanges = entry.getValue();
-            PacketPlayOutMultiBlockChange packet = new PacketPlayOutMultiBlockChange(entry.getKey(), chunkChanges.positions(), chunkChanges.blockData().toArray(IBlockData[]::new), suppressLightUpdates);
+            PacketPlayOutMultiBlockChange packet = new PacketPlayOutMultiBlockChange(entry.getKey(), chunkChanges.positions(), chunkChanges.blockData().toArray(IBlockData[]::new));
             getHandle().connection.send(packet);
         }
+    }
+
+    @Override
+    public void sendBlockChanges(Collection<BlockState> blocks, boolean suppressLightUpdates) {
+        this.sendBlockChanges(blocks);
     }
 
     private record ChunkSectionChanges(ShortSet positions, List<IBlockData> blockData) {
@@ -728,10 +733,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         IChatBaseComponent[] components = CraftSign.sanitizeLines(lines);
         TileEntitySign sign = new TileEntitySign(CraftLocation.toBlockPosition(loc), Blocks.OAK_SIGN.defaultBlockState());
-        sign.setColor(EnumColor.byId(dyeColor.getWoolData()));
-        sign.setHasGlowingText(hasGlowingText);
+        SignText text = sign.getFrontText();
+        text.setColor(EnumColor.byId(dyeColor.getWoolData()));
+        text.setHasGlowingText(hasGlowingText);
         for (int i = 0; i < components.length; i++) {
-            sign.setMessage(i, components[i]);
+            text.setMessage(i, components[i]);
         }
 
         getHandle().connection.send(sign.getUpdatePacket());
@@ -1390,7 +1396,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     private void untrackAndHideEntity(org.bukkit.entity.Entity entity) {
         // Remove this entity from the hidden player's EntityTrackerEntry
-        PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
+        PlayerChunkMap tracker = ((WorldServer) getHandle().level()).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
         PlayerChunkMap.EntityTracker entry = tracker.entityMap.get(other.getId());
         if (entry != null) {
@@ -1470,7 +1476,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     private void trackAndShowEntity(org.bukkit.entity.Entity entity) {
-        PlayerChunkMap tracker = ((WorldServer) getHandle().level).getChunkSource().chunkMap;
+        PlayerChunkMap tracker = ((WorldServer) getHandle().level()).getChunkSource().chunkMap;
         Entity other = ((CraftEntity) entity).getHandle();
 
         if (other instanceof EntityPlayer) {

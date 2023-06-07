@@ -69,7 +69,7 @@ public final class DummyServer {
 
             Mockito.when(instance.getLootTable(Mockito.any())).then(mock -> {
                 NamespacedKey key = mock.getArgument(0);
-                return new CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootTables().get(CraftNamespacedKey.toMinecraft(key)));
+                return new CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(key)));
             });
 
             Mockito.when(instance.getRegistry(Mockito.any())).then(new Answer<Registry<?>>() {

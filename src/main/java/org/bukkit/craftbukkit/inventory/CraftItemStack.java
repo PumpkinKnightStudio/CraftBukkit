@@ -439,8 +439,9 @@ public final class CraftItemStack extends ItemStack {
                 || type == ItemType.SMOKER || type == ItemType.BEEHIVE
                 || type == ItemType.BEE_NEST || type == ItemType.SCULK_CATALYST
                 || type == ItemType.SCULK_SHRIEKER || type == ItemType.SCULK_SENSOR
-                || type == ItemType.CHISELED_BOOKSHELF || type == ItemType.DECORATED_POT
-                || type == ItemType.SUSPICIOUS_SAND) {
+                || type == ItemType.CALIBRATED_SCULK_SENSOR || type == ItemType.CHISELED_BOOKSHELF
+                || type == ItemType.DECORATED_POT || type == ItemType.SUSPICIOUS_SAND
+                || type == ItemType.SUSPICIOUS_GRAVEL) {
             return new CraftMetaBlockState(item.getTag(), CraftItemType.minecraftToBukkit(item.getItem()));
         }
         if (type == ItemType.TROPICAL_FISH_BUCKET) {

@@ -16,20 +16,6 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
 
     @Override
     public List<ItemType> getShards() {
-        return getSnapshot().getShards().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
-    }
-
-    @Override
-    public void addShard(ItemType itemType) {
-        getSnapshot().getShards().add(((CraftItemType) itemType).getHandle());
-    }
-
-    @Override
-    public void setShards(List<ItemType> shard) {
-        getSnapshot().getShards().clear();
-
-        for (ItemType itemType : shard) {
-            addShard(itemType);
-        }
+        return getSnapshot().getDecorations().sorted().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     }
 }

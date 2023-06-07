@@ -169,6 +169,13 @@ public class Main {
                 System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 20 is supported.");
                 return;
             }
+            String javaVersionName = System.getProperty("java.version");
+            // J2SE SDK/JRE Version String Naming Convention
+            boolean isPreRelease = javaVersionName.contains("-");
+            if (isPreRelease && javaVersion == 61.0) {
+                System.err.println("Unsupported Java detected (" + javaVersionName + "). You are running an outdated, pre-release version. Only general availability versions of Java are supported. Please update your Java version.");
+                return;
+            }
 
             try {
                 // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
@@ -197,7 +204,7 @@ public class Main {
                     Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
 
                     Calendar deadline = Calendar.getInstance();
-                    deadline.add(Calendar.DAY_OF_YEAR, -21);
+                    deadline.add(Calendar.DAY_OF_YEAR, -3);
                     if (buildDate.before(deadline.getTime())) {
                         System.err.println("*** Error, this build is outdated ***");
                         System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");
