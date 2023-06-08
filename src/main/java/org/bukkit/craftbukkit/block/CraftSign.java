@@ -87,20 +87,21 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
 
     @Override
     public void applyTo(T sign) {
-        front.applyLegacyStringToSignSide();
-        back.applyLegacyStringToSignSide();
+        getSnapshot().setText(front.applyLegacyStringToSignSide(), true);
+        getSnapshot().setText(back.applyLegacyStringToSignSide(), false);
 
         super.applyTo(sign);
     }
 
-    public static void openSign(Sign sign, Player player) {
+    public static void openSign(Sign sign, Player player, Side side) {
         Preconditions.checkArgument(sign != null, "sign == null");
+        Preconditions.checkArgument(side != null, "side == null");
         Preconditions.checkArgument(sign.isPlaced(), "Sign must be placed");
         Preconditions.checkArgument(sign.getWorld() == player.getWorld(), "Sign must be in same world as Player");
 
         TileEntitySign handle = ((CraftSign<?>) sign).getTileEntity();
 
-        ((CraftPlayer) player).getHandle().openTextEdit(handle, true);
+        ((CraftPlayer) player).getHandle().openTextEdit(handle, Side.FRONT == side);
     }
 
     public static IChatBaseComponent[] sanitizeLines(String[] lines) {
@@ -108,7 +109,7 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
 
         for (int i = 0; i < 4; i++) {
             if (i < lines.length && lines[i] != null) {
-                components[i] = CraftChatMessage.fromString(lines[i])[0];
+                components[i] = IChatBaseComponent.literal("").append(CraftChatMessage.fromString(lines[i])[0]); // SPIGOT-7372: Vanilla wants a literal first
             } else {
                 components[i] = IChatBaseComponent.empty();
             }

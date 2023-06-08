@@ -1,4 +1,4 @@
-package org.bukkit.craftbukkit.generator.strucutre;
+package org.bukkit.craftbukkit.generator.structure;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.IRegistry;
