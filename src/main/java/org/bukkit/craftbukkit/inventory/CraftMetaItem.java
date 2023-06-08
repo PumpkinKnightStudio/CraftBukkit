@@ -45,6 +45,7 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.item.ItemBlock;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
@@ -916,12 +917,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean hasBlockData() {
-       return this.blockData != null;
+        return this.blockData != null;
     }
 
     @Override
     public BlockData getBlockData(BlockType<?> blockType) {
-        return CraftBlockData.fromData(ItemBlock.getBlockState(((CraftBlockType<?>) blockType).getHandle().defaultBlockState(), blockData));
+        IBlockData defaultData = ((CraftBlockType<?>) blockType).getHandle().defaultBlockState();
+        return CraftBlockData.fromData((hasBlockData()) ? ItemBlock.getBlockState(defaultData, blockData) : defaultData);
     }
 
     @Override
