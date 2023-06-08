@@ -111,7 +111,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isSolid() {
-        return block.defaultBlockState().getMaterial().blocksMotion();
+        return block.defaultBlockState().blocksMotion();
     }
 
     @Override
@@ -121,7 +121,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @Override
     public boolean isFlammable() {
-        return block.defaultBlockState().getMaterial().isFlammable();
+        return block.defaultBlockState().ignitedByLava();
     }
 
     @Override

@@ -139,6 +139,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     private final Map<NamespacedKey, B> cache = new HashMap<>();
     private final IRegistry<M> minecraftRegistry;
     private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
+    private boolean init;
 
     public CraftRegistry(IRegistry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
         this.minecraftRegistry = minecraftRegistry;
@@ -150,6 +151,22 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         B cached = cache.get(namespacedKey);
         if (cached != null) {
             return cached;
+        }
+
+        // This ensures that default server values are loaded before any other values and in the right order.
+        // Doing it this way allows it to be in a central place and should reduce maintains effort
+        // compared to other ways.
+        if (!init) {
+            init = true;
+            B bukkit = createBukkit(namespacedKey, minecraftRegistry.getOptional(CraftNamespacedKey.toMinecraft(namespacedKey)).orElse(null));
+            B newCached = cache.get(namespacedKey);
+
+            if (newCached == null && bukkit != null) {
+                cache.put(namespacedKey, bukkit);
+                return bukkit;
+            } else {
+                return newCached;
+            }
         }
 
         B bukkit = createBukkit(namespacedKey, minecraftRegistry.getOptional(CraftNamespacedKey.toMinecraft(namespacedKey)).orElse(null));

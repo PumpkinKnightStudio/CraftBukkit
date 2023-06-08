@@ -167,14 +167,6 @@ public class EnumEvil {
         return decoratedPot.getShards().stream().map(CraftMagicNumbers.INSTANCE::toMaterial).toList();
     }
 
-    public static void addShard(DecoratedPot decoratedPot, Material material) {
-        decoratedPot.addShard(material.asItemType());
-    }
-
-    public static void setShards(DecoratedPot decoratedPot, List<Material> shards) {
-        decoratedPot.setShards(shards.stream().map(Material::asItemType).toList());
-    }
-
     public static Material getPlaying(Jukebox jukebox) {
         return CraftMagicNumbers.INSTANCE.toMaterial(jukebox.getPlaying());
     }

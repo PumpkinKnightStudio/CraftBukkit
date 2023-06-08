@@ -8,7 +8,6 @@ import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftArt extends Art {
