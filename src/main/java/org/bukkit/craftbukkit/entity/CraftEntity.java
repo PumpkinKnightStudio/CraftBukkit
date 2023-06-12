@@ -586,7 +586,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public int getFireTicks() {
-        return entity.remainingFireTicks;
+        return entity.getRemainingFireTicks();
     }
 
     @Override
@@ -596,7 +596,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public void setFireTicks(int ticks) {
-        entity.remainingFireTicks = ticks;
+        entity.setRemainingFireTicks(ticks);
     }
 
     @Override
