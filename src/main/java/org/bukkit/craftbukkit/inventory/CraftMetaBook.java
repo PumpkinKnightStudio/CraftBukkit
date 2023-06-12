@@ -13,11 +13,16 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.item.ItemWrittenBook;
+import net.minecraft.world.item.Items;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -79,6 +84,33 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
     CraftMetaBook(NBTTagCompound tag) {
         super(tag);
 
+        loadBookData(tag);
+    }
+
+    CraftMetaBook(Map<String, Object> map) {
+        super(map);
+
+        setAuthor(SerializableMeta.getString(map, BOOK_AUTHOR.BUKKIT, true));
+
+        setTitle(SerializableMeta.getString(map, BOOK_TITLE.BUKKIT, true));
+
+        Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, BOOK_PAGES.BUKKIT, true);
+        if (pages != null) {
+            this.pages = new ArrayList<String>();
+            for (Object page : pages) {
+                if (page instanceof String) {
+                    internalAddPage(deserializePage((String) page));
+                }
+            }
+        }
+
+        resolved = SerializableMeta.getObject(Boolean.class, map, RESOLVED.BUKKIT, true);
+        generation = SerializableMeta.getObject(Integer.class, map, GENERATION.BUKKIT, true);
+    }
+
+    protected void loadBookData(NBTTagCompound tag) {
+        if (tag == null) return;
+
         if (tag.contains(BOOK_TITLE.NBT)) {
             this.title = tag.getString(BOOK_TITLE.NBT);
         }
@@ -115,27 +147,6 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
                 this.pages.add(page);
             }
         }
-    }
-
-    CraftMetaBook(Map<String, Object> map) {
-        super(map);
-
-        setAuthor(SerializableMeta.getString(map, BOOK_AUTHOR.BUKKIT, true));
-
-        setTitle(SerializableMeta.getString(map, BOOK_TITLE.BUKKIT, true));
-
-        Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, BOOK_PAGES.BUKKIT, true);
-        if (pages != null) {
-            this.pages = new ArrayList<String>();
-            for (Object page : pages) {
-                if (page instanceof String) {
-                    internalAddPage(deserializePage((String) page));
-                }
-            }
-        }
-
-        resolved = SerializableMeta.getObject(Boolean.class, map, RESOLVED.BUKKIT, true);
-        generation = SerializableMeta.getObject(Integer.class, map, GENERATION.BUKKIT, true);
     }
 
     protected String deserializePage(String pageData) {
@@ -332,13 +343,35 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         return page > 0 && page <= getPageCount();
     }
 
-    // TODO Expose this attribute in Bukkit?
+    @Override
     public boolean isResolved() {
         return (resolved == null) ? false : resolved;
     }
 
+    @Override
     public void setResolved(boolean resolved) {
-        this.resolved = resolved;
+        this.resolved = resolved ? true : null;
+    }
+
+    @Override
+    public void resolve(Player player) {
+        Preconditions.checkNotNull(player, "player is null");
+
+        // Only written books can be resolved:
+        if (!(this instanceof CraftMetaBookSigned)) return;
+
+        // Apply the ItemMeta to a new ItemStack:
+        net.minecraft.world.item.ItemStack nmsItemStack = new net.minecraft.world.item.ItemStack(Items.WRITTEN_BOOK);
+        CraftItemStack.asCraftMirror(nmsItemStack).setItemMeta(this);
+
+        // Invoke Minecraft's book resolution:
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        if (!ItemWrittenBook.resolveBookComponents(nmsItemStack, entityPlayer.createCommandSourceStack(), entityPlayer)) {
+            return;
+        }
+
+        // Apply the resolved book data back to this ItemMeta:
+        loadBookData(nmsItemStack.getTag());
     }
 
     @Override
