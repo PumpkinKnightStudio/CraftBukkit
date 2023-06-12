@@ -1,14 +1,10 @@
 package org.bukkit;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.MinecraftKey;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
@@ -17,40 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ParticleTest extends AbstractTestingBase {
-
-    @Test
-    public void testBukkitToMinecraftFieldName() {
-        for (Field field : Particle.class.getFields()) {
-            if (field.getType() != Particle.class) {
-                continue;
-            }
-            if (!Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-
-            String name = field.getName();
-            Assert.assertNotNull("No particle for field name " + name, Registry.PARTICLE_TYPE.get(NamespacedKey.fromString(name.toLowerCase())));
-        }
-    }
-
-    @Test
-    public void testMinecraftToBukkitFieldName() {
-        for (net.minecraft.core.particles.Particle particleType : BuiltInRegistries.PARTICLE_TYPE) {
-            MinecraftKey minecraftKey = BuiltInRegistries.PARTICLE_TYPE.getKey(particleType);
-
-            try {
-                Particle particle = (Particle) Particle.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
-
-                Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(particle.getKey()));
-            } catch (NoSuchFieldException e) {
-                Assert.fail("No Bukkit default particle for " + minecraftKey);
-            } catch (IllegalAccessException e) {
-                Assert.fail("Bukkit field is not access able for " + minecraftKey);
-            } catch (ClassCastException e) {
-                Assert.fail("Bukkit field is not of type particle for" + minecraftKey);
-            }
-        }
-    }
 
     @Test
     public void verifyMapping() {

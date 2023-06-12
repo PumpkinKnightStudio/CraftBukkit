@@ -437,12 +437,12 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @Override
-    public Entity spawnEntity(Location location, EntityType<?> entityType) {
+    public <E extends Entity> E spawnEntity(Location location, EntityType<E> entityType) {
         return spawn(location, entityType.getEntityClass());
     }
 
     @Override
-    public Entity spawnEntity(Location loc, EntityType<?> type, boolean randomizeData) {
+    public <E extends Entity> E spawnEntity(Location loc, EntityType<E> type, boolean randomizeData) {
         return spawn(loc, type.getEntityClass(), null, CreatureSpawnEvent.SpawnReason.CUSTOM, randomizeData);
     }
 
