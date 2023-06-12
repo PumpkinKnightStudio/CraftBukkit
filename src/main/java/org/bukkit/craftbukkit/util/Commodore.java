@@ -687,6 +687,15 @@ public class Commodore {
                                 case "WOLF_SHAKING":
                                     super.visitFieldInsn(opcode, owner, "ENTITY_SHAKE", desc);
                                     return;
+                                case "DISPENSE_FAIL":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
+                                    return;
+                                case "PISTON_CONTRACT":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_DEACTIVATE", desc);
+                                    return;
+                                case "PISTON_EXTEND":
+                                    super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
+                                    return;
                             }
                         }
 
