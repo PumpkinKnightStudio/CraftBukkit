@@ -34,7 +34,11 @@ public class CraftBiome extends Biome {
 
         IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BIOME);
 
-        return registry.wrapAsHolder(((CraftBiome) bukkit).getHandle());
+        if (registry.wrapAsHolder(((CraftBiome) bukkit).getHandle()) instanceof Holder.c<BiomeBase> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit + ", this can happen if a plugin creates its own Biome with out properly registering it.");
     }
 
     private final NamespacedKey key;

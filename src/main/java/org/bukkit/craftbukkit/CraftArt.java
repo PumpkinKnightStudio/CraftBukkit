@@ -29,7 +29,11 @@ public class CraftArt extends Art {
         Preconditions.checkArgument(bukkit != null);
         IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PAINTING_VARIANT);
 
-        return registry.wrapAsHolder(((CraftArt) bukkit).getHandle());
+        if (registry.wrapAsHolder(((CraftArt) bukkit).getHandle()) instanceof Holder.c<PaintingVariant> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit + ", this can happen if a plugin creates its own Art / Painting Variant with out properly registering it.");
     }
 
     private final NamespacedKey key;
