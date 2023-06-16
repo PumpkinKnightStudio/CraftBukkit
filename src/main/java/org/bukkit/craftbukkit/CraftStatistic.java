@@ -449,7 +449,7 @@ public class CraftStatistic extends Statistic {
                 type = Type.ENTITY;
             }
 
-            Validate.isTrue(type != null, "No statistic type found for registry ", statisticWrapper.getRegistry());
+            Preconditions.checkArgument(type != null, "No statistic type found for registry ", statisticWrapper.getRegistry());
 
             Statistic bukkit = new CraftStatistic(namespacedKey, type);
             cache.put(namespacedKey, bukkit);

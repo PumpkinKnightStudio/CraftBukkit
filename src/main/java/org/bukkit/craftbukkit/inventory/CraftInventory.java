@@ -202,7 +202,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int first(ItemType itemType) {
-        Preconditions.checkArgument(material != null, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];

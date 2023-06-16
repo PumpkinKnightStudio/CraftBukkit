@@ -192,7 +192,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
     @Override
     public void setBasePotionType(@NotNull PotionType potionType) {
-        Validate.notNull(potionType, "PotionType cannot be null");
+        Preconditions.checkArgument(potionType != null, "PotionType cannot be null");
         type = potionType;
     }
 
