@@ -2,12 +2,10 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.Locale;
-import java.util.UUID;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.EntityZombieVillager;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
@@ -38,7 +36,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public void setVillagerProfession(Villager.Profession profession) {
-        Validate.notNull(profession);
+        Preconditions.checkArgument(profession != null, "Villager.Profession cannot be null");
         getHandle().setVillagerData(getHandle().getVillagerData().setProfession(getRegistryAccess().registryOrThrow(Registries.VILLAGER_PROFESSION).get(new MinecraftKey(profession.name().toLowerCase(Locale.ROOT)))));
     }
 
@@ -49,7 +47,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public void setVillagerType(Villager.Type type) {
-        Validate.notNull(type);
+        Preconditions.checkArgument(type != null, "Villager.Type cannot be null");
         getHandle().setVillagerData(getHandle().getVillagerData().setType(getRegistryAccess().registryOrThrow(Registries.VILLAGER_TYPE).get(CraftNamespacedKey.toMinecraft(type.getKey()))));
     }
 
@@ -73,7 +71,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
             getHandle().conversionStarter = null;
             getHandle().removeEffect(MobEffects.DAMAGE_BOOST, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.CONVERSION);
         } else {
-            getHandle().startConverting((UUID) null, time);
+            getHandle().startConverting(null, time);
         }
     }
 

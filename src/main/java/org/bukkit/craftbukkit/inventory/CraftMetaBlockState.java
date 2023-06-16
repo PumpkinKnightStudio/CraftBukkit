@@ -1,13 +1,13 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -260,11 +260,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     public void setBlockState(BlockState blockState) {
-        Validate.notNull(blockState, "blockState must not be null");
+        Preconditions.checkArgument(blockState != null, "blockState must not be null");
 
         ItemType stateType = (itemType != ItemType.SHIELD) ? itemType : shieldToBannerHack(blockEntityTag);
         Class<?> blockStateType = CraftBlockStates.getBlockStateType(stateType.getBlockType());
-        Validate.isTrue(blockStateType == blockState.getClass() && blockState instanceof CraftBlockEntityState, "Invalid blockState for " + itemType.getKey());
+        Preconditions.checkArgument(blockStateType == blockState.getClass() && blockState instanceof CraftBlockEntityState, "Invalid blockState for " + itemType.getKey());
 
         blockEntityTag = ((CraftBlockEntityState) blockState).getSnapshotNBT();
         // Set shield base

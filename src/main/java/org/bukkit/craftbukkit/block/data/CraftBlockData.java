@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.IBlockState;
 import org.bukkit.Location;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockSupport;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
@@ -38,6 +39,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -643,5 +645,11 @@ public class CraftBlockData implements BlockData {
     @Override
     public void mirror(Mirror mirror) {
         this.state = state.mirror(EnumBlockMirror.valueOf(mirror.name()));
+    }
+
+    @NotNull
+    @Override
+    public BlockState createBlockState() {
+        return CraftBlockStates.getBlockState(this.state, null);
     }
 }

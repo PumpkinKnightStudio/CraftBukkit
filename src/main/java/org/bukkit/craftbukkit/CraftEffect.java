@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Axis;
 import org.bukkit.Color;
 import org.bukkit.Effect;
@@ -29,10 +29,10 @@ public class CraftEffect {
             break;
         case RECORD_PLAY:
             if (data instanceof Material) {
-                Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
+                Preconditions.checkArgument(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
                 datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
             } else {
-                Validate.isTrue(data == ItemType.AIR || ((ItemType) data).isRecord(), "Invalid record type!");
+                Preconditions.checkArgument(data == ItemType.AIR || ((ItemType) data).isRecord(), "Invalid record type!");
                 datavalue = Item.getId(((CraftItemType) data).getHandle());
             }
             break;
@@ -68,7 +68,7 @@ public class CraftEffect {
             break;
         case STEP_SOUND:
             if (data instanceof Material) {
-                Validate.isTrue(((Material) data).isBlock(), "Material is not a block!");
+                Preconditions.checkArgument(((Material) data).isBlock(), "Material is not a block!");
                 datavalue = Block.getId(CraftMagicNumbers.getBlock((Material) data).defaultBlockState());
             } else {
                 datavalue = Block.getId(((CraftBlockType<?>) data).getHandle().defaultBlockState());

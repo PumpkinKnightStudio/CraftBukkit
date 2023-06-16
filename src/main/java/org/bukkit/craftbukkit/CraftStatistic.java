@@ -17,7 +17,6 @@ import net.minecraft.stats.StatisticWrapper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Statistic;
@@ -32,6 +31,7 @@ public class CraftStatistic extends Statistic {
     private static int count = 0;
 
     public static Statistic getBukkitStatistic(IRegistry<StatisticWrapper<?>> registry, net.minecraft.stats.Statistic<?> statistic) {
+        Preconditions.checkArgument(statistic != null, "NMS Statistic cannot be null");
         IRegistry statRegistry = statistic.getType().getRegistry();
         MinecraftKey nmsKey = registry.getKey(statistic.getType());
 
@@ -86,6 +86,7 @@ public class CraftStatistic extends Statistic {
     }
 
     public static net.minecraft.stats.Statistic getEntityStatistic(IRegistry<EntityTypes<?>> registry, org.bukkit.Statistic stat, EntityType<?> entity) {
+        Preconditions.checkArgument(entity != null, "EntityType cannot be null");
         if (entity.getName() != null) {
             EntityTypes<?> nmsEntity = registry.get(new MinecraftKey(entity.getName()));
 
@@ -100,20 +101,21 @@ public class CraftStatistic extends Statistic {
     }
 
     public static EntityType<?> getEntityTypeFromStatistic(net.minecraft.stats.Statistic<EntityTypes<?>> statistic) {
+        Preconditions.checkArgument(statistic != null, "NMS Statistic cannot be null");
         MinecraftKey name = EntityTypes.getKey(statistic.getValue());
         return EntityType.fromName(name.getPath());
     }
 
     public static ItemType getItemTypeFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
-        if (statistic.getValue() instanceof Item) {
-            return CraftItemType.minecraftToBukkit((Item) statistic.getValue());
+        if (statistic.getValue() instanceof Item statisticItemValue) {
+            return CraftItemType.minecraftToBukkit(statisticItemValue);
         }
         return null;
     }
 
     public static BlockType<?> getBlockTypeFromStatistic(net.minecraft.stats.Statistic<?> statistic) {
-        if (statistic.getValue() instanceof Block) {
-            return CraftBlockType.minecraftToBukkit((Block) statistic.getValue());
+        if (statistic.getValue() instanceof Block statisticBlockValue) {
+            return CraftBlockType.minecraftToBukkit(statisticBlockValue);
         }
         return null;
     }
@@ -127,25 +129,25 @@ public class CraftStatistic extends Statistic {
     }
 
     public static int getStatistic(ServerStatisticManager manager, Statistic statistic) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.isTrue(statistic.getType() == Type.UNTYPED, "Must supply additional paramater for this statistic");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(statistic.getType() == Type.UNTYPED, "Must supply additional parameter for this statistic");
         return manager.getValue(CraftStatistic.getNMSStatistic(statistic));
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, getStatistic(manager, statistic) + amount);
     }
 
     public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, getStatistic(manager, statistic) - amount);
     }
 
     public static void setStatistic(ServerStatisticManager manager, Statistic statistic, int newValue) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.isTrue(statistic.getType() == Type.UNTYPED, "Must supply additional paramater for this statistic");
-        Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(statistic.getType() == Type.UNTYPED, "Must supply additional parameter for this statistic");
+        Preconditions.checkArgument(newValue >= 0, "Value must be greater than or equal to 0");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getNMSStatistic(statistic);
         manager.setValue(null, nmsStatistic, newValue);;
     }
@@ -159,31 +161,31 @@ public class CraftStatistic extends Statistic {
     }
 
     public static int getStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(itemType, "ItemType cannot be null");
-        Validate.isTrue(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
+        Preconditions.checkArgument(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getItemTypeStatistic(statistic, itemType);
-        Validate.notNull(nmsStatistic, "The supplied ItemType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied ItemType %s does not have a corresponding statistic", itemType);
         return manager.getValue(nmsStatistic);
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, itemType, getStatistic(manager, statistic, itemType) + amount);
     }
 
     public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, itemType, getStatistic(manager, statistic, itemType) - amount);
     }
 
     public static void setStatistic(ServerStatisticManager manager, Statistic statistic, ItemType itemType, int newValue) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(itemType, "ItemType cannot be null");
-        Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
-        Validate.isTrue(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
+        Preconditions.checkArgument(newValue >= 0, "Value must be greater than or equal to 0");
+        Preconditions.checkArgument(statistic.getType() == Type.ITEM, "This statistic does not take a ItemType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getItemTypeStatistic(statistic, itemType);
-        Validate.notNull(nmsStatistic, "The supplied ItemType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied ItemType %s does not have a corresponding statistic", itemType);
         manager.setValue(null, nmsStatistic, newValue);
     }
 
@@ -196,31 +198,31 @@ public class CraftStatistic extends Statistic {
     }
 
     public static int getStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(blockType, "BlockType cannot be null");
-        Validate.isTrue(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(blockType != null, "BlockType cannot be null");
+        Preconditions.checkArgument(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getBlockTypeStatistic(statistic, blockType);
-        Validate.notNull(nmsStatistic, "The supplied BlockType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied BlockType %s does not have a corresponding statistic", blockType);
         return manager.getValue(nmsStatistic);
     }
 
     public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, blockType, getStatistic(manager, statistic, blockType) + amount);
     }
 
     public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(manager, statistic, blockType, getStatistic(manager, statistic, blockType) - amount);
     }
 
     public static void setStatistic(ServerStatisticManager manager, Statistic statistic, BlockType<?> blockType, int newValue) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(blockType, "BlocKType cannot be null");
-        Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
-        Validate.isTrue(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(blockType != null, "BlocKType cannot be null");
+        Preconditions.checkArgument(newValue >= 0, "Value must be greater than or equal to 0");
+        Preconditions.checkArgument(statistic.getType() == Type.BLOCK, "This statistic does not take a BlockType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getBlockTypeStatistic(statistic, blockType);
-        Validate.notNull(nmsStatistic, "The supplied BlockType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied BlockType %s does not have a corresponding statistic", blockType);
         manager.setValue(null, nmsStatistic, newValue);
     }
 
@@ -233,31 +235,31 @@ public class CraftStatistic extends Statistic {
     }
 
     public static int getStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(entityType, "EntityType cannot be null");
-        Validate.isTrue(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(entityType != null, "EntityType cannot be null");
+        Preconditions.checkArgument(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(registry, statistic, entityType);
-        Validate.notNull(nmsStatistic, "The supplied EntityType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied EntityType %s does not have a corresponding statistic", entityType);
         return manager.getValue(nmsStatistic);
     }
 
     public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) + amount);
     }
 
     public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
-        Validate.isTrue(amount > 0, "Amount must be greater than 0");
+        Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
         setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) - amount);
     }
 
     public static void setStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int newValue) {
-        Validate.notNull(statistic, "Statistic cannot be null");
-        Validate.notNull(entityType, "EntityType cannot be null");
-        Validate.isTrue(newValue >= 0, "Value must be greater than or equal to 0");
-        Validate.isTrue(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
+        Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
+        Preconditions.checkArgument(entityType != null, "EntityType cannot be null");
+        Preconditions.checkArgument(newValue >= 0, "Value must be greater than or equal to 0");
+        Preconditions.checkArgument(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
         net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(registry, statistic, entityType);
-        Validate.notNull(nmsStatistic, "The supplied EntityType does not have a corresponding statistic");
+        Preconditions.checkArgument(nmsStatistic != null, "The supplied EntityType %s does not have a corresponding statistic", entityType);
         manager.setValue(null, nmsStatistic, newValue);
     }
 

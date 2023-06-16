@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -21,7 +22,6 @@ import net.minecraft.world.level.block.entity.TileEntityJukeBox;
 import net.minecraft.world.level.block.entity.TileEntityLectern;
 import net.minecraft.world.level.block.entity.TileEntityShulkerBox;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
@@ -83,9 +83,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public void setContents(ItemStack[] items) {
-        if (getSize() < items.length) {
-            throw new IllegalArgumentException("Invalid inventory size; expected " + getSize() + " or less");
-        }
+        Preconditions.checkArgument(items.length <= getSize(), "Invalid inventory size (%s); expected %s or less", items.length, getSize());
 
         for (int i = 0; i < getSize(); i++) {
             if (i >= items.length) {
@@ -103,7 +101,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public boolean contains(ItemType itemType) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         for (ItemStack item : getStorageContents()) {
             if (item != null && item.getType() == itemType) {
                 return true;
@@ -127,7 +125,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public boolean contains(ItemType itemType, int amount) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         if (amount <= 0) {
             return true;
         }
@@ -175,7 +173,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> all(ItemType itemType) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
 
         ItemStack[] inventory = getStorageContents();
@@ -190,7 +188,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> all(ItemStack item) {
-        HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
+        HashMap<Integer, ItemStack> slots = new HashMap<>();
         if (item != null) {
             ItemStack[] inventory = getStorageContents();
             for (int i = 0; i < inventory.length; i++) {
@@ -204,7 +202,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int first(ItemType itemType) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(material != null, "ItemType cannot be null");
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];
@@ -252,7 +250,7 @@ public class CraftInventory implements Inventory {
     }
 
     public int firstPartial(ItemType itemType) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];
@@ -280,8 +278,8 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> addItem(ItemStack... items) {
-        Validate.noNullElements(items, "Item cannot be null");
-        HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
+        Preconditions.checkArgument(items != null, "items cannot be null");
+        HashMap<Integer, ItemStack> leftover = new HashMap<>();
 
         /* TODO: some optimization
          *  - Create a 'firstPartial' with a 'fromIndex'
@@ -291,6 +289,7 @@ public class CraftInventory implements Inventory {
 
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
+            Preconditions.checkArgument(item != null, "ItemStack cannot be null");
             while (true) {
                 // Do we already have a stack of it?
                 int firstPartial = firstPartial(item);
@@ -346,13 +345,14 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> removeItem(ItemStack... items) {
-        Validate.notNull(items, "Items cannot be null");
+        Preconditions.checkArgument(items != null, "items cannot be null");
         HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
 
         // TODO: optimization
 
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
+            Preconditions.checkArgument(item != null, "ItemStack cannot be null");
             int toDelete = item.getAmount();
 
             while (true) {
@@ -394,7 +394,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public void remove(ItemType itemType) {
-        Validate.notNull(itemType, "ItemType cannot be null");
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
             if (items[i] != null && items[i].getType() == itemType) {

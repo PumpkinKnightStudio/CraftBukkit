@@ -1,11 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.projectile.EntityPotion;
 import net.minecraft.world.item.alchemy.PotionUtil;
-import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
@@ -35,11 +35,8 @@ public class CraftThrownPotion extends CraftThrowableProjectile implements Throw
 
     @Override
     public void setItem(ItemStack item) {
-        // The ItemStack must not be null.
-        Validate.notNull(item, "ItemStack cannot be null.");
-
-        // The ItemStack must be a potion.
-        Validate.isTrue(item.getType() == ItemType.LINGERING_POTION || item.getType() == ItemType.SPLASH_POTION, "ItemStack must be a lingering or splash potion. This item stack was " + item.getType() + ".");
+        Preconditions.checkArgument(item != null, "ItemStack cannot be null");
+        Preconditions.checkArgument(item.getType() == ItemType.LINGERING_POTION || item.getType() == ItemType.SPLASH_POTION, "ItemStack type must be ItemType.LINGERING_POTION or ItemType.SPLASH_POTION but was ItemType.%s", item.getType());
 
         getHandle().setItem(CraftItemStack.asNMSCopy(item));
     }
