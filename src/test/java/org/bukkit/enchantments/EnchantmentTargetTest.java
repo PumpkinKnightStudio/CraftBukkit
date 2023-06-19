@@ -5,10 +5,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentSlotType;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.inventory.ItemType;
+import org.bukkit.support.AbstractTestingBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EnchantmentTargetTest {
+public class EnchantmentTargetTest extends AbstractTestingBase {
 
     @Test
     public void test() {
