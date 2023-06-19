@@ -1,7 +1,7 @@
 package org.bukkit.potion;
 
 import static org.junit.Assert.*;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,9 +13,10 @@ import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
 
 public class PotionTest extends AbstractTestingBase {
+
     @Test
     public void testEffectCompleteness() throws Throwable {
-        Map<PotionType, String> effects = new EnumMap(PotionType.class);
+        Map<PotionType, String> effects = new HashMap<>();
         for (Object reg : BuiltInRegistries.POTION) {
             List<MobEffect> eff = ((PotionRegistry) reg).getEffects();
             if (eff.size() != 1) continue;
@@ -29,7 +30,7 @@ public class PotionTest extends AbstractTestingBase {
             effects.put(enumType, enumType.name());
         }
 
-        assertEquals(effects.entrySet().size(), PotionType.values().length - /* PotionTypes with no/shared Effects */ 6);
+        assertEquals(effects.entrySet().size(), PotionType.values().length - /* PotionTypes with no/shared Effects */ (6 + 22 /* There are 22 new strong / long potion types */));
     }
 
     @Test

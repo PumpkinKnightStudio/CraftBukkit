@@ -8,10 +8,10 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagString;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
 
@@ -113,8 +113,8 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.FILLED_MAP;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.FILLED_MAP;
     }
 
     @Override

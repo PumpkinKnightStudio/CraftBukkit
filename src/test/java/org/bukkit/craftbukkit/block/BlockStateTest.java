@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ITileEntity;
 import net.minecraft.world.level.block.entity.TileEntity;
 import org.bukkit.Material;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Test;
@@ -19,28 +20,28 @@ public class BlockStateTest extends AbstractTestingBase {
     @Test
     public void testTileEntityBlockStates() {
         for (Block block : BuiltInRegistries.BLOCK) {
-            Material material = CraftMagicNumbers.getMaterial(block);
-            Class<?> blockStateType = CraftBlockStates.getBlockStateType(material);
+            BlockType<?> blockType = CraftBlockType.minecraftToBukkit(block);
+            Class<?> blockStateType = CraftBlockStates.getBlockStateType(blockType);
             boolean isCraftBlockEntityState = CraftBlockEntityState.class.isAssignableFrom(blockStateType);
 
             if (block instanceof ITileEntity) {
-                assertTrue(material + " has BlockState of type " + blockStateType.getName() + ", but expected subtype of CraftBlockEntityState", isCraftBlockEntityState);
+                assertTrue(blockType + " has BlockState of type " + blockStateType.getName() + ", but expected subtype of CraftBlockEntityState", isCraftBlockEntityState);
 
                 // check tile entity type
                 TileEntity tileEntity = ((ITileEntity) block).newBlockEntity(BlockPosition.ZERO, block.defaultBlockState());
-                TileEntity materialTileEntity = CraftBlockStates.createNewTileEntity(material);
+                TileEntity materialTileEntity = CraftBlockStates.createNewTileEntity(blockType);
 
                 if (tileEntity == null) {
-                    if (CraftBlockStates.isTileEntityOptional(material)) {
+                    if (CraftBlockStates.isTileEntityOptional(blockType)) {
                         continue;
                     }
-                    fail(material + " has no tile entity, it be added to CraftBlockStates#isTileEntityOptional");
+                    fail(blockType + " has no tile entity, it be added to CraftBlockStates#isTileEntityOptional");
                 }
 
-                assertNotNull(material + " has no tile entity expected tile entity of type " + tileEntity.getClass(), materialTileEntity);
-                assertSame(material + " has unexpected tile entity type, expected " + tileEntity.getClass() + " but got " + tileEntity.getClass(), materialTileEntity.getClass(), tileEntity.getClass());
+                assertNotNull(blockType + " has no tile entity expected tile entity of type " + tileEntity.getClass(), materialTileEntity);
+                assertSame(blockType + " has unexpected tile entity type, expected " + tileEntity.getClass() + " but got " + tileEntity.getClass(), materialTileEntity.getClass(), tileEntity.getClass());
             } else {
-                assertTrue(material + " has unexpected CraftBlockEntityState subytype " + blockStateType.getName() + " (but is not a tile)", !isCraftBlockEntityState);
+                assertTrue(blockType + " has unexpected CraftBlockEntityState subytype " + blockStateType.getName() + " (but is not a tile)", !isCraftBlockEntityState);
             }
         }
     }

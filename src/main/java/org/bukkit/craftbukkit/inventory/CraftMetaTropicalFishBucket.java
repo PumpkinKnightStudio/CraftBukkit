@@ -5,12 +5,12 @@ import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftTropicalFish;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.TropicalFish;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -84,8 +84,8 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.TROPICAL_FISH_BUCKET;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.TROPICAL_FISH_BUCKET;
     }
 
     @Override

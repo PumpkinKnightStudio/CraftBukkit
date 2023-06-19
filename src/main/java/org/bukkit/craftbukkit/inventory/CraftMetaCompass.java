@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.CompassMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
@@ -109,8 +110,8 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.COMPASS;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.COMPASS;
     }
 
     @Override

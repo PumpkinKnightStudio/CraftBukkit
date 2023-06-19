@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import net.minecraft.commands.arguments.blocks.ArgumentBlock;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.INamable;
 import net.minecraft.world.level.BlockAccessAir;
@@ -26,24 +26,27 @@ import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
@@ -60,8 +63,8 @@ public class CraftBlockData implements BlockData {
     }
 
     @Override
-    public Material getMaterial() {
-        return CraftMagicNumbers.getMaterial(state.getBlock());
+    public BlockType<?> getBlockType() {
+        return CraftBlockType.minecraftToBukkit(state.getBlock());
     }
 
     public IBlockData getState() {
@@ -238,7 +241,7 @@ public class CraftBlockData implements BlockData {
 
     // Mimicked from BlockDataAbstract#toString()
     public String toString(Map<IBlockState<?>, Comparable<?>> states) {
-        StringBuilder stateString = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+        StringBuilder stateString = new StringBuilder(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getKey(state.getBlock()).toString());
 
         if (!states.isEmpty()) {
             stateString.append('[');
@@ -317,7 +320,7 @@ public class CraftBlockData implements BlockData {
     private static IBlockState<?> getState(Class<? extends Block> block, String name, boolean optional) {
         IBlockState<?> state = null;
 
-        for (Block instance : BuiltInRegistries.BLOCK) {
+        for (Block instance : CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK)) {
             if (instance.getClass() == block) {
                 if (state == null) {
                     state = instance.getStateDefinition().getProperty(name);
@@ -529,11 +532,9 @@ public class CraftBlockData implements BlockData {
         Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
     }
 
-    public static CraftBlockData newData(Material material, String data) {
-        Preconditions.checkArgument(material == null || material.isBlock(), "Cannot get data for not block %s", material);
-
+    public static <B extends BlockData> B newData(BlockType<B> blockType, String data) {
         IBlockData blockData;
-        Block block = CraftMagicNumbers.getBlock(material);
+        Block block = blockType != null ? ((CraftBlockType<B>) blockType).getHandle() : null;
         Map<IBlockState<?>, Comparable<?>> parsed = null;
 
         // Data provided, use it
@@ -541,11 +542,11 @@ public class CraftBlockData implements BlockData {
             try {
                 // Material provided, force that material in
                 if (block != null) {
-                    data = BuiltInRegistries.BLOCK.getKey(block) + data;
+                    data = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getKey(block) + data;
                 }
 
                 StringReader reader = new StringReader(data);
-                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false);
+                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).asLookup(), reader, false);
                 Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data: " + data);
 
                 blockData = arg.blockState();
@@ -559,7 +560,7 @@ public class CraftBlockData implements BlockData {
 
         CraftBlockData craft = fromData(blockData);
         craft.parsedStates = parsed;
-        return craft;
+        return (B) craft;
     }
 
     public static CraftBlockData fromData(IBlockData data) {
@@ -630,9 +631,10 @@ public class CraftBlockData implements BlockData {
         return state.isFaceSturdy(BlockAccessAir.INSTANCE, BlockPosition.ZERO, CraftBlock.blockFaceToNotch(face), CraftBlockSupport.toNMS(support));
     }
 
+    @NotNull
     @Override
-    public Material getPlacementMaterial() {
-        return CraftMagicNumbers.getMaterial(state.getBlock().asItem());
+    public ItemType getPlacementType() {
+        return CraftItemType.minecraftToBukkit(state.getBlock().asItem());
     }
 
     @Override

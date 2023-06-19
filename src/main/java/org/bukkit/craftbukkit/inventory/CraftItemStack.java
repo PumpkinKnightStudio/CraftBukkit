@@ -8,15 +8,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
-import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 
@@ -28,11 +28,11 @@ public final class CraftItemStack extends ItemStack {
             CraftItemStack stack = (CraftItemStack) original;
             return stack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : stack.handle.copy();
         }
-        if (original == null || original.getType() == Material.AIR) {
+        if (original == null || original.getType() == ItemType.AIR) {
             return net.minecraft.world.item.ItemStack.EMPTY;
         }
 
-        Item item = CraftMagicNumbers.getItem(original.getType(), original.getDurability());
+        Item item = ((CraftItemType) original.getType()).getHandle();
 
         if (item == null) {
             return net.minecraft.world.item.ItemStack.EMPTY;
@@ -56,9 +56,9 @@ public final class CraftItemStack extends ItemStack {
      */
     public static ItemStack asBukkitCopy(net.minecraft.world.item.ItemStack original) {
         if (original.isEmpty()) {
-            return new ItemStack(Material.AIR);
+            return ItemStack.of(ItemType.AIR);
         }
-        ItemStack stack = new ItemStack(CraftMagicNumbers.getMaterial(original.getItem()), original.getCount());
+        ItemStack stack = ItemStack.of(CraftItemType.minecraftToBukkit(original.getItem()), original.getCount());
         if (hasItemMeta(original)) {
             stack.setItemMeta(getItemMeta(original));
         }
@@ -82,7 +82,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     public static CraftItemStack asNewCraftStack(Item item, int amount) {
-        return new CraftItemStack(CraftMagicNumbers.getMaterial(item), amount, (short) 0, null);
+        return new CraftItemStack(CraftItemType.minecraftToBukkit(item), amount, (short) 0, null);
     }
 
     net.minecraft.world.item.ItemStack handle;
@@ -98,7 +98,7 @@ public final class CraftItemStack extends ItemStack {
         this(item.getType(), item.getAmount(), item.getDurability(), item.hasItemMeta() ? item.getItemMeta() : null);
     }
 
-    private CraftItemStack(Material type, int amount, short durability, ItemMeta itemMeta) {
+    private CraftItemStack(ItemType type, int amount, short durability, ItemMeta itemMeta) {
         setType(type);
         setAmount(amount);
         setDurability(durability);
@@ -111,22 +111,22 @@ public final class CraftItemStack extends ItemStack {
     }
 
     @Override
-    public Material getType() {
-        return handle != null ? CraftMagicNumbers.getMaterial(handle.getItem()) : Material.AIR;
+    public ItemType getType() {
+        return handle != null ? CraftItemType.minecraftToBukkit(handle.getItem()) : ItemType.AIR;
     }
 
     @Override
-    public void setType(Material type) {
+    public void setType(ItemType type) {
         if (getType() == type) {
             return;
-        } else if (type == Material.AIR) {
+        } else if (type == ItemType.AIR) {
             handle = null;
-        } else if (CraftMagicNumbers.getItem(type) == null) { // :(
+        } else if (((CraftItemType) type).getHandle() == null) { // :(  --Smile again, with the new system this should never happen
             handle = null;
         } else if (handle == null) {
-            handle = new net.minecraft.world.item.ItemStack(CraftMagicNumbers.getItem(type), 1);
+            handle = new net.minecraft.world.item.ItemStack(((CraftItemType) type).getHandle(), 1);
         } else {
-            handle.setItem(CraftMagicNumbers.getItem(type));
+            handle.setItem(((CraftItemType) type).getHandle());
             if (hasItemMeta()) {
                 // This will create the appropriate item meta, which will contain all the data we intend to keep
                 setItemMeta(handle, getItemMeta(handle));
@@ -171,7 +171,7 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public int getMaxStackSize() {
-        return (handle == null) ? Material.AIR.getMaxStackSize() : handle.getItem().getMaxStackSize();
+        return (handle == null) ? ItemType.AIR.getMaxStackSize() : handle.getItem().getMaxStackSize();
     }
 
     @Override
@@ -322,310 +322,160 @@ public final class CraftItemStack extends ItemStack {
         if (!hasItemMeta(item)) {
             return CraftItemFactory.instance().getItemMeta(getType(item));
         }
-        switch (getType(item)) {
-            case WRITTEN_BOOK:
-                return new CraftMetaBookSigned(item.getTag());
-            case WRITABLE_BOOK:
-                return new CraftMetaBook(item.getTag());
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-            case PIGLIN_HEAD:
-            case PIGLIN_WALL_HEAD:
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-                return new CraftMetaSkull(item.getTag());
-            case CHAINMAIL_HELMET:
-            case CHAINMAIL_CHESTPLATE:
-            case CHAINMAIL_LEGGINGS:
-            case CHAINMAIL_BOOTS:
-            case DIAMOND_HELMET:
-            case DIAMOND_CHESTPLATE:
-            case DIAMOND_LEGGINGS:
-            case DIAMOND_BOOTS:
-            case GOLDEN_HELMET:
-            case GOLDEN_CHESTPLATE:
-            case GOLDEN_LEGGINGS:
-            case GOLDEN_BOOTS:
-            case IRON_HELMET:
-            case IRON_CHESTPLATE:
-            case IRON_LEGGINGS:
-            case IRON_BOOTS:
-            case NETHERITE_HELMET:
-            case NETHERITE_CHESTPLATE:
-            case NETHERITE_LEGGINGS:
-            case NETHERITE_BOOTS:
-            case TURTLE_HELMET:
-                return new CraftMetaArmor(item.getTag());
-            case LEATHER_HELMET:
-            case LEATHER_CHESTPLATE:
-            case LEATHER_LEGGINGS:
-            case LEATHER_BOOTS:
-                return new CraftMetaColorableArmor(item.getTag());
-            case LEATHER_HORSE_ARMOR:
-                return new CraftMetaLeatherArmor(item.getTag());
-            case POTION:
-            case SPLASH_POTION:
-            case LINGERING_POTION:
-            case TIPPED_ARROW:
-                return new CraftMetaPotion(item.getTag());
-            case FILLED_MAP:
-                return new CraftMetaMap(item.getTag());
-            case FIREWORK_ROCKET:
-                return new CraftMetaFirework(item.getTag());
-            case FIREWORK_STAR:
-                return new CraftMetaCharge(item.getTag());
-            case ENCHANTED_BOOK:
-                return new CraftMetaEnchantedBook(item.getTag());
-            case BLACK_BANNER:
-            case BLACK_WALL_BANNER:
-            case BLUE_BANNER:
-            case BLUE_WALL_BANNER:
-            case BROWN_BANNER:
-            case BROWN_WALL_BANNER:
-            case CYAN_BANNER:
-            case CYAN_WALL_BANNER:
-            case GRAY_BANNER:
-            case GRAY_WALL_BANNER:
-            case GREEN_BANNER:
-            case GREEN_WALL_BANNER:
-            case LIGHT_BLUE_BANNER:
-            case LIGHT_BLUE_WALL_BANNER:
-            case LIGHT_GRAY_BANNER:
-            case LIGHT_GRAY_WALL_BANNER:
-            case LIME_BANNER:
-            case LIME_WALL_BANNER:
-            case MAGENTA_BANNER:
-            case MAGENTA_WALL_BANNER:
-            case ORANGE_BANNER:
-            case ORANGE_WALL_BANNER:
-            case PINK_BANNER:
-            case PINK_WALL_BANNER:
-            case PURPLE_BANNER:
-            case PURPLE_WALL_BANNER:
-            case RED_BANNER:
-            case RED_WALL_BANNER:
-            case WHITE_BANNER:
-            case WHITE_WALL_BANNER:
-            case YELLOW_BANNER:
-            case YELLOW_WALL_BANNER:
-                return new CraftMetaBanner(item.getTag());
-            case ALLAY_SPAWN_EGG:
-            case AXOLOTL_SPAWN_EGG:
-            case BAT_SPAWN_EGG:
-            case BEE_SPAWN_EGG:
-            case BLAZE_SPAWN_EGG:
-            case CAT_SPAWN_EGG:
-            case CAMEL_SPAWN_EGG:
-            case CAVE_SPIDER_SPAWN_EGG:
-            case CHICKEN_SPAWN_EGG:
-            case COD_SPAWN_EGG:
-            case COW_SPAWN_EGG:
-            case CREEPER_SPAWN_EGG:
-            case DOLPHIN_SPAWN_EGG:
-            case DONKEY_SPAWN_EGG:
-            case DROWNED_SPAWN_EGG:
-            case ELDER_GUARDIAN_SPAWN_EGG:
-            case ENDER_DRAGON_SPAWN_EGG:
-            case ENDERMAN_SPAWN_EGG:
-            case ENDERMITE_SPAWN_EGG:
-            case EVOKER_SPAWN_EGG:
-            case FOX_SPAWN_EGG:
-            case FROG_SPAWN_EGG:
-            case GHAST_SPAWN_EGG:
-            case GLOW_SQUID_SPAWN_EGG:
-            case GOAT_SPAWN_EGG:
-            case GUARDIAN_SPAWN_EGG:
-            case HOGLIN_SPAWN_EGG:
-            case HORSE_SPAWN_EGG:
-            case HUSK_SPAWN_EGG:
-            case IRON_GOLEM_SPAWN_EGG:
-            case LLAMA_SPAWN_EGG:
-            case MAGMA_CUBE_SPAWN_EGG:
-            case MOOSHROOM_SPAWN_EGG:
-            case MULE_SPAWN_EGG:
-            case OCELOT_SPAWN_EGG:
-            case PANDA_SPAWN_EGG:
-            case PARROT_SPAWN_EGG:
-            case PHANTOM_SPAWN_EGG:
-            case PIGLIN_BRUTE_SPAWN_EGG:
-            case PIGLIN_SPAWN_EGG:
-            case PIG_SPAWN_EGG:
-            case PILLAGER_SPAWN_EGG:
-            case POLAR_BEAR_SPAWN_EGG:
-            case PUFFERFISH_SPAWN_EGG:
-            case RABBIT_SPAWN_EGG:
-            case RAVAGER_SPAWN_EGG:
-            case SALMON_SPAWN_EGG:
-            case SHEEP_SPAWN_EGG:
-            case SHULKER_SPAWN_EGG:
-            case SILVERFISH_SPAWN_EGG:
-            case SKELETON_HORSE_SPAWN_EGG:
-            case SKELETON_SPAWN_EGG:
-            case SLIME_SPAWN_EGG:
-            case SNIFFER_SPAWN_EGG:
-            case SNOW_GOLEM_SPAWN_EGG:
-            case SPIDER_SPAWN_EGG:
-            case SQUID_SPAWN_EGG:
-            case STRAY_SPAWN_EGG:
-            case STRIDER_SPAWN_EGG:
-            case TADPOLE_SPAWN_EGG:
-            case TRADER_LLAMA_SPAWN_EGG:
-            case TROPICAL_FISH_SPAWN_EGG:
-            case TURTLE_SPAWN_EGG:
-            case VEX_SPAWN_EGG:
-            case VILLAGER_SPAWN_EGG:
-            case VINDICATOR_SPAWN_EGG:
-            case WANDERING_TRADER_SPAWN_EGG:
-            case WARDEN_SPAWN_EGG:
-            case WITCH_SPAWN_EGG:
-            case WITHER_SKELETON_SPAWN_EGG:
-            case WITHER_SPAWN_EGG:
-            case WOLF_SPAWN_EGG:
-            case ZOGLIN_SPAWN_EGG:
-            case ZOMBIE_HORSE_SPAWN_EGG:
-            case ZOMBIE_SPAWN_EGG:
-            case ZOMBIE_VILLAGER_SPAWN_EGG:
-            case ZOMBIFIED_PIGLIN_SPAWN_EGG:
-                return new CraftMetaSpawnEgg(item.getTag());
-            case ARMOR_STAND:
-                return new CraftMetaArmorStand(item.getTag());
-            case KNOWLEDGE_BOOK:
-                return new CraftMetaKnowledgeBook(item.getTag());
-            case FURNACE:
-            case CHEST:
-            case TRAPPED_CHEST:
-            case JUKEBOX:
-            case DISPENSER:
-            case DROPPER:
-            case ACACIA_HANGING_SIGN:
-            case ACACIA_SIGN:
-            case ACACIA_WALL_HANGING_SIGN:
-            case ACACIA_WALL_SIGN:
-            case BAMBOO_HANGING_SIGN:
-            case BAMBOO_SIGN:
-            case BAMBOO_WALL_HANGING_SIGN:
-            case BAMBOO_WALL_SIGN:
-            case BIRCH_HANGING_SIGN:
-            case BIRCH_SIGN:
-            case BIRCH_WALL_HANGING_SIGN:
-            case BIRCH_WALL_SIGN:
-            case CHERRY_HANGING_SIGN:
-            case CHERRY_SIGN:
-            case CHERRY_WALL_HANGING_SIGN:
-            case CHERRY_WALL_SIGN:
-            case CRIMSON_HANGING_SIGN:
-            case CRIMSON_SIGN:
-            case CRIMSON_WALL_HANGING_SIGN:
-            case CRIMSON_WALL_SIGN:
-            case DARK_OAK_HANGING_SIGN:
-            case DARK_OAK_SIGN:
-            case DARK_OAK_WALL_HANGING_SIGN:
-            case DARK_OAK_WALL_SIGN:
-            case JUNGLE_HANGING_SIGN:
-            case JUNGLE_SIGN:
-            case JUNGLE_WALL_HANGING_SIGN:
-            case JUNGLE_WALL_SIGN:
-            case MANGROVE_HANGING_SIGN:
-            case MANGROVE_SIGN:
-            case MANGROVE_WALL_HANGING_SIGN:
-            case MANGROVE_WALL_SIGN:
-            case OAK_HANGING_SIGN:
-            case OAK_SIGN:
-            case OAK_WALL_HANGING_SIGN:
-            case OAK_WALL_SIGN:
-            case SPRUCE_HANGING_SIGN:
-            case SPRUCE_SIGN:
-            case SPRUCE_WALL_HANGING_SIGN:
-            case SPRUCE_WALL_SIGN:
-            case WARPED_HANGING_SIGN:
-            case WARPED_SIGN:
-            case WARPED_WALL_HANGING_SIGN:
-            case WARPED_WALL_SIGN:
-            case SPAWNER:
-            case BREWING_STAND:
-            case ENCHANTING_TABLE:
-            case COMMAND_BLOCK:
-            case REPEATING_COMMAND_BLOCK:
-            case CHAIN_COMMAND_BLOCK:
-            case BEACON:
-            case DAYLIGHT_DETECTOR:
-            case HOPPER:
-            case COMPARATOR:
-            case SHIELD:
-            case STRUCTURE_BLOCK:
-            case SHULKER_BOX:
-            case WHITE_SHULKER_BOX:
-            case ORANGE_SHULKER_BOX:
-            case MAGENTA_SHULKER_BOX:
-            case LIGHT_BLUE_SHULKER_BOX:
-            case YELLOW_SHULKER_BOX:
-            case LIME_SHULKER_BOX:
-            case PINK_SHULKER_BOX:
-            case GRAY_SHULKER_BOX:
-            case LIGHT_GRAY_SHULKER_BOX:
-            case CYAN_SHULKER_BOX:
-            case PURPLE_SHULKER_BOX:
-            case BLUE_SHULKER_BOX:
-            case BROWN_SHULKER_BOX:
-            case GREEN_SHULKER_BOX:
-            case RED_SHULKER_BOX:
-            case BLACK_SHULKER_BOX:
-            case ENDER_CHEST:
-            case BARREL:
-            case BELL:
-            case BLAST_FURNACE:
-            case CAMPFIRE:
-            case SOUL_CAMPFIRE:
-            case JIGSAW:
-            case LECTERN:
-            case SMOKER:
-            case BEEHIVE:
-            case BEE_NEST:
-            case SCULK_CATALYST:
-            case SCULK_SHRIEKER:
-            case SCULK_SENSOR:
-            case CALIBRATED_SCULK_SENSOR:
-            case CHISELED_BOOKSHELF:
-            case DECORATED_POT:
-            case SUSPICIOUS_SAND:
-            case SUSPICIOUS_GRAVEL:
-                return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
-            case TROPICAL_FISH_BUCKET:
-                return new CraftMetaTropicalFishBucket(item.getTag());
-            case AXOLOTL_BUCKET:
-                return new CraftMetaAxolotlBucket(item.getTag());
-            case CROSSBOW:
-                return new CraftMetaCrossbow(item.getTag());
-            case SUSPICIOUS_STEW:
-                return new CraftMetaSuspiciousStew(item.getTag());
-            case COD_BUCKET:
-            case PUFFERFISH_BUCKET:
-            case SALMON_BUCKET:
-            case ITEM_FRAME:
-            case GLOW_ITEM_FRAME:
-            case PAINTING:
-                return new CraftMetaEntityTag(item.getTag());
-            case COMPASS:
-                return new CraftMetaCompass(item.getTag());
-            case BUNDLE:
-                return new CraftMetaBundle(item.getTag());
-            case GOAT_HORN:
-                return new CraftMetaMusicInstrument(item.getTag());
-            default:
-                return new CraftMetaItem(item.getTag());
+
+        ItemType type = getType(item);
+        if (type == ItemType.WRITTEN_BOOK) {
+            return new CraftMetaBookSigned(item.getTag());
         }
+        if (type == ItemType.WRITABLE_BOOK) {
+            return new CraftMetaBook(item.getTag());
+        }
+        if (type == ItemType.CREEPER_HEAD || type == ItemType.DRAGON_HEAD
+                || type == ItemType.PIGLIN_HEAD || type == ItemType.PLAYER_HEAD
+                || type == ItemType.SKELETON_SKULL || type == ItemType.WITHER_SKELETON_SKULL
+                || type == ItemType.ZOMBIE_HEAD) {
+            return new CraftMetaSkull(item.getTag());
+        }
+        if (type == ItemType.CHAINMAIL_HELMET || type == ItemType.CHAINMAIL_CHESTPLATE
+                || type == ItemType.CHAINMAIL_LEGGINGS || type == ItemType.CHAINMAIL_BOOTS
+                || type == ItemType.DIAMOND_HELMET || type == ItemType.DIAMOND_CHESTPLATE
+                || type == ItemType.DIAMOND_LEGGINGS || type == ItemType.DIAMOND_BOOTS
+                || type == ItemType.GOLDEN_HELMET || type == ItemType.GOLDEN_CHESTPLATE
+                || type == ItemType.GOLDEN_LEGGINGS || type == ItemType.GOLDEN_BOOTS
+                || type == ItemType.IRON_HELMET || type == ItemType.IRON_CHESTPLATE
+                || type == ItemType.IRON_LEGGINGS || type == ItemType.IRON_BOOTS
+                || type == ItemType.NETHERITE_HELMET || type == ItemType.NETHERITE_CHESTPLATE
+                || type == ItemType.NETHERITE_LEGGINGS || type == ItemType.NETHERITE_BOOTS
+                || type == ItemType.TURTLE_HELMET) {
+            return new CraftMetaArmor(item.getTag());
+        }
+        if (type == ItemType.LEATHER_HELMET || type == ItemType.LEATHER_CHESTPLATE
+                || type == ItemType.LEATHER_LEGGINGS || type == ItemType.LEATHER_BOOTS) {
+            return new CraftMetaColorableArmor(item.getTag());
+        }
+        if (type == ItemType.LEATHER_HORSE_ARMOR) {
+            return new CraftMetaLeatherArmor(item.getTag());
+        }
+        if (type == ItemType.POTION || type == ItemType.SPLASH_POTION
+                || type == ItemType.LINGERING_POTION || type == ItemType.TIPPED_ARROW) {
+            return new CraftMetaPotion(item.getTag());
+        }
+        if (type == ItemType.FILLED_MAP) {
+            return new CraftMetaMap(item.getTag());
+        }
+        if (type == ItemType.FIREWORK_ROCKET) {
+            return new CraftMetaFirework(item.getTag());
+        }
+        if (type == ItemType.FIREWORK_STAR) {
+            return new CraftMetaCharge(item.getTag());
+        }
+        if (type == ItemType.ENCHANTED_BOOK) {
+            return new CraftMetaEnchantedBook(item.getTag());
+        }
+        if (type.hasBlockType() && Tag.BANNERS.isTagged(type.getBlockType())) {
+            return new CraftMetaBanner(item.getTag());
+        }
+        if (type == ItemType.ALLAY_SPAWN_EGG || type == ItemType.AXOLOTL_SPAWN_EGG
+                || type == ItemType.BAT_SPAWN_EGG || type == ItemType.BEE_SPAWN_EGG
+                || type == ItemType.BLAZE_SPAWN_EGG || type == ItemType.CAT_SPAWN_EGG
+                || type == ItemType.CAMEL_SPAWN_EGG || type == ItemType.CAVE_SPIDER_SPAWN_EGG
+                || type == ItemType.CHICKEN_SPAWN_EGG || type == ItemType.COD_SPAWN_EGG
+                || type == ItemType.COW_SPAWN_EGG || type == ItemType.CREEPER_SPAWN_EGG
+                || type == ItemType.DOLPHIN_SPAWN_EGG || type == ItemType.DONKEY_SPAWN_EGG
+                || type == ItemType.DROWNED_SPAWN_EGG || type == ItemType.ELDER_GUARDIAN_SPAWN_EGG
+                || type == ItemType.ENDER_DRAGON_SPAWN_EGG || type == ItemType.ENDERMAN_SPAWN_EGG
+                || type == ItemType.ENDERMITE_SPAWN_EGG || type == ItemType.EVOKER_SPAWN_EGG
+                || type == ItemType.FOX_SPAWN_EGG || type == ItemType.FROG_SPAWN_EGG
+                || type == ItemType.GHAST_SPAWN_EGG || type == ItemType.GLOW_SQUID_SPAWN_EGG
+                || type == ItemType.GOAT_SPAWN_EGG || type == ItemType.GUARDIAN_SPAWN_EGG
+                || type == ItemType.HOGLIN_SPAWN_EGG || type == ItemType.HORSE_SPAWN_EGG
+                || type == ItemType.HUSK_SPAWN_EGG || type == ItemType.IRON_GOLEM_SPAWN_EGG
+                || type == ItemType.LLAMA_SPAWN_EGG || type == ItemType.MAGMA_CUBE_SPAWN_EGG
+                || type == ItemType.MOOSHROOM_SPAWN_EGG || type == ItemType.MULE_SPAWN_EGG
+                || type == ItemType.OCELOT_SPAWN_EGG || type == ItemType.PANDA_SPAWN_EGG
+                || type == ItemType.PARROT_SPAWN_EGG || type == ItemType.PHANTOM_SPAWN_EGG
+                || type == ItemType.PIGLIN_BRUTE_SPAWN_EGG || type == ItemType.PIGLIN_SPAWN_EGG
+                || type == ItemType.PIG_SPAWN_EGG || type == ItemType.PILLAGER_SPAWN_EGG
+                || type == ItemType.POLAR_BEAR_SPAWN_EGG || type == ItemType.PUFFERFISH_SPAWN_EGG
+                || type == ItemType.RABBIT_SPAWN_EGG || type == ItemType.RAVAGER_SPAWN_EGG
+                || type == ItemType.SALMON_SPAWN_EGG || type == ItemType.SHEEP_SPAWN_EGG
+                || type == ItemType.SHULKER_SPAWN_EGG || type == ItemType.SILVERFISH_SPAWN_EGG
+                || type == ItemType.SKELETON_HORSE_SPAWN_EGG || type == ItemType.SKELETON_SPAWN_EGG
+                || type == ItemType.SLIME_SPAWN_EGG || type == ItemType.SNIFFER_SPAWN_EGG
+                || type == ItemType.SNOW_GOLEM_SPAWN_EGG || type == ItemType.SPIDER_SPAWN_EGG
+                || type == ItemType.SQUID_SPAWN_EGG || type == ItemType.STRAY_SPAWN_EGG
+                || type == ItemType.STRIDER_SPAWN_EGG || type == ItemType.TADPOLE_SPAWN_EGG
+                || type == ItemType.TRADER_LLAMA_SPAWN_EGG || type == ItemType.TROPICAL_FISH_SPAWN_EGG
+                || type == ItemType.TURTLE_SPAWN_EGG || type == ItemType.VEX_SPAWN_EGG
+                || type == ItemType.VILLAGER_SPAWN_EGG || type == ItemType.VINDICATOR_SPAWN_EGG
+                || type == ItemType.WANDERING_TRADER_SPAWN_EGG || type == ItemType.WARDEN_SPAWN_EGG
+                || type == ItemType.WITCH_SPAWN_EGG || type == ItemType.WITHER_SKELETON_SPAWN_EGG
+                || type == ItemType.WITHER_SPAWN_EGG || type == ItemType.WOLF_SPAWN_EGG
+                || type == ItemType.ZOGLIN_SPAWN_EGG || type == ItemType.ZOMBIE_HORSE_SPAWN_EGG
+                || type == ItemType.ZOMBIE_SPAWN_EGG || type == ItemType.ZOMBIE_VILLAGER_SPAWN_EGG
+                || type == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+            return new CraftMetaSpawnEgg(item.getTag());
+        }
+        if (type == ItemType.ARMOR_STAND) {
+            return new CraftMetaArmorStand(item.getTag());
+        }
+        if (type == ItemType.KNOWLEDGE_BOOK) {
+            return new CraftMetaKnowledgeBook(item.getTag());
+        }
+        if (type == ItemType.FURNACE || type == ItemType.CHEST
+                || type == ItemType.TRAPPED_CHEST || type == ItemType.JUKEBOX
+                || type == ItemType.DISPENSER || type == ItemType.DROPPER
+                || (type.hasBlockType() && Tag.SIGNS.isTagged(type.getBlockType())) || type == ItemType.SPAWNER
+                || type == ItemType.BREWING_STAND || type == ItemType.ENCHANTING_TABLE
+                || type == ItemType.COMMAND_BLOCK || type == ItemType.REPEATING_COMMAND_BLOCK
+                || type == ItemType.CHAIN_COMMAND_BLOCK || type == ItemType.BEACON
+                || type == ItemType.DAYLIGHT_DETECTOR || type == ItemType.HOPPER
+                || type == ItemType.COMPARATOR || type == ItemType.SHIELD
+                || type == ItemType.STRUCTURE_BLOCK || (type.hasBlockType() && Tag.SHULKER_BOXES.isTagged(type.getBlockType()))
+                || type == ItemType.ENDER_CHEST || type == ItemType.BARREL
+                || type == ItemType.BELL || type == ItemType.BLAST_FURNACE
+                || type == ItemType.CAMPFIRE || type == ItemType.SOUL_CAMPFIRE
+                || type == ItemType.JIGSAW || type == ItemType.LECTERN
+                || type == ItemType.SMOKER || type == ItemType.BEEHIVE
+                || type == ItemType.BEE_NEST || type == ItemType.SCULK_CATALYST
+                || type == ItemType.SCULK_SHRIEKER || type == ItemType.SCULK_SENSOR
+                || type == ItemType.CALIBRATED_SCULK_SENSOR || type == ItemType.CHISELED_BOOKSHELF
+                || type == ItemType.DECORATED_POT || type == ItemType.SUSPICIOUS_SAND
+                || type == ItemType.SUSPICIOUS_GRAVEL) {
+            return new CraftMetaBlockState(item.getTag(), CraftItemType.minecraftToBukkit(item.getItem()));
+        }
+        if (type == ItemType.TROPICAL_FISH_BUCKET) {
+            return new CraftMetaTropicalFishBucket(item.getTag());
+        }
+        if (type == ItemType.AXOLOTL_BUCKET) {
+            return new CraftMetaAxolotlBucket(item.getTag());
+        }
+        if (type == ItemType.CROSSBOW) {
+            return new CraftMetaCrossbow(item.getTag());
+        }
+        if (type == ItemType.SUSPICIOUS_STEW) {
+            return new CraftMetaSuspiciousStew(item.getTag());
+        }
+        if (type == ItemType.COD_BUCKET || type == ItemType.PUFFERFISH_BUCKET
+                || type == ItemType.SALMON_BUCKET || type == ItemType.ITEM_FRAME
+                || type == ItemType.GLOW_ITEM_FRAME || type == ItemType.PAINTING) {
+            return new CraftMetaEntityTag(item.getTag());
+        }
+        if (type == ItemType.COMPASS) {
+            return new CraftMetaCompass(item.getTag());
+        }
+        if (type == ItemType.BUNDLE) {
+            return new CraftMetaBundle(item.getTag());
+        }
+        if (type == ItemType.GOAT_HORN) {
+            return new CraftMetaMusicInstrument(item.getTag());
+        }
+
+        return new CraftMetaItem(item.getTag());
     }
 
-    static Material getType(net.minecraft.world.item.ItemStack item) {
-        return item == null ? Material.AIR : CraftMagicNumbers.getMaterial(item.getItem());
+    static ItemType getType(net.minecraft.world.item.ItemStack item) {
+        return item == null ? ItemType.AIR : CraftItemType.minecraftToBukkit(item.getItem());
     }
 
     @Override
@@ -649,7 +499,7 @@ public final class CraftItemStack extends ItemStack {
         if (itemMeta == null) return true;
 
         Item oldItem = item.getItem();
-        Item newItem = CraftMagicNumbers.getItem(CraftItemFactory.instance().updateMaterial(itemMeta, CraftMagicNumbers.getMaterial(oldItem)));
+        Item newItem = ((CraftItemType) CraftItemFactory.instance().updateItemType(itemMeta, CraftItemType.minecraftToBukkit(oldItem))).getHandle();
         if (oldItem != newItem) {
             item.setItem(newItem);
         }
@@ -686,8 +536,7 @@ public final class CraftItemStack extends ItemStack {
         if (handle == null || that.handle == null) {
             return false;
         }
-        Material comparisonType = CraftLegacy.fromLegacy(that.getType()); // This may be called from legacy item stacks, try to get the right material
-        if (!(comparisonType == getType() && getDurability() == that.getDurability())) {
+        if (!(that.getType() == getType() && getDurability() == that.getDurability())) {
             return false;
         }
         return hasItemMeta() ? that.hasItemMeta() && handle.getTag().equals(that.handle.getTag()) : !that.hasItemMeta();

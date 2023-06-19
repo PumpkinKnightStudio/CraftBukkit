@@ -12,19 +12,19 @@ import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 
-public class CraftEntityTag extends CraftTag<EntityTypes<?>, EntityType> {
+public class CraftEntityTag extends CraftTag<EntityTypes<?>, EntityType<?>> {
 
     public CraftEntityTag(IRegistry<EntityTypes<?>> registry, TagKey<EntityTypes<?>> tag) {
         super(registry, tag);
     }
 
     @Override
-    public boolean isTagged(EntityType entity) {
+    public boolean isTagged(EntityType<?> entity) {
         return registry.getHolderOrThrow(ResourceKey.create(Registries.ENTITY_TYPE, CraftNamespacedKey.toMinecraft(entity.getKey()))).is(tag);
     }
 
     @Override
-    public Set<EntityType> getValues() {
+    public Set<EntityType<?>> getValues() {
         return getHandle().stream().map((nms) -> Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(EntityTypes.getKey(nms.value())))).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
     }
 }

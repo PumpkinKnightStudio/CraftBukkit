@@ -1,22 +1,31 @@
 package org.bukkit.craftbukkit.enchantments;
 
-import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.enchantment.EnchantmentBinding;
 import net.minecraft.world.item.enchantment.EnchantmentVanishing;
+import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftEnchantment extends Enchantment {
+    private final NamespacedKey key;
     private final net.minecraft.world.item.enchantment.Enchantment target;
+    private final String name;
 
-    public CraftEnchantment(net.minecraft.world.item.enchantment.Enchantment target) {
-        super(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.ENCHANTMENT.getKey(target)));
+    public CraftEnchantment(NamespacedKey key, net.minecraft.world.item.enchantment.Enchantment target) {
+        this.key = key;
         this.target = target;
+        // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+        // in case plugins use for example the name as key in a config file to receive enchantment specific values.
+        // Custom enchantments will return the key with namespace. For a plugin this should look than like a new enchantment
+        // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+            this.name = key.getKey().toUpperCase();
+        } else {
+            this.name = key.toString();
+        }
     }
 
     @Override
@@ -82,89 +91,7 @@ public class CraftEnchantment extends Enchantment {
 
     @Override
     public String getName() {
-        // PAIL: migration paths
-        switch (BuiltInRegistries.ENCHANTMENT.getId(target)) {
-        case 0:
-            return "PROTECTION_ENVIRONMENTAL";
-        case 1:
-            return "PROTECTION_FIRE";
-        case 2:
-            return "PROTECTION_FALL";
-        case 3:
-            return "PROTECTION_EXPLOSIONS";
-        case 4:
-            return "PROTECTION_PROJECTILE";
-        case 5:
-            return "OXYGEN";
-        case 6:
-            return "WATER_WORKER";
-        case 7:
-            return "THORNS";
-        case 8:
-            return "DEPTH_STRIDER";
-        case 9:
-            return "FROST_WALKER";
-        case 10:
-            return "BINDING_CURSE";
-        case 11:
-            return "SOUL_SPEED";
-        case 12:
-            return "SWIFT_SNEAK";
-        case 13:
-            return "DAMAGE_ALL";
-        case 14:
-            return "DAMAGE_UNDEAD";
-        case 15:
-            return "DAMAGE_ARTHROPODS";
-        case 16:
-            return "KNOCKBACK";
-        case 17:
-            return "FIRE_ASPECT";
-        case 18:
-            return "LOOT_BONUS_MOBS";
-        case 19:
-            return "SWEEPING_EDGE";
-        case 20:
-            return "DIG_SPEED";
-        case 21:
-            return "SILK_TOUCH";
-        case 22:
-            return "DURABILITY";
-        case 23:
-            return "LOOT_BONUS_BLOCKS";
-        case 24:
-            return "ARROW_DAMAGE";
-        case 25:
-            return "ARROW_KNOCKBACK";
-        case 26:
-            return "ARROW_FIRE";
-        case 27:
-            return "ARROW_INFINITE";
-        case 28:
-            return "LUCK";
-        case 29:
-            return "LURE";
-        case 30:
-            return "LOYALTY";
-        case 31:
-            return "IMPALING";
-        case 32:
-            return "RIPTIDE";
-        case 33:
-            return "CHANNELING";
-        case 34:
-            return "MULTISHOT";
-        case 35:
-            return "QUICK_CHARGE";
-        case 36:
-            return "PIERCING";
-        case 37:
-            return "MENDING";
-        case 38:
-            return "VANISHING_CURSE";
-        default:
-            return "UNKNOWN_ENCHANT_" + BuiltInRegistries.ENCHANTMENT.getId(target);
-        }
+        return name;
     }
 
     public static net.minecraft.world.item.enchantment.Enchantment getRaw(Enchantment enchantment) {
@@ -193,5 +120,33 @@ public class CraftEnchantment extends Enchantment {
 
     public net.minecraft.world.item.enchantment.Enchantment getHandle() {
         return target;
+    }
+
+    @Override
+    public NamespacedKey getKey() {
+        return key;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof CraftEnchantment)) {
+            return false;
+        }
+
+        return getKey().equals(((Enchantment) other).getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CraftEnchantment[" + getKey() + "]";
     }
 }

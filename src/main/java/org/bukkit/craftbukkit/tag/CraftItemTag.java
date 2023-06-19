@@ -1,34 +1,27 @@
 package org.bukkit.craftbukkit.tag;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
+import org.bukkit.inventory.ItemType;
 
-public class CraftItemTag extends CraftTag<Item, Material> {
+public class CraftItemTag extends CraftTag<Item, ItemType> {
 
     public CraftItemTag(IRegistry<Item> registry, TagKey<Item> tag) {
         super(registry, tag);
     }
 
     @Override
-    public boolean isTagged(Material item) {
-        Item minecraft = CraftMagicNumbers.getItem(item);
-
-        // SPIGOT-6952: A Material is not necessary an item, in this case return false
-        if (minecraft == null) {
-            return false;
-        }
-
-        return minecraft.builtInRegistryHolder().is(tag);
+    public boolean isTagged(ItemType item) {
+        return ((CraftItemType) item).getHandle().builtInRegistryHolder().is(tag);
     }
 
     @Override
-    public Set<Material> getValues() {
-        return getHandle().stream().map((item) -> CraftMagicNumbers.getMaterial(item.value())).collect(Collectors.toUnmodifiableSet());
+    public Set<ItemType> getValues() {
+        return getHandle().stream().map(Holder::value).map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableSet());
     }
 }

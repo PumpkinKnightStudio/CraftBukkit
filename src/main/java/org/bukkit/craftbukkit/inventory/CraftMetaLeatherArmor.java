@@ -8,20 +8,20 @@ import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
 
-    private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
-            Material.LEATHER_HELMET,
-            Material.LEATHER_HORSE_ARMOR,
-            Material.LEATHER_CHESTPLATE,
-            Material.LEATHER_LEGGINGS,
-            Material.LEATHER_BOOTS
+    private static final Set<ItemType> LEATHER_ARMOR_ITEM_TYPES = Sets.newHashSet(
+            ItemType.LEATHER_HELMET,
+            ItemType.LEATHER_HORSE_ARMOR,
+            ItemType.LEATHER_CHESTPLATE,
+            ItemType.LEATHER_LEGGINGS,
+            ItemType.LEATHER_BOOTS
     );
 
     static final ItemMetaKey COLOR = new ItemMetaKey("color");
@@ -59,8 +59,8 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return LEATHER_ARMOR_MATERIALS.contains(type);
+    boolean applicableTo(ItemType type) {
+        return LEATHER_ARMOR_ITEM_TYPES.contains(type);
     }
 
     @Override

@@ -3,11 +3,8 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Joiner;
 import java.util.Arrays;
 import java.util.List;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.inventory.ItemStackTest.CompoundOperator;
-import org.bukkit.craftbukkit.inventory.ItemStackTest.Operator;
-import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.BookMeta;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -18,7 +15,7 @@ public class ItemStackBookTest extends ItemStackTest {
 
     @Parameters(name = "[{index}]:{" + NAME_PARAMETER + "}")
     public static List<Object[]> data() {
-        return StackProvider.compound(operators(), "%s %s", NAME_PARAMETER, Material.WRITTEN_BOOK, Material.WRITABLE_BOOK);
+        return StackProvider.compound(operators(), "%s %s", NAME_PARAMETER, ItemType.WRITTEN_BOOK, ItemType.WRITABLE_BOOK);
     }
 
     @SuppressWarnings("unchecked")

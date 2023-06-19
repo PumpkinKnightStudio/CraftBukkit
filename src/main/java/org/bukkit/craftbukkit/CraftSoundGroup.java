@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit;
 
 import java.util.HashMap;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.SoundEffectType;
 import org.bukkit.Sound;
 import org.bukkit.SoundGroup;
@@ -34,26 +35,26 @@ public class CraftSoundGroup implements SoundGroup {
 
     @Override
     public Sound getBreakSound() {
-        return CraftSound.getBukkit(getHandle().breakSound);
+        return CraftSound.minecraftToBukkit(getHandle().breakSound);
     }
 
     @Override
     public Sound getStepSound() {
-        return CraftSound.getBukkit(getHandle().getStepSound());
+        return CraftSound.minecraftToBukkit(getHandle().getStepSound());
     }
 
     @Override
     public Sound getPlaceSound() {
-        return CraftSound.getBukkit(getHandle().getPlaceSound());
+        return CraftSound.minecraftToBukkit(getHandle().getPlaceSound());
     }
 
     @Override
     public Sound getHitSound() {
-        return CraftSound.getBukkit(getHandle().hitSound);
+        return CraftSound.minecraftToBukkit(getHandle().hitSound);
     }
 
     @Override
     public Sound getFallSound() {
-        return CraftSound.getBukkit(getHandle().getFallSound());
+        return CraftSound.minecraftToBukkit(getHandle().getFallSound());
     }
 }

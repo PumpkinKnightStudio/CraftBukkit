@@ -18,7 +18,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     }
 
     @Override
-    public EntityType getSpawnedType() {
+    public EntityType<?> getSpawnedType() {
         MobSpawnerData spawnData = this.getSnapshot().getSpawner().nextSpawnData;
         if (spawnData == null) {
             return null;
@@ -29,7 +29,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     }
 
     @Override
-    public void setSpawnedType(EntityType entityType) {
+    public void setSpawnedType(EntityType<?> entityType) {
         if (entityType == null) {
             this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
             this.getSnapshot().getSpawner().nextSpawnData = null;
@@ -55,7 +55,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     @Override
     public void setCreatureTypeByName(String creatureType) {
         // Verify input
-        EntityType type = EntityType.fromName(creatureType);
+        EntityType<?> type = EntityType.fromName(creatureType);
         if (type == null) {
             setSpawnedType(null);
             return;

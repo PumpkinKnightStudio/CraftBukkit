@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
-import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.EnumInteractionResult;
@@ -21,7 +17,6 @@ import net.minecraft.world.item.context.ItemActionContext;
 import net.minecraft.world.level.EnumSkyBlock;
 import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.RayTrace;
-import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.block.BlockRedstoneWire;
 import net.minecraft.world.level.block.BlockSapling;
 import net.minecraft.world.level.block.Blocks;
@@ -35,14 +30,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Registry;
 import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftFluidCollisionMode;
@@ -53,7 +47,6 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftVoxelShape;
 import org.bukkit.entity.Entity;
@@ -158,7 +151,7 @@ public class CraftBlock implements Block {
     }
 
     private void setData(final byte data, int flag) {
-        world.setBlock(position, CraftMagicNumbers.getBlock(getType(), data), flag);
+        world.setBlock(position, CraftMagicNumbers.getBlock(CraftMagicNumbers.toMaterial(getType()), data), flag);
     }
 
     @Override
@@ -173,13 +166,13 @@ public class CraftBlock implements Block {
     }
 
     @Override
-    public void setType(final Material type) {
+    public void setType(final BlockType<?> type) {
         setType(type, true);
     }
 
     @Override
-    public void setType(Material type, boolean applyPhysics) {
-        Preconditions.checkArgument(type != null, "Material cannot be null");
+    public void setType(BlockType<?> type, boolean applyPhysics) {
+        Preconditions.checkArgument(type != null, "BlockType cannot be null");
         setBlockData(type.createBlockData(), applyPhysics);
     }
 
@@ -226,8 +219,8 @@ public class CraftBlock implements Block {
     }
 
     @Override
-    public Material getType() {
-        return CraftMagicNumbers.getMaterial(world.getBlockState(position).getBlock());
+    public BlockType<?> getType() {
+        return CraftBlockType.minecraftToBukkit(world.getBlockState(position).getBlock());
     }
 
     @Override
@@ -345,27 +338,6 @@ public class CraftBlock implements Block {
         getWorld().setBiome(getX(), getY(), getZ(), bio);
     }
 
-    public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, Holder<BiomeBase> base) {
-        return biomeBaseToBiome(registry, base.value());
-    }
-
-    public static Biome biomeBaseToBiome(IRegistry<BiomeBase> registry, BiomeBase base) {
-        if (base == null) {
-            return null;
-        }
-
-        Biome biome = Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(base)));
-        return (biome == null) ? Biome.CUSTOM : biome;
-    }
-
-    public static Holder<BiomeBase> biomeToBiomeBase(IRegistry<BiomeBase> registry, Biome bio) {
-        if (bio == null || bio == Biome.CUSTOM) {
-            return null;
-        }
-
-        return registry.getHolderOrThrow(ResourceKey.create(Registries.BIOME, CraftNamespacedKey.toMinecraft(bio.getKey())));
-    }
-
     @Override
     public double getTemperature() {
         return world.getBiome(position).value().getTemperature(position);
@@ -413,7 +385,7 @@ public class CraftBlock implements Block {
         int power = world.getMinecraftWorld().getSignal(position, blockFaceToNotch(face));
 
         Block relative = getRelative(face);
-        if (relative.getType() == Material.REDSTONE_WIRE) {
+        if (relative.getType() == BlockType.REDSTONE_WIRE) {
             return Math.max(power, relative.getData()) > 0;
         }
 

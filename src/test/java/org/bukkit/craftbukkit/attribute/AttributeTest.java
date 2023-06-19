@@ -22,7 +22,7 @@ public class AttributeTest extends AbstractTestingBase {
     @Test
     public void testToNMS() {
         for (Attribute attribute : Attribute.values()) {
-            AttributeBase nms = CraftAttributeMap.toMinecraft(attribute);
+            AttributeBase nms = CraftAttribute.bukkitToMinecraft(attribute);
 
             Assert.assertNotNull(attribute.name(), nms);
         }

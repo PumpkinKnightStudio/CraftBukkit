@@ -23,13 +23,12 @@ import net.minecraft.world.level.block.entity.TileEntityLectern;
 import net.minecraft.world.level.block.entity.TileEntityShulkerBox;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 
 public class CraftInventory implements Inventory {
     protected final IInventory inventory;
@@ -101,11 +100,10 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public boolean contains(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
+    public boolean contains(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         for (ItemStack item : getStorageContents()) {
-            if (item != null && item.getType() == material) {
+            if (item != null && item.getType() == itemType) {
                 return true;
             }
         }
@@ -126,14 +124,13 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public boolean contains(Material material, int amount) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
+    public boolean contains(ItemType itemType, int amount) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         if (amount <= 0) {
             return true;
         }
         for (ItemStack item : getStorageContents()) {
-            if (item != null && item.getType() == material) {
+            if (item != null && item.getType() == itemType) {
                 if ((amount -= item.getAmount()) <= 0) {
                     return true;
                 }
@@ -175,15 +172,14 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public HashMap<Integer, ItemStack> all(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
-        HashMap<Integer, ItemStack> slots = new HashMap<>();
+    public HashMap<Integer, ItemStack> all(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
+        HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
 
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];
-            if (item != null && item.getType() == material) {
+            if (item != null && item.getType() == itemType) {
                 slots.put(i, item);
             }
         }
@@ -205,13 +201,12 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public int first(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
+    public int first(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];
-            if (item != null && item.getType() == material) {
+            if (item != null && item.getType() == itemType) {
                 return i;
             }
         }
@@ -254,13 +249,12 @@ public class CraftInventory implements Inventory {
         return inventory.isEmpty();
     }
 
-    public int firstPartial(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
+    public int firstPartial(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack item = inventory[i];
-            if (item != null && item.getType() == material && item.getAmount() < item.getMaxStackSize()) {
+            if (item != null && item.getType() == itemType && item.getAmount() < item.getMaxStackSize()) {
                 return i;
             }
         }
@@ -289,7 +283,7 @@ public class CraftInventory implements Inventory {
 
         /* TODO: some optimization
          *  - Create a 'firstPartial' with a 'fromIndex'
-         *  - Record the lastPartial per Material
+         *  - Record the lastPartial per ItemType
          *  - Cache firstEmpty result
          */
 
@@ -399,12 +393,11 @@ public class CraftInventory implements Inventory {
     }
 
     @Override
-    public void remove(Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        material = CraftLegacy.fromLegacy(material);
+    public void remove(ItemType itemType) {
+        Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
-            if (items[i] != null && items[i].getType() == material) {
+            if (items[i] != null && items[i].getType() == itemType) {
                 clear(i);
             }
         }

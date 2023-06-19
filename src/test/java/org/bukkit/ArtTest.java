@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import com.google.common.collect.Lists;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class ArtTest extends AbstractTestingBase {
             int width = enumArt.value().getWidth() / UNIT_MULTIPLIER;
             int height = enumArt.value().getHeight() / UNIT_MULTIPLIER;
 
-            Art subject = CraftArt.NotchToBukkit(enumArt);
+            Art subject = CraftArt.minecraftToBukkit(enumArt);
 
             String message = String.format("org.bukkit.Art is missing '%s'", name);
             assertNotNull(message, subject);
@@ -48,7 +47,7 @@ public class ArtTest extends AbstractTestingBase {
     public void testCraftArtToNotch() {
         Map<Holder<PaintingVariant>, Art> cache = new HashMap<>();
         for (Art art : Art.values()) {
-            Holder<PaintingVariant> enumArt = CraftArt.BukkitToNotch(art);
+            Holder<PaintingVariant> enumArt = CraftArt.bukkitToMinecraft(art);
             assertNotNull(art.name(), enumArt);
             assertThat(art.name(), cache.put(enumArt, art), is(nullValue()));
         }
@@ -56,11 +55,38 @@ public class ArtTest extends AbstractTestingBase {
 
     @Test
     public void testCraftArtToBukkit() {
-        Map<Art, Holder<PaintingVariant>> cache = new EnumMap(Art.class);
+        Map<Art, Holder<PaintingVariant>> cache = new HashMap<>();
         for (Holder<PaintingVariant> enumArt : BuiltInRegistries.PAINTING_VARIANT.asHolderIdMap()) {
-            Art art = CraftArt.NotchToBukkit(enumArt);
+            Art art = CraftArt.minecraftToBukkit(enumArt);
             assertNotNull("Could not CraftArt.NotchToBukkit " + enumArt, art);
             assertThat("Duplicate artwork " + enumArt, cache.put(art, enumArt), is(nullValue()));
         }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getByNullName() {
+        Art.getByName(null);
+    }
+
+    @Test
+    public void getById() {
+        for (Art art : Art.values()) {
+            assertThat(Art.getById(art.getId()), is(art));
+        }
+    }
+
+    @Test
+    public void getByName() {
+        for (Art art : Art.values()) {
+            assertThat(Art.getByName(art.toString()), is(art));
+        }
+    }
+
+    @Test
+    public void getByNameWithMixedCase() {
+        Art subject = Art.values()[0];
+        String name = subject.toString().replace('E', 'e');
+
+        assertThat(Art.getByName(name), is(subject));
     }
 }

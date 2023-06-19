@@ -4,11 +4,10 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.entity.animal.allay.Allay;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 
 public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay {
@@ -25,11 +24,6 @@ public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay
     @Override
     public String toString() {
         return "CraftAllay";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ALLAY;
     }
 
     @Override
@@ -70,7 +64,7 @@ public class CraftAllay extends CraftCreature implements org.bukkit.entity.Allay
     @Override
     public void startDancing(Location location) {
         Preconditions.checkArgument(location != null, "Location cannot be null");
-        Preconditions.checkArgument(location.getBlock().getType().equals(Material.JUKEBOX), "The Block in the Location need to be a JukeBox");
+        Preconditions.checkArgument(location.getBlock().getType() == BlockType.JUKEBOX, "The Block in the Location need to be a JukeBox");
         getHandle().setJukeboxPlaying(CraftLocation.toBlockPosition(location), true);
     }
 

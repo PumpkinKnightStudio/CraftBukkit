@@ -7,13 +7,17 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import org.bukkit.Color;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftTippedArrow extends CraftArrow implements Arrow {
 
@@ -29,11 +33,6 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
     @Override
     public String toString() {
         return "CraftTippedArrow";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ARROW;
     }
 
     @Override
@@ -112,6 +111,17 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
     @Override
     public PotionData getBasePotionData() {
         return CraftPotionUtil.toBukkit(getHandle().getPotionType());
+    }
+
+    @Override
+    public void setBasePotionType(@NotNull PotionType potionType) {
+        getHandle().setPotionType(potionType.getKey().toString());
+    }
+
+    @NotNull
+    @Override
+    public PotionType getBasePotionType() {
+        return Registry.POTION.get(NamespacedKey.fromString(getHandle().getPotionType()));
     }
 
     @Override

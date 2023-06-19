@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.level.EntityPlayer;
@@ -75,14 +76,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
+import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRaid;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -97,6 +101,7 @@ import org.bukkit.craftbukkit.entity.CraftRaider;
 import org.bukkit.craftbukkit.entity.CraftSpellcaster;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -237,6 +242,7 @@ import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 
@@ -458,7 +464,7 @@ public class CraftEventFactory {
     private static PlayerEvent getPlayerBucketEvent(boolean isFilling, WorldServer world, EntityHuman who, BlockPosition changed, BlockPosition clicked, EnumDirection clickedFace, ItemStack itemstack, net.minecraft.world.item.Item item, EnumHand enumhand) {
         Player player = (Player) who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asNewCraftStack(item);
-        Material bucket = CraftMagicNumbers.getMaterial(itemstack.getItem());
+        ItemType bucket = CraftItemType.minecraftToBukkit(itemstack.getItem());
 
         CraftServer craftServer = (CraftServer) player.getServer();
 
@@ -517,7 +523,7 @@ public class CraftEventFactory {
         }
         BlockFace blockFace = CraftBlock.notchToBlockFace(direction);
 
-        if (itemInHand.getType() == Material.AIR || itemInHand.getAmount() == 0) {
+        if (itemInHand.getType() == ItemType.AIR || itemInHand.getAmount() == 0) {
             itemInHand = null;
         }
 
@@ -562,7 +568,7 @@ public class CraftEventFactory {
         org.bukkit.entity.Entity arrow = entityArrow.getBukkitEntity();
         EquipmentSlot handSlot = (hand == EnumHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 
-        if (itemInHand != null && (itemInHand.getType() == Material.AIR || itemInHand.getAmount() == 0)) {
+        if (itemInHand != null && (itemInHand.getType() == ItemType.AIR || itemInHand.getAmount() == 0)) {
             itemInHand = null;
         }
 
@@ -826,7 +832,7 @@ public class CraftEventFactory {
         victim.expToDrop = event.getDroppedExp();
 
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
-            if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
+            if (stack == null || stack.getType() == ItemType.AIR || stack.getAmount() == 0) continue;
 
             world.dropItem(entity.getLocation(), stack);
         }
@@ -849,7 +855,7 @@ public class CraftEventFactory {
         victim.newExp = event.getNewExp();
 
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
-            if (stack == null || stack.getType() == Material.AIR) continue;
+            if (stack == null || stack.getType() == ItemType.AIR) continue;
 
             world.dropItem(entity.getLocation(), stack);
         }
@@ -1332,16 +1338,14 @@ public class CraftEventFactory {
         org.bukkit.World bukkitWorld = world.getWorld();
         Block igniter = bukkitWorld.getBlockAt(source.getX(), source.getY(), source.getZ());
         IgniteCause cause;
-        switch (igniter.getType()) {
-            case LAVA:
-                cause = IgniteCause.LAVA;
-                break;
-            case DISPENSER:
-                cause = IgniteCause.FLINT_AND_STEEL;
-                break;
-            case FIRE: // Fire or any other unknown block counts as SPREAD.
-            default:
-                cause = IgniteCause.SPREAD;
+        BlockType<?> type = igniter.getType();
+        if (type == BlockType.LAVA) {
+            cause = IgniteCause.LAVA;
+        } else if (type == BlockType.DISPENSER) {
+            cause = IgniteCause.FLINT_AND_STEEL;
+        } else {
+            // Fire or any other unknown block counts as SPREAD.
+            cause = IgniteCause.SPREAD;
         }
 
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(block.getX(), block.getY(), block.getZ()), cause, igniter);
@@ -1353,22 +1357,16 @@ public class CraftEventFactory {
         org.bukkit.World bukkitWorld = world.getWorld();
         org.bukkit.entity.Entity bukkitIgniter = igniter.getBukkitEntity();
         IgniteCause cause;
-        switch (bukkitIgniter.getType()) {
-            case ENDER_CRYSTAL:
-                cause = IgniteCause.ENDER_CRYSTAL;
-                break;
-            case LIGHTNING:
-                cause = IgniteCause.LIGHTNING;
-                break;
-            case SMALL_FIREBALL:
-            case FIREBALL:
-                cause = IgniteCause.FIREBALL;
-                break;
-            case ARROW:
-                cause = IgniteCause.ARROW;
-                break;
-            default:
-                cause = IgniteCause.FLINT_AND_STEEL;
+        if (bukkitIgniter.getType() == EntityType.END_CRYSTAL) {
+            cause = IgniteCause.ENDER_CRYSTAL;
+        } else if (bukkitIgniter.getType() == EntityType.LIGHTNING_BOLT) {
+            cause = IgniteCause.LIGHTNING;
+        } else if (bukkitIgniter.getType() == EntityType.SMALL_FIREBALL || bukkitIgniter.getType() == EntityType.FIREBALL) {
+            cause = IgniteCause.FIREBALL;
+        } else if (bukkitIgniter.getType() == EntityType.ARROW) {
+            cause = IgniteCause.ARROW;
+        } else {
+            cause = IgniteCause.FLINT_AND_STEEL;
         }
 
         if (igniter instanceof IProjectile) {
@@ -1454,44 +1452,35 @@ public class CraftEventFactory {
         Player player = ((EntityPlayer) entityHuman).getBukkitEntity();
         Event event;
         if (true) {
-            org.bukkit.Statistic stat = CraftStatistic.getBukkitStatistic(statistic);
+            org.bukkit.Statistic stat = CraftStatistic.getBukkitStatistic(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.STAT_TYPE), statistic);
             if (stat == null) {
                 System.err.println("Unhandled statistic: " + statistic);
                 return null;
             }
-            switch (stat) {
-                case FALL_ONE_CM:
-                case BOAT_ONE_CM:
-                case CLIMB_ONE_CM:
-                case WALK_ON_WATER_ONE_CM:
-                case WALK_UNDER_WATER_ONE_CM:
-                case FLY_ONE_CM:
-                case HORSE_ONE_CM:
-                case MINECART_ONE_CM:
-                case PIG_ONE_CM:
-                case PLAY_ONE_MINUTE:
-                case SWIM_ONE_CM:
-                case WALK_ONE_CM:
-                case SPRINT_ONE_CM:
-                case CROUCH_ONE_CM:
-                case TIME_SINCE_DEATH:
-                case SNEAK_TIME:
-                case TOTAL_WORLD_TIME:
-                case TIME_SINCE_REST:
-                case AVIATE_ONE_CM:
-                case STRIDER_ONE_CM:
-                    // Do not process event for these - too spammy
-                    return null;
-                default:
+
+            if (stat == Statistic.FALL_ONE_CM || stat == Statistic.BOAT_ONE_CM
+                    || stat == Statistic.CLIMB_ONE_CM || stat == Statistic.WALK_ON_WATER_ONE_CM
+                    || stat == Statistic.WALK_UNDER_WATER_ONE_CM || stat == Statistic.FLY_ONE_CM
+                    || stat == Statistic.HORSE_ONE_CM || stat == Statistic.MINECART_ONE_CM
+                    || stat == Statistic.PIG_ONE_CM || stat == Statistic.PLAY_ONE_MINUTE
+                    || stat == Statistic.SWIM_ONE_CM || stat == Statistic.WALK_ONE_CM
+                    || stat == Statistic.SPRINT_ONE_CM || stat == Statistic.CROUCH_ONE_CM
+                    || stat == Statistic.TIME_SINCE_DEATH || stat == Statistic.SNEAK_TIME
+                    || stat == Statistic.TOTAL_WORLD_TIME || stat == Statistic.TIME_SINCE_REST
+                    || stat == Statistic.AVIATE_ONE_CM || stat == Statistic.STRIDER_ONE_CM) {
+                return null;
             }
             if (stat.getType() == Type.UNTYPED) {
                 event = new PlayerStatisticIncrementEvent(player, stat, current, newValue);
             } else if (stat.getType() == Type.ENTITY) {
-                EntityType entityType = CraftStatistic.getEntityTypeFromStatistic((net.minecraft.stats.Statistic<EntityTypes<?>>) statistic);
+                EntityType<?> entityType = CraftStatistic.getEntityTypeFromStatistic((net.minecraft.stats.Statistic<EntityTypes<?>>) statistic);
                 event = new PlayerStatisticIncrementEvent(player, stat, current, newValue, entityType);
+            } else if (stat.getType() == Type.ITEM) {
+                ItemType itemType = CraftStatistic.getItemTypeFromStatistic(statistic);
+                event = new PlayerStatisticIncrementEvent(player, stat, current, newValue, itemType);
             } else {
-                Material material = CraftStatistic.getMaterialFromStatistic(statistic);
-                event = new PlayerStatisticIncrementEvent(player, stat, current, newValue, material);
+                BlockType<?> blockType = CraftStatistic.getBlockTypeFromStatistic(statistic);
+                event = new PlayerStatisticIncrementEvent(player, stat, current, newValue, blockType);
             }
         }
         entityHuman.level().getCraftServer().getPluginManager().callEvent(event);

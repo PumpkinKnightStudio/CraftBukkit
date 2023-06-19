@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -42,11 +43,11 @@ import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.projectile.EntityWitherSkull;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -54,6 +55,7 @@ import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.DragonFireball;
@@ -61,7 +63,6 @@ import org.bukkit.entity.Egg;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityCategory;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.FishHook;
@@ -85,6 +86,7 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -170,11 +172,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return getEyeHeight();
     }
 
-    private List<Block> getLineOfSight(Set<Material> transparent, int maxDistance, int maxLength) {
+    private List<Block> getLineOfSight(Set<BlockType<?>> transparent, int maxDistance, int maxLength) {
         Preconditions.checkState(!getHandle().generation, "Cannot get line of sight during world generation");
 
         if (transparent == null) {
-            transparent = Sets.newHashSet(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR);
+            transparent = Sets.newHashSet(BlockType.AIR, BlockType.CAVE_AIR, BlockType.VOID_AIR);
         }
         if (maxDistance > 120) {
             maxDistance = 120;
@@ -187,8 +189,8 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             if (maxLength != 0 && blocks.size() > maxLength) {
                 blocks.remove(0);
             }
-            Material material = block.getType();
-            if (!transparent.contains(material)) {
+            BlockType<?> blockType = block.getType();
+            if (!transparent.contains(blockType)) {
                 break;
             }
         }
@@ -196,18 +198,18 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
-    public List<Block> getLineOfSight(Set<Material> transparent, int maxDistance) {
+    public List<Block> getLineOfSight(Set<BlockType<?>> transparent, int maxDistance) {
         return getLineOfSight(transparent, maxDistance, 0);
     }
 
     @Override
-    public Block getTargetBlock(Set<Material> transparent, int maxDistance) {
+    public Block getTargetBlock(Set<BlockType<?>> transparent, int maxDistance) {
         List<Block> blocks = getLineOfSight(transparent, maxDistance, 1);
         return blocks.get(0);
     }
 
     @Override
-    public List<Block> getLastTwoTargetBlocks(Set<Material> transparent, int maxDistance) {
+    public List<Block> getLastTwoTargetBlocks(Set<BlockType<?>> transparent, int maxDistance) {
         return getLineOfSight(transparent, maxDistance, 2);
     }
 
@@ -381,7 +383,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public PotionEffect getPotionEffect(PotionEffectType type) {
         MobEffect handle = getHandle().getEffect(MobEffectList.byId(type.getId()));
-        return (handle == null) ? null : new PotionEffect(PotionEffectType.getById(MobEffectList.getId(handle.getEffect())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
+        return (handle == null) ? null : new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible());
     }
 
     @Override
@@ -393,7 +395,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
         for (MobEffect handle : getHandle().activeEffects.values()) {
-            effects.add(new PotionEffect(PotionEffectType.getById(MobEffectList.getId(handle.getEffect())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
+            effects.add(new PotionEffect(CraftPotionEffectType.minecraftToBukkit(handle.getEffect()), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isVisible()));
         }
         return effects;
     }
@@ -435,10 +437,10 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
                 launch = new EntityPotion(world, getHandle());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.LINGERING_POTION, 1)));
             } else {
                 launch = new EntityPotion(world, getHandle());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.SPLASH_POTION, 1)));
             }
             ((EntityProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), -20.0F, 0.5F, 1.0F); // ItemSplashPotion
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
@@ -491,11 +493,6 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         world.addFreshEntity(launch);
         return (T) launch.getBukkitEntity();
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.UNKNOWN;
     }
 
     @Override
@@ -687,51 +684,51 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     @Override
     public <T> T getMemory(MemoryKey<T> memoryKey) {
-        return (T) getHandle().getBrain().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
+        return (T) getHandle().getBrain().getMemory(CraftMemoryKey.fromMemoryKey(getRegistryAccess().registryOrThrow(Registries.MEMORY_MODULE_TYPE), memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
     }
 
     @Override
     public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
-        getHandle().getBrain().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), CraftMemoryMapper.toNms(t));
+        getHandle().getBrain().setMemory(CraftMemoryKey.fromMemoryKey(getRegistryAccess().registryOrThrow(Registries.MEMORY_MODULE_TYPE), memoryKey), CraftMemoryMapper.toNms(t));
     }
 
     @Override
     public Sound getHurtSound() {
         SoundEffect sound = getHandle().getHurtSound0(getHandle().damageSources().generic());
-        return (sound != null) ? CraftSound.getBukkit(sound) : null;
+        return (sound != null) ? CraftSound.minecraftToBukkit(sound) : null;
     }
 
     @Override
     public Sound getDeathSound() {
         SoundEffect sound = getHandle().getDeathSound0();
-        return (sound != null) ? CraftSound.getBukkit(sound) : null;
+        return (sound != null) ? CraftSound.minecraftToBukkit(sound) : null;
     }
 
     @Override
     public Sound getFallDamageSound(int fallHeight) {
-        return CraftSound.getBukkit(getHandle().getFallDamageSound0(fallHeight));
+        return CraftSound.minecraftToBukkit(getHandle().getFallDamageSound0(fallHeight));
     }
 
     @Override
     public Sound getFallDamageSoundSmall() {
-        return CraftSound.getBukkit(getHandle().getFallSounds().small());
+        return CraftSound.minecraftToBukkit(getHandle().getFallSounds().small());
     }
 
     @Override
     public Sound getFallDamageSoundBig() {
-        return CraftSound.getBukkit(getHandle().getFallSounds().big());
+        return CraftSound.minecraftToBukkit(getHandle().getFallSounds().big());
     }
 
     @Override
     public Sound getDrinkingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.minecraftToBukkit(getHandle().getDrinkingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override
     public Sound getEatingSound(ItemStack itemStack) {
         Preconditions.checkArgument(itemStack != null, "itemStack must not be null");
-        return CraftSound.getBukkit(getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
+        return CraftSound.minecraftToBukkit(getHandle().getEatingSound0(CraftItemStack.asNMSCopy(itemStack)));
     }
 
     @Override

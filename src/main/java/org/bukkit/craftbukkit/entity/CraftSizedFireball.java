@@ -1,11 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.projectile.EntityFireballFireball;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.SizedFireball;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 
 public class CraftSizedFireball extends CraftFireball implements SizedFireball {
 
@@ -16,7 +16,7 @@ public class CraftSizedFireball extends CraftFireball implements SizedFireball {
     @Override
     public ItemStack getDisplayItem() {
         if (getHandle().getItemRaw().isEmpty()) {
-            return new ItemStack(Material.FIRE_CHARGE);
+            return ItemStack.of(ItemType.FIRE_CHARGE);
         } else {
             return CraftItemStack.asBukkitCopy(getHandle().getItemRaw());
         }

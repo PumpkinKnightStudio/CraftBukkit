@@ -13,22 +13,22 @@ import org.bukkit.potion.PotionType;
 public class CraftPotionUtil {
 
     private static final BiMap<PotionType, String> regular = ImmutableBiMap.<PotionType, String>builder()
-            .put(PotionType.UNCRAFTABLE, "empty")
+            .put(PotionType.EMPTY, "empty")
             .put(PotionType.WATER, "water")
             .put(PotionType.MUNDANE, "mundane")
             .put(PotionType.THICK, "thick")
             .put(PotionType.AWKWARD, "awkward")
             .put(PotionType.NIGHT_VISION, "night_vision")
             .put(PotionType.INVISIBILITY, "invisibility")
-            .put(PotionType.JUMP, "leaping")
+            .put(PotionType.LEAPING, "leaping")
             .put(PotionType.FIRE_RESISTANCE, "fire_resistance")
-            .put(PotionType.SPEED, "swiftness")
+            .put(PotionType.SWIFTNESS, "swiftness")
             .put(PotionType.SLOWNESS, "slowness")
             .put(PotionType.WATER_BREATHING, "water_breathing")
-            .put(PotionType.INSTANT_HEAL, "healing")
-            .put(PotionType.INSTANT_DAMAGE, "harming")
+            .put(PotionType.HEALING, "healing")
+            .put(PotionType.HARMING, "harming")
             .put(PotionType.POISON, "poison")
-            .put(PotionType.REGEN, "regeneration")
+            .put(PotionType.REGENERATION, "regeneration")
             .put(PotionType.STRENGTH, "strength")
             .put(PotionType.WEAKNESS, "weakness")
             .put(PotionType.LUCK, "luck")
@@ -36,12 +36,12 @@ public class CraftPotionUtil {
             .put(PotionType.SLOW_FALLING, "slow_falling")
             .build();
     private static final BiMap<PotionType, String> upgradeable = ImmutableBiMap.<PotionType, String>builder()
-            .put(PotionType.JUMP, "strong_leaping")
-            .put(PotionType.SPEED, "strong_swiftness")
-            .put(PotionType.INSTANT_HEAL, "strong_healing")
-            .put(PotionType.INSTANT_DAMAGE, "strong_harming")
+            .put(PotionType.LEAPING, "strong_leaping")
+            .put(PotionType.SWIFTNESS, "strong_swiftness")
+            .put(PotionType.HEALING, "strong_healing")
+            .put(PotionType.HARMING, "strong_harming")
             .put(PotionType.POISON, "strong_poison")
-            .put(PotionType.REGEN, "strong_regeneration")
+            .put(PotionType.REGENERATION, "strong_regeneration")
             .put(PotionType.STRENGTH, "strong_strength")
             .put(PotionType.SLOWNESS, "strong_slowness")
             .put(PotionType.TURTLE_MASTER, "strong_turtle_master")
@@ -49,19 +49,20 @@ public class CraftPotionUtil {
     private static final BiMap<PotionType, String> extendable = ImmutableBiMap.<PotionType, String>builder()
             .put(PotionType.NIGHT_VISION, "long_night_vision")
             .put(PotionType.INVISIBILITY, "long_invisibility")
-            .put(PotionType.JUMP, "long_leaping")
+            .put(PotionType.LEAPING, "long_leaping")
             .put(PotionType.FIRE_RESISTANCE, "long_fire_resistance")
-            .put(PotionType.SPEED, "long_swiftness")
+            .put(PotionType.SWIFTNESS, "long_swiftness")
             .put(PotionType.SLOWNESS, "long_slowness")
             .put(PotionType.WATER_BREATHING, "long_water_breathing")
             .put(PotionType.POISON, "long_poison")
-            .put(PotionType.REGEN, "long_regeneration")
+            .put(PotionType.REGENERATION, "long_regeneration")
             .put(PotionType.STRENGTH, "long_strength")
             .put(PotionType.WEAKNESS, "long_weakness")
             .put(PotionType.TURTLE_MASTER, "long_turtle_master")
             .put(PotionType.SLOW_FALLING, "long_slow_falling")
             .build();
 
+    @Deprecated
     public static String fromBukkit(PotionData data) {
         String type;
         if (data.isUpgraded()) {
@@ -76,9 +77,10 @@ public class CraftPotionUtil {
         return "minecraft:" + type;
     }
 
+    @Deprecated
     public static PotionData toBukkit(String type) {
         if (type == null) {
-            return new PotionData(PotionType.UNCRAFTABLE, false, false);
+            return new PotionData(PotionType.EMPTY, false, false);
         }
         if (type.startsWith("minecraft:")) {
             type = type.substring(10);
@@ -96,7 +98,7 @@ public class CraftPotionUtil {
         if (potionType != null) {
             return new PotionData(potionType, false, false);
         }
-        return new PotionData(PotionType.UNCRAFTABLE, false, false);
+        return new PotionData(PotionType.EMPTY, false, false);
     }
 
     public static MobEffect fromBukkit(PotionEffect effect) {
@@ -105,7 +107,7 @@ public class CraftPotionUtil {
     }
 
     public static PotionEffect toBukkit(MobEffect effect) {
-        PotionEffectType type = PotionEffectType.getById(MobEffectList.getId(effect.getEffect()));
+        PotionEffectType type = CraftPotionEffectType.minecraftToBukkit(effect.getEffect());
         int amp = effect.getAmplifier();
         int duration = effect.getDuration();
         boolean ambient = effect.isAmbient();
@@ -114,7 +116,7 @@ public class CraftPotionUtil {
     }
 
     public static boolean equals(MobEffectList mobEffect, PotionEffectType type) {
-        PotionEffectType typeV = PotionEffectType.getById(MobEffectList.getId(mobEffect));
+        PotionEffectType typeV = CraftPotionEffectType.minecraftToBukkit(mobEffect);
         return typeV.equals(type);
     }
 }

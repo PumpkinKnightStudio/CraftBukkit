@@ -31,7 +31,7 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPosition;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -102,7 +102,6 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
@@ -113,6 +112,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Sign;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
@@ -146,7 +146,6 @@ import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -161,6 +160,7 @@ import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.map.MapCursor;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
@@ -448,7 +448,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         };
 
         float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect("block.note_block." + instrumentName)), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.stringToMinecraft("block.note_block." + instrumentName)), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -465,7 +465,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        playSound0(loc, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound0(loc, getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.bukkitToMinecraft(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
     }
 
     @Override
@@ -498,7 +498,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
 
-        playSound0(entity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound0(entity, getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.bukkitToMinecraft(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
     }
 
     @Override
@@ -589,14 +589,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         Preconditions.checkArgument(block.getWorld().equals(getWorld()), "Cannot break blocks across worlds");
 
         return getHandle().gameMode.destroyBlock(new BlockPosition(block.getX(), block.getY(), block.getZ()));
-    }
-
-    @Override
-    public void sendBlockChange(Location loc, Material material, byte data) {
-        if (getHandle().connection == null) return;
-
-        PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(CraftLocation.toBlockPosition(loc), CraftMagicNumbers.getBlock(material, data));
-        getHandle().connection.send(packet);
     }
 
     @Override
@@ -1073,63 +1065,93 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, Material material) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, material);
+    public void incrementStatistic(Statistic statistic, ItemType itemType) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, Material material) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, material);
+    public void decrementStatistic(Statistic statistic, ItemType itemType) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public int getStatistic(Statistic statistic, Material material) {
-        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, material);
+    public int getStatistic(Statistic statistic, ItemType itemType) {
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, itemType);
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, Material material, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, material, amount);
+    public void incrementStatistic(Statistic statistic, ItemType itemType, int amount) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType, amount);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, Material material, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, material, amount);
+    public void decrementStatistic(Statistic statistic, ItemType itemType, int amount) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType, amount);
     }
 
     @Override
-    public void setStatistic(Statistic statistic, Material material, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, material, newValue);
+    public void setStatistic(Statistic statistic, ItemType itemType, int newValue) {
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, itemType, newValue);
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType);
+    public void incrementStatistic(Statistic statistic, BlockType<?> blockType) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType);
+    public void decrementStatistic(Statistic statistic, BlockType<?> blockType) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType);
     }
 
     @Override
-    public int getStatistic(Statistic statistic, EntityType entityType) {
-        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, entityType);
+    public int getStatistic(Statistic statistic, BlockType<?> blockType) {
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, blockType);
     }
 
     @Override
-    public void incrementStatistic(Statistic statistic, EntityType entityType, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, amount);
+    public void incrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType, amount);
     }
 
     @Override
-    public void decrementStatistic(Statistic statistic, EntityType entityType, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, amount);
+    public void decrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType, amount);
     }
 
     @Override
-    public void setStatistic(Statistic statistic, EntityType entityType, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, entityType, newValue);
+    public void setStatistic(Statistic statistic, BlockType<?> blockType, int newValue) {
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, blockType, newValue);
+    }
+
+    @Override
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
+        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+    }
+
+    @Override
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
+        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+    }
+
+    @Override
+    public int getStatistic(Statistic statistic, EntityType<?> entityType) {
+        return CraftStatistic.getStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+    }
+
+    @Override
+    public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
+        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+    }
+
+    @Override
+    public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
+        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+    }
+
+    @Override
+    public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
+        CraftStatistic.setStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, newValue);
     }
 
     @Override
@@ -1682,11 +1704,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.PLAYER;
-    }
-
-    @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
         server.getPlayerMetadata().setMetadata(this, metadataKey, newMetadataValue);
     }
@@ -1954,56 +1971,57 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, T data) {
         spawnParticle(particle, x, y, z, count, 0, 0, 0, data);
     }
 
     @Override
-    public void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ) {
+    public void spawnParticle(Particle<?> particle, Location location, int count, double offsetX, double offsetY, double offsetZ) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ);
     }
 
     @Override
-    public void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ) {
+    public void spawnParticle(Particle<?> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, null);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, T data) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, 1, data);
     }
 
     @Override
-    public void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra) {
+    public void spawnParticle(Particle<?> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra);
     }
 
     @Override
-    public void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra) {
+    public void spawnParticle(Particle<?> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, null);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+        data = CraftParticle.convertLegacy(data);
         if (data != null) {
             Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
         }
-        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
+        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(((CraftParticle<T>) particle).createParticleParam(data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
         getHandle().connection.send(packetplayoutworldparticles);
 
     }
@@ -2044,7 +2062,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void openBook(ItemStack book) {
         Preconditions.checkArgument(book != null, "ItemStack cannot be null");
-        Preconditions.checkArgument(book.getType() == Material.WRITTEN_BOOK, "ItemStack Material (%s) must be Material.WRITTEN_BOOK", book.getType());
+        Preconditions.checkArgument(book.getType() == ItemType.WRITTEN_BOOK, "ItemStack ItemType (%s) must be ItemType.WRITTEN_BOOK", book.getType());
 
         ItemStack hand = getInventory().getItemInMainHand();
         getInventory().setItemInMainHand(book);

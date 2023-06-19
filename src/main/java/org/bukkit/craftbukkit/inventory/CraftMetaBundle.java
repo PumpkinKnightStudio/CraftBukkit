@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.BundleMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
@@ -48,7 +48,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
                     NBTTagCompound nbttagcompound1 = list.getCompound(i);
 
                     ItemStack itemStack = CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of(nbttagcompound1));
-                    if (!itemStack.getType().isAir()) { // SPIGOT-7174 - Avoid adding air
+                    if (itemStack.getType() != ItemType.AIR) { // SPIGOT-7174 - Avoid adding air
                         addItem(itemStack);
                     }
                 }
@@ -62,7 +62,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
         Iterable<?> items = SerializableMeta.getObject(Iterable.class, map, ITEMS.BUKKIT, true);
         if (items != null) {
             for (Object stack : items) {
-                if (stack instanceof ItemStack itemStack && !itemStack.getType().isAir()) { // SPIGOT-7174 - Avoid adding air
+                if (stack instanceof ItemStack itemStack && itemStack.getType() != ItemType.AIR) { // SPIGOT-7174 - Avoid adding air
                     addItem(itemStack);
                 }
             }
@@ -87,8 +87,8 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.BUNDLE;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.BUNDLE;
     }
 
     @Override
@@ -125,7 +125,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
 
     @Override
     public void addItem(ItemStack item) {
-        Preconditions.checkArgument(item != null && !item.getType().isAir(), "item is null or air");
+        Preconditions.checkArgument(item != null && item.getType() != ItemType.AIR, "item is null or air");
 
         if (items == null) {
             items = new ArrayList<>();

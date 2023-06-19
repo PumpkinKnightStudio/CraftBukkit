@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -36,11 +37,11 @@ public final class CraftEvil {
     }
 
     public static int getBlockTypeIdAt(World world, int x, int y, int z) {
-        return getId(world.getBlockAt(x, y, z).getType());
+        return getId(CraftMagicNumbers.toMaterial(world.getBlockAt(x, y, z).getType()));
     }
 
     public static int getBlockTypeIdAt(World world, Location location) {
-        return getId(world.getBlockAt(location).getType());
+        return getId(CraftMagicNumbers.toMaterial(world.getBlockAt(location).getType()));
     }
 
     public static Material getType(Block block) {
@@ -52,21 +53,21 @@ public final class CraftEvil {
     }
 
     public static int getTypeId(Block block) {
-        return getId(block.getType());
+        return getId(CraftMagicNumbers.toMaterial(block.getType()));
     }
 
     public static boolean setTypeId(Block block, int type) {
-        block.setType(getMaterial(type));
+        block.setType(getMaterial(type).asBlockType());
         return true;
     }
 
     public static boolean setTypeId(Block block, int type, boolean applyPhysics) {
-        block.setType(getMaterial(type), applyPhysics);
+        block.setType(getMaterial(type).asBlockType(), applyPhysics);
         return true;
     }
 
     public static boolean setTypeIdAndData(Block block, int type, byte data, boolean applyPhysics) {
-        block.setType(getMaterial(type), applyPhysics);
+        block.setType(getMaterial(type).asBlockType(), applyPhysics);
         setData(block, data);
         return true;
     }
@@ -80,20 +81,20 @@ public final class CraftEvil {
     }
 
     public static int getTypeId(BlockState state) {
-        return getId(state.getType());
+        return getId(CraftMagicNumbers.toMaterial(state.getType()));
     }
 
     public static boolean setTypeId(BlockState state, int type) {
-        state.setType(getMaterial(type));
+        state.setType(getMaterial(type).asBlockType());
         return true;
     }
 
     public static int getTypeId(ItemStack stack) {
-        return getId(stack.getType());
+        return getId(CraftMagicNumbers.INSTANCE.toMaterial(stack.getType()));
     }
 
     public static void setTypeId(ItemStack stack, int type) {
-        stack.setType(getMaterial(type));
+        stack.setType(getMaterial(type).asItemType());
     }
 
     public static Material getMaterial(int id) {
@@ -102,5 +103,9 @@ public final class CraftEvil {
 
     public static int getId(Material material) {
         return CraftLegacy.toLegacy(material).getId();
+    }
+
+    public static Material getType(ItemStack itemStack) {
+        return CraftLegacy.toLegacy(CraftMagicNumbers.INSTANCE.toMaterial(itemStack.getType()));
     }
 }

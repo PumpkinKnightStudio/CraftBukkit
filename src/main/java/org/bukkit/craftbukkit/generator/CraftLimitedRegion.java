@@ -18,11 +18,11 @@ import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftRegionAccessor;
 import org.bukkit.entity.Entity;
@@ -186,7 +186,7 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
-    public Material getType(int x, int y, int z) {
+    public BlockType<?> getType(int x, int y, int z) {
         Preconditions.checkArgument(isInRegion(x, y, z), "Coordinates %s, %s, %s are not in the region", x, y, z);
         return super.getType(x, y, z);
     }

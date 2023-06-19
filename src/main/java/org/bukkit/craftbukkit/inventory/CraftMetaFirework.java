@@ -12,12 +12,12 @@ import net.minecraft.nbt.NBTTagList;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific.To;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -248,8 +248,8 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.FIREWORK_ROCKET;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.FIREWORK_ROCKET;
     }
 
     @Override

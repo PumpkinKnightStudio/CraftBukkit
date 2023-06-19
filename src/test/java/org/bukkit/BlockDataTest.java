@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.BlockCake;
 import net.minecraft.world.level.block.BlockChest;
 import net.minecraft.world.level.block.Blocks;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Cake;
 import org.bukkit.block.data.type.Chest;
@@ -20,7 +21,7 @@ public class BlockDataTest extends AbstractTestingBase {
     public void testParsing() {
         BlockData cakeTest = CraftBlockData.fromData(Blocks.CAKE.defaultBlockState().setValue(BlockCake.BITES, 3));
 
-        BlockData materialString = CraftBlockData.newData(Material.CAKE, "[bites=3]");
+        BlockData materialString = CraftBlockData.newData(BlockType.CAKE, "[bites=3]");
         Assert.assertThat(materialString, is(cakeTest));
 
         BlockData combined = CraftBlockData.newData(null, "cake[bites=3]");
@@ -45,19 +46,14 @@ public class BlockDataTest extends AbstractTestingBase {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDoubleMaterial() {
-        CraftBlockData.newData(Material.CAKE, "minecraft:cake[bites=3]");
+        CraftBlockData.newData(BlockType.CAKE, "minecraft:cake[bites=3]");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMistake() {
         BlockData cakeTest = CraftBlockData.fromData(Blocks.CAKE.defaultBlockState().setValue(BlockCake.BITES, 3));
 
-        CraftBlockData.newData(Material.CAKE, cakeTest.toString());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testItem() {
-        CraftBlockData.newData(Material.DIAMOND_AXE, null);
+        CraftBlockData.newData(BlockType.CAKE, cakeTest.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)

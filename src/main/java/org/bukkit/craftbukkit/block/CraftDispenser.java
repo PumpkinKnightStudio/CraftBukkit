@@ -1,12 +1,11 @@
 package org.bukkit.craftbukkit.block;
 
-import com.google.common.base.Preconditions;
 import net.minecraft.world.level.block.BlockDispenser;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -38,7 +37,7 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
     public BlockProjectileSource getBlockProjectileSource() {
         Block block = getBlock();
 
-        if (block.getType() != Material.DISPENSER) {
+        if (block.getType() != BlockType.DISPENSER) {
             return null;
         }
 
@@ -49,7 +48,7 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
     public boolean dispense() {
         ensureNoWorldGeneration();
         Block block = getBlock();
-        if (block.getType() == Material.DISPENSER) {
+        if (block.getType() == BlockType.DISPENSER) {
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDispenser dispense = (BlockDispenser) Blocks.DISPENSER;
 

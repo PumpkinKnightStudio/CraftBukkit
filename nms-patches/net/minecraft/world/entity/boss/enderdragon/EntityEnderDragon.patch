@@ -108,7 +108,7 @@
 +            }
 +        } else {
 +            for (org.bukkit.block.Block block : event.blockList()) {
-+                org.bukkit.Material blockId = block.getType();
++                org.bukkit.block.BlockType<?> blockId = block.getType();
 +                if (blockId.isAir()) {
 +                    continue;
 +                }

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
@@ -23,6 +24,7 @@ import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -35,6 +37,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.AxolotlBucketMeta;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -98,57 +101,57 @@ public class ItemMetaTest extends AbstractTestingBase {
 
     @Test
     public void testConflictingEnchantment() {
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
-        assertThat(itemMeta.hasConflictingEnchant(Enchantment.DURABILITY), is(false));
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
+        assertThat(itemMeta.hasConflictingEnchant(Enchantment.UNBREAKING), is(false));
 
         itemMeta.addEnchant(Enchantment.SILK_TOUCH, 1, false);
-        assertThat(itemMeta.hasConflictingEnchant(Enchantment.DURABILITY), is(false));
-        assertThat(itemMeta.hasConflictingEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(true));
+        assertThat(itemMeta.hasConflictingEnchant(Enchantment.UNBREAKING), is(false));
+        assertThat(itemMeta.hasConflictingEnchant(Enchantment.FORTUNE), is(true));
         assertThat(itemMeta.hasConflictingEnchant(null), is(false));
     }
 
     @Test
     public void testConflictingStoredEnchantment() {
-        EnchantmentStorageMeta itemMeta = (EnchantmentStorageMeta) Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
-        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.DURABILITY), is(false));
+        EnchantmentStorageMeta itemMeta = (EnchantmentStorageMeta) Bukkit.getItemFactory().getItemMeta(ItemType.ENCHANTED_BOOK);
+        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.UNBREAKING), is(false));
 
         itemMeta.addStoredEnchant(Enchantment.SILK_TOUCH, 1, false);
-        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.DURABILITY), is(false));
-        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(true));
+        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.UNBREAKING), is(false));
+        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.FORTUNE), is(true));
         assertThat(itemMeta.hasConflictingStoredEnchant(null), is(false));
     }
 
     @Test
     public void testConflictingEnchantments() {
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
-        itemMeta.addEnchant(Enchantment.DURABILITY, 6, true);
-        itemMeta.addEnchant(Enchantment.DIG_SPEED, 6, true);
-        assertThat(itemMeta.hasConflictingEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(false));
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
+        itemMeta.addEnchant(Enchantment.UNBREAKING, 6, true);
+        itemMeta.addEnchant(Enchantment.EFFICIENCY, 6, true);
+        assertThat(itemMeta.hasConflictingEnchant(Enchantment.FORTUNE), is(false));
 
         itemMeta.addEnchant(Enchantment.SILK_TOUCH, 1, false);
-        assertThat(itemMeta.hasConflictingEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(true));
+        assertThat(itemMeta.hasConflictingEnchant(Enchantment.FORTUNE), is(true));
         assertThat(itemMeta.hasConflictingEnchant(null), is(false));
     }
 
     @Test
     public void testConflictingStoredEnchantments() {
-        EnchantmentStorageMeta itemMeta = (EnchantmentStorageMeta) Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
-        itemMeta.addStoredEnchant(Enchantment.DURABILITY, 6, true);
-        itemMeta.addStoredEnchant(Enchantment.DIG_SPEED, 6, true);
-        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(false));
+        EnchantmentStorageMeta itemMeta = (EnchantmentStorageMeta) Bukkit.getItemFactory().getItemMeta(ItemType.ENCHANTED_BOOK);
+        itemMeta.addStoredEnchant(Enchantment.UNBREAKING, 6, true);
+        itemMeta.addStoredEnchant(Enchantment.EFFICIENCY, 6, true);
+        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.FORTUNE), is(false));
 
         itemMeta.addStoredEnchant(Enchantment.SILK_TOUCH, 1, false);
-        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.LOOT_BONUS_BLOCKS), is(true));
+        assertThat(itemMeta.hasConflictingStoredEnchant(Enchantment.FORTUNE), is(true));
         assertThat(itemMeta.hasConflictingStoredEnchant(null), is(false));
     }
 
     private static FireworkMeta newFireworkMeta() {
-        return ((FireworkMeta) Bukkit.getItemFactory().getItemMeta(Material.FIREWORK_ROCKET));
+        return ((FireworkMeta) Bukkit.getItemFactory().getItemMeta(ItemType.FIREWORK_ROCKET));
     }
 
     @Test
     public void testCrazyEquality() {
-        CraftItemStack craft = CraftItemStack.asCraftCopy(new ItemStack(Material.STONE));
+        CraftItemStack craft = CraftItemStack.asCraftCopy(ItemStack.of(ItemType.STONE));
         craft.setItemMeta(craft.getItemMeta());
         ItemStack bukkit = new ItemStack(craft);
         assertThat(craft, is(bukkit));
@@ -173,7 +176,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 ItemStack stack = CraftItemStack.asNewCraftStack(Item.byBlock(block));
 
                 // Command blocks aren't unit testable atm
-                if (stack.getType() == Material.COMMAND_BLOCK || stack.getType() == Material.CHAIN_COMMAND_BLOCK || stack.getType() == Material.REPEATING_COMMAND_BLOCK) {
+                if (stack.getType() == ItemType.COMMAND_BLOCK || stack.getType() == ItemType.CHAIN_COMMAND_BLOCK || stack.getType() == ItemType.REPEATING_COMMAND_BLOCK) {
                     return;
                 }
 
@@ -196,13 +199,13 @@ public class ItemMetaTest extends AbstractTestingBase {
     public void testSpawnEggsHasMeta() {
         for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof net.minecraft.world.item.ItemMonsterEgg) {
-                Material material = CraftMagicNumbers.getMaterial(item);
-                CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(material);
+                ItemType itemType = CraftItemType.minecraftToBukkit(item);
+                CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(itemType);
                 ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
 
-                assertTrue(material + " is not handled in CraftItemFactory", baseMeta instanceof CraftMetaSpawnEgg);
-                assertTrue(material + " is not applicable to CraftMetaSpawnEgg", baseMeta.applicableTo(material));
-                assertTrue(material + " is not handled in CraftItemStack", baseMetaItem instanceof SpawnEggMeta);
+                assertTrue(itemType + " is not handled in CraftItemFactory", baseMeta instanceof CraftMetaSpawnEgg);
+                assertTrue(itemType + " is not applicable to CraftMetaSpawnEgg", baseMeta.applicableTo(itemType));
+                assertTrue(itemType + " is not handled in CraftItemStack", baseMetaItem instanceof SpawnEggMeta);
             }
         }
     }
@@ -210,7 +213,7 @@ public class ItemMetaTest extends AbstractTestingBase {
     @Test
     public void testEachExtraData() {
         final List<StackProvider> providers = Arrays.asList(
-            new StackProvider(Material.WRITABLE_BOOK) {
+            new StackProvider(ItemType.WRITABLE_BOOK) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final BookMeta meta = (BookMeta) cleanStack.getItemMeta();
                     meta.setAuthor("Some author");
@@ -220,7 +223,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.WRITTEN_BOOK) {
+            new StackProvider(ItemType.WRITTEN_BOOK) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final BookMeta meta = (BookMeta) cleanStack.getItemMeta();
                     meta.setAuthor("Some author");
@@ -240,7 +243,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 }
             },
             */
-            new StackProvider(Material.FILLED_MAP) {
+            new StackProvider(ItemType.FILLED_MAP) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final MapMeta meta = (MapMeta) cleanStack.getItemMeta();
                     meta.setScaling(true);
@@ -248,7 +251,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.DIAMOND_CHESTPLATE) {
+            new StackProvider(ItemType.DIAMOND_CHESTPLATE) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final ArmorMeta meta = (ArmorMeta) cleanStack.getItemMeta();
                     meta.setTrim(new ArmorTrim(TrimMaterial.AMETHYST, TrimPattern.COAST));
@@ -256,7 +259,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.LEATHER_HORSE_ARMOR) {
+            new StackProvider(ItemType.LEATHER_HORSE_ARMOR) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final LeatherArmorMeta meta = (LeatherArmorMeta) cleanStack.getItemMeta();
                     meta.setColor(Color.FUCHSIA);
@@ -264,7 +267,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.LEATHER_CHESTPLATE) {
+            new StackProvider(ItemType.LEATHER_CHESTPLATE) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final ColorableArmorMeta meta = (ColorableArmorMeta) cleanStack.getItemMeta();
                     meta.setTrim(new ArmorTrim(TrimMaterial.COPPER, TrimPattern.DUNE));
@@ -273,16 +276,16 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.POTION) {
+            new StackProvider(ItemType.POTION) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final PotionMeta meta = (PotionMeta) cleanStack.getItemMeta();
-                    meta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE, false, false));
-                    meta.addCustomEffect(PotionEffectType.CONFUSION.createEffect(1, 1), false);
+                    meta.setBasePotionData(new PotionData(PotionType.EMPTY, false, false));
+                    meta.addCustomEffect(PotionEffectType.NAUSEA.createEffect(1, 1), false);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.FIREWORK_ROCKET) {
+            new StackProvider(ItemType.FIREWORK_ROCKET) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final FireworkMeta meta = (FireworkMeta) cleanStack.getItemMeta();
                     meta.addEffect(FireworkEffect.builder().withColor(Color.GREEN).withFade(Color.OLIVE).with(Type.BALL_LARGE).build());
@@ -290,15 +293,15 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.ENCHANTED_BOOK) {
+            new StackProvider(ItemType.ENCHANTED_BOOK) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final EnchantmentStorageMeta meta = (EnchantmentStorageMeta) cleanStack.getItemMeta();
-                    meta.addStoredEnchant(Enchantment.ARROW_FIRE, 1, true);
+                    meta.addStoredEnchant(Enchantment.FLAME, 1, true);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.FIREWORK_STAR) {
+            new StackProvider(ItemType.FIREWORK_STAR) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final FireworkEffectMeta meta = (FireworkEffectMeta) cleanStack.getItemMeta();
                     meta.setEffect(FireworkEffect.builder().withColor(Color.MAROON, Color.BLACK).with(Type.CREEPER).withFlicker().build());
@@ -306,7 +309,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.WHITE_BANNER) {
+            new StackProvider(ItemType.WHITE_BANNER) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final BannerMeta meta = (BannerMeta) cleanStack.getItemMeta();
                     meta.setBaseColor(DyeColor.CYAN);
@@ -325,7 +328,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 }
             },
             */
-            new StackProvider(Material.KNOWLEDGE_BOOK) {
+            new StackProvider(ItemType.KNOWLEDGE_BOOK) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final KnowledgeBookMeta meta = (KnowledgeBookMeta) cleanStack.getItemMeta();
                     meta.addRecipe(new NamespacedKey("minecraft", "test"), new NamespacedKey("plugin", "test"));
@@ -333,7 +336,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.TROPICAL_FISH_BUCKET) {
+            new StackProvider(ItemType.TROPICAL_FISH_BUCKET) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final TropicalFishBucketMeta meta = (TropicalFishBucketMeta) cleanStack.getItemMeta();
                     meta.setBodyColor(DyeColor.ORANGE);
@@ -343,7 +346,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.AXOLOTL_BUCKET) {
+            new StackProvider(ItemType.AXOLOTL_BUCKET) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                      final AxolotlBucketMeta meta = (AxolotlBucketMeta) cleanStack.getItemMeta();
                      meta.setVariant(Axolotl.Variant.BLUE);
@@ -351,15 +354,15 @@ public class ItemMetaTest extends AbstractTestingBase {
                      return cleanStack;
                 }
             },
-            new StackProvider(Material.CROSSBOW) {
+            new StackProvider(ItemType.CROSSBOW) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CrossbowMeta meta = (CrossbowMeta) cleanStack.getItemMeta();
-                    meta.addChargedProjectile(new ItemStack(Material.ARROW));
+                    meta.addChargedProjectile(ItemStack.of(ItemType.ARROW));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.ARMOR_STAND) {
+            new StackProvider(ItemType.ARMOR_STAND) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaArmorStand meta = (CraftMetaArmorStand) cleanStack.getItemMeta();
                     meta.entityTag = new NBTTagCompound();
@@ -368,15 +371,15 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.SUSPICIOUS_STEW) {
+            new StackProvider(ItemType.SUSPICIOUS_STEW) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaSuspiciousStew meta = ((CraftMetaSuspiciousStew) cleanStack.getItemMeta());
-                    meta.addCustomEffect(PotionEffectType.CONFUSION.createEffect(1, 0), false);
+                    meta.addCustomEffect(PotionEffectType.NAUSEA.createEffect(1, 0), false);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.ITEM_FRAME) {
+            new StackProvider(ItemType.ITEM_FRAME) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaEntityTag meta = ((CraftMetaEntityTag) cleanStack.getItemMeta());
                     meta.entityTag = new NBTTagCompound();
@@ -385,7 +388,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.COMPASS) {
+            new StackProvider(ItemType.COMPASS) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaCompass meta = ((CraftMetaCompass) cleanStack.getItemMeta());
                     meta.setLodestoneTracked(true);
@@ -393,25 +396,25 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.BUNDLE) {
+            new StackProvider(ItemType.BUNDLE) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final BundleMeta meta = (BundleMeta) cleanStack.getItemMeta();
-                    meta.addItem(new ItemStack(Material.STONE));
+                    meta.addItem(ItemStack.of(ItemType.STONE));
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.GOAT_HORN) {
+            new StackProvider(ItemType.GOAT_HORN) {
                 @Override ItemStack operate(ItemStack cleanStack) {
                     final CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) cleanStack.getItemMeta();
-                    meta.setInstrument(MusicInstrument.ADMIRE);
+                    meta.setInstrument(MusicInstrument.ADMIRE_GOAT_HORN);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
             }
         );
 
-        assertThat("Forgotten test?", providers, hasSize(ItemStackTest.COMPOUND_MATERIALS.length - 4/* Normal item meta, skulls, eggs and tile entities */));
+        assertThat("Forgotten test?", providers, hasSize(ItemStackTest.COMPOUND_ITEM_TYPES.length - 4/* Normal item meta, skulls, eggs and tile entities */));
 
         for (final StackProvider provider : providers) {
             downCastTest(new BukkitWrapper(provider));
@@ -422,18 +425,18 @@ public class ItemMetaTest extends AbstractTestingBase {
     @Test
     public void testAttributeModifiers() {
         UUID sameUUID = UUID.randomUUID();
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
         itemMeta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier(sameUUID, "Test Modifier", 10, AttributeModifier.Operation.ADD_NUMBER));
 
-        ItemMeta equalMeta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        ItemMeta equalMeta = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
         equalMeta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier(sameUUID, "Test Modifier", 10, AttributeModifier.Operation.ADD_NUMBER));
 
         assertThat(itemMeta.equals(equalMeta), is(true));
 
-        ItemMeta itemMeta2 = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        ItemMeta itemMeta2 = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
         itemMeta2.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier(sameUUID, "Test Modifier", 10, AttributeModifier.Operation.ADD_NUMBER));
 
-        ItemMeta notEqualMeta2 = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
+        ItemMeta notEqualMeta2 = Bukkit.getItemFactory().getItemMeta(ItemType.DIAMOND_PICKAXE);
         notEqualMeta2.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, new AttributeModifier(sameUUID, "Test Modifier", 11, AttributeModifier.Operation.ADD_NUMBER));
 
         assertThat(itemMeta2.equals(notEqualMeta2), is(false));
@@ -441,14 +444,14 @@ public class ItemMetaTest extends AbstractTestingBase {
 
     @Test
     public void testBlockData() {
-        BlockDataMeta itemMeta = (BlockDataMeta) Bukkit.getItemFactory().getItemMeta(Material.CHEST);
+        BlockDataMeta itemMeta = (BlockDataMeta) Bukkit.getItemFactory().getItemMeta(ItemType.CHEST);
         itemMeta.setBlockData(CraftBlockData.newData(null, "minecraft:chest[waterlogged=true]"));
-        assertThat(itemMeta.getBlockData(Material.CHEST), is(CraftBlockData.newData(null, "minecraft:chest[waterlogged=true]")));
+        assertThat(itemMeta.getBlockData(BlockType.CHEST), is((Object) CraftBlockData.newData(null, "minecraft:chest[waterlogged=true]")));
     }
 
     private void downCastTest(final StackWrapper provider) {
         final String name = provider.toString();
-        final ItemStack blank = new ItemStack(Material.STONE);
+        final ItemStack blank = ItemStack.of(ItemType.STONE);
         final ItemStack craftBlank = CraftItemStack.asCraftCopy(blank);
 
         // Check that equality and similarity works for each meta implementation
@@ -468,7 +471,7 @@ public class ItemMetaTest extends AbstractTestingBase {
         assertThat(name, stack, is(not(blank)));
         assertThat(name, stack.getItemMeta(), is(not(blank.getItemMeta())));
 
-        stack.setType(Material.STONE);
+        stack.setType(ItemType.STONE);
 
         assertThat(name, stack, is(blank));
     }

@@ -8,10 +8,10 @@ import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.ChunkSection;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -52,8 +52,8 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Material material) {
-        setBlock(x, y, z, material.createBlockData());
+    public void setBlock(int x, int y, int z, BlockType<?> blockType) {
+        setBlock(x, y, z, blockType.createBlockData());
     }
 
     @Override
@@ -67,8 +67,8 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, Material material) {
-        setRegion(xMin, yMin, zMin, xMax, yMax, zMax, material.createBlockData());
+    public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, BlockType<?> blockType) {
+        setRegion(xMin, yMin, zMin, xMax, yMax, zMax, blockType.createBlockData());
     }
 
     @Override
@@ -82,8 +82,8 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
     }
 
     @Override
-    public Material getType(int x, int y, int z) {
-        return CraftMagicNumbers.getMaterial(getTypeId(x, y, z).getBlock());
+    public BlockType<?> getType(int x, int y, int z) {
+        return CraftBlockType.minecraftToBukkit(getTypeId(x, y, z).getBlock());
     }
 
     @Override

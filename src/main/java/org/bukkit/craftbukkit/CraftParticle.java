@@ -1,11 +1,10 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.core.BlockPosition;
+import java.util.function.BiFunction;
+import net.minecraft.core.IRegistry;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.ParticleParam;
 import net.minecraft.core.particles.ParticleParamBlock;
@@ -15,15 +14,16 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.VibrationParticleOption;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.gameevent.BlockPositionSource;
 import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.PositionSource;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.Registry;
 import org.bukkit.Vibration;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -31,209 +31,222 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
-public enum CraftParticle {
+public abstract class CraftParticle<D> extends Particle<D> {
 
-    EXPLOSION_NORMAL("poof"),
-    EXPLOSION_LARGE("explosion"),
-    EXPLOSION_HUGE("explosion_emitter"),
-    FIREWORKS_SPARK("firework"),
-    WATER_BUBBLE("bubble"),
-    WATER_SPLASH("splash"),
-    WATER_WAKE("fishing"),
-    SUSPENDED("underwater"),
-    SUSPENDED_DEPTH("underwater"),
-    CRIT("crit"),
-    CRIT_MAGIC("enchanted_hit"),
-    SMOKE_NORMAL("smoke"),
-    SMOKE_LARGE("large_smoke"),
-    SPELL("effect"),
-    SPELL_INSTANT("instant_effect"),
-    SPELL_MOB("entity_effect"),
-    SPELL_MOB_AMBIENT("ambient_entity_effect"),
-    SPELL_WITCH("witch"),
-    DRIP_WATER("dripping_water"),
-    DRIP_LAVA("dripping_lava"),
-    VILLAGER_ANGRY("angry_villager"),
-    VILLAGER_HAPPY("happy_villager"),
-    TOWN_AURA("mycelium"),
-    NOTE("note"),
-    PORTAL("portal"),
-    ENCHANTMENT_TABLE("enchant"),
-    FLAME("flame"),
-    LAVA("lava"),
-    CLOUD("cloud"),
-    REDSTONE("dust"),
-    SNOWBALL("item_snowball"),
-    SNOW_SHOVEL("item_snowball"),
-    SLIME("item_slime"),
-    HEART("heart"),
-    ITEM_CRACK("item"),
-    BLOCK_CRACK("block"),
-    BLOCK_DUST("block"),
-    WATER_DROP("rain"),
-    MOB_APPEARANCE("elder_guardian"),
-    DRAGON_BREATH("dragon_breath"),
-    END_ROD("end_rod"),
-    DAMAGE_INDICATOR("damage_indicator"),
-    SWEEP_ATTACK("sweep_attack"),
-    FALLING_DUST("falling_dust"),
-    TOTEM("totem_of_undying"),
-    SPIT("spit"),
-    SQUID_INK("squid_ink"),
-    BUBBLE_POP("bubble_pop"),
-    CURRENT_DOWN("current_down"),
-    BUBBLE_COLUMN_UP("bubble_column_up"),
-    NAUTILUS("nautilus"),
-    DOLPHIN("dolphin"),
-    SNEEZE("sneeze"),
-    CAMPFIRE_COSY_SMOKE("campfire_cosy_smoke"),
-    CAMPFIRE_SIGNAL_SMOKE("campfire_signal_smoke"),
-    COMPOSTER("composter"),
-    FLASH("flash"),
-    FALLING_LAVA("falling_lava"),
-    LANDING_LAVA("landing_lava"),
-    FALLING_WATER("falling_water"),
-    DRIPPING_HONEY("dripping_honey"),
-    FALLING_HONEY("falling_honey"),
-    LANDING_HONEY("landing_honey"),
-    FALLING_NECTAR("falling_nectar"),
-    SOUL_FIRE_FLAME("soul_fire_flame"),
-    ASH("ash"),
-    CRIMSON_SPORE("crimson_spore"),
-    WARPED_SPORE("warped_spore"),
-    SOUL("soul"),
-    DRIPPING_OBSIDIAN_TEAR("dripping_obsidian_tear"),
-    FALLING_OBSIDIAN_TEAR("falling_obsidian_tear"),
-    LANDING_OBSIDIAN_TEAR("landing_obsidian_tear"),
-    REVERSE_PORTAL("reverse_portal"),
-    WHITE_ASH("white_ash"),
-    DUST_COLOR_TRANSITION("dust_color_transition"),
-    VIBRATION("vibration"),
-    FALLING_SPORE_BLOSSOM("falling_spore_blossom"),
-    SPORE_BLOSSOM_AIR("spore_blossom_air"),
-    SMALL_FLAME("small_flame"),
-    SNOWFLAKE("snowflake"),
-    DRIPPING_DRIPSTONE_LAVA("dripping_dripstone_lava"),
-    FALLING_DRIPSTONE_LAVA("falling_dripstone_lava"),
-    DRIPPING_DRIPSTONE_WATER("dripping_dripstone_water"),
-    FALLING_DRIPSTONE_WATER("falling_dripstone_water"),
-    GLOW_SQUID_INK("glow_squid_ink"),
-    GLOW("glow"),
-    WAX_ON("wax_on"),
-    WAX_OFF("wax_off"),
-    ELECTRIC_SPARK("electric_spark"),
-    SCRAPE("scrape"),
-    BLOCK_MARKER("block_marker"),
-    SONIC_BOOM("sonic_boom"),
-    SCULK_SOUL("sculk_soul"),
-    SCULK_CHARGE("sculk_charge"),
-    SCULK_CHARGE_POP("sculk_charge_pop"),
-    SHRIEK("shriek"),
-    CHERRY_LEAVES("cherry_leaves"),
-    EGG_CRACK("egg_crack"),
-    // ----- Legacy Separator -----
-    LEGACY_BLOCK_CRACK("block"),
-    LEGACY_BLOCK_DUST("block"),
-    LEGACY_FALLING_DUST("falling_dust");
-    private final MinecraftKey minecraftKey;
-    private final Particle bukkit;
-    private static final BiMap<Particle, MinecraftKey> particles;
-    private static final Map<Particle, Particle> aliases;
+    private static int count = 0;
 
-    static {
-        particles = HashBiMap.create();
-        aliases = new HashMap<>();
+    public static Particle<?> minecraftToBukkit(net.minecraft.core.particles.Particle<?> minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        for (CraftParticle particle : CraftParticle.values()) {
-            if (particles.containsValue(particle.minecraftKey)) {
-                aliases.put(particle.bukkit, particles.inverse().get(particle.minecraftKey));
-            } else {
-                particles.put(particle.bukkit, particle.minecraftKey);
+        IRegistry<net.minecraft.core.particles.Particle<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PARTICLE_TYPE);
+        Particle<?> bukkit = Registry.PARTICLE_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
+    }
+
+    public static net.minecraft.core.particles.Particle<?> bukkitToMinecraft(Particle<?> bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftParticle<?>) bukkit).getHandle();
+    }
+
+    public static <T> T convertLegacy(T object) {
+        if (object instanceof MaterialData mat) {
+            return (T) CraftBlockData.fromData(CraftMagicNumbers.getBlock(mat));
+        }
+
+        return object;
+    }
+
+    private final NamespacedKey key;
+    private final net.minecraft.core.particles.Particle<?> particle;
+    private final Class<D> clazz;
+    private final String name;
+    private final int ordinal;
+
+    public CraftParticle(NamespacedKey key, net.minecraft.core.particles.Particle<?> particle, Class<D> clazz) {
+        this.key = key;
+        this.particle = particle;
+        this.clazz = clazz;
+        // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+        // in case plugins use for example the name as key in a config file to receive particle specific values.
+        // Custom particles will return the key with namespace. For a plugin this should look than like a new particle
+        // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+            this.name = key.getKey().toUpperCase();
+        } else {
+            this.name = key.toString();
+        }
+        this.ordinal = count++;
+    }
+
+    public net.minecraft.core.particles.Particle<?> getHandle() {
+        return particle;
+    }
+
+    public abstract ParticleParam createParticleParam(D data);
+
+    @NotNull
+    @Override
+    public Class<D> getDataType() {
+        return clazz;
+    }
+
+    @Override
+    public NamespacedKey getKey() {
+        return key;
+    }
+
+    @Override
+    public int compareTo(Particle particle) {
+        return ordinal - particle.ordinal();
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public int ordinal() {
+        return ordinal;
+    }
+
+    @Override
+    public String toString() {
+        // For backwards compatibility
+        return name();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof CraftParticle<?>)) {
+            return false;
+        }
+
+        return getKey().equals(((Particle<?>) other).getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    public static class CraftParticleRegistry extends CraftRegistry<Particle<?>, net.minecraft.core.particles.Particle<?>> {
+
+        private static final Map<NamespacedKey, BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>>> PARTICLE_MAP = new HashMap<>();
+
+        private static final BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> voidFunction = (name, particle) -> new CraftParticle<>(name, particle, Void.class) {
+            @Override
+            public ParticleParam createParticleParam(Void data) {
+                return (ParticleType) getHandle();
             }
-        }
-    }
+        };
 
-    private CraftParticle(String minecraftKey) {
-        this.minecraftKey = new MinecraftKey(minecraftKey);
+        static {
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> dustOptionsFunction = (name, particle) -> new CraftParticle<>(name, particle, DustOptions.class) {
+                @Override
+                public ParticleParam createParticleParam(DustOptions data) {
+                    Color color = data.getColor();
+                    return new ParticleParamRedstone(new Vector3f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f), data.getSize());
+                }
+            };
 
-        this.bukkit = Particle.valueOf(this.name());
-        Preconditions.checkState(bukkit != null, "Bukkit particle %s does not exist", this.name());
-    }
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> itemStackFunction = (name, particle) -> new CraftParticle<>(name, particle, ItemStack.class) {
+                @Override
+                public ParticleParam createParticleParam(ItemStack data) {
+                    return new ParticleParamItem((net.minecraft.core.particles.Particle<ParticleParamItem>) getHandle(), CraftItemStack.asNMSCopy(data));
+                }
+            };
 
-    public static ParticleParam toNMS(Particle bukkit) {
-        return toNMS(bukkit, null);
-    }
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> blockDataFunction = (name, particle) -> new CraftParticle<>(name, particle, BlockData.class) {
+                @Override
+                public ParticleParam createParticleParam(BlockData data) {
+                    return new ParticleParamBlock((net.minecraft.core.particles.Particle<ParticleParamBlock>) getHandle(), ((CraftBlockData) data).getState());
+                }
+            };
 
-    public static <T> ParticleParam toNMS(Particle particle, T obj) {
-        Particle canonical = particle;
-        if (aliases.containsKey(particle)) {
-            canonical = aliases.get(particle);
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> dustTransitionFunction = (name, particle) -> new CraftParticle<>(name, particle, DustTransition.class) {
+                @Override
+                public ParticleParam createParticleParam(DustTransition data) {
+                    Color from = data.getColor();
+                    Color to = data.getToColor();
+                    return new DustColorTransitionOptions(new Vector3f(from.getRed() / 255.0f, from.getGreen() / 255.0f, from.getBlue() / 255.0f), new Vector3f(to.getRed() / 255.0f, to.getGreen() / 255.0f, to.getBlue() / 255.0f), data.getSize());
+                }
+            };
+
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> vibrationFunction = (name, particle) -> new CraftParticle<>(name, particle, Vibration.class) {
+                @Override
+                public ParticleParam createParticleParam(Vibration data) {
+                    PositionSource source;
+                    if (data.getDestination() instanceof Vibration.Destination.BlockDestination) {
+                        Location destination = ((Vibration.Destination.BlockDestination) data.getDestination()).getLocation();
+                        source = new BlockPositionSource(CraftLocation.toBlockPosition(destination));
+                    } else if (data.getDestination() instanceof Vibration.Destination.EntityDestination) {
+                        Entity destination = ((CraftEntity) ((Vibration.Destination.EntityDestination) data.getDestination()).getEntity()).getHandle();
+                        source = new EntityPositionSource(destination, destination.getEyeHeight());
+                    } else {
+                        throw new IllegalArgumentException("Unknown vibration destination " + data.getDestination());
+                    }
+
+                    return new VibrationParticleOption(source, data.getArrivalTime());
+                }
+            };
+
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> floatFunction = (name, particle) -> new CraftParticle<>(name, particle, Float.class) {
+                @Override
+                public ParticleParam createParticleParam(Float data) {
+                    return new SculkChargeParticleOptions(data);
+                }
+            };
+
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> integerFunction = (name, particle) -> new CraftParticle<>(name, particle, Integer.class) {
+                @Override
+                public ParticleParam createParticleParam(Integer data) {
+                    return new ShriekParticleOption(data);
+                }
+            };
+
+            add("dust", dustOptionsFunction);
+            add("item", itemStackFunction);
+            add("block", blockDataFunction);
+            add("falling_dust", blockDataFunction);
+            add("dust_color_transition", dustTransitionFunction);
+            add("vibration", vibrationFunction);
+            add("sculk_charge", floatFunction);
+            add("shriek", integerFunction);
+            add("block_marker", blockDataFunction);
         }
 
-        net.minecraft.core.particles.Particle nms = BuiltInRegistries.PARTICLE_TYPE.get(particles.get(canonical));
-        Preconditions.checkArgument(nms != null, "No NMS particle %s", particle);
+        private static void add(String name, BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> function) {
+            PARTICLE_MAP.put(NamespacedKey.fromString(name), function);
+        }
 
-        if (particle.getDataType().equals(Void.class)) {
-            return (ParticleType) nms;
+        public CraftParticleRegistry(IRegistry<net.minecraft.core.particles.Particle<?>> minecraftRegistry) {
+            super(minecraftRegistry, null);
         }
-        Preconditions.checkArgument(obj != null, "Particle %s requires data, null provided", particle);
-        if (particle.getDataType().equals(ItemStack.class)) {
-            ItemStack itemStack = (ItemStack) obj;
-            return new ParticleParamItem((net.minecraft.core.particles.Particle<ParticleParamItem>) nms, CraftItemStack.asNMSCopy(itemStack));
-        }
-        if (particle.getDataType() == MaterialData.class) {
-            MaterialData data = (MaterialData) obj;
-            return new ParticleParamBlock((net.minecraft.core.particles.Particle<ParticleParamBlock>) nms, CraftMagicNumbers.getBlock(data));
-        }
-        if (particle.getDataType() == BlockData.class) {
-            BlockData data = (BlockData) obj;
-            return new ParticleParamBlock((net.minecraft.core.particles.Particle<ParticleParamBlock>) nms, ((CraftBlockData) data).getState());
-        }
-        if (particle.getDataType() == Particle.DustOptions.class) {
-            Particle.DustOptions data = (Particle.DustOptions) obj;
-            Color color = data.getColor();
-            return new ParticleParamRedstone(new Vector3f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f), data.getSize());
-        }
-        if (particle.getDataType() == Particle.DustTransition.class) {
-            Particle.DustTransition data = (Particle.DustTransition) obj;
-            Color from = data.getColor();
-            Color to = data.getToColor();
-            return new DustColorTransitionOptions(new Vector3f(from.getRed() / 255.0f, from.getGreen() / 255.0f, from.getBlue() / 255.0f), new Vector3f(to.getRed() / 255.0f, to.getGreen() / 255.0f, to.getBlue() / 255.0f), data.getSize());
-        }
-        if (particle.getDataType() == Vibration.class) {
-            Vibration vibration = (Vibration) obj;
 
-            PositionSource source;
-            if (vibration.getDestination() instanceof Vibration.Destination.BlockDestination) {
-                Location destination = ((Vibration.Destination.BlockDestination) vibration.getDestination()).getLocation();
-                source = new BlockPositionSource(CraftLocation.toBlockPosition(destination));
-            } else if (vibration.getDestination() instanceof Vibration.Destination.EntityDestination) {
-                Entity destination = ((CraftEntity) ((Vibration.Destination.EntityDestination) vibration.getDestination()).getEntity()).getHandle();
-                source = new EntityPositionSource(destination, destination.getEyeHeight());
-            } else {
-                throw new IllegalArgumentException("Unknown vibration destination " + vibration.getDestination());
+        @Override
+        public Particle<?> createBukkit(NamespacedKey namespacedKey, net.minecraft.core.particles.Particle<?> particle) {
+            if (particle == null) {
+                return null;
             }
 
-            return new VibrationParticleOption(source, vibration.getArrivalTime());
-        }
-        if (particle.getDataType() == Float.class) {
-            return new SculkChargeParticleOptions((Float) obj);
-        }
-        if (particle.getDataType() == Integer.class) {
-            return new ShriekParticleOption((Integer) obj);
-        }
-        throw new IllegalArgumentException(particle.getDataType().toString());
-    }
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> function = PARTICLE_MAP.getOrDefault(namespacedKey, voidFunction);
 
-    public static Particle toBukkit(net.minecraft.core.particles.ParticleParam nms) {
-        return toBukkit(nms.getType());
-    }
-
-    public static Particle toBukkit(net.minecraft.core.particles.Particle nms) {
-        return particles.inverse().get(BuiltInRegistries.PARTICLE_TYPE.getKey(nms));
+            return function.apply(namespacedKey, particle);
+        }
     }
 }

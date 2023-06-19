@@ -2,7 +2,11 @@ package org.bukkit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,11 +18,112 @@ import java.util.stream.StreamSupport;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class MaterialTest extends AbstractTestingBase {
+
+    @Test
+    public void testBukkitToMinecraftFieldName() {
+        for (Field field : Material.class.getFields()) {
+            if (field.getType() != Material.class) {
+                continue;
+            }
+            if (!Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (field.getAnnotation(Deprecated.class) != null) {
+                continue;
+            }
+
+            String name = field.getName();
+            Assert.assertNotNull("No Material for field name " + name, Registry.MATERIAL.get(NamespacedKey.fromString(name.toLowerCase())));
+        }
+    }
+
+    @Test
+    public void testMinecraftToBukkitFieldName() {
+        for (Item item : BuiltInRegistries.ITEM) {
+            test(BuiltInRegistries.ITEM.getKey(item));
+        }
+
+        for (Block block : BuiltInRegistries.BLOCK) {
+            test(BuiltInRegistries.BLOCK.getKey(block));
+        }
+    }
+
+    private void test(MinecraftKey minecraftKey) {
+        try {
+            Material material = (Material) Material.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
+
+            Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(material.getKey()));
+        } catch (NoSuchFieldException e) {
+            Assert.fail("No Bukkit default material for " + minecraftKey);
+        } catch (IllegalAccessException e) {
+            Assert.fail("Bukkit field is not access able for " + minecraftKey);
+        } catch (ClassCastException e) {
+            Assert.fail("Bukkit field is not of type material for" + minecraftKey);
+        }
+    }
+
+    @Test
+    public void getByName() {
+        for (Material material : Registry.MATERIAL) {
+            assertThat(Material.getMaterial(material.toString()), is(material));
+        }
+    }
+
+    @Test
+    public void getData() {
+        for (Material material : Registry.MATERIAL) {
+            if (!material.isLegacy()) {
+                continue;
+            }
+            Class<? extends MaterialData> clazz = material.getData();
+
+            assertThat(material.getNewData((byte) 0), is(instanceOf(clazz)));
+        }
+    }
+
+    @Test
+    public void matchMaterialByName() {
+        for (Material material : Registry.MATERIAL) {
+            assertThat(Material.matchMaterial(material.toString()), is(material));
+        }
+    }
+
+    @Test
+    public void matchMaterialByKey() {
+        for (Material material : Registry.MATERIAL) {
+            if (material.isLegacy()) {
+                continue;
+            }
+            assertThat(Material.matchMaterial(material.getKey().toString()), is(material));
+        }
+    }
+
+    @Test
+    public void matchMaterialByWrongNamespace() {
+        for (Material material : Registry.MATERIAL) {
+            if (material.isLegacy()) {
+                continue;
+            }
+            assertNull(Material.matchMaterial("bogus:" + material.getKey().getKey()));
+        }
+    }
+
+    @Test
+    public void matchMaterialByLowerCaseAndSpaces() {
+        for (Material material : Registry.MATERIAL) {
+            String name = material.toString().replaceAll("_", " ").toLowerCase(java.util.Locale.ENGLISH);
+            assertThat(Material.matchMaterial(name), is(material));
+        }
+    }
 
     @Test
     public void verifyMapping() {

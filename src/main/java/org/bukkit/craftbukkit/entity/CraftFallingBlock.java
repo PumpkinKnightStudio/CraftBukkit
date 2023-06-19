@@ -2,11 +2,9 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.item.EntityFallingBlock;
-import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 
 public class CraftFallingBlock extends CraftEntity implements FallingBlock {
@@ -23,16 +21,6 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
     @Override
     public String toString() {
         return "CraftFallingBlock";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.FALLING_BLOCK;
-    }
-
-    @Override
-    public Material getMaterial() {
-        return getBlockData().getMaterial();
     }
 
     @Override

@@ -50,7 +50,6 @@ import net.minecraft.commands.arguments.ArgumentEntity;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.IRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.NBTBase;
@@ -78,7 +77,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.MobSpawnerCat;
@@ -95,7 +93,6 @@ import net.minecraft.world.item.crafting.IRecipe;
 import net.minecraft.world.item.crafting.RecipeCrafting;
 import net.minecraft.world.item.crafting.RecipeRepair;
 import net.minecraft.world.item.crafting.Recipes;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
@@ -120,9 +117,11 @@ import net.minecraft.world.phys.Vec3D;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Fluid;
 import org.bukkit.GameMode;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Registry;
@@ -134,6 +133,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -223,6 +223,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -247,7 +248,6 @@ import org.bukkit.plugin.java.JavaPluginLoader;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.Potion;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scheduler.BukkitWorker;
 import org.bukkit.scoreboard.Criteria;
@@ -293,6 +293,7 @@ public final class CraftServer implements Server {
     private CraftIconCache icon;
     private boolean overrideAllCommandBlockCommands = false;
     public boolean ignoreVanillaPermissions = false;
+    public final boolean enumCompatibilityMode;
     private final List<CraftPlayer> playerView;
     public int reloadCount;
 
@@ -317,13 +318,7 @@ public final class CraftServer implements Server {
 
         Bukkit.setServer(this);
 
-        // Register all the Enchantments and PotionTypes now so we can stop new registration immediately after
-        Enchantments.SHARPNESS.getClass();
-        org.bukkit.enchantments.Enchantment.stopAcceptingRegistrations();
-
         Potion.setPotionBrewer(new CraftPotionBrewer());
-        MobEffects.BLINDNESS.getClass();
-        PotionEffectType.stopAcceptingRegistrations();
         // Ugly hack :(
 
         if (!Main.useConsole) {
@@ -379,6 +374,23 @@ public final class CraftServer implements Server {
         // Set map color cache
         if (configuration.getBoolean("settings.use-map-color-cache")) {
             MapPalette.setMapColorCache(new CraftMapColorCache(logger));
+        }
+
+        enumCompatibilityMode = configuration.getBoolean("settings.enum-compatibility-mode", false);
+        if (enumCompatibilityMode) {
+            getLogger().warning("""
+
+
+                    /*********************************************************/
+                    /*                                                       */
+                    /*      Loading Plugins in Enum compatibility mode.      */
+                    /*          This will affect Plugin performance.         */
+                    /*                                                       */
+                    /*         Only use as transition period or when         */
+                    /*                 absolutely necessary.                 */
+                    /*                                                       */
+                    /*********************************************************/
+                    """);
         }
     }
 
@@ -2196,15 +2208,15 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material) {
-        Preconditions.checkArgument(material != null, "Material cannot be null");
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType) {
+        Preconditions.checkArgument(blockType != null, "BlockType cannot be null");
 
-        return createBlockData(material, (String) null);
+        return createBlockData(blockType, (String) null);
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material, Consumer<BlockData> consumer) {
-        BlockData data = createBlockData(material);
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType, Consumer<B> consumer) {
+        B data = createBlockData(blockType);
 
         if (consumer != null) {
             consumer.accept(data);
@@ -2221,10 +2233,10 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public BlockData createBlockData(org.bukkit.Material material, String data) {
-        Preconditions.checkArgument(material != null || data != null, "Must provide one of material or data");
+    public <B extends BlockData> B createBlockData(BlockType<B> blockType, String data) {
+        Preconditions.checkArgument(blockType != null || data != null, "Must provide one of blocktype or data");
 
-        return CraftBlockData.newData(material, data);
+        return CraftBlockData.newData(blockType, data);
     }
 
     @Override
@@ -2235,33 +2247,34 @@ public final class CraftServer implements Server {
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
         MinecraftKey key = CraftNamespacedKey.toMinecraft(tag);
 
+        //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace (%s) must have material type", clazz.getName());
+                Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace (%s) must have BlockType type", clazz.getName());
                 TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, key);
-                if (BuiltInRegistries.BLOCK.getTag(blockTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftBlockTag(BuiltInRegistries.BLOCK, blockTagKey);
+                if (getServer().registryAccess().registryOrThrow(Registries.BLOCK).getTag(blockTagKey).isPresent()) {
+                    return (org.bukkit.Tag<T>) new CraftBlockTag(getServer().registryAccess().registryOrThrow(Registries.BLOCK), blockTagKey);
                 }
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace (%s) must have material type", clazz.getName());
+                Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace (%s) must have ItemType type", clazz.getName());
                 TagKey<Item> itemTagKey = TagKey.create(Registries.ITEM, key);
-                if (BuiltInRegistries.ITEM.getTag(itemTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftItemTag(BuiltInRegistries.ITEM, itemTagKey);
+                if (getServer().registryAccess().registryOrThrow(Registries.ITEM).getTag(itemTagKey).isPresent()) {
+                    return (org.bukkit.Tag<T>) new CraftItemTag(getServer().registryAccess().registryOrThrow(Registries.ITEM), itemTagKey);
                 }
             }
             case org.bukkit.Tag.REGISTRY_FLUIDS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace (%s) must have fluid type", clazz.getName());
                 TagKey<FluidType> fluidTagKey = TagKey.create(Registries.FLUID, key);
-                if (BuiltInRegistries.FLUID.getTag(fluidTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftFluidTag(BuiltInRegistries.FLUID, fluidTagKey);
+                if (getServer().registryAccess().registryOrThrow(Registries.FLUID).getTag(fluidTagKey).isPresent()) {
+                    return (org.bukkit.Tag<T>) new CraftFluidTag(getServer().registryAccess().registryOrThrow(Registries.FLUID), fluidTagKey);
                 }
             }
             case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace (%s) must have entity type", clazz.getName());
                 TagKey<EntityTypes<?>> entityTagKey = TagKey.create(Registries.ENTITY_TYPE, key);
-                if (BuiltInRegistries.ENTITY_TYPE.getTag(entityTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftEntityTag(BuiltInRegistries.ENTITY_TYPE, entityTagKey);
+                if (getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE).getTag(entityTagKey).isPresent()) {
+                    return (org.bukkit.Tag<T>) new CraftEntityTag(getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), entityTagKey);
                 }
             }
             default -> throw new IllegalArgumentException();
@@ -2275,25 +2288,27 @@ public final class CraftServer implements Server {
     public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<T> clazz) {
         Preconditions.checkArgument(registry != null, "registry cannot be null");
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
+
+        //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
             case org.bukkit.Tag.REGISTRY_BLOCKS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Block namespace (%s) must have material type", clazz.getName());
-                IRegistry<Block> blockTags = BuiltInRegistries.BLOCK;
+                Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace (%s) must have BlockType type", clazz.getName());
+                IRegistry<Block> blockTags = getServer().registryAccess().registryOrThrow(Registries.BLOCK);
                 return blockTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_ITEMS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Item namespace (%s) must have material type", clazz.getName());
-                IRegistry<Item> itemTags = BuiltInRegistries.ITEM;
+                Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace (%s) must have ItemType type", clazz.getName());
+                IRegistry<Item> itemTags = getServer().registryAccess().registryOrThrow(Registries.ITEM);
                 return itemTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_FLUIDS -> {
-                Preconditions.checkArgument(clazz == org.bukkit.Material.class, "Fluid namespace (%s) must have fluid type", clazz.getName());
-                IRegistry<FluidType> fluidTags = BuiltInRegistries.FLUID;
+                Preconditions.checkArgument(clazz == Fluid.class, "Fluid namespace (%s) must have fluid type", clazz.getName());
+                IRegistry<FluidType> fluidTags = getServer().registryAccess().registryOrThrow(Registries.FLUID);
                 return fluidTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftFluidTag(fluidTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace (%s) must have entity type", clazz.getName());
-                IRegistry<EntityTypes<?>> entityTags = BuiltInRegistries.ENTITY_TYPE;
+                IRegistry<EntityTypes<?>> entityTags = getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE);
                 return entityTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftEntityTag(entityTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
             }
             default -> throw new IllegalArgumentException();

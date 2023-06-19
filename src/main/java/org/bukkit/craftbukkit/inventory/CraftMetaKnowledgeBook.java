@@ -13,6 +13,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.KnowledgeBookMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -82,8 +83,8 @@ public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBo
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.KNOWLEDGE_BOOK;
+    boolean applicableTo(ItemType type) {
+        return type == ItemType.KNOWLEDGE_BOOK;
     }
 
     @Override

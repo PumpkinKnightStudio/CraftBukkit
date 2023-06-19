@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -151,18 +152,17 @@ public class CraftBlockState implements BlockState {
     }
 
     @Override
-    public void setType(final Material type) {
-        Preconditions.checkArgument(type != null, "Material cannot be null");
-        Preconditions.checkArgument(type.isBlock(), "Material must be a block!");
+    public void setType(final BlockType<?> type) {
+        Preconditions.checkArgument(type != null, "BlockType cannot be null");
 
         if (this.getType() != type) {
-            this.data = CraftMagicNumbers.getBlock(type).defaultBlockState();
+            this.data = ((CraftBlockType<?>) type).getHandle().defaultBlockState();
         }
     }
 
     @Override
-    public Material getType() {
-        return CraftMagicNumbers.getMaterial(data.getBlock());
+    public BlockType<?> getType() {
+        return CraftBlockType.minecraftToBukkit(data.getBlock());
     }
 
     public void setFlag(int flag) {
@@ -253,7 +253,7 @@ public class CraftBlockState implements BlockState {
 
     @Override
     public void setRawData(byte data) {
-        this.data = CraftMagicNumbers.getBlock(getType(), data);
+        this.data = CraftMagicNumbers.getBlock(CraftMagicNumbers.toMaterial(getType()), data);
     }
 
     @Override

@@ -61,7 +61,6 @@ public abstract class AbstractTestingBase {
         BIOMES = REGISTRY_CUSTOM.registryOrThrow(Registries.BIOME);
 
         DummyServer.setup();
-        DummyEnchantments.setup();
 
         ImmutableList.Builder<Material> builder = ImmutableList.builder();
         for (Material m : Material.values()) {

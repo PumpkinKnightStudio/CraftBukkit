@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
@@ -92,6 +92,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -103,7 +104,6 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
@@ -142,6 +142,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftWorld extends CraftRegionAccessor implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
@@ -1154,16 +1155,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public FallingBlock spawnFallingBlock(Location location, MaterialData data) throws IllegalArgumentException {
         Preconditions.checkArgument(data != null, "MaterialData cannot be null");
-        return spawnFallingBlock(location, data.getItemType(), data.getData());
-    }
-
-    @Override
-    public FallingBlock spawnFallingBlock(Location location, org.bukkit.Material material, byte data) throws IllegalArgumentException {
         Preconditions.checkArgument(location != null, "Location cannot be null");
-        Preconditions.checkArgument(material != null, "Material cannot be null");
-        Preconditions.checkArgument(material.isBlock(), "Material.%s must be a block", material);
 
-        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), CraftMagicNumbers.getBlock(material).defaultBlockState(), SpawnReason.CUSTOM);
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), ((CraftBlockType<?>) data.getItemType().asBlockType()).getHandle().defaultBlockState(), SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
     }
 
@@ -1556,7 +1550,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         double y = loc.getY();
         double z = loc.getZ();
 
-        getHandle().playSound(null, x, y, z, CraftSound.getSoundEffect(sound), SoundCategory.valueOf(category.name()), volume, pitch);
+        getHandle().playSound(null, x, y, z, CraftSound.bukkitToMinecraft(sound), SoundCategory.valueOf(category.name()), volume, pitch);
     }
 
     @Override
@@ -1585,7 +1579,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public void playSound(Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (!(entity instanceof CraftEntity craftEntity) || entity.getWorld() != this || sound == null || category == null) return;
 
-        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CraftSound.getSoundEffect(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(getHandle().registryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.bukkitToMinecraft(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
         PlayerChunkMap.EntityTracker entityTracker = getHandle().getChunkSource().chunkMap.entityMap.get(entity.getEntityId());
         if (entityTracker != null) {
             entityTracker.broadcastAndSend(packet);
@@ -1722,47 +1716,47 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     @Override
-    public void spawnParticle(Particle particle, Location location, int count) {
+    public void spawnParticle(Particle<?> particle, Location location, int count) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count);
     }
 
     @Override
-    public void spawnParticle(Particle particle, double x, double y, double z, int count) {
+    public void spawnParticle(Particle<?> particle, double x, double y, double z, int count) {
         spawnParticle(particle, x, y, z, count, null);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, T data) {
         spawnParticle(particle, x, y, z, count, 0, 0, 0, data);
     }
 
     @Override
-    public void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ) {
+    public void spawnParticle(Particle<?> particle, Location location, int count, double offsetX, double offsetY, double offsetZ) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ);
     }
 
     @Override
-    public void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ) {
+    public void spawnParticle(Particle<?> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, null);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, T data) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, 1, data);
     }
 
     @Override
-    public void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra) {
+    public void spawnParticle(Particle<?> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra);
     }
 
@@ -1772,28 +1766,29 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
         spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, data, false);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
+    public <T> void spawnParticle(Particle<T> particle, Location location, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data, force);
     }
 
     @Override
-    public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
+    public <T> void spawnParticle(Particle<T> particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
+        data = CraftParticle.convertLegacy(data);
         if (data != null) {
             Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
         }
         getHandle().sendParticles(
                 null, // Sender
-                CraftParticle.toNMS(particle, data), // Particle
+                ((CraftParticle<T>) particle).createParticleParam(data), // Particle
                 x, y, z, // Position
                 count,  // Count
                 offsetX, offsetY, offsetZ, // Random offset
@@ -1880,7 +1875,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
             return null;
         }
 
-        return new CraftStructureSearchResult(CraftStructure.minecraftToBukkit(found.getSecond().value(), getHandle().registryAccess()), CraftLocation.toBukkit(found.getFirst(), this));
+        return new CraftStructureSearchResult(CraftStructure.minecraftToBukkit(found.getSecond().value()), CraftLocation.toBukkit(found.getFirst(), this));
     }
 
     @Override

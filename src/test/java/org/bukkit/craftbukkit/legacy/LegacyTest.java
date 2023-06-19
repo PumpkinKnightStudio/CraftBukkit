@@ -1,10 +1,14 @@
 package org.bukkit.craftbukkit.legacy;
 
+import com.google.common.collect.Iterators;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.Assert;
@@ -169,7 +173,6 @@ public class LegacyTest extends AbstractTestingBase {
 
     @Test
     public void testManual() {
-        Assert.assertEquals(Material.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getMaterial("dandelion_yellow", 1631));
-        Assert.assertEquals(Material.OAK_WALL_SIGN, CraftMagicNumbers.INSTANCE.getMaterial("wall_sign", 1631));
+        Assert.assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemType("dandelion_yellow", 1631));
     }
 }

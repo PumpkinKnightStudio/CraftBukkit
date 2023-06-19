@@ -7,7 +7,6 @@ import net.minecraft.world.entity.monster.warden.WardenAi;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warden {
@@ -26,10 +25,6 @@ public class CraftWarden extends CraftMonster implements org.bukkit.entity.Warde
         return "CraftWarden";
     }
 
-    @Override
-    public EntityType getType() {
-        return EntityType.WARDEN;
-    }
 
     @Override
     public int getAnger() {

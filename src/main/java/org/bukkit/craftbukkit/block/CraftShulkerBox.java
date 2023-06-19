@@ -34,7 +34,7 @@ public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> impleme
 
     @Override
     public DyeColor getColor() {
-        EnumColor color = ((BlockShulkerBox) CraftMagicNumbers.getBlock(this.getType())).color;
+        EnumColor color = ((BlockShulkerBox) ((CraftBlockType<?>) this.getType()).getHandle()).color;
 
         return (color == null) ? null : DyeColor.getByWoolData((byte) color.getId());
     }

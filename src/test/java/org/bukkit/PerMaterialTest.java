@@ -2,7 +2,9 @@ package org.bukkit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPosition;
@@ -36,7 +38,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * Since ItemType and BlockType are pulling directly from the minecraft it is no longer needed for them
+ */
 @RunWith(Parameterized.class)
+@Deprecated
 public class PerMaterialTest extends AbstractTestingBase {
     private static Map<Block, Integer> fireValues;
 
@@ -105,6 +111,7 @@ public class PerMaterialTest extends AbstractTestingBase {
     @Test
     public void maxStackSize() {
         if (INVALIDATED_MATERIALS.contains(material)) return;
+        if (!material.isItem()) return;
 
         final ItemStack bukkit = new ItemStack(material);
         final CraftItemStack craft = CraftItemStack.asCraftCopy(bukkit);
@@ -179,10 +186,11 @@ public class PerMaterialTest extends AbstractTestingBase {
 
     @Test
     public void usesDurability() {
+        if (!material.isItem()) return;
         if (!material.isBlock()) {
-            assertThat(EnchantmentTarget.BREAKABLE.includes(material), is(CraftMagicNumbers.getItem(material).canBeDepleted()));
+            assertThat(EnchantmentTarget.BREAKABLE.includes(material.asItemType()), is(CraftMagicNumbers.getItem(material).canBeDepleted()));
         } else {
-            assertFalse(EnchantmentTarget.BREAKABLE.includes(material));
+            assertFalse(EnchantmentTarget.BREAKABLE.includes(material.asItemType()));
         }
     }
 
@@ -285,7 +293,7 @@ public class PerMaterialTest extends AbstractTestingBase {
         if (material.isBlock()) {
             Class<?> expectedClass = material.data;
             if (expectedClass != MaterialData.class) {
-                BlockData blockData = Bukkit.createBlockData(material);
+                BlockData blockData = Bukkit.createBlockData(material.asBlockType());
                 assertTrue(expectedClass + " <> " + blockData.getClass(), expectedClass.isInstance(blockData));
             }
         }

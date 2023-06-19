@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.Skull;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
@@ -158,31 +159,30 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     @Override
     public SkullType getSkullType() {
-        switch (getType()) {
-            case SKELETON_SKULL:
-            case SKELETON_WALL_SKULL:
-                return SkullType.SKELETON;
-            case WITHER_SKELETON_SKULL:
-            case WITHER_SKELETON_WALL_SKULL:
-                return SkullType.WITHER;
-            case ZOMBIE_HEAD:
-            case ZOMBIE_WALL_HEAD:
-                return SkullType.ZOMBIE;
-            case PIGLIN_HEAD:
-            case PIGLIN_WALL_HEAD:
-                return SkullType.PIGLIN;
-            case PLAYER_HEAD:
-            case PLAYER_WALL_HEAD:
-                return SkullType.PLAYER;
-            case CREEPER_HEAD:
-            case CREEPER_WALL_HEAD:
-                return SkullType.CREEPER;
-            case DRAGON_HEAD:
-            case DRAGON_WALL_HEAD:
-                return SkullType.DRAGON;
-            default:
-                throw new IllegalArgumentException("Unknown SkullType for " + getType());
+        BlockType<?> type = getType();
+        if (type == BlockType.SKELETON_SKULL || type == BlockType.SKELETON_WALL_SKULL) {
+            return SkullType.SKELETON;
         }
+        if (type == BlockType.WITHER_SKELETON_SKULL || type == BlockType.WITHER_SKELETON_WALL_SKULL) {
+            return SkullType.WITHER;
+        }
+        if (type == BlockType.ZOMBIE_HEAD || type == BlockType.ZOMBIE_WALL_HEAD) {
+            return SkullType.ZOMBIE;
+        }
+        if (type == BlockType.PIGLIN_HEAD || type == BlockType.PIGLIN_WALL_HEAD) {
+            return SkullType.PIGLIN;
+        }
+        if (type == BlockType.PLAYER_HEAD || type == BlockType.PLAYER_WALL_HEAD) {
+            return SkullType.PLAYER;
+        }
+        if (type == BlockType.CREEPER_HEAD || type == BlockType.CREEPER_WALL_HEAD) {
+            return SkullType.CREEPER;
+        }
+        if (type == BlockType.DRAGON_HEAD || type == BlockType.DRAGON_WALL_HEAD) {
+            return SkullType.DRAGON;
+        }
+
+        throw new IllegalArgumentException("Unknown SkullType for " + getType());
     }
 
     @Override

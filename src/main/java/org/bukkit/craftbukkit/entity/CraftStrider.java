@@ -2,10 +2,9 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.monster.EntityStrider;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Strider;
+import org.bukkit.inventory.ItemType;
 
 public class CraftStrider extends CraftAnimals implements Strider {
 
@@ -63,8 +62,8 @@ public class CraftStrider extends CraftAnimals implements Strider {
     }
 
     @Override
-    public Material getSteerMaterial() {
-        return Material.WARPED_FUNGUS_ON_A_STICK;
+    public ItemType getSteerItem() {
+        return ItemType.WARPED_FUNGUS_ON_A_STICK;
     }
 
     @Override
@@ -75,10 +74,5 @@ public class CraftStrider extends CraftAnimals implements Strider {
     @Override
     public String toString() {
         return "CraftStrider";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.STRIDER;
     }
 }

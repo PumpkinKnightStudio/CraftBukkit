@@ -21,8 +21,8 @@ import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.projectile.IProjectile;
 import net.minecraft.world.level.block.BlockDispenser;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AbstractArrow;
@@ -39,6 +39,7 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.BlockProjectileSource;
@@ -63,7 +64,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
 
     @Override
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
-        Preconditions.checkArgument(getBlock().getType() == Material.DISPENSER, "Block is no longer dispenser");
+        Preconditions.checkArgument(getBlock().getType() == BlockType.DISPENSER, "Block is no longer dispenser");
         // Copied from BlockDispenser.dispense()
         SourceBlock isourceblock = new SourceBlock((WorldServer) dispenserBlock.getLevel(), dispenserBlock.getBlockPos());
         // Copied from DispenseBehaviorProjectile
@@ -84,10 +85,10 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
                 launch = new EntityPotion(world, iposition.x(), iposition.y(), iposition.z());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.LINGERING_POTION, 1)));
             } else {
                 launch = new EntityPotion(world, iposition.x(), iposition.y(), iposition.z());
-                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(ItemStack.of(ItemType.SPLASH_POTION, 1)));
             }
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {

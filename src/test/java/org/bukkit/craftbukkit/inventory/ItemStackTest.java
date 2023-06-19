@@ -15,11 +15,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.support.AbstractTestingBase;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -34,53 +35,53 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 @RunWith(Parameterized.class)
 public class ItemStackTest extends AbstractTestingBase {
     abstract static class StackProvider {
-        final Material material;
+        final ItemType itemType;
 
-        StackProvider(Material material) {
-            this.material = material;
+        StackProvider(ItemType itemType) {
+            this.itemType = itemType;
         }
 
         ItemStack bukkit() {
-            return operate(cleanStack(material, false));
+            return operate(cleanStack(itemType, false));
         }
 
         ItemStack craft() {
-            return operate(cleanStack(material, true));
+            return operate(cleanStack(itemType, true));
         }
 
         abstract ItemStack operate(ItemStack cleanStack);
 
-        static ItemStack cleanStack(Material material, boolean craft) {
-            final ItemStack stack = new ItemStack(material);
+        static ItemStack cleanStack(ItemType itemType, boolean craft) {
+            final ItemStack stack = ItemStack.of(itemType);
             return craft ? CraftItemStack.asCraftCopy(stack) : stack;
         }
 
         @Override
         public String toString() {
-            return material.toString();
+            return itemType.toString();
         }
 
         /**
          * For each item in parameterList, it will apply nameFormat at nameIndex.
-         * For each item in parameterList for each item in materials, it will create a stack provider at each array index that contains an Operator.
+         * For each item in parameterList for each item in item types, it will create a stack provider at each array index that contains an Operator.
          *
          * @param parameterList
          * @param nameFormat
          * @param nameIndex
-         * @param materials
+         * @param itemTypes
          * @return
          */
-        static List<Object[]> compound(final List<Object[]> parameterList, final String nameFormat, final int nameIndex, final Material...materials) {
+        static List<Object[]> compound(final List<Object[]> parameterList, final String nameFormat, final int nameIndex, final ItemType...itemTypes) {
             final List<Object[]> out = new ArrayList<Object[]>();
             for (Object[] params : parameterList) {
                 final int len = params.length;
-                for (final Material material : materials) {
+                for (final ItemType itemType : itemTypes) {
                     final Object[] paramsOut = params.clone();
                     for (int i = 0; i < len; i++) {
                         final Object param = paramsOut[i];
                         if (param instanceof Operator) {
                             final Operator operator = (Operator) param;
-                            paramsOut[i] = new StackProvider(material) {
+                            paramsOut[i] = new StackProvider(itemType) {
                                 @Override
                                 ItemStack operate(ItemStack cleanStack) {
                                     return operator.operate(cleanStack);
@@ -88,7 +89,7 @@ public class ItemStackTest extends AbstractTestingBase {
                             };
                         }
                     }
-                    paramsOut[nameIndex] = String.format(nameFormat, paramsOut[nameIndex], material);
+                    paramsOut[nameIndex] = String.format(nameFormat, paramsOut[nameIndex], itemType);
                     out.add(paramsOut);
                 }
             }
@@ -290,8 +291,8 @@ public class ItemStackTest extends AbstractTestingBase {
 
     static class NoOpProvider extends StackProvider {
 
-        NoOpProvider(Material material) {
-            super(material);
+        NoOpProvider(ItemType itemType) {
+            super(itemType);
         }
 
         @Override
@@ -312,22 +313,22 @@ public class ItemStackTest extends AbstractTestingBase {
 
     static final Object[][] EMPTY_ARRAY = new Object[0][];
     /**
-     * Materials that generate unique item meta types.
+     * ItemTypes that generate unique item meta types.
      */
-    static final Material[] COMPOUND_MATERIALS;
+    static final ItemType[] COMPOUND_ITEM_TYPES;
     static final int NAME_PARAMETER = 2;
     static {
         final ItemFactory factory = CraftItemFactory.instance();
-        final Map<Class<? extends ItemMeta>, Material> possibleMaterials = new HashMap<Class<? extends ItemMeta>, Material>();
+        final Map<Class<? extends ItemMeta>, ItemType> possibleItemTypes = new HashMap<Class<? extends ItemMeta>, ItemType>();
         ItemMeta meta;
-        for (final Material material : Material.values()) {
-            meta = factory.getItemMeta(material);
-            if (meta == null || possibleMaterials.containsKey(meta.getClass()))
+        for (final ItemType itemType: Registry.ITEM) {
+            meta = factory.getItemMeta(itemType);
+            if (meta == null || possibleItemTypes.containsKey(meta.getClass()))
                 continue;
-            possibleMaterials.put(meta.getClass(), material);
+            possibleItemTypes.put(meta.getClass(), itemType);
 
         }
-        COMPOUND_MATERIALS = possibleMaterials.values().toArray(new Material[possibleMaterials.size()]);
+        COMPOUND_ITEM_TYPES = possibleItemTypes.values().toArray(new ItemType[possibleItemTypes.size()]);
     }
 
     @Parameter(0) public StackProvider provider;
@@ -338,25 +339,25 @@ public class ItemStackTest extends AbstractTestingBase {
     public void testBukkitInequality() {
         final StackWrapper bukkitWrapper = new CraftWrapper(provider);
         testInequality(bukkitWrapper, new BukkitWrapper(unequalProvider));
-        testInequality(bukkitWrapper, new BukkitWrapper(new NoOpProvider(provider.material)));
+        testInequality(bukkitWrapper, new BukkitWrapper(new NoOpProvider(provider.itemType)));
     }
 
     @Test
     public void testCraftInequality() {
         final StackWrapper craftWrapper = new CraftWrapper(provider);
         testInequality(craftWrapper, new CraftWrapper(unequalProvider));
-        testInequality(craftWrapper, new CraftWrapper(new NoOpProvider(provider.material)));
+        testInequality(craftWrapper, new CraftWrapper(new NoOpProvider(provider.itemType)));
     }
 
     @Test
     public void testMixedInequality() {
         final StackWrapper craftWrapper = new CraftWrapper(provider);
         testInequality(craftWrapper, new BukkitWrapper(unequalProvider));
-        testInequality(craftWrapper, new BukkitWrapper(new NoOpProvider(provider.material)));
+        testInequality(craftWrapper, new BukkitWrapper(new NoOpProvider(provider.itemType)));
 
         final StackWrapper bukkitWrapper = new CraftWrapper(provider);
         testInequality(bukkitWrapper, new CraftWrapper(unequalProvider));
-        testInequality(bukkitWrapper, new CraftWrapper(new NoOpProvider(provider.material)));
+        testInequality(bukkitWrapper, new CraftWrapper(new NoOpProvider(provider.itemType)));
     }
 
     static void testInequality(StackWrapper provider, StackWrapper unequalProvider) {

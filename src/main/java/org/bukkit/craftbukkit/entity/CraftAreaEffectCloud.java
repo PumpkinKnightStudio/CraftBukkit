@@ -11,14 +11,16 @@ import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AreaEffectCloud;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.ProjectileSource;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud {
 
@@ -34,11 +36,6 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     @Override
     public String toString() {
         return "CraftAreaEffectCloud";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.AREA_EFFECT_CLOUD;
     }
 
     @Override
@@ -112,18 +109,18 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     }
 
     @Override
-    public Particle getParticle() {
-        return CraftParticle.toBukkit(getHandle().getParticle());
+    public Particle<?> getParticle() {
+        return CraftParticle.minecraftToBukkit(getHandle().getParticle().getType());
     }
 
     @Override
-    public void setParticle(Particle particle) {
+    public void setParticle(Particle<?> particle) {
         setParticle(particle, null);
     }
 
     @Override
-    public <T> void setParticle(Particle particle, T data) {
-        getHandle().setParticle(CraftParticle.toNMS(particle, data));
+    public <T> void setParticle(Particle<T> particle, T data) {
+        getHandle().setParticle(((CraftParticle<T>) particle).createParticleParam(CraftParticle.convertLegacy(data)));
     }
 
     @Override
@@ -212,6 +209,17 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     @Override
     public PotionData getBasePotionData() {
         return CraftPotionUtil.toBukkit(getHandle().getPotionType());
+    }
+
+    @Override
+    public void setBasePotionType(@NotNull PotionType potionType) {
+        getHandle().setPotion(CraftPotionType.bukkitToMinecraft(potionType));
+    }
+
+    @NotNull
+    @Override
+    public PotionType getBasePotionType() {
+        return CraftPotionType.minecraftToBukkit(getHandle().getPotion());
     }
 
     @Override

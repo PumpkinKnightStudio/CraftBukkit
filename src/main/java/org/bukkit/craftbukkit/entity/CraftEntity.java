@@ -7,7 +7,9 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.Position;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -168,6 +170,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -178,6 +181,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 import org.bukkit.craftbukkit.util.CraftVector;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.entity.SpawnCategory;
@@ -200,12 +204,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     protected final CraftServer server;
     protected Entity entity;
+    private final EntityType entityType;
     private EntityDamageEvent lastDamageEvent;
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
         this.entity = entity;
+        this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
     }
 
     public static CraftEntity getEntity(CraftServer server, Entity entity) {
@@ -756,6 +762,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
+    public EntityType<?> getType() {
+        return entityType;
+    }
+
+    @Override
     public void playEffect(EntityEffect type) {
         Preconditions.checkArgument(type != null, "type");
         Preconditions.checkState(!entity.generation, "Cannot play effect during world generation");
@@ -767,17 +778,17 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public Sound getSwimSound() {
-        return CraftSound.getBukkit(getHandle().getSwimSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimSound0());
     }
 
     @Override
     public Sound getSwimSplashSound() {
-        return CraftSound.getBukkit(getHandle().getSwimSplashSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimSplashSound0());
     }
 
     @Override
     public Sound getSwimHighSpeedSplashSound() {
-        return CraftSound.getBukkit(getHandle().getSwimHighSpeedSplashSound0());
+        return CraftSound.minecraftToBukkit(getHandle().getSwimHighSpeedSplashSound0());
     }
 
     public void setHandle(final Entity entity) {
@@ -1142,5 +1153,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             });
         }
         return perm;
+    }
+
+    protected IRegistryCustom getRegistryAccess() {
+        return CraftRegistry.getMinecraftRegistry();
     }
 }

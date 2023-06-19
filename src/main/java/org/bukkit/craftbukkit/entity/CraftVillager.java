@@ -1,20 +1,23 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import java.util.Locale;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.monster.EntityZombie;
 import net.minecraft.world.entity.monster.EntityZombieVillager;
 import net.minecraft.world.entity.npc.EntityVillager;
 import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.block.BlockBed;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -36,11 +39,6 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.VILLAGER;
-    }
-
-    @Override
     public void remove() {
         getHandle().releaseAllPois();
 
@@ -49,24 +47,24 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Profession getProfession() {
-        return CraftVillager.nmsToBukkitProfession(getHandle().getVillagerData().getProfession());
+        return CraftProfession.minecraftToBukkit(getHandle().getVillagerData().getProfession());
     }
 
     @Override
     public void setProfession(Profession profession) {
         Preconditions.checkArgument(profession != null, "Profession cannot be null");
-        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftVillager.bukkitToNmsProfession(profession)));
+        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftProfession.bukkitToMinecraft(profession)));
     }
 
     @Override
     public Type getVillagerType() {
-        return Type.valueOf(BuiltInRegistries.VILLAGER_TYPE.getKey(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return CraftType.minecraftToBukkit(getHandle().getVillagerData().getType());
     }
 
     @Override
     public void setVillagerType(Type type) {
         Preconditions.checkArgument(type != null, "Type cannot be null");
-        getHandle().setVillagerData(getHandle().getVillagerData().setType(BuiltInRegistries.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        getHandle().setVillagerData(getHandle().getVillagerData().setType(CraftType.bukkitToMinecraft(type)));
     }
 
     @Override
@@ -129,11 +127,181 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         return (entityzombievillager != null) ? (ZombieVillager) entityzombievillager.getBukkitEntity() : null;
     }
 
-    public static Profession nmsToBukkitProfession(VillagerProfession nms) {
-        return Profession.valueOf(BuiltInRegistries.VILLAGER_PROFESSION.getKey(nms).getPath().toUpperCase(Locale.ROOT));
+    public static class CraftType extends Type {
+        private static int count = 0;
+
+        public static Type minecraftToBukkit(VillagerType minecraft) {
+            Preconditions.checkArgument(minecraft != null);
+
+            IRegistry<VillagerType> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.VILLAGER_TYPE);
+            Type bukkit = Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+            Preconditions.checkArgument(bukkit != null);
+
+            return bukkit;
+        }
+
+        public static VillagerType bukkitToMinecraft(Type bukkit) {
+            Preconditions.checkArgument(bukkit != null);
+
+            return ((CraftType) bukkit).getHandle();
+        }
+
+        private final NamespacedKey key;
+        private final VillagerType villagerType;
+        private final String name;
+        private final int ordinal;
+
+        public CraftType(NamespacedKey key, VillagerType villagerType) {
+            this.key = key;
+            this.villagerType = villagerType;
+            // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+            // in case plugins use for example the name as key in a config file to receive type specific values.
+            // Custom types will return the key with namespace. For a plugin this should look than like a new type
+            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                this.name = key.getKey().toUpperCase();
+            } else {
+                this.name = key.toString();
+            }
+            this.ordinal = count++;
+        }
+
+        public VillagerType getHandle() {
+            return villagerType;
+        }
+
+        @Override
+        public NamespacedKey getKey() {
+            return key;
+        }
+
+        @Override
+        public int compareTo(Type type) {
+            return ordinal - type.ordinal();
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public int ordinal() {
+            return ordinal;
+        }
+
+        @Override
+        public String toString() {
+            // For backwards compatibility
+            return name();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+
+            if (!(other instanceof CraftType)) {
+                return false;
+            }
+
+            return getKey().equals(((Type) other).getKey());
+        }
+
+        @Override
+        public int hashCode() {
+            return getKey().hashCode();
+        }
     }
 
-    public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {
-        return BuiltInRegistries.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+    public static class CraftProfession extends Profession {
+        private static int count = 0;
+
+        public static Profession minecraftToBukkit(VillagerProfession minecraft) {
+            Preconditions.checkArgument(minecraft != null);
+
+            IRegistry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.VILLAGER_PROFESSION);
+            Profession bukkit = Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+
+            Preconditions.checkArgument(bukkit != null);
+
+            return bukkit;
+        }
+
+        public static VillagerProfession bukkitToMinecraft(Profession bukkit) {
+            Preconditions.checkArgument(bukkit != null);
+
+            return ((CraftProfession) bukkit).getHandle();
+        }
+
+        private final NamespacedKey key;
+        private final VillagerProfession villagerProfession;
+        private final String name;
+        private final int ordinal;
+
+        public CraftProfession(NamespacedKey key, VillagerProfession villagerProfession) {
+            this.key = key;
+            this.villagerProfession = villagerProfession;
+            // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
+            // in case plugins use for example the name as key in a config file to receive profession specific values.
+            // Custom professions will return the key with namespace. For a plugin this should look than like a new profession
+            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
+            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
+                this.name = key.getKey().toUpperCase();
+            } else {
+                this.name = key.toString();
+            }
+            this.ordinal = count++;
+        }
+
+        public VillagerProfession getHandle() {
+            return villagerProfession;
+        }
+
+        @Override
+        public NamespacedKey getKey() {
+            return key;
+        }
+
+        @Override
+        public int compareTo(Profession profession) {
+            return ordinal - profession.ordinal();
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public int ordinal() {
+            return ordinal;
+        }
+
+        @Override
+        public String toString() {
+            // For backwards compatibility
+            return name();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+
+            if (!(other instanceof CraftProfession)) {
+                return false;
+            }
+
+            return getKey().equals(((Profession) other).getKey());
+        }
+
+        @Override
+        public int hashCode() {
+            return getKey().hashCode();
+        }
     }
 }

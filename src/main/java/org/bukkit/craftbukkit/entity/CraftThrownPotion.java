@@ -6,13 +6,12 @@ import java.util.Collection;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.projectile.EntityPotion;
 import net.minecraft.world.item.alchemy.PotionUtil;
-import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionEffect;
 
 public class CraftThrownPotion extends CraftThrowableProjectile implements ThrownPotion {
@@ -37,7 +36,7 @@ public class CraftThrownPotion extends CraftThrowableProjectile implements Throw
     @Override
     public void setItem(ItemStack item) {
         Preconditions.checkArgument(item != null, "ItemStack cannot be null");
-        Preconditions.checkArgument(item.getType() == Material.LINGERING_POTION || item.getType() == Material.SPLASH_POTION, "ItemStack material must be Material.LINGERING_POTION or Material.SPLASH_POTION but was Material.%s", item.getType());
+        Preconditions.checkArgument(item.getType() == ItemType.LINGERING_POTION || item.getType() == ItemType.SPLASH_POTION, "ItemStack type must be ItemType.LINGERING_POTION or ItemType.SPLASH_POTION but was ItemType.%s", item.getType());
 
         getHandle().setItem(CraftItemStack.asNMSCopy(item));
     }
@@ -45,10 +44,5 @@ public class CraftThrownPotion extends CraftThrowableProjectile implements Throw
     @Override
     public EntityPotion getHandle() {
         return (EntityPotion) entity;
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.SPLASH_POTION;
     }
 }
