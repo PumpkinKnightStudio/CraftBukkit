@@ -4,7 +4,7 @@
     <groupId>org.bukkit</groupId>
     <artifactId>craftbukkit</artifactId>
     <packaging>jar</packaging>
-    <version>1.20.1-R0.1-SNAPSHOT</version>
+    <version>1.20.1-experimental-SNAPSHOT</version>
     <name>CraftBukkit</name>
     <url>https://www.spigotmc.org/</url>
 
@@ -13,6 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <api.version>unknown</api.version>
         <bt.name>git</bt.name>
+        <minecraft.version>1.20.1-R0.1-SNAPSHOT</minecraft.version>
         <minecraft_version>1_20_R1</minecraft_version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -36,7 +37,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>minecraft-server</artifactId>
-            <version>${project.version}</version>
+            <version>${minecraft.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -389,7 +390,7 @@
                         <id>remap-members</id>
                         <configuration>
                             <logFile>${project.build.directory}/server.txt</logFile>
-                            <srgIn>org.spigotmc:minecraft-server:${project.version}:csrg:maps-spigot-members</srgIn>
+                            <srgIn>org.spigotmc:minecraft-server:${minecraft.version}:csrg:maps-spigot-members</srgIn>
                             <reverse>true</reverse>
                         </configuration>
                     </execution>
@@ -537,7 +538,7 @@
                                 </goals>
                                 <id>remap-obf</id>
                                 <configuration>
-                                    <srgIn>org.spigotmc:minecraft-server:${project.version}:csrg:maps-spigot</srgIn>
+                                    <srgIn>org.spigotmc:minecraft-server:${minecraft.version}:csrg:maps-spigot</srgIn>
                                     <reverse>true</reverse>
                                     <remappedArtifactAttached>true</remappedArtifactAttached>
                                     <remappedClassifierName>remapped-obf</remappedClassifierName>
@@ -550,8 +551,8 @@
                                 </goals>
                                 <id>remap-mojang</id>
                                 <configuration>
-                                    <inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
-                                    <srgIn>org.spigotmc:minecraft-server:${project.version}:txt:maps-mojang</srgIn>
+                                    <inputFile>${project.build.directory}/${project.artifactId}-${minecraft.version}-remapped-obf.jar</inputFile>
+                                    <srgIn>org.spigotmc:minecraft-server:${minecraft.version}:txt:maps-mojang</srgIn>
                                     <remappedArtifactAttached>true</remappedArtifactAttached>
                                     <remappedClassifierName>remapped-mojang</remappedClassifierName>
                                 </configuration>

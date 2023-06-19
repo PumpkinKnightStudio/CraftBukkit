@@ -200,7 +200,10 @@ public class Main {
                     useConsole = false;
                 }
 
-                if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
+                System.err.println("**********************************************************************");
+                System.err.println("*** WARNING: This server jar is experimental, please refer to https://www.spigotmc.org/go/experimental ***");
+                System.err.println("**********************************************************************");
+                if (false && Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
                     Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
 
                     Calendar deadline = Calendar.getInstance();
