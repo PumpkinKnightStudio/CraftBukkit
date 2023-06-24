@@ -15,7 +15,7 @@
          }
      }
  
-@@ -368,7 +374,7 @@
+@@ -368,11 +374,12 @@
  
      public void playerDestroy(World world, EntityHuman entityhuman, BlockPosition blockposition, IBlockData iblockdata, @Nullable TileEntity tileentity, ItemStack itemstack) {
          entityhuman.awardStat(StatisticList.BLOCK_MINED.get(this));
@@ -24,7 +24,12 @@
          dropResources(iblockdata, world, blockposition, tileentity, entityhuman, itemstack);
      }
  
-@@ -504,16 +510,24 @@
+     public void setPlacedBy(World world, BlockPosition blockposition, IBlockData iblockdata, @Nullable EntityLiving entityliving, ItemStack itemstack) {}
++    public void setPlacedByAfterPlaceEvent(World world, BlockPosition blockposition, IBlockData iblockdata, @Nullable EntityLiving entityliving, ItemStack itemstack) {} // CraftBukit
+ 
+     public boolean isPossibleToRespawnInThis(IBlockData iblockdata) {
+         return !iblockdata.isSolid() && !iblockdata.liquid();
+@@ -504,16 +511,24 @@
          return this.builtInRegistryHolder;
      }
  

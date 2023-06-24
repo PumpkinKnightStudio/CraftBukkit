@@ -1,23 +1,16 @@
 --- a/net/minecraft/world/item/ItemSign.java
 +++ b/net/minecraft/world/item/ItemSign.java
-@@ -13,6 +13,8 @@
+@@ -24,7 +24,13 @@
+     @Override
+     protected boolean updateCustomBlockEntityTag(BlockPosition blockposition, World world, @Nullable EntityHuman entityhuman, ItemStack itemstack, IBlockData iblockdata) {
+         boolean flag = super.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata);
++    // CraftBukkit start
++        return flag;
++    }
  
- public class ItemSign extends ItemBlockWallable {
++    @Override
++    protected boolean updateCustomBlockEntityTagAfterPlaceEvent(BlockPosition blockposition, World world, @org.jetbrains.annotations.Nullable EntityHuman entityhuman, ItemStack itemstack, IBlockData iblockdata, boolean flag) {
++    // CraftBukkit end
+         if (!world.isClientSide && !flag && entityhuman != null) {
+             TileEntity tileentity = world.getBlockEntity(blockposition);
  
-+    public static BlockPosition openSign; // CraftBukkit
-+
-     public ItemSign(Item.Info item_info, Block block, Block block1) {
-         super(block, block1, item_info, EnumDirection.DOWN);
-     }
-@@ -35,7 +37,10 @@
-                 if (block instanceof BlockSign) {
-                     BlockSign blocksign = (BlockSign) block;
- 
--                    blocksign.openTextEdit(entityhuman, tileentitysign, true);
-+                    // CraftBukkit start - SPIGOT-4678
-+                    // blocksign.openTextEdit(entityhuman, tileentitysign, true);
-+                    ItemSign.openSign = blockposition;
-+                    // CraftBukkit end
-                 }
-             }
-         }

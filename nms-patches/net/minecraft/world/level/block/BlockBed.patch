@@ -58,15 +58,17 @@
      }
  
      private boolean kickVillagerOutOfBed(World world, BlockPosition blockposition) {
-@@ -314,6 +345,11 @@
+@@ -314,6 +345,13 @@
              BlockPosition blockposition1 = blockposition.relative((EnumDirection) iblockdata.getValue(BlockBed.FACING));
  
              world.setBlock(blockposition1, (IBlockData) iblockdata.setValue(BlockBed.PART, BlockPropertyBedPart.HEAD), 3);
-+            // CraftBukkit start - SPIGOT-7315: Don't updated if we capture block states
-+            if (world.captureBlockStates) {
-+                return;
-+            }
-+            // CraftBukkit end
++    // CraftBukkit start
++        }
++    }
++    @Override
++    public void setPlacedByAfterPlaceEvent(World world, BlockPosition blockposition, IBlockData iblockdata, @Nullable EntityLiving entityliving, ItemStack itemstack) {
++        {
++    // CraftBukkit end
              world.blockUpdated(blockposition, Blocks.AIR);
              iblockdata.updateNeighbourShapes(world, blockposition, 3);
          }

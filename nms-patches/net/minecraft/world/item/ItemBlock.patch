@@ -1,69 +1,114 @@
 --- a/net/minecraft/world/item/ItemBlock.java
 +++ b/net/minecraft/world/item/ItemBlock.java
-@@ -33,6 +33,13 @@
+@@ -33,6 +33,18 @@
  import net.minecraft.world.level.gameevent.GameEvent;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
 +// CraftBukkit start
-+import net.minecraft.server.level.WorldServer;
++import java.util.ArrayList;
++import org.bukkit.block.BlockState;
 +import org.bukkit.craftbukkit.block.CraftBlock;
 +import org.bukkit.craftbukkit.block.data.CraftBlockData;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.block.BlockCanBuildEvent;
++import org.bukkit.event.block.BlockPlaceEvent;
++import net.minecraft.core.EnumDirection;
++import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
 +// CraftBukkit end
 +
  public class ItemBlock extends Item {
  
      public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
-@@ -71,6 +78,12 @@
-                 return EnumInteractionResult.FAIL;
+@@ -72,9 +84,13 @@
              } else {
                  IBlockData iblockdata = this.getPlacementState(blockactioncontext1);
-+                // CraftBukkit start - special case for handling block placement with water lilies and snow buckets
-+                org.bukkit.block.BlockState blockstate = null;
-+                if (this instanceof PlaceOnWaterBlockItem || this instanceof SolidBucketItem) {
-+                    blockstate = org.bukkit.craftbukkit.block.CraftBlockStates.getBlockState(blockactioncontext1.getLevel(), blockactioncontext1.getClickedPos());
-+                }
-+                // CraftBukkit end
  
++                // CraftBukkit start
++                blockactioncontext1.getLevel().captureBlockStates = true;
++                // CraftBukkit end
                  if (iblockdata == null) {
                      return EnumInteractionResult.FAIL;
-@@ -87,6 +100,19 @@
+                 } else if (!this.placeBlock(blockactioncontext1, iblockdata)) {
++                    blockactioncontext1.getLevel().captureBlockStates = false; // CraftBukkit
+                     return EnumInteractionResult.FAIL;
+                 } else {
+                     BlockPosition blockposition = blockactioncontext1.getClickedPos();
+@@ -83,15 +99,59 @@
+                     ItemStack itemstack = blockactioncontext1.getItemInHand();
+                     IBlockData iblockdata1 = world.getBlockState(blockposition);
+ 
++                    // CraftBukkit start
++                    boolean isStateEqual = false;
++                    boolean didUpdateCustomBlockEntity = false;
++                    // CraftBukkit end
+                     if (iblockdata1.is(iblockdata.getBlock())) {
                          iblockdata1 = this.updateBlockStateFromTag(blockposition, world, itemstack, iblockdata1);
-                         this.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata1);
+-                        this.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata1);
++                        didUpdateCustomBlockEntity = this.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata1); // CraftBukkit
                          iblockdata1.getBlock().setPlacedBy(world, blockposition, iblockdata1, entityhuman, itemstack);
+-                        if (entityhuman instanceof EntityPlayer) {
 +                        // CraftBukkit start
-+                        if (blockstate != null) {
-+                            org.bukkit.event.block.BlockPlaceEvent placeEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callBlockPlaceEvent((WorldServer) world, entityhuman, blockactioncontext1.getHand(), blockstate, blockposition.getX(), blockposition.getY(), blockposition.getZ());
-+                            if (placeEvent != null && (placeEvent.isCancelled() || !placeEvent.canBuild())) {
-+                                blockstate.update(true, false);
-+
-+                                if (this instanceof SolidBucketItem) {
-+                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // SPIGOT-4541
-+                                }
-+                                return EnumInteractionResult.FAIL;
-+                            }
-+                        }
++                        blockactioncontext1.getLevel().captureBlockStates = false;
++                        isStateEqual = true; // - move down
 +                        // CraftBukkit end
-                         if (entityhuman instanceof EntityPlayer) {
++                    }
++
++                    // CraftBukkit start
++                    List<BlockState> blocks = new ArrayList<>(world.capturedBlockStates.values());
++                    world.capturedBlockStates.clear();
++                    BlockPlaceEvent placeEvent = null;
++                    if (blocks.size() > 1) {
++                        placeEvent = CraftEventFactory.callBlockMultiPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), blocks, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                    } else if (blocks.size() == 1) {
++                        placeEvent = CraftEventFactory.callBlockPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), blocks.get(0), blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                    }
++
++                    if (placeEvent.isCancelled()) {
++                        // PAIL: Remove this when MC-99075 fixed
++                        placeEvent.getPlayer().updateInventory();
++                        // revert back all captured blocks
++                        world.preventPoiUpdated = true; // CraftBukkit - SPIGOT-5710
++                        for (BlockState blockstate : blocks) {
++                            blockstate.update(true, false);
++                        }
++                        world.preventPoiUpdated = false;
++
++                        // Brute force all possible updates
++                        BlockPosition placedPos = ((CraftBlock) placeEvent.getBlock()).getPosition();
++                        for (EnumDirection dir : EnumDirection.values()) {
++                            ((EntityPlayer) entityhuman).connection.send(new PacketPlayOutBlockChange(world, placedPos.relative(dir)));
++                        }
++                        return EnumInteractionResult.FAIL;
++                    } else {
++                        // Post processing for updateCustomBlockEntityTag
++                        this.updateCustomBlockEntityTagAfterPlaceEvent(blockposition, world, entityhuman, itemstack, iblockdata1, didUpdateCustomBlockEntity);
++
++                        // Post processing for updateBlockStateFromTag
++                        iblockdata1.getBlock().setPlacedByAfterPlaceEvent(world, blockposition, iblockdata1, entityhuman, itemstack); // Processing after the block is placed
++
++                        // Extra
++                        if (isStateEqual && entityhuman instanceof EntityPlayer) {
                              CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition, itemstack);
                          }
-@@ -94,9 +120,9 @@
- 
+                     }
+-
++                    // Craftbukkit end
                      SoundEffectType soundeffecttype = iblockdata1.getSoundType();
  
--                    world.playSound(entityhuman, blockposition, this.getPlaceSound(iblockdata1), SoundCategory.BLOCKS, (soundeffecttype.getVolume() + 1.0F) / 2.0F, soundeffecttype.getPitch() * 0.8F);
-+                    // world.playSound(entityhuman, blockposition, this.getPlaceSound(iblockdata1), SoundCategory.BLOCKS, (soundeffecttype.getVolume() + 1.0F) / 2.0F, soundeffecttype.getPitch() * 0.8F);
-                     world.gameEvent(GameEvent.BLOCK_PLACE, blockposition, GameEvent.a.of(entityhuman, iblockdata1));
--                    if (entityhuman == null || !entityhuman.getAbilities().instabuild) {
-+                    if ((entityhuman == null || !entityhuman.getAbilities().instabuild) && itemstack != ItemStack.EMPTY) { // CraftBukkit
-                         itemstack.shrink(1);
-                     }
+                     world.playSound(entityhuman, blockposition, this.getPlaceSound(iblockdata1), SoundCategory.BLOCKS, (soundeffecttype.getVolume() + 1.0F) / 2.0F, soundeffecttype.getPitch() * 0.8F);
+@@ -118,6 +178,7 @@
+     protected boolean updateCustomBlockEntityTag(BlockPosition blockposition, World world, @Nullable EntityHuman entityhuman, ItemStack itemstack, IBlockData iblockdata) {
+         return updateCustomBlockEntityTag(world, entityhuman, blockposition, itemstack);
+     }
++    protected boolean updateCustomBlockEntityTagAfterPlaceEvent(BlockPosition blockposition, World world, @Nullable EntityHuman entityhuman, ItemStack itemstack, IBlockData iblockdata, boolean superResult) {return superResult;} // CraftBukkit
  
-@@ -132,6 +158,21 @@
+     @Nullable
+     protected IBlockData getPlacementState(BlockActionContext blockactioncontext) {
+@@ -132,6 +193,20 @@
  
          if (nbttagcompound != null) {
              NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("BlockStateTag");
-+            // CraftBukkit start
++        // CraftBukkit start
 +            iblockdata1 = getBlockState(iblockdata1, nbttagcompound1);
 +        }
 +
@@ -73,27 +118,25 @@
 +
 +        return iblockdata1;
 +    }
-+
 +    public static IBlockData getBlockState(IBlockData iblockdata, NBTTagCompound nbttagcompound1) {
 +        IBlockData iblockdata1 = iblockdata;
 +        {
-+            // CraftBukkit end
++        // CraftBukkit end
              BlockStateList<Block, IBlockData> blockstatelist = iblockdata.getBlock().getStateDefinition();
              Iterator iterator = nbttagcompound1.getAllKeys().iterator();
  
-@@ -146,11 +187,6 @@
-                 }
+@@ -147,9 +222,7 @@
              }
          }
--
+ 
 -        if (iblockdata1 != iblockdata) {
 -            world.setBlock(blockposition, iblockdata1, 2);
 -        }
--
++        // CraftBukkit - Move diff
+ 
          return iblockdata1;
      }
- 
-@@ -163,8 +199,15 @@
+@@ -163,8 +236,15 @@
      protected boolean canPlace(BlockActionContext blockactioncontext, IBlockData iblockdata) {
          EntityHuman entityhuman = blockactioncontext.getPlayer();
          VoxelShapeCollision voxelshapecollision = entityhuman == null ? VoxelShapeCollision.empty() : VoxelShapeCollision.of(entityhuman);
@@ -110,7 +153,7 @@
      }
  
      protected boolean mustSurvive() {
-@@ -239,7 +282,7 @@
+@@ -239,7 +319,7 @@
  
              if (nbttagcompound != null && nbttagcompound.contains("Items", 9)) {
                  NBTTagList nbttaglist = nbttagcompound.getList("Items", 10);

@@ -583,7 +583,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
                 int flag = ((CraftBlockState) blockstate).getFlag();
                 delegate.setBlockData(blockstate.getX(), blockstate.getY(), blockstate.getZ(), blockstate.getBlockData());
                 net.minecraft.world.level.block.state.IBlockData newBlock = world.getBlockState(position);
-                world.notifyAndUpdatePhysics(position, null, oldBlock, newBlock, newBlock, flag, 512);
+               //world.notifyAndUpdatePhysics(position, null, oldBlock, newBlock, newBlock, flag, 512);
             }
             world.capturedBlockStates.clear();
             return true;

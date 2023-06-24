@@ -11,7 +11,19 @@
  public class BlockWitherSkull extends BlockSkull {
  
      @Nullable
-@@ -47,6 +51,7 @@
+@@ -38,6 +42,11 @@
+     @Override
+     public void setPlacedBy(World world, BlockPosition blockposition, IBlockData iblockdata, @Nullable EntityLiving entityliving, ItemStack itemstack) {
+         super.setPlacedBy(world, blockposition, iblockdata, entityliving, itemstack);
++    // CraftBukkit start
++    }
++    @Override
++    public void setPlacedByAfterPlaceEvent(World world, BlockPosition blockposition, IBlockData iblockdata, @Nullable EntityLiving entityliving, ItemStack itemstack) {
++    // CraftBukkit end
+         TileEntity tileentity = world.getBlockEntity(blockposition);
+ 
+         if (tileentity instanceof TileEntitySkull) {
+@@ -47,6 +56,7 @@
      }
  
      public static void checkSpawn(World world, BlockPosition blockposition, TileEntitySkull tileentityskull) {
@@ -19,7 +31,7 @@
          if (!world.isClientSide) {
              IBlockData iblockdata = tileentityskull.getBlockState();
              boolean flag = iblockdata.is(Blocks.WITHER_SKELETON_SKULL) || iblockdata.is(Blocks.WITHER_SKELETON_WALL_SKULL);
-@@ -58,12 +63,18 @@
+@@ -58,12 +68,18 @@
                      EntityWither entitywither = (EntityWither) EntityTypes.WITHER.create(world);
  
                      if (entitywither != null) {
@@ -39,7 +51,7 @@
                          Iterator iterator = world.getEntitiesOfClass(EntityPlayer.class, entitywither.getBoundingBox().inflate(50.0D)).iterator();
  
                          while (iterator.hasNext()) {
-@@ -72,7 +83,7 @@
+@@ -72,7 +88,7 @@
                              CriterionTriggers.SUMMONED_ENTITY.trigger(entityplayer, (Entity) entitywither);
                          }
  
