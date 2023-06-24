@@ -47,6 +47,7 @@
 +                        didUpdateCustomBlockEntity = this.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata1); // CraftBukkit
                          iblockdata1.getBlock().setPlacedBy(world, blockposition, iblockdata1, entityhuman, itemstack);
 -                        if (entityhuman instanceof EntityPlayer) {
+-                            CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition, itemstack);
 +                        // CraftBukkit start
 +                        blockactioncontext1.getLevel().captureBlockStates = false;
 +                        isStateEqual = true; // - move down
@@ -77,21 +78,20 @@
 +                        BlockPosition placedPos = ((CraftBlock) placeEvent.getBlock()).getPosition();
 +                        for (EnumDirection dir : EnumDirection.values()) {
 +                            ((EntityPlayer) entityhuman).connection.send(new PacketPlayOutBlockChange(world, placedPos.relative(dir)));
-+                        }
-+                        return EnumInteractionResult.FAIL;
-+                    } else {
-+                        // Post processing for updateCustomBlockEntityTag
-+                        this.updateCustomBlockEntityTagAfterPlaceEvent(blockposition, world, entityhuman, itemstack, iblockdata1, didUpdateCustomBlockEntity);
-+
-+                        // Post processing for updateBlockStateFromTag
-+                        iblockdata1.getBlock().setPlacedByAfterPlaceEvent(world, blockposition, iblockdata1, entityhuman, itemstack); // Processing after the block is placed
-+
-+                        // Extra
-+                        if (isStateEqual && entityhuman instanceof EntityPlayer) {
-                             CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition, itemstack);
                          }
++                        return EnumInteractionResult.FAIL;
++                    }
++                    // Post processing for updateCustomBlockEntityTag
++                    this.updateCustomBlockEntityTagAfterPlaceEvent(blockposition, world, entityhuman, itemstack, iblockdata1, didUpdateCustomBlockEntity);
++
++                    // Post processing for updateBlockStateFromTag
++                    iblockdata1.getBlock().setPlacedByAfterPlaceEvent(world, blockposition, iblockdata1, entityhuman, itemstack); // Processing after the block is placed
++
++                    // Extra
++                    if (isStateEqual && entityhuman instanceof EntityPlayer) {
++                        CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition, itemstack);
                      }
--
+ 
 +                    // Craftbukkit end
                      SoundEffectType soundeffecttype = iblockdata1.getSoundType();
  
