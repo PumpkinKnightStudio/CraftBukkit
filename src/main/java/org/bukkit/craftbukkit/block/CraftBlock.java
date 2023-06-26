@@ -492,39 +492,11 @@ public class CraftBlock implements Block {
     @Override
     public boolean applyBoneMeal(BlockFace face) {
         EnumDirection direction = blockFaceToNotch(face);
-        BlockFertilizeEvent event = null;
         WorldServer world = getCraftWorld().getHandle();
         ItemActionContext context = new ItemActionContext(world, null, EnumHand.MAIN_HAND, Items.BONE_MEAL.getDefaultInstance(), new MovingObjectPositionBlock(Vec3D.ZERO, direction, getPosition(), false));
 
-        // SPIGOT-6895: Call StructureGrowEvent and BlockFertilizeEvent
-        world.captureTreeGeneration = true;
         EnumInteractionResult result = ItemBoneMeal.applyBonemeal(context);
-        world.captureTreeGeneration = false;
-
-        if (world.capturedBlockStates.size() > 0) {
-            TreeType treeType = BlockSapling.treeType;
-            BlockSapling.treeType = null;
-            List<BlockState> blocks = new ArrayList<>(world.capturedBlockStates.values());
-            world.capturedBlockStates.clear();
-            StructureGrowEvent structureEvent = null;
-
-            if (treeType != null) {
-                structureEvent = new StructureGrowEvent(getLocation(), treeType, true, null, blocks);
-                Bukkit.getPluginManager().callEvent(structureEvent);
-            }
-
-            event = new BlockFertilizeEvent(CraftBlock.at(world, getPosition()), null, blocks);
-            event.setCancelled(structureEvent != null && structureEvent.isCancelled());
-            Bukkit.getPluginManager().callEvent(event);
-
-            if (!event.isCancelled()) {
-                for (BlockState blockstate : blocks) {
-                    blockstate.update(true);
-                }
-            }
-        }
-
-        return result == EnumInteractionResult.SUCCESS && (event == null || !event.isCancelled());
+        return result == EnumInteractionResult.SUCCESS;
     }
 
     @Override

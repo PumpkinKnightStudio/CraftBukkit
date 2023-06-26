@@ -1,0 +1,17 @@
+--- a/net/minecraft/world/level/levelgen/feature/WorldGenFeatureConfigured.java
++++ b/net/minecraft/world/level/levelgen/feature/WorldGenFeatureConfigured.java
+@@ -23,7 +23,13 @@
+     public static final Codec<HolderSet<WorldGenFeatureConfigured<?, ?>>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, WorldGenFeatureConfigured.DIRECT_CODEC);
+ 
+     public boolean place(GeneratorAccessSeed generatoraccessseed, ChunkGenerator chunkgenerator, RandomSource randomsource, BlockPosition blockposition) {
+-        return this.feature.place(this.config, generatoraccessseed, chunkgenerator, randomsource, blockposition);
++        // CraftBukkit start
++        boolean capturedFeature = this.feature.place(this.config, generatoraccessseed, chunkgenerator, randomsource, blockposition);
++        if (capturedFeature) {
++            generatoraccessseed.logFeaturePlacement(this);
++        }
++        return capturedFeature;
++        // Craftbukkit end
+     }
+ 
+     public Stream<WorldGenFeatureConfigured<?, ?>> getFeatures() {

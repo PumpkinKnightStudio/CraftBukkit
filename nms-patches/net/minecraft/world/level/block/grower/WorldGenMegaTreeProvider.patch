@@ -1,6 +1,31 @@
 --- a/net/minecraft/world/level/block/grower/WorldGenMegaTreeProvider.java
 +++ b/net/minecraft/world/level/block/grower/WorldGenMegaTreeProvider.java
-@@ -40,11 +40,12 @@
+@@ -14,12 +14,16 @@
+ import net.minecraft.world.level.chunk.ChunkGenerator;
+ import net.minecraft.world.level.levelgen.feature.WorldGenFeatureConfigured;
+ 
++// CraftBukkit start
++import net.minecraft.world.level.GeneratorAccessSeed;
++// CraftBukkit end
++
+ public abstract class WorldGenMegaTreeProvider extends WorldGenTreeProvider {
+ 
+     public WorldGenMegaTreeProvider() {}
+ 
+     @Override
+-    public boolean growTree(WorldServer worldserver, ChunkGenerator chunkgenerator, BlockPosition blockposition, IBlockData iblockdata, RandomSource randomsource) {
++    public boolean growTree(GeneratorAccessSeed worldserver, ChunkGenerator chunkgenerator, BlockPosition blockposition, IBlockData iblockdata, RandomSource randomsource) { // CraftBukkit - Move to interface for delegation
+         for (int i = 0; i >= -1; --i) {
+             for (int j = 0; j >= -1; --j) {
+                 if (isTwoByTwoSapling(iblockdata, worldserver, blockposition, i, j)) {
+@@ -34,13 +38,13 @@
+     @Nullable
+     protected abstract ResourceKey<WorldGenFeatureConfigured<?, ?>> getConfiguredMegaFeature(RandomSource randomsource);
+ 
+-    public boolean placeMega(WorldServer worldserver, ChunkGenerator chunkgenerator, BlockPosition blockposition, IBlockData iblockdata, RandomSource randomsource, int i, int j) {
++    public boolean placeMega(GeneratorAccessSeed worldserver, ChunkGenerator chunkgenerator, BlockPosition blockposition, IBlockData iblockdata, RandomSource randomsource, int i, int j) { // CraftBukkit - Move to interface for delegation
+         ResourceKey<WorldGenFeatureConfigured<?, ?>> resourcekey = this.getConfiguredMegaFeature(randomsource);
+ 
          if (resourcekey == null) {
              return false;
          } else {
@@ -9,8 +34,3 @@
  
              if (holder == null) {
                  return false;
-             } else {
-+                setTreeType(holder); // CraftBukkit
-                 WorldGenFeatureConfigured<?, ?> worldgenfeatureconfigured = (WorldGenFeatureConfigured) holder.value();
-                 IBlockData iblockdata1 = Blocks.AIR.defaultBlockState();
- 

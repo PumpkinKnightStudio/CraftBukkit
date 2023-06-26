@@ -1,0 +1,36 @@
+--- a/net/minecraft/world/level/block/IBlockFragilePlantElement.java
++++ b/net/minecraft/world/level/block/IBlockFragilePlantElement.java
+@@ -7,6 +7,10 @@
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.state.IBlockData;
+ 
++// CraftBukkit start
++import net.minecraft.server.level.EntityPlayer;
++// Craftbukkit end
++
+ public interface IBlockFragilePlantElement {
+ 
+     boolean isValidBonemealTarget(IWorldReader iworldreader, BlockPosition blockposition, IBlockData iblockdata, boolean flag);
+@@ -14,4 +18,22 @@
+     boolean isBonemealSuccess(World world, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata);
+ 
+     void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata);
++
++    // CraftBukkit start
++    // Note: When wanting to use this method, simply implement PlayerContextOverride
++    default void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata, EntityPlayer player) {
++        this.performBonemeal(worldserver, randomsource, blockposition, iblockdata);
++    }
++
++    interface PlayerContextOverride extends IBlockFragilePlantElement {
++
++        @Override
++        void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata, EntityPlayer player);
++
++        @Override
++        default void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata) {
++            IBlockFragilePlantElement.super.performBonemeal(worldserver, randomsource, blockposition, iblockdata, null);
++        }
++    }
++    // CraftBukkit end
+ }

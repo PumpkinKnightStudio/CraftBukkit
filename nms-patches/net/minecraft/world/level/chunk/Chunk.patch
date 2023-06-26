@@ -64,25 +64,11 @@
                  } else {
 -                    if (!this.level.isClientSide) {
 +                    // CraftBukkit - Don't place while processing the BlockPlaceEvent, unless it's a BlockContainer. Prevents blocks such as TNT from activating when cancelled.
-+                    if (!this.level.isClientSide && doPlace && (!this.level.captureBlockStates || block instanceof net.minecraft.world.level.block.BlockTileEntity)) {
++                    if (!this.level.isClientSide && doPlace && (!this.level.blockCapture.isCapturing() || block instanceof net.minecraft.world.level.block.BlockTileEntity)) {
                          iblockdata.onPlace(this.level, blockposition, iblockdata1, flag);
                      }
  
-@@ -340,7 +357,12 @@
- 
-     @Nullable
-     public TileEntity getBlockEntity(BlockPosition blockposition, Chunk.EnumTileEntityState chunk_enumtileentitystate) {
--        TileEntity tileentity = (TileEntity) this.blockEntities.get(blockposition);
-+        // CraftBukkit start
-+        TileEntity tileentity = level.capturedTileEntities.get(blockposition);
-+        if (tileentity == null) {
-+            tileentity = (TileEntity) this.blockEntities.get(blockposition);
-+        }
-+        // CraftBukkit end
- 
-         if (tileentity == null) {
-             NBTTagCompound nbttagcompound = (NBTTagCompound) this.pendingBlockEntities.remove(blockposition);
-@@ -418,6 +440,13 @@
+@@ -418,6 +435,13 @@
                  tileentity1.setRemoved();
              }
  
@@ -96,7 +82,7 @@
          }
      }
  
-@@ -447,6 +476,12 @@
+@@ -447,6 +471,12 @@
          if (this.isInLevel()) {
              TileEntity tileentity = (TileEntity) this.blockEntities.remove(blockposition);
  
@@ -109,7 +95,7 @@
              if (tileentity != null) {
                  World world = this.level;
  
-@@ -500,6 +535,57 @@
+@@ -500,6 +530,57 @@
  
      }
  
@@ -167,7 +153,7 @@
      public boolean isEmpty() {
          return false;
      }
-@@ -697,7 +783,7 @@
+@@ -697,7 +778,7 @@
  
      private <T extends TileEntity> void updateBlockEntityTicker(T t0) {
          IBlockData iblockdata = t0.getBlockState();
@@ -176,7 +162,7 @@
  
          if (blockentityticker == null) {
              this.removeBlockEntityTicker(t0.getBlockPos());
-@@ -782,7 +868,7 @@
+@@ -782,7 +863,7 @@
          private boolean loggedInvalidBlockState;
  
          a(TileEntity tileentity, BlockEntityTicker blockentityticker) {

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/ItemBlock.java
 +++ b/net/minecraft/world/item/ItemBlock.java
-@@ -33,6 +33,18 @@
+@@ -33,6 +33,21 @@
  import net.minecraft.world.level.gameevent.GameEvent;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
@@ -8,8 +8,11 @@
 +import java.util.ArrayList;
 +import org.bukkit.block.BlockState;
 +import org.bukkit.craftbukkit.block.CraftBlock;
++import org.bukkit.craftbukkit.block.CraftBlockEntityState;
++import org.bukkit.craftbukkit.block.CraftBlockState;
 +import org.bukkit.craftbukkit.block.data.CraftBlockData;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.util.BlockCapturer;
 +import org.bukkit.event.block.BlockCanBuildEvent;
 +import org.bukkit.event.block.BlockPlaceEvent;
 +import net.minecraft.core.EnumDirection;
@@ -19,28 +22,21 @@
  public class ItemBlock extends Item {
  
      public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
-@@ -72,9 +84,13 @@
+@@ -72,6 +87,12 @@
              } else {
                  IBlockData iblockdata = this.getPlacementState(blockactioncontext1);
  
 +                // CraftBukkit start
-+                blockactioncontext1.getLevel().captureBlockStates = true;
++                boolean isStateEqual = false;
++                boolean didUpdateCustomBlockEntity = false;
++                BlockCapturer.SimpleBlockCapture capture = blockactioncontext1.getLevel().blockCapture.capture();
++                try (capture) {
 +                // CraftBukkit end
                  if (iblockdata == null) {
                      return EnumInteractionResult.FAIL;
                  } else if (!this.placeBlock(blockactioncontext1, iblockdata)) {
-+                    blockactioncontext1.getLevel().captureBlockStates = false; // CraftBukkit
-                     return EnumInteractionResult.FAIL;
-                 } else {
-                     BlockPosition blockposition = blockactioncontext1.getClickedPos();
-@@ -83,15 +99,59 @@
-                     ItemStack itemstack = blockactioncontext1.getItemInHand();
-                     IBlockData iblockdata1 = world.getBlockState(blockposition);
+@@ -85,13 +106,57 @@
  
-+                    // CraftBukkit start
-+                    boolean isStateEqual = false;
-+                    boolean didUpdateCustomBlockEntity = false;
-+                    // CraftBukkit end
                      if (iblockdata1.is(iblockdata.getBlock())) {
                          iblockdata1 = this.updateBlockStateFromTag(blockposition, world, itemstack, iblockdata1);
 -                        this.updateCustomBlockEntityTag(blockposition, world, entityhuman, itemstack, iblockdata1);
@@ -48,39 +44,43 @@
                          iblockdata1.getBlock().setPlacedBy(world, blockposition, iblockdata1, entityhuman, itemstack);
 -                        if (entityhuman instanceof EntityPlayer) {
 -                            CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition, itemstack);
-+                        // CraftBukkit start
-+                        blockactioncontext1.getLevel().captureBlockStates = false;
-+                        isStateEqual = true; // - move down
-+                        // CraftBukkit end
++                        isStateEqual = true; // CraftBukkit - move down
 +                    }
-+
 +                    // CraftBukkit start
-+                    List<BlockState> blocks = new ArrayList<>(world.capturedBlockStates.values());
-+                    world.capturedBlockStates.clear();
++                }}{ // Exit else, try statement, then open back else
++                    BlockPosition blockposition = blockactioncontext1.getClickedPos();
++                    World world = blockactioncontext1.getLevel();
++                    EntityHuman entityhuman = blockactioncontext1.getPlayer();
++                    ItemStack itemstack = blockactioncontext1.getItemInHand();
++                    IBlockData iblockdata1 = world.getBlockState(blockposition);
++
++                    List<BlockState> apiBlocks = new ArrayList<>(capture.getCapturedBlockStates().values());
 +                    BlockPlaceEvent placeEvent = null;
-+                    if (blocks.size() > 1) {
-+                        placeEvent = CraftEventFactory.callBlockMultiPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), blocks, blockposition.getX(), blockposition.getY(), blockposition.getZ());
-+                    } else if (blocks.size() == 1) {
-+                        placeEvent = CraftEventFactory.callBlockPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), blocks.get(0), blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                    if (apiBlocks.size() > 1) {
++                        placeEvent = CraftEventFactory.callBlockMultiPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), apiBlocks, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                    } else if (apiBlocks.size() == 1) {
++                        placeEvent = CraftEventFactory.callBlockPlaceEvent(world, entityhuman, blockactioncontext1.getHand(), apiBlocks.get(0), blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                    }
++                    if (entityhuman == null ? false : entityhuman.getBukkitEntity().getInventory().contains(org.bukkit.Material.DIAMOND)) {
++                        placeEvent.setCancelled(true);
 +                    }
 +
 +                    if (placeEvent.isCancelled()) {
 +                        // PAIL: Remove this when MC-99075 fixed
 +                        placeEvent.getPlayer().updateInventory();
-+                        // revert back all captured blocks
-+                        world.preventPoiUpdated = true; // CraftBukkit - SPIGOT-5710
-+                        for (BlockState blockstate : blocks) {
-+                            blockstate.update(true, false);
-+                        }
-+                        world.preventPoiUpdated = false;
++                        capture.rewind();
 +
 +                        // Brute force all possible updates
 +                        BlockPosition placedPos = ((CraftBlock) placeEvent.getBlock()).getPosition();
 +                        for (EnumDirection dir : EnumDirection.values()) {
 +                            ((EntityPlayer) entityhuman).connection.send(new PacketPlayOutBlockChange(world, placedPos.relative(dir)));
                          }
++
 +                        return EnumInteractionResult.FAIL;
 +                    }
++
++                    capture.finalizePlacement();
++
 +                    // Post processing for updateCustomBlockEntityTag
 +                    this.updateCustomBlockEntityTagAfterPlaceEvent(blockposition, world, entityhuman, itemstack, iblockdata1, didUpdateCustomBlockEntity);
 +
@@ -96,7 +96,7 @@
                      SoundEffectType soundeffecttype = iblockdata1.getSoundType();
  
                      world.playSound(entityhuman, blockposition, this.getPlaceSound(iblockdata1), SoundCategory.BLOCKS, (soundeffecttype.getVolume() + 1.0F) / 2.0F, soundeffecttype.getPitch() * 0.8F);
-@@ -118,6 +178,7 @@
+@@ -118,6 +183,7 @@
      protected boolean updateCustomBlockEntityTag(BlockPosition blockposition, World world, @Nullable EntityHuman entityhuman, ItemStack itemstack, IBlockData iblockdata) {
          return updateCustomBlockEntityTag(world, entityhuman, blockposition, itemstack);
      }
@@ -104,7 +104,7 @@
  
      @Nullable
      protected IBlockData getPlacementState(BlockActionContext blockactioncontext) {
-@@ -132,6 +193,20 @@
+@@ -132,6 +198,20 @@
  
          if (nbttagcompound != null) {
              NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("BlockStateTag");
@@ -125,7 +125,7 @@
              BlockStateList<Block, IBlockData> blockstatelist = iblockdata.getBlock().getStateDefinition();
              Iterator iterator = nbttagcompound1.getAllKeys().iterator();
  
-@@ -147,9 +222,7 @@
+@@ -147,9 +227,7 @@
              }
          }
  
@@ -136,7 +136,7 @@
  
          return iblockdata1;
      }
-@@ -163,8 +236,15 @@
+@@ -163,8 +241,15 @@
      protected boolean canPlace(BlockActionContext blockactioncontext, IBlockData iblockdata) {
          EntityHuman entityhuman = blockactioncontext.getPlayer();
          VoxelShapeCollision voxelshapecollision = entityhuman == null ? VoxelShapeCollision.empty() : VoxelShapeCollision.of(entityhuman);
@@ -153,7 +153,7 @@
      }
  
      protected boolean mustSurvive() {
-@@ -239,7 +319,7 @@
+@@ -239,7 +324,7 @@
  
              if (nbttagcompound != null && nbttagcompound.contains("Items", 9)) {
                  NBTTagList nbttaglist = nbttagcompound.getList("Items", 10);

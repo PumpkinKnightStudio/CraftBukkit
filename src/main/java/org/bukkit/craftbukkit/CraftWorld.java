@@ -102,12 +102,14 @@ import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
+import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 import org.bukkit.craftbukkit.util.CraftStructureSearchResult;
+import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -571,26 +573,16 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean generateTree(Location loc, TreeType type, BlockChangeDelegate delegate) {
-        world.captureTreeGeneration = true;
-        world.captureBlockStates = true;
-        boolean grownTree = generateTree(loc, type);
-        world.captureBlockStates = false;
-        world.captureTreeGeneration = false;
-        if (grownTree) { // Copy block data to delegate
-            for (BlockState blockstate : world.capturedBlockStates.values()) {
-                BlockPosition position = ((CraftBlockState) blockstate).getPosition();
-                net.minecraft.world.level.block.state.IBlockData oldBlock = world.getBlockState(position);
-                int flag = ((CraftBlockState) blockstate).getFlag();
-                delegate.setBlockData(blockstate.getX(), blockstate.getY(), blockstate.getZ(), blockstate.getBlockData());
-                net.minecraft.world.level.block.state.IBlockData newBlock = world.getBlockState(position);
-               //world.notifyAndUpdatePhysics(position, null, oldBlock, newBlock, newBlock, flag, 512);
-            }
-            world.capturedBlockStates.clear();
-            return true;
-        } else {
-            world.capturedBlockStates.clear();
-            return false;
+        BlockPosition pos = CraftLocation.toBlockPosition(loc);
+        BlockStateListPopulator populator = new BlockStateListPopulator(getHandle());
+        boolean result = generateTree(populator, getHandle().getMinecraftWorld().getChunkSource().getGenerator(), pos, new RandomSourceWrapper(rand), type);
+        populator.refreshTiles();
+
+        for (BlockState blockState : populator.getList()) {
+            delegate.setBlockData(blockState.getX(), blockState.getY(), blockState.getZ(), blockState.getBlockData());
         }
+
+        return result;
     }
 
     @Override

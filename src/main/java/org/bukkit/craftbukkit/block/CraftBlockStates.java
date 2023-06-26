@@ -413,7 +413,7 @@ public final class CraftBlockStates {
     }
 
     // See BlockStateFactory#createBlockState(World, BlockPosition, IBlockData, TileEntity)
-    private static CraftBlockState getBlockState(World world, BlockPosition blockPosition, IBlockData blockData, TileEntity tileEntity) {
+    public static CraftBlockState getBlockState(World world, BlockPosition blockPosition, IBlockData blockData, TileEntity tileEntity) {
         Material material = CraftMagicNumbers.getMaterial(blockData.getBlock());
         BlockStateFactory<?> factory;
         // For some types of TileEntity blocks (eg. moving pistons), Minecraft may in some situations (eg. when using Block#setType or the

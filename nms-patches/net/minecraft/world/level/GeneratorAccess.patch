@@ -1,6 +1,17 @@
 --- a/net/minecraft/world/level/GeneratorAccess.java
 +++ b/net/minecraft/world/level/GeneratorAccess.java
-@@ -35,11 +35,11 @@
+@@ -24,6 +24,10 @@
+ import net.minecraft.world.ticks.NextTickListEntry;
+ import net.minecraft.world.ticks.TickListPriority;
+ 
++// CraftBukkit start
++import net.minecraft.world.level.levelgen.feature.WorldGenFeatureConfigured;
++// CraftBukkit end
++
+ public interface GeneratorAccess extends ICombinedAccess, IWorldTime {
+ 
+     @Override
+@@ -35,11 +39,11 @@
  
      LevelTickAccess<Block> getBlockTicks();
  
@@ -14,10 +25,15 @@
          return new NextTickListEntry<>(t0, blockposition, this.getLevelData().getGameTime() + (long) i, this.nextSubTickCount());
      }
  
-@@ -114,4 +114,6 @@
+@@ -114,4 +118,11 @@
      default void gameEvent(GameEvent gameevent, BlockPosition blockposition, GameEvent.a gameevent_a) {
          this.gameEvent(gameevent, Vec3D.atCenterOf(blockposition), gameevent_a);
      }
 +
-+    net.minecraft.server.level.WorldServer getMinecraftWorld(); // CraftBukkit
++    // CraftBukkit start
++    net.minecraft.server.level.WorldServer getMinecraftWorld();
++
++    default void logFeaturePlacement(WorldGenFeatureConfigured<?, ?> featureConfigured) {
++    }
++    // CraftBukkit end
  }

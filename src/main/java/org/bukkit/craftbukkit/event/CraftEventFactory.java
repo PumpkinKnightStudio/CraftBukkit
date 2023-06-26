@@ -62,9 +62,11 @@ import net.minecraft.world.item.context.ItemActionContext;
 import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GeneratorAccess;
+import net.minecraft.world.level.GeneratorAccessSeed;
 import net.minecraft.world.level.World;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.properties.BlockPropertyInstrument;
+import net.minecraft.world.level.levelgen.feature.WorldGenFeatureConfigured;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.LootTableInfo;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
@@ -87,6 +89,7 @@ import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRaid;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.CraftTreeType;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -101,6 +104,9 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
+import org.bukkit.craftbukkit.util.BlockCapturer;
+import org.bukkit.craftbukkit.util.BlockStateListPopulator;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftVector;
@@ -141,6 +147,7 @@ import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
@@ -242,10 +249,12 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.event.world.LootGenerateEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
 
 public class CraftEventFactory {
@@ -395,7 +404,6 @@ public class CraftEventFactory {
 
         BlockMultiPlaceEvent event = new BlockMultiPlaceEvent(blockStates, blockClicked, item, player, canBuild);
         craftServer.getPluginManager().callEvent(event);
-        event.setCancelled(true);
         return event;
     }
 
@@ -422,7 +430,6 @@ public class CraftEventFactory {
 
         BlockPlaceEvent event = new BlockPlaceEvent(placedBlock, replacedBlockState, blockClicked, item, player, canBuild, equipmentSlot);
         craftServer.getPluginManager().callEvent(event);
-        event.setCancelled(true);
         return event;
     }
 
@@ -1805,5 +1812,27 @@ public class CraftEventFactory {
         ExplosionPrimeEvent event = new ExplosionPrimeEvent(nmsEntity.getBukkitEntity(), size, fire);
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+
+    public static void handleStructurePlaceEvent(Consumer<GeneratorAccessSeed> placement, BlockPosition origin, GeneratorAccessSeed world, boolean bonemeal, @Nullable EntityPlayer player) {
+        BlockStateListPopulator populator = new BlockStateListPopulator(world);
+        placement.accept(populator);
+
+        populator.refreshTiles();
+        WorldGenFeatureConfigured<?,?> featureConfigured = populator.getCapturedFeature();
+        // Tree did not generate
+        if (featureConfigured == null) {
+            return;
+        }
+
+        StructureGrowEvent event = new StructureGrowEvent(CraftLocation.toBukkit(origin, world.getLevel()), CraftTreeType.getTreeType(featureConfigured), bonemeal, player == null ? null : player.getBukkitEntity(), (List<org.bukkit.block.BlockState>) (List) populator.getList());
+        Bukkit.getPluginManager().callEvent(event);
+
+        //event.setCancelled(player == null ? false : player.getBukkitEntity().getInventory().contains(Material.DIAMOND)); - Debug Statement
+        if (!event.isCancelled()) {
+            for (BlockState blockState : populator.getList()) {
+                blockState.update(true, true);
+            }
+        }
     }
 }

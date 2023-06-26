@@ -454,7 +454,7 @@
                          BlockTNT.explode(worldserver, blockposition);
                          worldserver.removeBlock(blockposition, false);
                      } else {
-@@ -496,12 +801,62 @@
+@@ -496,6 +801,29 @@
                  this.setSuccess(true);
                  WorldServer worldserver = isourceblock.getLevel();
                  BlockPosition blockposition = isourceblock.getPos().relative((EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING));
@@ -480,44 +480,11 @@
 +                        return itemstack;
 +                    }
 +                }
-+
-+                worldserver.captureTreeGeneration = true;
 +                // CraftBukkit end
  
                  if (!ItemBoneMeal.growCrop(itemstack, worldserver, blockposition) && !ItemBoneMeal.growWaterPlant(itemstack, worldserver, blockposition, (EnumDirection) null)) {
                      this.setSuccess(false);
-                 } else if (!worldserver.isClientSide) {
-                     worldserver.levelEvent(1505, blockposition, 0);
-                 }
-+                // CraftBukkit start
-+                worldserver.captureTreeGeneration = false;
-+                if (worldserver.capturedBlockStates.size() > 0) {
-+                    TreeType treeType = BlockSapling.treeType;
-+                    BlockSapling.treeType = null;
-+                    Location location = CraftLocation.toBukkit(blockposition, worldserver.getWorld());
-+                    List<org.bukkit.block.BlockState> blocks = new java.util.ArrayList<>(worldserver.capturedBlockStates.values());
-+                    worldserver.capturedBlockStates.clear();
-+                    StructureGrowEvent structureEvent = null;
-+                    if (treeType != null) {
-+                        structureEvent = new StructureGrowEvent(location, treeType, false, null, blocks);
-+                        org.bukkit.Bukkit.getPluginManager().callEvent(structureEvent);
-+                    }
-+
-+                    BlockFertilizeEvent fertilizeEvent = new BlockFertilizeEvent(location.getBlock(), null, blocks);
-+                    fertilizeEvent.setCancelled(structureEvent != null && structureEvent.isCancelled());
-+                    org.bukkit.Bukkit.getPluginManager().callEvent(fertilizeEvent);
-+
-+                    if (!fertilizeEvent.isCancelled()) {
-+                        for (org.bukkit.block.BlockState blockstate : blocks) {
-+                            blockstate.update(true);
-+                        }
-+                    }
-+                }
-+                // CraftBukkit end
- 
-                 return itemstack;
-             }
-@@ -511,12 +866,41 @@
+@@ -511,12 +839,41 @@
              protected ItemStack execute(ISourceBlock isourceblock, ItemStack itemstack) {
                  WorldServer worldserver = isourceblock.getLevel();
                  BlockPosition blockposition = isourceblock.getPos().relative((EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING));
@@ -561,7 +528,7 @@
                  return itemstack;
              }
          });
-@@ -541,6 +925,30 @@
+@@ -541,6 +898,30 @@
                  EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING);
                  BlockPosition blockposition = isourceblock.getPos().relative(enumdirection);
  
@@ -592,7 +559,7 @@
                  if (worldserver.isEmptyBlock(blockposition) && BlockWitherSkull.canSpawnMob(worldserver, blockposition, itemstack)) {
                      worldserver.setBlock(blockposition, (IBlockData) Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(BlockSkull.ROTATION, RotationSegment.convertToSegment(enumdirection)), 3);
                      worldserver.gameEvent((Entity) null, GameEvent.BLOCK_PLACE, blockposition);
-@@ -566,6 +974,30 @@
+@@ -566,6 +947,30 @@
                  BlockPosition blockposition = isourceblock.getPos().relative((EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING));
                  BlockPumpkinCarved blockpumpkincarved = (BlockPumpkinCarved) Blocks.CARVED_PUMPKIN;
  
@@ -623,7 +590,7 @@
                  if (worldserver.isEmptyBlock(blockposition) && blockpumpkincarved.canSpawnGolem(worldserver, blockposition)) {
                      if (!worldserver.isClientSide) {
                          worldserver.setBlock(blockposition, blockpumpkincarved.defaultBlockState(), 3);
-@@ -615,6 +1047,30 @@
+@@ -615,6 +1020,30 @@
                  BlockPosition blockposition = isourceblock.getPos().relative((EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING));
                  IBlockData iblockdata = worldserver.getBlockState(blockposition);
  

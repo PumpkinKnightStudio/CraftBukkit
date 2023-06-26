@@ -1,6 +1,25 @@
 --- a/net/minecraft/world/item/ItemBoneMeal.java
 +++ b/net/minecraft/world/item/ItemBoneMeal.java
-@@ -33,6 +33,12 @@
+@@ -21,6 +21,18 @@
+ import net.minecraft.world.level.block.IBlockFragilePlantElement;
+ import net.minecraft.world.level.block.state.IBlockData;
+ 
++// CraftBukkit start
++import net.minecraft.server.level.EntityPlayer;
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.craftbukkit.block.CraftBlock;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.util.BlockCapturer;
++import org.bukkit.event.block.BlockFertilizeEvent;
++
++import java.util.ArrayList;
++// CraftBukkit end
++
+ public class ItemBoneMeal extends Item {
+ 
+     public static final int GRASS_SPREAD_WIDTH = 3;
+@@ -33,11 +45,17 @@
  
      @Override
      public EnumInteractionResult useOn(ItemActionContext itemactioncontext) {
@@ -13,3 +32,81 @@
          World world = itemactioncontext.getLevel();
          BlockPosition blockposition = itemactioncontext.getClickedPos();
          BlockPosition blockposition1 = blockposition.relative(itemactioncontext.getClickedFace());
+ 
+-        if (growCrop(itemactioncontext.getItemInHand(), world, blockposition)) {
++        if (growCrop(itemactioncontext.getItemInHand(), world, blockposition, (EntityPlayer) itemactioncontext.getPlayer())) { // Craftbukkit
+             if (!world.isClientSide) {
+                 world.levelEvent(1505, blockposition, 0);
+             }
+@@ -47,7 +65,7 @@
+             IBlockData iblockdata = world.getBlockState(blockposition);
+             boolean flag = iblockdata.isFaceSturdy(world, blockposition, itemactioncontext.getClickedFace());
+ 
+-            if (flag && growWaterPlant(itemactioncontext.getItemInHand(), world, blockposition1, itemactioncontext.getClickedFace())) {
++            if (flag && growWaterPlant(itemactioncontext.getItemInHand(), world, blockposition1, itemactioncontext.getClickedFace(), (EntityPlayer) itemactioncontext.getPlayer())) { // Craftbukkit
+                 if (!world.isClientSide) {
+                     world.levelEvent(1505, blockposition1, 0);
+                 }
+@@ -60,6 +78,11 @@
+     }
+ 
+     public static boolean growCrop(ItemStack itemstack, World world, BlockPosition blockposition) {
++    // CraftBukkit start
++        return growCrop(itemstack, world, blockposition, null);
++    }
++    public static boolean growCrop(ItemStack itemstack, World world, BlockPosition blockposition, EntityPlayer player) {
++    // CraftBukkit end
+         IBlockData iblockdata = world.getBlockState(blockposition);
+ 
+         if (iblockdata.getBlock() instanceof IBlockFragilePlantElement) {
+@@ -68,7 +91,20 @@
+             if (iblockfragileplantelement.isValidBonemealTarget(world, blockposition, iblockdata, world.isClientSide)) {
+                 if (world instanceof WorldServer) {
+                     if (iblockfragileplantelement.isBonemealSuccess(world, world.random, blockposition, iblockdata)) {
+-                        iblockfragileplantelement.performBonemeal((WorldServer) world, world.random, blockposition, iblockdata);
++                        // Craftbukkit start
++                        try (BlockCapturer.SimpleBlockCapture capture = world.blockCapture.capture()) {
++                            iblockfragileplantelement.performBonemeal((WorldServer) world, world.random, blockposition, iblockdata, player);
++                            BlockFertilizeEvent event = new BlockFertilizeEvent(CraftBlock.at(world, blockposition), player == null ? null : player.getBukkitEntity(), new ArrayList<>(capture.getCapturedBlockStates().values()));
++                            Bukkit.getPluginManager().callEvent(event);
++                            // event.setCancelled(player != null && player.getBukkitEntity().getInventory().contains(Material.GOLD_INGOT)); - debug statement
++                            if (event.isCancelled()) {
++                                capture.rewind();
++                                return false;
++                            } else {
++                                capture.finalizePlacement();
++                            }
++                        }
++                        // Craftbukkit end
+                     }
+ 
+                     itemstack.shrink(1);
+@@ -81,7 +117,28 @@
+         return false;
+     }
+ 
++
+     public static boolean growWaterPlant(ItemStack itemstack, World world, BlockPosition blockposition, @Nullable EnumDirection enumdirection) {
++    // CraftBukkit start
++        return growWaterPlant(itemstack, world, blockposition, enumdirection, null);
++    }
++    public static boolean growWaterPlant(ItemStack itemstack, World world, BlockPosition blockposition, @Nullable EnumDirection enumdirection, EntityPlayer player) {
++        try (BlockCapturer.SimpleBlockCapture capture = world.blockCapture.capture()) {
++            boolean result = growWaterPlant0(itemstack, world, blockposition, enumdirection);
++            BlockFertilizeEvent event = new BlockFertilizeEvent(CraftBlock.at(world, blockposition), player == null ? null : player.getBukkitEntity(), new ArrayList<>(capture.getCapturedBlockStates().values()));
++            Bukkit.getPluginManager().callEvent(event);
++            // event.setCancelled(player != null && player.getBukkitEntity().getInventory().contains(Material.GOLD_INGOT)); - Debug Statement
++            if (event.isCancelled()) {
++                capture.rewind();
++                return false;
++            } else {
++                capture.finalizePlacement();
++            }
++            return result;
++        }
++    }
++    private static boolean growWaterPlant0(ItemStack itemstack, World world, BlockPosition blockposition, @Nullable EnumDirection enumdirection) {
++    // CraftBukkit end
+         if (world.getBlockState(blockposition).is(Blocks.WATER) && world.getFluidState(blockposition).getAmount() == 8) {
+             if (!(world instanceof WorldServer)) {
+                 return true;
