@@ -14,6 +14,6 @@ public final class CraftMemoryKey {
     }
 
     public static <T, U> MemoryKey<U> toMemoryKey(IRegistry<MemoryModuleType<?>> registry, MemoryModuleType<T> memoryModuleType) {
-        return MemoryKey.getByKey(CraftNamespacedKey.fromMinecraft(registry.getKey(memoryModuleType)));
+        return (MemoryKey<U>) MemoryKey.getByKey(CraftNamespacedKey.fromMinecraft(registry.getKey(memoryModuleType)));
     }
 }

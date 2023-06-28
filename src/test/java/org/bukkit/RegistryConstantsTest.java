@@ -169,7 +169,7 @@ public class RegistryConstantsTest extends AbstractTestingBase {
         this.testMissingConstants(MusicInstrument.class, Registries.INSTRUMENT);
     }
 
-    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
+    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<? extends T> registry) {
         List<NamespacedKey> excessKeys = new ArrayList<>();
 
         for (Field field : clazz.getFields()) {
