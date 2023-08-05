@@ -32,7 +32,7 @@
                  }
  
 +                // CraftBukkit start
-+                EntityType hatchingType = EntityType.CHICKEN;
++                EntityType<?> hatchingType = EntityType.CHICKEN;
 +
 +                Entity shooter = this.getOwner();
 +                if (!hatching) {

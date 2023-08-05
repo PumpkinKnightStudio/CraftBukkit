@@ -9,8 +9,6 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import org.bukkit.Color;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
@@ -117,13 +115,13 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
 
     @Override
     public void setBasePotionType(@NotNull PotionType potionType) {
-        getHandle().setPotionType(potionType.getKey().toString());
+        getHandle().potion = CraftPotionType.bukkitToMinecraft(potionType);
     }
 
     @NotNull
     @Override
     public PotionType getBasePotionType() {
-        return Registry.POTION.get(NamespacedKey.fromString(getHandle().getPotionType()));
+        return CraftPotionType.minecraftToBukkit(getHandle().potion);
     }
 
     @Override

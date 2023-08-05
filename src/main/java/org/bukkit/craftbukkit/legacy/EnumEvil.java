@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.legacy;
 
 import com.google.common.collect.Lists;
 import java.lang.reflect.Array;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.tag.CraftTag;
 import org.bukkit.craftbukkit.util.ClassTraverser;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -165,6 +167,26 @@ public class EnumEvil {
 
     public static List<Material> getShards(DecoratedPot decoratedPot) {
         return decoratedPot.getShards().stream().map(CraftMagicNumbers.INSTANCE::toMaterial).toList();
+    }
+
+    public static void setSherd(DecoratedPot decoratedPot, DecoratedPot.Side side, Material material) {
+        decoratedPot.setSherd(side, material == null ? null : material.asItemType());
+    }
+
+    public static Material getSherd(DecoratedPot decoratedPot, DecoratedPot.Side side) {
+        return CraftMagicNumbers.INSTANCE.toMaterial(decoratedPot.getSherd(side));
+    }
+
+    public static Map<DecoratedPot.Side, Material> getSherds(DecoratedPot decoratedPot) {
+        Map<DecoratedPot.Side, ItemType> map = decoratedPot.getSherds();
+        Map<DecoratedPot.Side, Material> sherds = new EnumMap<>(DecoratedPot.Side.class);
+
+        sherds.put(DecoratedPot.Side.BACK, CraftMagicNumbers.INSTANCE.toMaterial(map.get(DecoratedPot.Side.BACK)));
+        sherds.put(DecoratedPot.Side.LEFT, CraftMagicNumbers.INSTANCE.toMaterial(map.get(DecoratedPot.Side.LEFT)));
+        sherds.put(DecoratedPot.Side.RIGHT, CraftMagicNumbers.INSTANCE.toMaterial(map.get(DecoratedPot.Side.RIGHT)));
+        sherds.put(DecoratedPot.Side.FRONT, CraftMagicNumbers.INSTANCE.toMaterial(map.get(DecoratedPot.Side.FRONT)));
+
+        return sherds;
     }
 
     public static Material getPlaying(Jukebox jukebox) {
@@ -608,5 +630,9 @@ public class EnumEvil {
         }
 
         return ((Enum<?>) object).ordinal();
+    }
+
+    public static Material getSpawnEgg(ItemFactory itemFactory, EntityType<?> type) {
+        return CraftMagicNumbers.INSTANCE.toMaterial(itemFactory.getSpawnEgg(type));
     }
 }

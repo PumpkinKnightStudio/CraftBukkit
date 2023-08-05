@@ -94,7 +94,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntityTippedArrow(world, iposition.x(), iposition.y(), iposition.z());
-                ((Arrow) launch.getBukkitEntity()).setBasePotionData(new PotionData(PotionType.WATER, false, false));
+                ((Arrow) launch.getBukkitEntity()).setBasePotionType(PotionType.WATER);
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntitySpectralArrow(world, iposition.x(), iposition.y(), iposition.z());
             } else {

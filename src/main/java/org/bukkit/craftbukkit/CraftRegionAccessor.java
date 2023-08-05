@@ -619,7 +619,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             } else if (AbstractArrow.class.isAssignableFrom(clazz)) {
                 if (TippedArrow.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.ARROW.create(world);
-                    ((Arrow) entity.getBukkitEntity()).setBasePotionData(new PotionData(PotionType.WATER, false, false));
+                    ((Arrow) entity.getBukkitEntity()).setBasePotionType(PotionType.WATER);
                 } else if (SpectralArrow.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.SPECTRAL_ARROW.create(world);
                 } else if (Trident.class.isAssignableFrom(clazz)) {
