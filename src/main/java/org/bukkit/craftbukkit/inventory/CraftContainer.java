@@ -154,6 +154,7 @@ public class CraftContainer extends Container {
                 return Containers.GRINDSTONE;
             case STONECUTTER:
                 return Containers.STONECUTTER;
+            case SMITHING:
             case SMITHING_NEW:
                 return Containers.SMITHING;
             case CREATIVE:
@@ -198,7 +199,6 @@ public class CraftContainer extends Container {
                 delegate = new ContainerHopper(windowId, bottom, top);
                 break;
             case ANVIL:
-            case SMITHING:
                 setupAnvil(top, bottom); // SPIGOT-6783 - manually set up slots so we can use the delegated inventory and not the automatically created one
                 break;
             case BEACON:
@@ -231,6 +231,7 @@ public class CraftContainer extends Container {
             case MERCHANT:
                 delegate = new ContainerMerchant(windowId, bottom);
                 break;
+            case SMITHING:
             case SMITHING_NEW:
                 setupSmithing(top, bottom); // SPIGOT-6783 - manually set up slots so we can use the delegated inventory and not the automatically created one
                 break;
