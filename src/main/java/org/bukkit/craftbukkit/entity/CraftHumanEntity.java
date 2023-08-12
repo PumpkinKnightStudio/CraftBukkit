@@ -14,12 +14,15 @@ import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.ITileInventory;
+import net.minecraft.world.TileInventory;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EnumMainHand;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.entity.projectile.EntityFireworks;
 import net.minecraft.world.inventory.Container;
+import net.minecraft.world.inventory.ContainerAccess;
+import net.minecraft.world.inventory.ContainerEnchantTable;
 import net.minecraft.world.inventory.Containers;
 import net.minecraft.world.item.ItemCooldown;
 import net.minecraft.world.item.crafting.CraftingManager;
@@ -67,6 +70,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     private CraftInventoryPlayer inventory;
@@ -330,20 +334,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Override
     public InventoryView openWorkbench(Location location, boolean force) {
-        if (location == null) {
-            location = getLocation();
-        }
-        if (!force) {
-            Block block = location.getBlock();
-            if (block.getType() != Material.CRAFTING_TABLE) {
-                return null;
-            }
-        }
-        getHandle().openMenu(((BlockWorkbench) Blocks.CRAFTING_TABLE).getMenuProvider(null, getHandle().level(), CraftLocation.toBlockPosition(location)));
-        if (force) {
-            getHandle().containerMenu.checkReachable = false;
-        }
-        return getHandle().containerMenu.getBukkitView();
+        return openWorkstation(location, force, Material.CRAFTING_TABLE);
     }
 
     @Override
@@ -358,10 +349,82 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             }
         }
 
-        // If there isn't an enchant table we can force create one, won't be very useful though.
         BlockPosition pos = CraftLocation.toBlockPosition(location);
-        getHandle().openMenu(((BlockEnchantmentTable) Blocks.ENCHANTING_TABLE).getMenuProvider(null, getHandle().level(), pos));
+        ITileInventory tileInventory = ((BlockEnchantmentTable) Blocks.ENCHANTING_TABLE).getMenuProvider(null, getHandle().level(), pos);
+        if (tileInventory == null) {
+            // fix enchantment table not showing when detached from a location
+            tileInventory = new TileInventory((i, playerinventory, entityhuman) -> {
+                return new ContainerEnchantTable(i, playerinventory, ContainerAccess.create(getHandle().level(), pos));
+            }, IChatBaseComponent.translatable("container.enchant"));
+        }
+        getHandle().openMenu(tileInventory);
+        if (force) {
+            getHandle().containerMenu.checkReachable = false;
+        }
+        return getHandle().containerMenu.getBukkitView();
+    }
 
+    @Override
+    public InventoryView openAnvil(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.ANVIL);
+    }
+
+    @Override
+    public InventoryView openSmithing(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.SMITHING_TABLE);
+    }
+
+    @Override
+    public InventoryView openLoom(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.LOOM);
+    }
+
+    @Override
+    public InventoryView openCartography(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.CARTOGRAPHY_TABLE);
+    }
+
+    @Override
+    public InventoryView openGrindstone(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.GRINDSTONE);
+    }
+
+    @Override
+    public InventoryView openStonecutter(@Nullable Location location, boolean force) {
+        return openWorkstation(location, force, Material.STONECUTTER);
+    }
+
+    private InventoryView openWorkstation(@Nullable Location location, boolean force, Material material) {
+        if (location == null) {
+           location = getLocation();
+        }
+        if (!force) {
+            Block block = location.getBlock();
+            if (block.getType() != material) {
+                return null;
+            }
+        }
+
+        net.minecraft.world.level.block.Block block;
+        if (material == Material.CRAFTING_TABLE) {
+            block = Blocks.CRAFTING_TABLE;
+        } else if (material == Material.ANVIL) {
+            block = Blocks.ANVIL;
+        } else if (material == Material.SMITHING_TABLE) {
+            block = Blocks.SMITHING_TABLE;
+        } else if (material == Material.LOOM) {
+            block = Blocks.LOOM;
+        } else if (material == Material.CARTOGRAPHY_TABLE) {
+            block = Blocks.CARTOGRAPHY_TABLE;
+        } else if (material == Material.GRINDSTONE) {
+            block = Blocks.GRINDSTONE;
+        } else if (material == Material.STONECUTTER) {
+            block = Blocks.STONECUTTER;
+        } else {
+            throw new IllegalArgumentException("The material provided does not support opening: " + material.name());
+        }
+
+        getHandle().openMenu(block.getMenuProvider(null, getHandle().level(), CraftLocation.toBlockPosition(location)));
         if (force) {
             getHandle().containerMenu.checkReachable = false;
         }
