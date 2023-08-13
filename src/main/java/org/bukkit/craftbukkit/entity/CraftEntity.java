@@ -204,7 +204,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     protected final CraftServer server;
     protected Entity entity;
-    private final EntityType entityType;
+    private final EntityType<?> entityType;
     private EntityDamageEvent lastDamageEvent;
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
@@ -762,7 +762,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
-    public EntityType<?> getType() {
+    public final EntityType<?> getType() {
         return entityType;
     }
 
