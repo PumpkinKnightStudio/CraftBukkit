@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import net.minecraft.world.entity.EntityPose;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Camel;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 
 public class CraftCamel extends CraftAbstractHorse implements Camel {

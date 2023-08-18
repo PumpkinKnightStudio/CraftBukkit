@@ -10,8 +10,10 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.craftbukkit.block.sign.CraftSignSide;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T> implements Sign {
@@ -42,12 +44,22 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
 
     @Override
     public boolean isEditable() {
-        return !getSnapshot().isWaxed() && getSnapshot().playerWhoMayEdit != null;
+        return !isWaxed();
     }
 
     @Override
     public void setEditable(boolean editable) {
-        getSnapshot().setWaxed(!editable);
+        this.setWaxed(!editable);
+    }
+
+    @Override
+    public boolean isWaxed() {
+        return getSnapshot().isWaxed();
+    }
+
+    @Override
+    public void setWaxed(boolean waxed) {
+        getSnapshot().setWaxed(waxed);
     }
 
     @Override
@@ -99,7 +111,12 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
         Preconditions.checkArgument(sign.isPlaced(), "Sign must be placed");
         Preconditions.checkArgument(sign.getWorld() == player.getWorld(), "Sign must be in same world as Player");
 
+        if (!CraftEventFactory.callPlayerSignOpenEvent(player, sign, side, PlayerSignOpenEvent.Cause.PLUGIN)) {
+            return;
+        }
+
         TileEntitySign handle = ((CraftSign<?>) sign).getTileEntity();
+        handle.setAllowedPlayerEditor(player.getUniqueId());
 
         ((CraftPlayer) player).getHandle().openTextEdit(handle, Side.FRONT == side);
     }

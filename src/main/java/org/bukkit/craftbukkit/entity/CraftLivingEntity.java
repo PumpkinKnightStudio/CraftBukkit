@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
+import net.minecraft.server.level.WorldServer;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.world.EnumHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -58,6 +60,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.EnderPearl;
@@ -337,6 +340,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public int getNoActionTicks() {
+        return getHandle().getNoActionTime();
+    }
+
+    @Override
+    public void setNoActionTicks(int ticks) {
+        Preconditions.checkArgument(ticks >= 0, "ticks must be >= 0");
+        getHandle().setNoActionTime(ticks);
+    }
+
+    @Override
     public EntityLiving getHandle() {
         return (EntityLiving) entity;
     }
@@ -425,7 +439,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntityTippedArrow(world, getHandle());
-                ((EntityTippedArrow) launch).setPotionType(CraftPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
+                ((Arrow) launch.getBukkitEntity()).setBasePotionType(PotionType.WATER);
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntitySpectralArrow(world, getHandle());
             } else if (Trident.class.isAssignableFrom(projectile)) {
@@ -665,6 +679,20 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         Preconditions.checkState(!getHandle().generation, "Cannot swing hand during world generation");
 
         getHandle().swing(EnumHand.OFF_HAND, true);
+    }
+
+    @Override
+    public void playHurtAnimation(float yaw) {
+        if (getHandle().level() instanceof WorldServer world) {
+            /*
+             * Vanilla degrees state that 0 = left, 90 = front, 180 = right, and 270 = behind.
+             * This makes no sense. We'll add 90 to it so that 0 = front, clockwise from there.
+             */
+            float actualYaw = yaw + 90;
+            ClientboundHurtAnimationPacket packet = new ClientboundHurtAnimationPacket(getEntityId(), actualYaw);
+
+            world.getChunkSource().broadcastAndSend(getHandle(), packet);
+        }
     }
 
     @Override

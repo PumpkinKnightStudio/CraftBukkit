@@ -923,7 +923,9 @@ public class Commodore {
                         }
 
                         if (preEnumKilling) {
-                            if ((owner.startsWith("org/bukkit") && desc.contains("org/bukkit/Material")) || owner.equals("org/bukkit/Tag") || owner.equals("org/bukkit/entity/Piglin")) {
+                            if ((owner.startsWith("org/bukkit") && desc.contains("org/bukkit/Material"))
+                                    || owner.equals("org/bukkit/Tag") || owner.equals("org/bukkit/entity/Piglin")
+                                    || owner.equals("org/bukkit/block/DecoratedPot")) {
                                 if (replaceMaterialMethod(owner, name, desc, (newName, newDesc) ->
                                         super.visitMethodInsn(Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false))) {
                                     return;
@@ -1091,7 +1093,9 @@ public class Commodore {
                             newTypes.add(samMethodType);
 
                             if (preEnumKilling) {
-                                if ((implMethod.getOwner().startsWith("org/bukkit") && implMethod.getDesc().contains("org/bukkit/Material")) || implMethod.getOwner().equals("org/bukkit/Tag") || implMethod.getOwner().equals("org/bukkit/entity/Piglin")) {
+                                if ((implMethod.getOwner().startsWith("org/bukkit") && implMethod.getDesc().contains("org/bukkit/Material"))
+                                        || implMethod.getOwner().equals("org/bukkit/Tag") || implMethod.getOwner().equals("org/bukkit/entity/Piglin")
+                                        || implMethod.getOwner().equals("org/bukkit/block/DecoratedPot")) {
 
                                     Handle[] handle = new Handle[1];
 

@@ -44,6 +44,12 @@ public class CraftItemType implements ItemType {
         return bukkit;
     }
 
+    public static Item bukkitToMinecraft(ItemType bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftItemType) bukkit).getHandle();
+    }
+
     public CraftItemType(NamespacedKey key, Item item) {
         this.key = key;
         this.item = item;

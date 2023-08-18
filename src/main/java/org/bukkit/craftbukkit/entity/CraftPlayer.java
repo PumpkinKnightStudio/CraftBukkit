@@ -11,10 +11,14 @@ import it.unimi.dsi.fastutil.shorts.ShortSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -83,6 +87,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
 import net.minecraft.world.entity.ai.attributes.AttributeModifiable;
 import net.minecraft.world.entity.ai.attributes.GenericAttributes;
 import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.food.FoodMetaData;
 import net.minecraft.world.inventory.Container;
 import net.minecraft.world.item.EnumColor;
 import net.minecraft.world.level.EnumGamemode;
@@ -95,6 +100,7 @@ import net.minecraft.world.level.border.IWorldBorderListener;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.phys.Vec3D;
+import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -110,6 +116,8 @@ import org.bukkit.Sound;
 import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
+import org.bukkit.ban.IpBanList;
+import org.bukkit.ban.ProfileBanList;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockType;
@@ -1207,7 +1215,61 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean isBanned() {
-        return server.getBanList(BanList.Type.NAME).isBanned(getName());
+        return ((ProfileBanList) server.getBanList(BanList.Type.PROFILE)).isBanned(getPlayerProfile());
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Date expires, String source) {
+        return this.ban(reason, expires, source, true);
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Instant expires, String source) {
+        return ban(reason, expires != null ? Date.from(expires) : null, source);
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Duration duration, String source) {
+        return ban(reason, duration != null ? Instant.now().plus(duration) : null, source);
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Date expires, String source, boolean kickPlayer) {
+        BanEntry<PlayerProfile> banEntry = ((ProfileBanList) server.getBanList(BanList.Type.PROFILE)).addBan(getPlayerProfile(), reason, expires, source);
+        if (kickPlayer) {
+            this.kickPlayer(reason);
+        }
+        return banEntry;
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Instant instant, String source, boolean kickPlayer) {
+        return ban(reason, instant != null ? Date.from(instant) : null, source, kickPlayer);
+    }
+
+    @Override
+    public BanEntry<PlayerProfile> ban(String reason, Duration duration, String source, boolean kickPlayer) {
+        return ban(reason, duration != null ? Instant.now().plus(duration) : null, source, kickPlayer);
+    }
+
+    @Override
+    public BanEntry<InetAddress> banIp(String reason, Date expires, String source, boolean kickPlayer) {
+        Preconditions.checkArgument(getAddress() != null, "The Address of this Player is null");
+        BanEntry<InetAddress> banEntry = ((IpBanList) server.getBanList(BanList.Type.IP)).addBan(getAddress().getAddress(), reason, expires, source);
+        if (kickPlayer) {
+            this.kickPlayer(reason);
+        }
+        return banEntry;
+    }
+
+    @Override
+    public BanEntry<InetAddress> banIp(String reason, Instant instant, String source, boolean kickPlayer) {
+        return banIp(reason, instant != null ? Date.from(instant) : null, source, kickPlayer);
+    }
+
+    @Override
+    public BanEntry<InetAddress> banIp(String reason, Duration duration, String source, boolean kickPlayer) {
+        return banIp(reason, duration != null ? Instant.now().plus(duration) : null, source, kickPlayer);
     }
 
     @Override
@@ -1902,8 +1964,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().maxHealthCache = getMaxHealth();
     }
 
+    @Override
+    public void sendHealthUpdate(double health, int foodLevel, float saturation) {
+        getHandle().connection.send(new PacketPlayOutUpdateHealth((float) health, foodLevel, saturation));
+    }
+
+    @Override
     public void sendHealthUpdate() {
-        getHandle().connection.send(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
+        FoodMetaData foodData = getHandle().getFoodData();
+        sendHealthUpdate(getScaledHealth(), foodData.getFoodLevel(), foodData.getSaturationLevel());
     }
 
     public void injectScaledMaxHealth(Collection<AttributeModifiable> collection, boolean force) {

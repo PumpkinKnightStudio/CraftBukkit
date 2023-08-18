@@ -64,6 +64,7 @@ import net.minecraft.world.level.ChunkCoordIntPair;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GeneratorAccess;
 import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.entity.TileEntitySign;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.properties.BlockPropertyInstrument;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -72,7 +73,9 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
 import net.minecraft.world.phys.MovingObjectPosition;
 import net.minecraft.world.phys.MovingObjectPositionBlock;
 import net.minecraft.world.phys.MovingObjectPositionEntity;
+import net.minecraft.world.phys.Vec3D;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
@@ -82,6 +85,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockType;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftLootTable;
@@ -106,6 +111,7 @@ import org.bukkit.craftbukkit.inventory.CraftMetaBook;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.util.CraftVector;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.AreaEffectCloud;
@@ -113,6 +119,7 @@ import org.bukkit.entity.Bat;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.Explosive;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Fish;
 import org.bukkit.entity.HumanEntity;
@@ -174,6 +181,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEnterLoveModeEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
@@ -183,10 +191,12 @@ import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FireworkExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.HorseJumpEvent;
@@ -226,8 +236,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
+import org.bukkit.event.player.PlayerRecipeBookClickEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.raid.RaidFinishEvent;
@@ -243,8 +255,10 @@ import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemType;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 
 public class CraftEventFactory {
     public static org.bukkit.block.Block blockDamage; // For use in EntityDamageByBlockEvent
@@ -268,6 +282,25 @@ public class CraftEventFactory {
     public static <T extends Event> T callEvent(T event) {
         Bukkit.getServer().getPluginManager().callEvent(event);
         return event;
+    }
+
+    /**
+     * PlayerSignOpenEvent
+     */
+    public static boolean callPlayerSignOpenEvent(EntityHuman player, TileEntitySign tileEntitySign, boolean front, PlayerSignOpenEvent.Cause cause) {
+        final Block block = CraftBlock.at(tileEntitySign.getLevel(), tileEntitySign.getBlockPos());
+        final Sign sign = (Sign) CraftBlockStates.getBlockState(block);
+        final Side side = (front) ? Side.FRONT : Side.BACK;
+        return callPlayerSignOpenEvent((Player) player.getBukkitEntity(), sign, side, cause);
+    }
+
+    /**
+     * PlayerSignOpenEvent
+     */
+    public static boolean callPlayerSignOpenEvent(Player player, Sign sign, Side side, PlayerSignOpenEvent.Cause cause) {
+        final PlayerSignOpenEvent event = new PlayerSignOpenEvent(player, sign, side, cause);
+        Bukkit.getPluginManager().callEvent(event);
+        return !event.isCancelled();
     }
 
     /**
@@ -498,12 +531,17 @@ public class CraftEventFactory {
     }
 
     public static PlayerInteractEvent callPlayerInteractEvent(EntityHuman who, Action action, BlockPosition position, EnumDirection direction, ItemStack itemstack, EnumHand hand) {
-        return callPlayerInteractEvent(who, action, position, direction, itemstack, false, hand);
+        return callPlayerInteractEvent(who, action, position, direction, itemstack, false, hand, null);
     }
 
-    public static PlayerInteractEvent callPlayerInteractEvent(EntityHuman who, Action action, BlockPosition position, EnumDirection direction, ItemStack itemstack, boolean cancelledBlock, EnumHand hand) {
+    public static PlayerInteractEvent callPlayerInteractEvent(EntityHuman who, Action action, BlockPosition position, EnumDirection direction, ItemStack itemstack, boolean cancelledBlock, EnumHand hand, Vec3D targetPos) {
         Player player = (who == null) ? null : (Player) who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
+
+        Vector clickedPos = null;
+        if (position != null && targetPos != null) {
+            clickedPos = CraftVector.toBukkit(targetPos.subtract(Vec3D.atLowerCornerOf(position)));
+        }
 
         CraftWorld craftWorld = (CraftWorld) player.getWorld();
         CraftServer craftServer = (CraftServer) player.getServer();
@@ -527,7 +565,7 @@ public class CraftEventFactory {
             itemInHand = null;
         }
 
-        PlayerInteractEvent event = new PlayerInteractEvent(player, action, itemInHand, blockClicked, blockFace, (hand == null) ? null : ((hand == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND));
+        PlayerInteractEvent event = new PlayerInteractEvent(player, action, itemInHand, blockClicked, blockFace, (hand == null) ? null : ((hand == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND), clickedPos);
         if (cancelledBlock) {
             event.setUseInteractedBlock(Event.Result.DENY);
         }
@@ -740,14 +778,14 @@ public class CraftEventFactory {
     /**
      * ItemMergeEvent
      */
-    public static ItemMergeEvent callItemMergeEvent(EntityItem merging, EntityItem mergingWith) {
+    public static boolean callItemMergeEvent(EntityItem merging, EntityItem mergingWith) {
         org.bukkit.entity.Item entityMerging = (org.bukkit.entity.Item) merging.getBukkitEntity();
         org.bukkit.entity.Item entityMergingWith = (org.bukkit.entity.Item) mergingWith.getBukkitEntity();
 
         ItemMergeEvent event = new ItemMergeEvent(entityMerging, entityMergingWith);
 
         Bukkit.getPluginManager().callEvent(event);
-        return event;
+        return !event.isCancelled();
     }
 
     /**
@@ -800,6 +838,7 @@ public class CraftEventFactory {
     }
 
     public static BlockPosition sourceBlockOverride = null; // SPIGOT-7068: Add source block override, not the most elegant way but better than passing down a BlockPosition up to five methods deep.
+
     public static boolean handleBlockSpreadEvent(GeneratorAccess world, BlockPosition source, BlockPosition target, IBlockData block, int flag) {
         // Suppress during worldgen
         if (!(world instanceof World)) {
@@ -1195,23 +1234,23 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static HorseJumpEvent callHorseJumpEvent(Entity horse, float power) {
+    public static boolean callHorseJumpEvent(Entity horse, float power) {
         HorseJumpEvent event = new HorseJumpEvent((AbstractHorse) horse.getBukkitEntity(), power);
         horse.getBukkitEntity().getServer().getPluginManager().callEvent(event);
-        return event;
+        return !event.isCancelled();
     }
 
-    public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPosition position, IBlockData newBlock) {
+    public static boolean callEntityChangeBlockEvent(Entity entity, BlockPosition position, IBlockData newBlock) {
         return callEntityChangeBlockEvent(entity, position, newBlock, false);
     }
 
-    public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPosition position, IBlockData newBlock, boolean cancelled) {
+    public static boolean callEntityChangeBlockEvent(Entity entity, BlockPosition position, IBlockData newBlock, boolean cancelled) {
         Block block = entity.level().getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
 
         EntityChangeBlockEvent event = new EntityChangeBlockEvent(entity.getBukkitEntity(), block, CraftBlockData.fromData(newBlock));
         event.setCancelled(cancelled);
         event.getEntity().getServer().getPluginManager().callEvent(event);
-        return event;
+        return !event.isCancelled();
     }
 
     public static CreeperPowerEvent callCreeperPowerEvent(Entity creeper, Entity lightning, CreeperPowerEvent.PowerCause cause) {
@@ -1738,6 +1777,7 @@ public class CraftEventFactory {
         EntitiesLoadEvent event = new EntitiesLoadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
         Bukkit.getPluginManager().callEvent(event);
     }
+
     public static void callEntitiesUnloadEvent(World world, ChunkCoordIntPair coords, List<Entity> entities) {
         List<org.bukkit.entity.Entity> bukkitEntities = Collections.unmodifiableList(entities.stream().map(Entity::getBukkitEntity).collect(Collectors.toList()));
         EntitiesUnloadEvent event = new EntitiesUnloadEvent(new CraftChunk((WorldServer) world, coords.x, coords.z), bukkitEntities);
@@ -1752,5 +1792,40 @@ public class CraftEventFactory {
         Bukkit.getPluginManager().callEvent(event);
 
         return !event.isCancelled();
+    }
+
+    public static PlayerRecipeBookClickEvent callRecipeBookClickEvent(EntityPlayer player, Recipe recipe, boolean shiftClick) {
+        PlayerRecipeBookClickEvent event = new PlayerRecipeBookClickEvent(player.getBukkitEntity(), recipe, shiftClick);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static EntityTeleportEvent callEntityTeleportEvent(Entity nmsEntity, double x, double y, double z) {
+        CraftEntity entity = nmsEntity.getBukkitEntity();
+        Location to = new Location(entity.getWorld(), x, y, z, nmsEntity.getYRot(), nmsEntity.getXRot());
+        EntityTeleportEvent event = new org.bukkit.event.entity.EntityTeleportEvent(entity, entity.getLocation(), to);
+
+        Bukkit.getPluginManager().callEvent(event);
+
+        return event;
+    }
+
+    public static boolean callEntityInteractEvent(Entity nmsEntity, Block block) {
+        EntityInteractEvent event = new EntityInteractEvent(nmsEntity.getBukkitEntity(), block);
+        Bukkit.getPluginManager().callEvent(event);
+
+        return !event.isCancelled();
+    }
+
+    public static ExplosionPrimeEvent callExplosionPrimeEvent(Explosive explosive) {
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent(explosive);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static ExplosionPrimeEvent callExplosionPrimeEvent(Entity nmsEntity, float size, boolean fire) {
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent(nmsEntity.getBukkitEntity(), size, fire);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
     }
 }
