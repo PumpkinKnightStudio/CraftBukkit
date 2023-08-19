@@ -108,6 +108,7 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
@@ -580,9 +581,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public <T> void playEffect(Location loc, Effect effect, T data) {
         Preconditions.checkArgument(effect != null, "Effect cannot be null");
         if (data != null) {
-            Preconditions.checkArgument(effect.getData() != null, "Effect.%s does not have a valid Data", effect);
-            Preconditions.checkArgument(effect.getData().isAssignableFrom(data.getClass()), "%s data cannot be used for the %s effect", data.getClass().getName(), effect);
-        } else {
+            // Support legacy Material usage
+            if (data.getClass() != Material.class || (effect != Effect.RECORD_PLAY && effect != Effect.STEP_SOUND)) {
+                Preconditions.checkArgument(effect.getData() != null, "Effect.%s does not have a valid Data", effect);
+                Preconditions.checkArgument(effect.getData().isAssignableFrom(data.getClass()), "%s data cannot be used for the %s effect", data.getClass().getName(), effect);
+            }
+            } else {
             // Special case: the axis is optional for ELECTRIC_SPARK
             Preconditions.checkArgument(effect.getData() == null || effect == Effect.ELECTRIC_SPARK, "Wrong kind of data for the %s effect", effect);
         }
