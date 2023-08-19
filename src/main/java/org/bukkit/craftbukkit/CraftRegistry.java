@@ -59,7 +59,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         return ((CraftServer) Bukkit.getServer()).getServer().registryAccess();
     }
 
-    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
+    public static <B extends Keyed> Registry<?> createRegistry(Class<? super B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == Structure.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new);
         }

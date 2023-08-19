@@ -2256,7 +2256,7 @@ public final class CraftServer implements Server {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Keyed> org.bukkit.Tag<T> getTag(String registry, NamespacedKey tag, Class<T> clazz) {
+    public <T extends Keyed> org.bukkit.Tag<T> getTag(String registry, NamespacedKey tag, Class<? super T> clazz) {
         Preconditions.checkArgument(registry != null, "registry cannot be null");
         Preconditions.checkArgument(tag != null, "NamespacedKey tag cannot be null");
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
@@ -2300,7 +2300,7 @@ public final class CraftServer implements Server {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<T> clazz) {
+    public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<? super T> clazz) {
         Preconditions.checkArgument(registry != null, "registry cannot be null");
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
 
@@ -2363,7 +2363,7 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public <T extends Keyed> Registry<? extends T> getRegistry(Class<T> aClass) {
+    public <T extends Keyed> Registry<T> getRegistry(Class<? super T> aClass) {
         return (Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.registryAccess()));
     }
 
