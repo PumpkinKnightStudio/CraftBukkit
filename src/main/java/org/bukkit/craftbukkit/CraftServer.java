@@ -322,6 +322,8 @@ public final class CraftServer implements Server {
 
         Bukkit.setServer(this);
 
+        CraftRegistry.setMinecraftRegistry(console.registryAccess());
+
         Potion.setPotionBrewer(new CraftPotionBrewer());
         // Ugly hack :(
 

@@ -14,7 +14,7 @@ public class CraftGameEvent extends GameEvent {
     public static GameEvent minecraftToBukkit(net.minecraft.world.level.gameevent.GameEvent minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<net.minecraft.world.level.gameevent.GameEvent> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.GAME_EVENT);
+        IRegistry<net.minecraft.world.level.gameevent.GameEvent> registry = CraftRegistry.getMinecraftRegistry(Registries.GAME_EVENT);
         GameEvent bukkit = Registry.GAME_EVENT.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
 
         Preconditions.checkArgument(bukkit != null);
@@ -62,5 +62,10 @@ public class CraftGameEvent extends GameEvent {
     @Override
     public int hashCode() {
         return getKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CraftGameEvent{key=" + key + "}";
     }
 }

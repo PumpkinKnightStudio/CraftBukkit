@@ -15,7 +15,7 @@ public class CraftMusicInstrument extends MusicInstrument {
     public static MusicInstrument minecraftToBukkit(Instrument minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<Instrument> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.INSTRUMENT);
+        IRegistry<Instrument> registry = CraftRegistry.getMinecraftRegistry(Registries.INSTRUMENT);
         MusicInstrument bukkit = Registry.INSTRUMENT.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
 
         Preconditions.checkArgument(bukkit != null);
@@ -63,5 +63,10 @@ public class CraftMusicInstrument extends MusicInstrument {
     @Override
     public int hashCode() {
         return getKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "CraftMusicInstrument{key=" + key + "}";
     }
 }

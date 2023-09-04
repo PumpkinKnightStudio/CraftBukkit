@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
@@ -55,11 +57,28 @@ import org.bukkit.potion.PotionType;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
-    public static IRegistryCustom getMinecraftRegistry() {
-        return ((CraftServer) Bukkit.getServer()).getServer().registryAccess();
+    private static IRegistryCustom registry;
+
+    public static void setMinecraftRegistry(IRegistryCustom registry) {
+        Preconditions.checkState(CraftRegistry.registry == null, "Registry already set");
+        CraftRegistry.registry = registry;
     }
 
-    public static <B extends Keyed> Registry<?> createRegistry(Class<? super B> bukkitClass, IRegistryCustom registryHolder) {
+    public static IRegistryCustom getMinecraftRegistry() {
+        return registry;
+    }
+
+    public static <E> IRegistry<E> getMinecraftRegistry(ResourceKey<IRegistry<E>> key) {
+        return getMinecraftRegistry().registryOrThrow(key);
+    }
+
+    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
+        if (bukkitClass == GameEvent.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
+        }
+        if (bukkitClass == MusicInstrument.class) {
+            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.INSTRUMENT), CraftMusicInstrument::new);
+        }
         if (bukkitClass == Structure.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new);
         }
@@ -125,12 +144,6 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == PotionType.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.POTION), CraftPotionType::new);
-        }
-        if (bukkitClass == GameEvent.class) {
-            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
-        }
-        if (bukkitClass == MusicInstrument.class) {
-            return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.INSTRUMENT), CraftMusicInstrument::new);
         }
 
         return null;
