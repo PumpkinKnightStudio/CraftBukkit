@@ -72,7 +72,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         return getMinecraftRegistry().registryOrThrow(key);
     }
 
-    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
+    public static <B extends Keyed> Registry<?> createRegistry(Class<? super B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == GameEvent.class) {
             return new CraftRegistry<>(registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
         }
