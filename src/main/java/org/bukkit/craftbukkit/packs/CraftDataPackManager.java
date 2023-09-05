@@ -6,13 +6,15 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import net.minecraft.server.packs.repository.ResourcePackLoader;
 import net.minecraft.server.packs.repository.ResourcePackRepository;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.packs.DataPack;
 import org.bukkit.packs.DataPackManager;
 
@@ -73,18 +75,21 @@ public class CraftDataPackManager implements DataPackManager {
     }
 
     @Override
-    public boolean isEnabledByFeature(Material material, World world) {
-        Preconditions.checkArgument(material != null, "material cannot be null");
-        Preconditions.checkArgument(material.isItem() || material.isBlock(), "material need to be a item or block");
+    public boolean isEnabledByFeature(ItemType itemType, World world) {
+        Preconditions.checkArgument(itemType != null, "itemType cannot be null");
         Preconditions.checkArgument(world != null, "world cannot be null");
 
         CraftWorld craftWorld = ((CraftWorld) world);
-        if (material.isItem()) {
-            return CraftMagicNumbers.getItem(material).isEnabled(craftWorld.getHandle().enabledFeatures());
-        } else if (material.isBlock()) {
-            return CraftMagicNumbers.getBlock(material).isEnabled(craftWorld.getHandle().enabledFeatures());
-        }
-        return false;
+        return CraftItemType.bukkitToMinecraft(itemType).isEnabled(craftWorld.getHandle().enabledFeatures());
+    }
+
+    @Override
+    public boolean isEnabledByFeature(BlockType<?> blockType, World world) {
+        Preconditions.checkArgument(blockType != null, "blockType cannot be null");
+        Preconditions.checkArgument(world != null, "world cannot be null");
+
+        CraftWorld craftWorld = ((CraftWorld) world);
+        return CraftBlockType.bukkitToMinecraft(blockType).isEnabled(craftWorld.getHandle().enabledFeatures());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.legacy;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.lang.reflect.Array;
 import java.util.EnumMap;
@@ -37,7 +38,6 @@ import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.tag.CraftTag;
 import org.bukkit.craftbukkit.util.ClassTraverser;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -73,6 +73,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.packs.DataPackManager;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.util.OldEnum;
@@ -634,5 +635,10 @@ public class EnumEvil {
 
     public static Material getSpawnEgg(ItemFactory itemFactory, EntityType<?> type) {
         return CraftMagicNumbers.INSTANCE.toMaterial(itemFactory.getSpawnEgg(type));
+    }
+
+    public static boolean isEnabledByFeature(DataPackManager dataPackManager, Material material, World world) {
+        Preconditions.checkNotNull(material, "material cannot be null");
+        return material.isEnabledByFeature(world);
     }
 }
