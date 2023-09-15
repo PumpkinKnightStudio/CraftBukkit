@@ -26,6 +26,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftStatistic extends Statistic {
     private static int count = 0;
@@ -456,12 +457,18 @@ public class CraftStatistic extends Statistic {
             return bukkit;
         }
 
+        @NotNull
         @Override
-        public Iterator<Statistic> iterator() {
+        public Stream<Statistic> stream() {
             Stream<MinecraftKey> custom = StreamSupport.stream(StatisticList.CUSTOM.spliterator(), false).map(net.minecraft.stats.Statistic::getValue);
             Stream<MinecraftKey> type = statisticWrapperRegistry.keySet().stream().filter(key -> !CUSTOM_MINECRAFT.equals(key));
 
-            return Stream.concat(custom, type).map(CraftStatisticRegistry::convert).map(this::get).iterator();
+            return Stream.concat(custom, type).map(CraftStatisticRegistry::convert).map(this::get);
+        }
+
+        @Override
+        public Iterator<Statistic> iterator() {
+           return stream().iterator();
         }
     }
 }
