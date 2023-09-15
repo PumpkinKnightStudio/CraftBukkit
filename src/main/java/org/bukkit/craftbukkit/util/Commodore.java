@@ -112,6 +112,8 @@ public class Commodore {
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("toString"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)Ljava/lang/String;"));
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("ordinal"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)I"));
 
+        rerouteToStatic(true, false, eq("org/bukkit/block/banner/PatternType"), eq("valueOf"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, same);
+
         renameMethod(true, true, all, contains("java/lang/Enum"), append(SUFFIX));
         rerouteType(true, true, "java/lang/Enum", "java/lang/Object");
     }

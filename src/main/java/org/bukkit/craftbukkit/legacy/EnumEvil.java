@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.world.item.Item;
 import org.bukkit.Art;
@@ -84,33 +85,43 @@ import org.bukkit.util.OldEnum;
 @Deprecated
 public class EnumEvil {
 
-    private static final Map<Class<?>, Registry<?>> REGISTRIES = new HashMap<>();
+    private static final Map<Class<?>, LegacyRegistryData> REGISTRIES = new HashMap<>();
 
     static {
-        REGISTRIES.put(Biome.class, Registry.BIOME);
-        REGISTRIES.put(Art.class, Registry.ART);
-        REGISTRIES.put(Fluid.class, Registry.FLUID);
-        REGISTRIES.put(EntityType.class, Registry.ENTITY_TYPE);
-        REGISTRIES.put(Statistic.class, Registry.STATISTIC);
-        REGISTRIES.put(Sound.class, Registry.SOUNDS);
-        REGISTRIES.put(Attribute.class, Registry.ATTRIBUTE);
-        REGISTRIES.put(Villager.Type.class, Registry.VILLAGER_TYPE);
-        REGISTRIES.put(Villager.Profession.class, Registry.VILLAGER_PROFESSION);
-        REGISTRIES.put(Frog.Variant.class, Registry.FROG_VARIANT);
-        REGISTRIES.put(Cat.Type.class, Registry.CAT_TYPE);
-        REGISTRIES.put(PatternType.class, Registry.BANNER_PATTERN);
-        REGISTRIES.put(Particle.class, Registry.PARTICLE_TYPE);
-        REGISTRIES.put(PotionType.class, Registry.POTION);
+        REGISTRIES.put(Biome.class, new LegacyRegistryData(Registry.BIOME, Biome::valueOf));
+        REGISTRIES.put(Art.class, new LegacyRegistryData(Registry.ART, Art::valueOf));
+        REGISTRIES.put(Fluid.class, new LegacyRegistryData(Registry.FLUID, Fluid::valueOf));
+        REGISTRIES.put(EntityType.class, new LegacyRegistryData(Registry.ENTITY_TYPE, EntityType::valueOf));
+        REGISTRIES.put(Statistic.class, new LegacyRegistryData(Registry.STATISTIC, Statistic::valueOf));
+        REGISTRIES.put(Sound.class, new LegacyRegistryData(Registry.SOUNDS, Sound::valueOf));
+        REGISTRIES.put(Attribute.class, new LegacyRegistryData(Registry.ATTRIBUTE, Attribute::valueOf));
+        REGISTRIES.put(Villager.Type.class, new LegacyRegistryData(Registry.VILLAGER_TYPE, Villager.Type::valueOf));
+        REGISTRIES.put(Villager.Profession.class, new LegacyRegistryData(Registry.VILLAGER_PROFESSION, Villager.Profession::valueOf));
+        REGISTRIES.put(Frog.Variant.class, new LegacyRegistryData(Registry.FROG_VARIANT, Frog.Variant::valueOf));
+        REGISTRIES.put(Cat.Type.class, new LegacyRegistryData(Registry.CAT_TYPE, Cat.Type::valueOf));
+        REGISTRIES.put(PatternType.class, new LegacyRegistryData(Registry.BANNER_PATTERN, EnumEvil::valueOf));
+        REGISTRIES.put(Particle.class, new LegacyRegistryData(Registry.PARTICLE_TYPE, Particle::valueOf));
+        REGISTRIES.put(PotionType.class, new LegacyRegistryData(Registry.POTION, PotionType::valueOf));
+    }
+
+    public static LegacyRegistryData getRegistryData(Class<?> clazz) {
+        ClassTraverser it = new ClassTraverser(clazz);
+        LegacyRegistryData registryData;
+        while (it.hasNext()) {
+            registryData = REGISTRIES.get(it.next());
+            if (registryData != null) {
+                return registryData;
+            }
+        }
+
+        return null;
     }
 
     public static Registry<?> getRegistry(Class<?> clazz) {
-        ClassTraverser it = new ClassTraverser(clazz);
-        Registry registry;
-        while (it.hasNext()) {
-            registry = REGISTRIES.get(it.next());
-            if (registry != null) {
-                return registry;
-            }
+        LegacyRegistryData registryData = getRegistryData(clazz);
+
+        if (registryData != null) {
+            return registryData.registry();
         }
 
         return null;
@@ -613,9 +624,9 @@ public class EnumEvil {
     }
 
     public static Object valueOf(Class enumClass, String name) {
-        Registry registry = getRegistry(enumClass);
-        if (registry != null) {
-            return registry.get(NamespacedKey.fromString(name.toLowerCase()));
+        LegacyRegistryData registryData = getRegistryData(enumClass);
+        if (registryData != null) {
+            return registryData.function().apply(name);
         }
 
         return Enum.valueOf(enumClass, name);
@@ -640,5 +651,33 @@ public class EnumEvil {
     public static boolean isEnabledByFeature(DataPackManager dataPackManager, Material material, World world) {
         Preconditions.checkNotNull(material, "material cannot be null");
         return material.isEnabledByFeature(world);
+    }
+
+    public static PatternType valueOf(String name) {
+        name = convertPatternTypeLegacy(name);
+        PatternType patternType = Registry.BANNER_PATTERN.get(NamespacedKey.fromString(name.toLowerCase()));
+        Preconditions.checkArgument(patternType != null, "No pattern type found with the name %s", name);
+        return patternType;
+    }
+
+    private static String convertPatternTypeLegacy(String from) {
+        if (from == null) {
+            return null;
+        }
+
+        return switch (from.toLowerCase()) {
+            case "stripe_small" -> "small_stripes";
+            case "diagonal_left_mirror" -> "diagonal_up_left";
+            case "diagonal_right_mirror" -> "diagonal_right";
+            case "diagonal_right" -> "diagonal_up_right";
+            case "circle_middle" -> "circle";
+            case "rhombus_middle" -> "rhombus";
+            case "half_vertical_mirror" -> "half_vertical_right";
+            case "half_horizontal_mirror" -> "half_horizontal_bottom";
+            default -> from;
+        };
+    }
+
+    public record LegacyRegistryData(Registry<?> registry, Function<String, ?> function) {
     }
 }
