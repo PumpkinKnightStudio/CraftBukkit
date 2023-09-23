@@ -675,7 +675,7 @@ public class Commodore {
                                     super.visitFieldInsn(opcode, owner, "ENTITY_INTERACT", desc);
                                     return;
                                 case "RAVAGER_ROAR":
-                                    super.visitFieldInsn(opcode, owner, "ENTITY_ROAR", desc);
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_ACTION", desc);
                                     return;
                                 case "RING_BELL":
                                     super.visitFieldInsn(opcode, owner, "BLOCK_CHANGE", desc);
@@ -687,7 +687,7 @@ public class Commodore {
                                     super.visitFieldInsn(opcode, owner, "CONTAINER_OPEN", desc);
                                     return;
                                 case "WOLF_SHAKING":
-                                    super.visitFieldInsn(opcode, owner, "ENTITY_SHAKE", desc);
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_ACTION", desc);
                                     return;
                                 case "DISPENSE_FAIL":
                                     super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
