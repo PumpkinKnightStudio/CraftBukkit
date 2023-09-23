@@ -133,8 +133,8 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         public static Type minecraftToBukkit(VillagerType minecraft) {
             Preconditions.checkArgument(minecraft != null);
 
-            IRegistry<VillagerType> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.VILLAGER_TYPE);
-            Type bukkit = Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+            IRegistry<VillagerType> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_TYPE);
+            Type bukkit = Registry.VILLAGER_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
             Preconditions.checkArgument(bukkit != null);
 
@@ -222,8 +222,8 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         public static Profession minecraftToBukkit(VillagerProfession minecraft) {
             Preconditions.checkArgument(minecraft != null);
 
-            IRegistry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.VILLAGER_PROFESSION);
-            Profession bukkit = Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+            IRegistry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_PROFESSION);
+            Profession bukkit = Registry.VILLAGER_PROFESSION.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
             Preconditions.checkArgument(bukkit != null);
 

@@ -2,11 +2,9 @@ package org.bukkit.craftbukkit.attribute;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
-import org.bukkit.Registry;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftAttributeMap implements Attributable {
 
@@ -22,9 +20,5 @@ public class CraftAttributeMap implements Attributable {
         net.minecraft.world.entity.ai.attributes.AttributeModifiable nms = handle.getInstance(CraftAttribute.bukkitToMinecraft(attribute));
 
         return (nms == null) ? null : new CraftAttributeInstance(nms, attribute);
-    }
-
-    public static Attribute fromMinecraft(String nms) {
-        return Registry.ATTRIBUTE.get(CraftNamespacedKey.fromString(nms));
     }
 }

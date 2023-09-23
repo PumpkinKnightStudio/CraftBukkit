@@ -89,7 +89,7 @@ public class CraftStatistic extends Statistic {
     public static net.minecraft.stats.Statistic getEntityStatistic(IRegistry<EntityTypes<?>> registry, org.bukkit.Statistic stat, EntityType<?> entity) {
         Preconditions.checkArgument(entity != null, "EntityType cannot be null");
         if (entity.getName() != null) {
-            EntityTypes<?> nmsEntity = registry.get(new MinecraftKey(entity.getName()));
+            EntityTypes<?> nmsEntity = CraftEntityType.bukkitToMinecraft(entity);
 
             if (stat == org.bukkit.Statistic.KILL_ENTITY) {
                 return net.minecraft.stats.StatisticList.ENTITY_KILLED.get(nmsEntity);
@@ -103,8 +103,7 @@ public class CraftStatistic extends Statistic {
 
     public static EntityType<?> getEntityTypeFromStatistic(net.minecraft.stats.Statistic<EntityTypes<?>> statistic) {
         Preconditions.checkArgument(statistic != null, "NMS Statistic cannot be null");
-        MinecraftKey name = EntityTypes.getKey(statistic.getValue());
-        return EntityType.fromName(name.getPath());
+        return CraftEntityType.minecraftToBukkit(statistic.getValue());
     }
 
     public static ItemType getItemTypeFromStatistic(net.minecraft.stats.Statistic<?> statistic) {

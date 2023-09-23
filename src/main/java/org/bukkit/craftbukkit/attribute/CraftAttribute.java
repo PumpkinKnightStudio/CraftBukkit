@@ -16,12 +16,18 @@ public class CraftAttribute extends Attribute {
     public static Attribute minecraftToBukkit(AttributeBase minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<AttributeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ATTRIBUTE);
-        Attribute bukkit = Registry.ATTRIBUTE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<AttributeBase> registry = CraftRegistry.getMinecraftRegistry(Registries.ATTRIBUTE);
+        Attribute bukkit = Registry.ATTRIBUTE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
+    }
+
+    public static Attribute stringToBukkit(String bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return Registry.ATTRIBUTE.get(NamespacedKey.fromString(bukkit));
     }
 
     public static AttributeBase bukkitToMinecraft(Attribute bukkit) {

@@ -3,19 +3,17 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Joiner;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.provider.Arguments;
 
-@RunWith(Parameterized.class)
 public class ItemStackEnchantStorageTest extends ItemStackTest {
 
-    @Parameters(name = "[{index}]:{" + NAME_PARAMETER + "}")
-    public static List<Object[]> data() {
+    public static Stream<Arguments> data() {
         return StackProvider.compound(operators(), "%s %s", NAME_PARAMETER, ItemType.ENCHANTED_BOOK);
     }
 

@@ -102,7 +102,7 @@ public class CraftPotionUtil {
     }
 
     public static MobEffect fromBukkit(PotionEffect effect) {
-        MobEffectList type = MobEffectList.byId(effect.getType().getId());
+        MobEffectList type = CraftPotionEffectType.bukkitToMinecraft(effect.getType());
         return new MobEffect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
     }
 

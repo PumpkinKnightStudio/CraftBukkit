@@ -9,7 +9,6 @@ import net.minecraft.world.entity.monster.EntityZombieVillager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 
@@ -31,24 +30,24 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public Villager.Profession getVillagerProfession() {
-        return Villager.Profession.valueOf(getRegistryAccess().registryOrThrow(Registries.VILLAGER_PROFESSION).getKey(getHandle().getVillagerData().getProfession()).getPath().toUpperCase(Locale.ROOT));
+        return CraftVillager.CraftProfession.minecraftToBukkit(getHandle().getVillagerData().getProfession());
     }
 
     @Override
     public void setVillagerProfession(Villager.Profession profession) {
         Preconditions.checkArgument(profession != null, "Villager.Profession cannot be null");
-        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(getRegistryAccess().registryOrThrow(Registries.VILLAGER_PROFESSION).get(new MinecraftKey(profession.name().toLowerCase(Locale.ROOT)))));
+        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftVillager.CraftProfession.bukkitToMinecraft(profession)));
     }
 
     @Override
     public Villager.Type getVillagerType() {
-        return Villager.Type.valueOf(getRegistryAccess().registryOrThrow(Registries.VILLAGER_TYPE).getKey(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return CraftVillager.CraftType.minecraftToBukkit(getHandle().getVillagerData().getType());
     }
 
     @Override
     public void setVillagerType(Villager.Type type) {
         Preconditions.checkArgument(type != null, "Villager.Type cannot be null");
-        getHandle().setVillagerData(getHandle().getVillagerData().setType(getRegistryAccess().registryOrThrow(Registries.VILLAGER_TYPE).get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        getHandle().setVillagerData(getHandle().getVillagerData().setType(CraftVillager.CraftType.bukkitToMinecraft(type)));
     }
 
     @Override

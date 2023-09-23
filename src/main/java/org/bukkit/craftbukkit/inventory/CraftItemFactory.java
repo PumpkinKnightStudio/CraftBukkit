@@ -13,9 +13,9 @@ import org.bukkit.Color;
 import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
@@ -297,7 +297,7 @@ public final class CraftItemFactory implements ItemFactory {
         if (type == EntityType.UNKNOWN) {
             return null;
         }
-        EntityTypes<?> nmsType = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE).get(CraftNamespacedKey.toMinecraft(type.getKey()));
+        EntityTypes<?> nmsType = CraftEntityType.bukkitToMinecraft(type);
         Item nmsItem = ItemMonsterEgg.byId(nmsType);
 
         if (nmsItem == null) {

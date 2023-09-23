@@ -41,8 +41,8 @@ public class CraftEntityType<E extends Entity> extends EntityType<E> {
     public static EntityType<?> minecraftToBukkit(EntityTypes<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<EntityTypes<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ENTITY_TYPE);
-        EntityType<?> bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<EntityTypes<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.ENTITY_TYPE);
+        EntityType<?> bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 

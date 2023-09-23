@@ -14,31 +14,38 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftBiome extends Biome {
     private static int count = 0;
 
-    public static Biome minecraftToBukkit(Holder<BiomeBase> minecraft) {
-        return minecraftToBukkit(minecraft.value());
-    }
-
     public static Biome minecraftToBukkit(BiomeBase minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BIOME);
-        Biome bukkit = Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
+        Biome bukkit = Registry.BIOME.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
     }
 
-    public static Holder<BiomeBase> bukkitToMinecraft(Biome bukkit) {
+    public static Biome minecraftHolderToBukkit(Holder<BiomeBase> minecraft) {
+        return minecraftToBukkit(minecraft.value());
+    }
+
+    public static BiomeBase bukkitToMinecraft(Biome bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BIOME);
+        return ((CraftBiome) bukkit).getHandle();
+    }
 
-        if (registry.wrapAsHolder(((CraftBiome) bukkit).getHandle()) instanceof Holder.c<BiomeBase> holder) {
+    public static Holder<BiomeBase> bukkitToMinecraftHolder(Biome bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
+
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<BiomeBase> holder) {
             return holder;
         }
 
-        throw new IllegalArgumentException("No Reference holder found for " + bukkit + ", this can happen if a plugin creates its own Biome with out properly registering it.");
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own biome base with out properly registering it.");
     }
 
     private final NamespacedKey key;

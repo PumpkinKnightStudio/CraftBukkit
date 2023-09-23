@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.legacy;
 
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.Iterators;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,8 +12,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LegacyTest extends AbstractTestingBase {
 
@@ -129,18 +129,18 @@ public class LegacyTest extends AbstractTestingBase {
             if (!INVALIDATED_MATERIALS.contains(material) && !material.isLegacy()) {
                 MaterialData converted = CraftLegacy.toLegacyData(material);
 
-                Assert.assertNotEquals("Could not toLegacy " + material, Material.LEGACY_AIR, converted.getItemType());
+                assertNotEquals(Material.LEGACY_AIR, converted.getItemType(), "Could not toLegacy " + material);
 
                 if (!INVALIDATED_MATERIALS.contains(converted.getItemType())) {
-                    Assert.assertNotEquals("Could not fromLegacy(toLegacy) " + converted + "(" + material + ")", Material.AIR, CraftLegacy.fromLegacy(converted));
+                    assertNotEquals(Material.AIR, CraftLegacy.fromLegacy(converted), "Could not fromLegacy(toLegacy) " + converted + "(" + material + ")");
                 }
                 if (!INVERSION_FAILS.contains(material)) {
-                    Assert.assertEquals("Could not fromLegacy(toLegacy) " + converted + "(" + material + ")", material, CraftLegacy.fromLegacy(converted));
+                    assertEquals(material, CraftLegacy.fromLegacy(converted), "Could not fromLegacy(toLegacy) " + converted + "(" + material + ")");
                 }
             }
         }
 
-        Assert.assertEquals("Could not toLegacy Air", Material.LEGACY_AIR, CraftLegacy.toLegacy(Material.AIR));
+        assertEquals(Material.LEGACY_AIR, CraftLegacy.toLegacy(Material.AIR), "Could not toLegacy Air");
     }
 
     @Test
@@ -148,31 +148,31 @@ public class LegacyTest extends AbstractTestingBase {
         for (Material material : Material.values()) {
             if (!INVALIDATED_MATERIALS.contains(material) && material.isLegacy()) {
                 Material converted = CraftLegacy.fromLegacy(material);
-                Assert.assertNotEquals("Could not fromLegacy " + material, Material.AIR, converted);
+                assertNotEquals(Material.AIR, converted, "Could not fromLegacy " + material);
 
-                Assert.assertNotEquals("Could not toLegacy(fromLegacy) " + converted + "(" + material + ")", Material.AIR, CraftLegacy.toLegacy(converted));
+                assertNotEquals(Material.AIR, CraftLegacy.toLegacy(converted), "Could not toLegacy(fromLegacy) " + converted + "(" + material + ")");
                 if (!INVERSION_FAILS.contains(material)) {
-                    Assert.assertEquals("Could not toLegacy(fromLegacy) " + converted + "(" + material + ")", material, CraftLegacy.toLegacy(converted));
+                    assertEquals(material, CraftLegacy.toLegacy(converted), "Could not toLegacy(fromLegacy) " + converted + "(" + material + ")");
                 }
             }
         }
 
-        Assert.assertEquals("Could not fromLegacy Air", Material.AIR, CraftLegacy.fromLegacy(Material.LEGACY_AIR));
+        assertEquals(Material.AIR, CraftLegacy.fromLegacy(Material.LEGACY_AIR), "Could not fromLegacy Air");
     }
 
     @Test
     public void testRestricted() {
         for (Material material : CraftLegacy.values()) {
-            Assert.assertTrue("Must iterate only legacy materials", material.isLegacy());
+            assertTrue(material.isLegacy(), "Must iterate only legacy materials");
         }
 
         for (Material material : org.bukkit.craftbukkit.util.CraftLegacy.modern_values()) {
-            Assert.assertFalse("Must iterate only modern materials", material.isLegacy());
+            assertFalse(material.isLegacy(), "Must iterate only modern materials");
         }
     }
 
     @Test
     public void testManual() {
-        Assert.assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemType("dandelion_yellow", 1631));
+        assertEquals(ItemType.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getItemType("dandelion_yellow", 1631));
     }
 }

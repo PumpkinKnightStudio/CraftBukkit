@@ -99,6 +99,7 @@ public class CraftDataPackManager implements DataPackManager {
         Preconditions.checkArgument(entityType != EntityType.UNKNOWN, "EntityType.UNKNOWN its not allowed here");
 
         CraftWorld craftWorld = ((CraftWorld) world);
-        return CraftEntityType.bukkitToMinecraft(entityType).isEnabled(craftWorld.getHandle().enabledFeatures());
+        EntityTypes<?> nmsEntity = CraftEntityType.bukkitToMinecraft(entityType);
+        return nmsEntity.isEnabled(craftWorld.getHandle().enabledFeatures());
     }
 }

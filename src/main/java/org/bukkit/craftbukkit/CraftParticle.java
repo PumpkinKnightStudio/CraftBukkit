@@ -44,8 +44,8 @@ public abstract class CraftParticle<D> extends Particle<D> {
     public static Particle<?> minecraftToBukkit(net.minecraft.core.particles.Particle<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<net.minecraft.core.particles.Particle<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PARTICLE_TYPE);
-        Particle<?> bukkit = Registry.PARTICLE_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<net.minecraft.core.particles.Particle<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.PARTICLE_TYPE);
+        Particle<?> bukkit = Registry.PARTICLE_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 

@@ -838,6 +838,12 @@ public class Commodore {
                             return;
                         }
 
+                        if ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/util/Consumer" ) )
+                        {
+                            super.visitMethodInsn( opcode, owner, name, desc.replace( "org/bukkit/util/Consumer", "java/util/function/Consumer" ), itf );
+                            return;
+                        }
+
                         // Enums to class
                         if ((owner.equals("org/bukkit/block/Biome")
                                 || owner.equals("org/bukkit/Art")
@@ -1094,6 +1100,12 @@ public class Commodore {
 
                             List<Object> newTypes = new ArrayList<>();
                             newTypes.add(samMethodType);
+
+                            if ( implMethod.getOwner().startsWith( "org/bukkit" ) && implMethod.getDesc().contains( "org/bukkit/util/Consumer" ) )
+                            {
+                                implMethod = new Handle( implMethod.getTag(), implMethod.getOwner(), implMethod.getName(),
+                                        implMethod.getDesc().replace( "org/bukkit/util/Consumer", "java/util/function/Consumer" ), implMethod.isInterface() );
+                            }
 
                             if (preEnumKilling) {
                                 if ((implMethod.getOwner().startsWith("org/bukkit") && implMethod.getDesc().contains("org/bukkit/Material"))
