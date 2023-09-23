@@ -46,8 +46,6 @@ import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.item.ItemBlock;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.apache.commons.lang3.EnumUtils;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;

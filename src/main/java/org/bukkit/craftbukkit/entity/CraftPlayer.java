@@ -136,6 +136,7 @@ import org.bukkit.craftbukkit.CraftEffect;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
 import org.bukkit.craftbukkit.CraftParticle;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
@@ -1140,32 +1141,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public int getStatistic(Statistic statistic, EntityType<?> entityType) {
-        return CraftStatistic.getStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
     public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
-        CraftStatistic.setStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, entityType, newValue);
     }
 
     @Override

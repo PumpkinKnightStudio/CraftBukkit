@@ -22,6 +22,7 @@ import org.bukkit.Registry;
 import org.bukkit.Statistic;
 import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
@@ -86,7 +87,7 @@ public class CraftStatistic extends Statistic {
         return null;
     }
 
-    public static net.minecraft.stats.Statistic getEntityStatistic(IRegistry<EntityTypes<?>> registry, org.bukkit.Statistic stat, EntityType<?> entity) {
+    public static net.minecraft.stats.Statistic getEntityStatistic(org.bukkit.Statistic stat, EntityType<?> entity) {
         Preconditions.checkArgument(entity != null, "EntityType cannot be null");
         if (entity.getName() != null) {
             EntityTypes<?> nmsEntity = CraftEntityType.bukkitToMinecraft(entity);
@@ -226,39 +227,39 @@ public class CraftStatistic extends Statistic {
         manager.setValue(null, nmsStatistic, newValue);
     }
 
-    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
-        incrementStatistic(registry, manager, statistic, entityType, 1);
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
+        incrementStatistic(manager, statistic, entityType, 1);
     }
 
-    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
-        decrementStatistic(registry, manager, statistic, entityType, 1);
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
+        decrementStatistic(manager, statistic, entityType, 1);
     }
 
-    public static int getStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
+    public static int getStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType) {
         Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
         Preconditions.checkArgument(entityType != null, "EntityType cannot be null");
         Preconditions.checkArgument(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
-        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(registry, statistic, entityType);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
         Preconditions.checkArgument(nmsStatistic != null, "The supplied EntityType %s does not have a corresponding statistic", entityType);
         return manager.getValue(nmsStatistic);
     }
 
-    public static void incrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
+    public static void incrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
         Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
-        setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) + amount);
+        setStatistic(manager, statistic, entityType, getStatistic(manager, statistic, entityType) + amount);
     }
 
-    public static void decrementStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
+    public static void decrementStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int amount) {
         Preconditions.checkArgument(amount > 0, "Amount must be greater than 0");
-        setStatistic(registry, manager, statistic, entityType, getStatistic(registry, manager, statistic, entityType) - amount);
+        setStatistic(manager, statistic, entityType, getStatistic(manager, statistic, entityType) - amount);
     }
 
-    public static void setStatistic(IRegistry<EntityTypes<?>> registry, ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int newValue) {
+    public static void setStatistic(ServerStatisticManager manager, Statistic statistic, EntityType<?> entityType, int newValue) {
         Preconditions.checkArgument(statistic != null, "Statistic cannot be null");
         Preconditions.checkArgument(entityType != null, "EntityType cannot be null");
         Preconditions.checkArgument(newValue >= 0, "Value must be greater than or equal to 0");
         Preconditions.checkArgument(statistic.getType() == Type.ENTITY, "This statistic does not take an EntityType parameter");
-        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(registry, statistic, entityType);
+        net.minecraft.stats.Statistic nmsStatistic = CraftStatistic.getEntityStatistic(statistic, entityType);
         Preconditions.checkArgument(nmsStatistic != null, "The supplied EntityType %s does not have a corresponding statistic", entityType);
         manager.setValue(null, nmsStatistic, newValue);
     }

@@ -64,9 +64,9 @@ public class ArtTest extends AbstractTestingBase {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getByNullName() {
-        Art.getByName(null);
+        assertThrows(IllegalArgumentException.class, () -> Art.getByName(null));
     }
 
     @Test

@@ -20,7 +20,7 @@ public class EntityTypesTest extends AbstractTestingBase {
                continue;
            }
 
-           Assert.assertNotNull("No entity class for " + entityType.getKey(), entityType.getEntityClass());
+           assertNotNull(entityType.getEntityClass(), "No entity class for " + entityType.getKey());
        }
     }
 

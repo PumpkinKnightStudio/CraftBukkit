@@ -3,21 +3,22 @@ package org.bukkit.craftbukkit.inventory;
 import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.support.AbstractTestingBase;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@Disable("Ignore for now, since Mockito's Location feature is too heavy in combination with this test")
+@Disabled("for now, since Mockito's Location feature is too heavy in combination with this test")
 public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final ItemFactory factory = CraftItemFactory.instance();
     static final StringBuilder buffer = new StringBuilder();
@@ -103,7 +104,7 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
     @ParameterizedTest
     @MethodSource("data")
     public void blankEqualities(ItemType itemType) {
-        if (material == ItemType.AIR) {
+        if (itemType == ItemType.AIR) {
             return;
         }
         final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(itemType);

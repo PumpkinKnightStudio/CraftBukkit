@@ -6,9 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ITileEntity;
 import net.minecraft.world.level.block.entity.TileEntity;
-import org.bukkit.Material;
 import org.bukkit.block.BlockType;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.jupiter.api.Test;
 

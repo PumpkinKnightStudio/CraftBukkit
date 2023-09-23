@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,7 +19,6 @@ import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Material;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -33,7 +31,6 @@ import org.bukkit.craftbukkit.inventory.ItemStackTest.BukkitWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.CraftWrapper;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackProvider;
 import org.bukkit.craftbukkit.inventory.ItemStackTest.StackWrapper;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
@@ -205,7 +202,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                 ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
 
                 assertTrue(baseMeta instanceof CraftMetaSpawnEgg, itemType + " is not handled in CraftItemFactory");
-                assertTrue(baseMeta.applicableTo(material), itemType + " is not applicable to CraftMetaSpawnEgg");
+                assertTrue(baseMeta.applicableTo(itemType), itemType + " is not applicable to CraftMetaSpawnEgg");
                 assertTrue(baseMetaItem instanceof SpawnEggMeta, itemType + " is not handled in CraftItemStack");
             }
         }

@@ -4,7 +4,6 @@ import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.Method;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemType;
 import org.junit.jupiter.api.Test;
 

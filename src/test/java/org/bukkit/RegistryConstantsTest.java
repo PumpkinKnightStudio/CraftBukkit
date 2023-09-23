@@ -186,7 +186,7 @@ public class RegistryConstantsTest extends AbstractTestingBase {
             try {
                 key = ((Keyed) field.get(null)).getKey();
             } catch (IllegalAccessException e) {
-                Assert.fail(e.getMessage());
+                fail(e.getMessage());
             }
 
             if (registry.get(key) == null) {

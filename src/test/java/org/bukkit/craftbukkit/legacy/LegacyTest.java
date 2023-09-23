@@ -1,13 +1,10 @@
 package org.bukkit.craftbukkit.legacy;
 
 import static org.junit.jupiter.api.Assertions.*;
-import com.google.common.collect.Iterators;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.bukkit.Material;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.material.MaterialData;

@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import net.minecraft.server.packs.repository.ResourcePackLoader;
 import net.minecraft.server.packs.repository.ResourcePackRepository;
+import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.BlockType;

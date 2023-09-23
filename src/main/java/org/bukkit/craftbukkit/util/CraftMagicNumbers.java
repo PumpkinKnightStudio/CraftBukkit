@@ -44,6 +44,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.FeatureFlag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.attribute.Attribute;
@@ -56,6 +57,7 @@ import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBiome;
@@ -126,11 +128,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         for (Item item : CraftRegistry.getMinecraftRegistry(Registries.ITEM)) {
             ITEM_MATERIAL.put(item, Material.getMaterial(CraftRegistry.getMinecraftRegistry(Registries.ITEM).getKey(item).getPath().toUpperCase(Locale.ROOT)));
         }
-
-        for (Material material : Material.values()) {
-            if (material.isLegacy()) {
-                continue;
-            }
 
         Registry.MATERIAL.forEach(material -> {
             MinecraftKey key = key(material);
@@ -322,7 +319,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
         for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ATTRIBUTE).getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
         }
 
