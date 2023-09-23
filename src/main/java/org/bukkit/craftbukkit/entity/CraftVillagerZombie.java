@@ -1,9 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import java.util.Locale;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.EntityZombieVillager;
 import org.bukkit.Bukkit;

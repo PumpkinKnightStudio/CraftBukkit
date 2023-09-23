@@ -313,36 +313,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return file.delete();
     }
 
-    @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
-
-        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
-        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
-            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
-        }
-
-        return defaultAttributes.build();
-    }
-
-    @Override
-    public CreativeCategory getCreativeCategory(Material material) {
-        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
-    }
-
-    @Override
-    public String getBlockTranslationKey(Material material) {
-        Block block = getBlock(material);
-        return (block != null) ? block.getDescriptionId() : null;
-    }
-
-    @Override
-    public String getItemTranslationKey(Material material) {
-        Item item = getItem(material);
-        return (item != null) ? item.getDescriptionId() : null;
-    }
-
     private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
 
     @Override
@@ -398,6 +368,36 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return clazz;
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
+
+        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
+        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
+            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
+            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
+        }
+
+        return defaultAttributes.build();
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory(Material material) {
+        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
+    }
+
+    @Override
+    public String getBlockTranslationKey(Material material) {
+        Block block = getBlock(material);
+        return (block != null) ? block.getDescriptionId() : null;
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        Item item = getItem(material);
+        return (item != null) ? item.getDescriptionId() : null;
     }
 
     @Override

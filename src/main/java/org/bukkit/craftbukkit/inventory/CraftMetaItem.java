@@ -920,7 +920,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public BlockData getBlockData(BlockType<?> blockType) {
-        IBlockData defaultData = ((CraftBlockType<?>) blockType).getHandle().defaultBlockState();
+        IBlockData defaultData = CraftBlockType.bukkitToMinecraft(blockType).defaultBlockState();
         return CraftBlockData.fromData((hasBlockData()) ? ItemBlock.getBlockState(defaultData, blockData) : defaultData);
     }
 

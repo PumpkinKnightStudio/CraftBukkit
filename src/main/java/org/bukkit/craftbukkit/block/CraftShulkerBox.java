@@ -9,7 +9,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.World;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.Inventory;
 
 public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> implements ShulkerBox {
@@ -34,7 +33,7 @@ public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> impleme
 
     @Override
     public DyeColor getColor() {
-        EnumColor color = ((BlockShulkerBox) ((CraftBlockType<?>) this.getType()).getHandle()).color;
+        EnumColor color = ((BlockShulkerBox) CraftBlockType.bukkitToMinecraft(this.getType())).color;
 
         return (color == null) ? null : DyeColor.getByWoolData((byte) color.getId());
     }
