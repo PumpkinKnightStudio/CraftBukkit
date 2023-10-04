@@ -407,7 +407,7 @@ public class ContainerEnchantTable extends Container {
             return bukkitEntity;
         }
 
-        CraftInventoryEnchanting inventory = new CraftInventoryEnchanting(this.enchantSlots);
+        CraftInventoryEnchanting inventory = new CraftInventoryEnchanting(this.enchantSlots, this);
         bukkitEntity = new CraftInventoryView(this.player, inventory, this);
         return bukkitEntity;
     }
