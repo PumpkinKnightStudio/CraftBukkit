@@ -10,10 +10,14 @@ import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.packs.DataPack;
 import org.bukkit.packs.DataPackManager;
 
@@ -86,6 +90,24 @@ public class CraftDataPackManager implements DataPackManager {
             return CraftMagicNumbers.getBlock(material).isEnabled(craftWorld.getHandle().enabledFeatures());
         }
         return false;
+    }
+
+    @Override
+    public boolean isEnabledByFeature(ItemType itemType, World world) {
+        Preconditions.checkArgument(itemType != null, "itemType cannot be null");
+        Preconditions.checkArgument(world != null, "world cannot be null");
+
+        CraftWorld craftWorld = ((CraftWorld) world);
+        return CraftItemType.bukkitToMinecraft(itemType).isEnabled(craftWorld.getHandle().enabledFeatures());
+    }
+
+    @Override
+    public boolean isEnabledByFeature(BlockType<?> blockType, World world) {
+        Preconditions.checkArgument(blockType != null, "blockType cannot be null");
+        Preconditions.checkArgument(world != null, "world cannot be null");
+
+        CraftWorld craftWorld = ((CraftWorld) world);
+        return CraftBlockType.bukkitToMinecraft(blockType).isEnabled(craftWorld.getHandle().enabledFeatures());
     }
 
     @Override
