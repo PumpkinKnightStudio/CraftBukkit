@@ -98,6 +98,7 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftRaider;
@@ -869,7 +870,12 @@ public class CraftEventFactory {
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
             if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
 
-            world.dropItem(entity.getLocation(), stack);
+            world.dropItem(entity.getLocation(), stack, item -> {
+                // SPIGOT-7438: The star dropped by the wither shines longer than other item drops
+                if (item != null && stack instanceof CraftItemStack && ((CraftItemStack) stack).witherDrop) {
+                    ((CraftItem) item).getHandle().setExtendedLifetime();
+                }
+            });
         }
 
         return event;

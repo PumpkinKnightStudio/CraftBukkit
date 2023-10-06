@@ -87,6 +87,13 @@ public final class CraftItemStack extends ItemStack {
 
     net.minecraft.world.item.ItemStack handle;
 
+    // SPIGOT-7438: Special case for the wither.
+    // The star they drop shine doppelt as long as normal items.
+    // This is saved at the item entity, but because of how the bukkit drop event logic works, they are only stored as items.
+    // We use this marker to later re-add the longer despawn duration.
+    // This is only a marker and has no effect on any copy / equals etc. methods.
+    public boolean witherDrop = false;
+
     /**
      * Mirror
      */
