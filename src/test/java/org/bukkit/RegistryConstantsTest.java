@@ -9,13 +9,27 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.resources.ResourceKey;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.jupiter.api.Test;
 
 public class RegistryConstantsTest extends AbstractTestingBase {
+
+    @Test
+    public void testBlockType() {
+        this.testExcessConstants(BlockType.class, Registry.BLOCK);
+        this.testMissingConstants(BlockType.class, Registries.BLOCK);
+    }
+
+    @Test
+    public void testItemType() {
+        this.testExcessConstants(ItemType.class, Registry.ITEM);
+        this.testMissingConstants(ItemType.class, Registries.ITEM);
+    }
 
     @Test
     public void testTrimMaterial() {
@@ -29,7 +43,7 @@ public class RegistryConstantsTest extends AbstractTestingBase {
         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
     }
 
-    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
+    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<? extends T> registry) {
         List<NamespacedKey> excessKeys = new ArrayList<>();
 
         for (Field field : clazz.getFields()) {

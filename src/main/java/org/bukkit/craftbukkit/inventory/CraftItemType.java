@@ -27,33 +27,48 @@ import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftItemType implements ItemType {
+public class CraftItemType<M extends ItemMeta> implements ItemType<M> {
     private final NamespacedKey key;
     private final Item item;
+    private final Class<M> itemMetaClass;
 
-    public static ItemType minecraftToBukkit(Item minecraft) {
+    public static ItemType<?> minecraftToBukkit(Item minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
         IRegistry<Item> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM);
-        ItemType bukkit = Registry.ITEM.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        ItemType<?> bukkit = Registry.ITEM.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
 
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
     }
 
-    public static Item bukkitToMinecraft(ItemType bukkit) {
+    public static Item bukkitToMinecraft(ItemType<?> bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        return ((CraftItemType) bukkit).getHandle();
+        return ((CraftItemType<?>) bukkit).getHandle();
     }
 
     public CraftItemType(NamespacedKey key, Item item) {
         this.key = key;
         this.item = item;
+        this.itemMetaClass = getItemMetaClass(item);
+    }
+
+    // Cursed, this should be refactored when possible
+    private Class<M> getItemMetaClass(Item item) {
+        ItemMeta meta = new ItemStack(asMaterial()).getItemMeta();
+        if (meta != null) {
+            if (CraftMetaEntityTag.class != meta.getClass() && CraftMetaArmorStand.class != meta.getClass()) {
+                return (Class<M>) meta.getClass().getInterfaces()[0];
+            }
+        }
+        return (Class<M>) ItemMeta.class;
     }
 
     public Item getHandle() {
@@ -73,6 +88,11 @@ public class CraftItemType implements ItemType {
         }
 
         return CraftBlockType.minecraftToBukkit(block.getBlock());
+    }
+
+    @Override
+    public Class<M> getItemMetaClass() { // Impl note: This currently returns ItemMeta for air rather than null
+        return itemMetaClass;
     }
 
     @Override
@@ -106,7 +126,7 @@ public class CraftItemType implements ItemType {
     }
 
     @Override
-    public ItemType getCraftingRemainingItem() {
+    public ItemType<?> getCraftingRemainingItem() {
         Item expectedItem = item.getCraftingRemainingItem();
         return expectedItem == null ? null : minecraftToBukkit(expectedItem);
     }

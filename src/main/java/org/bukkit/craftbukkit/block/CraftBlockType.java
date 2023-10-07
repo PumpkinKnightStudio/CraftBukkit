@@ -88,7 +88,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
 
     @NotNull
     @Override
-    public ItemType getItemType() {
+    public ItemType<?> getItemType() {
         if (this == AIR) {
             return ItemType.AIR;
         }
