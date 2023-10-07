@@ -235,7 +235,7 @@ public abstract class CraftParticle<D> extends Particle<D> {
         }
 
         public CraftParticleRegistry(IRegistry<net.minecraft.core.particles.Particle<?>> minecraftRegistry) {
-            super(minecraftRegistry, null);
+            super(Particle.class, minecraftRegistry, null);
         }
 
         @Override

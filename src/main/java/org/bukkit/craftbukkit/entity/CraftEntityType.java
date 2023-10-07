@@ -203,7 +203,7 @@ public class CraftEntityType<E extends Entity> extends EntityType<E> {
         }
 
         public CraftEntityTypeRegistry(IRegistry<EntityTypes<?>> minecraftRegistry) {
-            super(minecraftRegistry, null);
+            super(EntityType.class, minecraftRegistry, null);
         }
 
         @Override
