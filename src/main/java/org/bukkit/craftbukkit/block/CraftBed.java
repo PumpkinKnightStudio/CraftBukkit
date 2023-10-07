@@ -12,6 +12,10 @@ public class CraftBed extends CraftBlockEntityState<TileEntityBed> implements Be
         super(world, tileEntity);
     }
 
+    protected CraftBed(CraftBed state) {
+        super(state);
+    }
+
     @Override
     public DyeColor getColor() {
         BlockType<?> type = getType();
@@ -70,5 +74,10 @@ public class CraftBed extends CraftBlockEntityState<TileEntityBed> implements Be
     @Override
     public void setColor(DyeColor color) {
         throw new UnsupportedOperationException("Must set block type to appropriate bed colour");
+    }
+
+    @Override
+    public CraftBed copy() {
+        return new CraftBed(this);
     }
 }

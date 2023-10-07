@@ -13,12 +13,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@Disabled("for now, since Mockito's Location feature is too heavy in combination with this test")
+@EnabledIfSystemProperty(named = "testEnv", matches = "full", disabledReason = "Disable for now, since Mockito's Location feature is too heavy in combination with this test")
 public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final ItemFactory factory = CraftItemFactory.instance();
     static final StringBuilder buffer = new StringBuilder();

@@ -20,6 +20,10 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
         super(world, tileEntity);
     }
 
+    protected CraftDecoratedPot(CraftDecoratedPot state) {
+        super(state);
+    }
+
     @Override
     public void setSherd(Side face, ItemType sherd) {
         Preconditions.checkArgument(face != null, "face must not be null");
@@ -68,5 +72,10 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
     @Override
     public List<ItemType> getShards() {
         return getSnapshot().getDecorations().sorted().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public CraftDecoratedPot copy() {
+        return new CraftDecoratedPot(this);
     }
 }

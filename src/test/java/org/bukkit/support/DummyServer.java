@@ -1,5 +1,6 @@
 package org.bukkit.support;
 
+import static org.mockito.Mockito.*;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +8,6 @@ import java.util.logging.Logger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
@@ -15,13 +15,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.FluidType;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.BlockType;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.Server;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
@@ -31,7 +29,6 @@ import org.bukkit.craftbukkit.tag.CraftItemTag;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Versioning;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -39,40 +36,26 @@ public final class DummyServer {
 
     static {
         try {
+            Server instance = mock(withSettings().stubOnly());
 
-            DedicatedServer dedicatedServer = Mockito.mock(Mockito.withSettings().stubOnly());
-            Mockito.when(dedicatedServer.registryAccess()).then(mock -> AbstractTestingBase.REGISTRY_CUSTOM);
+            when(instance.getItemFactory()).thenAnswer(mock -> CraftItemFactory.instance());
 
-            CraftServer instance = Mockito.mock(Mockito.withSettings().stubOnly());
+            when(instance.getName()).thenReturn(DummyServer.class.getName());
 
-            Mockito.when(instance.getServer()).then(mock -> dedicatedServer);
+            when(instance.getVersion()).thenReturn(DummyServer.class.getPackage().getImplementationVersion());
 
-            Mockito.when(instance.getItemFactory()).then(mock -> CraftItemFactory.instance());
+            when(instance.getBukkitVersion()).thenReturn(Versioning.getBukkitVersion());
 
-            Mockito.when(instance.getName()).then(mock -> DummyServer.class.getSimpleName());
+            when(instance.getLogger()).thenReturn(Logger.getLogger(DummyServer.class.getCanonicalName()));
 
-            Mockito.when(instance.getVersion()).then(mock -> DummyServer.class.getPackage().getImplementationVersion());
+            when(instance.getUnsafe()).then(mock -> CraftMagicNumbers.INSTANCE);
 
-            Mockito.when(instance.getBukkitVersion()).then(mock -> Versioning.getBukkitVersion());
+            when(instance.createBlockData(any(BlockType.class))).then(mock -> CraftBlockData.newData(mock.getArgument(0), null));
 
-            Mockito.when(instance.getLogger()).then(new Answer<Logger>() {
-                final Logger logger = Logger.getLogger(DummyServer.class.getCanonicalName());
-                @Override
-                public Logger answer(InvocationOnMock invocationOnMock) {
-                    return logger;
-                }
-            });
+            when(instance.getLootTable(any())).then(mock -> new CraftLootTable(mock.getArgument(0),
+                    AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(mock.getArgument(0)))));
 
-            Mockito.when(instance.getUnsafe()).then(mock -> CraftMagicNumbers.INSTANCE);
-
-            Mockito.when(instance.createBlockData((BlockType<BlockData>) Mockito.any())).then(mock -> CraftBlockData.newData(mock.getArgument(0), null));
-
-            Mockito.when(instance.getLootTable(Mockito.any())).then(mock -> {
-                NamespacedKey key = mock.getArgument(0);
-                return new CraftLootTable(key, AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(key)));
-            });
-
-            Mockito.when(instance.getRegistry(Mockito.any())).then(new Answer<Registry<?>>() {
+            when(instance.getRegistry(any())).then(new Answer<Registry<?>>() {
                 private final Map<Class<?>, Registry<?>> registers = new HashMap<>();
                 @Override
                 public Registry<?> answer(InvocationOnMock mock) {
@@ -81,7 +64,7 @@ public final class DummyServer {
                 }
             });
 
-            Mockito.when(instance.getTag(Mockito.any(), Mockito.any(), Mockito.any())).then(mock -> {
+            when(instance.getTag(any(), any(), any())).then(mock -> {
                 String registry = mock.getArgument(0);
                 Class<?> clazz = mock.getArgument(2);
                 MinecraftKey key = CraftNamespacedKey.toMinecraft(mock.getArgument(1));
