@@ -110,7 +110,7 @@ public class CraftItemType implements ItemType {
     @Override
     public ItemType getCraftingRemainingItem() {
         Item expectedItem = item.getCraftingRemainingItem();
-        return expectedItem == null ? null : minecraftToBukkit(item);
+        return expectedItem == null ? null : minecraftToBukkit(expectedItem);
     }
 
     @Override
