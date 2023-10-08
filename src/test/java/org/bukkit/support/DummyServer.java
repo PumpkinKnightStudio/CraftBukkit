@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -32,6 +33,8 @@ public final class DummyServer {
             when(instance.getUnsafe()).then(mock -> CraftMagicNumbers.INSTANCE);
 
             when(instance.createBlockData(any(Material.class))).then(mock -> CraftBlockData.newData(mock.getArgument(0), null));
+
+            when(instance.createBlockData(any(BlockType.class))).then(mock -> CraftBlockData.newData(mock.getArgument(0, BlockType.class).asMaterial(), null));
 
             when(instance.getLootTable(any())).then(mock -> new CraftLootTable(mock.getArgument(0),
                     AbstractTestingBase.DATA_PACK.getLootData().getLootTable(CraftNamespacedKey.toMinecraft(mock.getArgument(0)))));
