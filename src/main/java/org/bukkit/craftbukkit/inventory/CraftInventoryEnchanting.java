@@ -48,7 +48,7 @@ public class CraftInventoryEnchanting extends CraftInventory implements Enchanti
     }
 
     @Override
-    public void setEnchantmentClues(Enchantment[] enchantments) {
+    public void setEnchantmentHints(Enchantment[] enchantments) {
         Preconditions.checkArgument(enchantments.length == 3, "There must be 3 slots for the enchantments. Leave slot as null if needed.");
         for (int i=0; i<3; i++) {
             if (enchantments[i] != null)
@@ -57,7 +57,7 @@ public class CraftInventoryEnchanting extends CraftInventory implements Enchanti
     }
 
     @Override
-    public Enchantment[] getEnchantmentClues() {
+    public Enchantment[] getEnchantmentHints() {
         Enchantment[] enchantmentClues = new Enchantment[3];
 
         for (int i=0; i<3; i++) {
