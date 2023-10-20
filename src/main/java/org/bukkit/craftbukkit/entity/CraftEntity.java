@@ -528,10 +528,19 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public boolean teleport(Location location, TeleportCause cause) {
+        return teleport(location, cause, false);
+    }
+
+    @Override
+    public boolean teleport(Location location, TeleportCause cause, boolean allowPassengers) {
         Preconditions.checkArgument(location != null, "location cannot be null");
         location.checkFinite();
 
-        if (entity.isVehicle() || entity.isRemoved()) {
+        if(!allowPassengers && entity.isVehicle()) {
+            return false;
+        }
+
+        if (entity.isRemoved()) {
             return false;
         }
 
@@ -562,6 +571,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public boolean teleport(org.bukkit.entity.Entity destination, TeleportCause cause) {
         return teleport(destination.getLocation(), cause);
+    }
+
+    @Override
+    public boolean teleport(org.bukkit.entity.Entity destination, TeleportCause cause, boolean allowPassengers) {
+        return teleport(destination.getLocation(), cause, allowPassengers);
     }
 
     @Override
