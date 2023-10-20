@@ -2353,7 +2353,7 @@ public final class CraftServer implements Server {
     }
 
     @Override
-    public <T extends Keyed> Registry<T> getRegistry(Class<T> aClass) {
+    public <T extends Keyed> Registry<? super T> getRegistry(Class<? super T> aClass) {
         return (Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.registryAccess()));
     }
 
