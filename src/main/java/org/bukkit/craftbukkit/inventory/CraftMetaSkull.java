@@ -11,7 +11,6 @@ import net.minecraft.SystemUtils;
 import net.minecraft.nbt.GameProfileSerializer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.resources.MinecraftKey;
-import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -136,12 +135,13 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             // SPIGOT-6558: Set initial textures
             tag.put(SKULL_OWNER.NBT, serializedProfile);
             // Fill in textures
-            TileEntitySkull.fillProfileTextures(profile).thenAccept((optional) -> {
-                optional.ifPresent((filledProfile) -> {
-                    setProfile(filledProfile);
+            PlayerProfile ownerProfile = getOwnerProfile();
+            if (ownerProfile.getTextures().isEmpty()) {
+                ownerProfile.update().thenAccept((filledProfile) -> {
+                    setOwnerProfile(filledProfile);
                     tag.put(SKULL_OWNER.NBT, serializedProfile);
                 });
-            });
+            }
         }
 
         if (noteBlockSound != null) {

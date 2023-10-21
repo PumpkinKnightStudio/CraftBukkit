@@ -3,8 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -123,7 +121,11 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
 
     @Override
     public <T> void setParticle(Particle<T> particle, T data) {
-        getHandle().setParticle(((CraftParticle<T>) particle).createParticleParam(CraftParticle.convertLegacy(data)));
+        data = CraftParticle.convertLegacy(data);
+        if (data != null) {
+            Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
+        }
+        getHandle().setParticle(CraftParticle.createParticleParam(particle, data));
     }
 
     @Override
@@ -206,16 +208,19 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
     @Override
     public void setBasePotionData(PotionData data) {
         Preconditions.checkArgument(data != null, "PotionData cannot be null");
-        getHandle().setPotion(BuiltInRegistries.POTION.get(new MinecraftKey(CraftPotionUtil.fromBukkit(data))));
+
+        getHandle().setPotion(CraftPotionType.bukkitToMinecraft(CraftPotionUtil.fromBukkit(data)));
     }
 
     @Override
     public PotionData getBasePotionData() {
-        return CraftPotionUtil.toBukkit((BuiltInRegistries.POTION.getKey(getHandle().potion)).toString());
+        return CraftPotionUtil.toBukkit(CraftPotionType.minecraftToBukkit(getHandle().getPotion()));
     }
 
     @Override
     public void setBasePotionType(@NotNull PotionType potionType) {
+        Preconditions.checkArgument(potionType != null, "PotionType cannot be null use PotionType.EMPTY to represent no effect instead.");
+
         getHandle().setPotion(CraftPotionType.bukkitToMinecraft(potionType));
     }
 

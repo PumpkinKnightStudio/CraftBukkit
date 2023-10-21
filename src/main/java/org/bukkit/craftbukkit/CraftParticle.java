@@ -58,6 +58,12 @@ public abstract class CraftParticle<D> extends Particle<D> {
         return ((CraftParticle<?>) bukkit).getHandle();
     }
 
+    public static <D> ParticleParam createParticleParam(Particle<?> particle, D data) {
+        Preconditions.checkArgument(particle != null);
+
+        return ((CraftParticle<D>) particle).createParticleParam(data);
+    }
+
     public static <T> T convertLegacy(T object) {
         if (object instanceof MaterialData mat) {
             return (T) CraftBlockData.fromData(CraftMagicNumbers.getBlock(mat));
