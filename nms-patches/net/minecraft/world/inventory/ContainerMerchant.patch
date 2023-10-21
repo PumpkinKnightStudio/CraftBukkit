@@ -20,7 +20,7 @@
 +    @Override
 +    public CraftMerchantView getBukkitView() {
 +        if (bukkitEntity == null) {
-+            bukkitEntity = new CraftMerchantView(this.player.player.getBukkitEntity(), new org.bukkit.craftbukkit.inventory.CraftInventoryMerchant(trader, tradeContainer), this);
++            bukkitEntity = new CraftMerchantView(this.player.player.getBukkitEntity(), new org.bukkit.craftbukkit.inventory.CraftInventoryMerchant(trader, tradeContainer), this, trader);
 +        }
 +        return bukkitEntity;
 +    }

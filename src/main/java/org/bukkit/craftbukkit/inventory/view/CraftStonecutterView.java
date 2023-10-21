@@ -34,7 +34,7 @@ public class CraftStonecutterView extends CraftInventoryView<ContainerStonecutte
     }
 
     @Override
-    public int getAmountRecipe() {
+    public int getRecipeAmount() {
         return container.getNumRecipes();
     }
 
