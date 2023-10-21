@@ -18,11 +18,13 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
+import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +46,7 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         return getMinecraftRegistry().registryOrThrow(key);
     }
 
-    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, IRegistryCustom registryHolder) {
+    public static <B extends Keyed> Registry<?> createRegistry(Class<? super B> bukkitClass, IRegistryCustom registryHolder) {
         if (bukkitClass == GameEvent.class) {
             return new CraftRegistry<>(GameEvent.class, registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
         }
@@ -62,6 +64,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == TrimPattern.class) {
             return new CraftRegistry<>(TrimPattern.class, registryHolder.registryOrThrow(Registries.TRIM_PATTERN), CraftTrimPattern::new);
+        }
+        if (bukkitClass == MenuType.class) {
+            return new CraftRegistry<>(MenuType.class, registryHolder.registryOrThrow(Registries.MENU), CraftMenuType::new);
         }
 
         return null;
