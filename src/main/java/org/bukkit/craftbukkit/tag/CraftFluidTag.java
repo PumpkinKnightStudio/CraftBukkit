@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.tag;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.FluidType;
@@ -21,6 +22,6 @@ public class CraftFluidTag extends CraftTag<FluidType, Fluid> {
 
     @Override
     public Set<Fluid> getValues() {
-        return getHandle().stream().map((fluid) -> CraftFluid.minecraftToBukkit(fluid.value())).collect(Collectors.toUnmodifiableSet());
+        return getHandle().stream().map(Holder::value).map(CraftFluid::minecraftToBukkit).collect(Collectors.toUnmodifiableSet());
     }
 }

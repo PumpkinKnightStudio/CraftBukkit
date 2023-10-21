@@ -112,6 +112,8 @@ public class Commodore {
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("toString"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)Ljava/lang/String;"));
         rerouteToStatic(true, true, eq("java/lang/Enum"), eq("ordinal"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, cons("(Ljava/lang/Object;)I"));
 
+        rerouteToStatic(true, false, eq("org/bukkit/block/banner/PatternType"), eq("valueOf"), all, cons("org/bukkit/craftbukkit/legacy/EnumEvil"), same, same);
+
         renameMethod(true, true, all, contains("java/lang/Enum"), append(SUFFIX));
         rerouteType(true, true, "java/lang/Enum", "java/lang/Object");
     }
@@ -673,7 +675,7 @@ public class Commodore {
                                     super.visitFieldInsn(opcode, owner, "ENTITY_INTERACT", desc);
                                     return;
                                 case "RAVAGER_ROAR":
-                                    super.visitFieldInsn(opcode, owner, "ENTITY_ROAR", desc);
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_ACTION", desc);
                                     return;
                                 case "RING_BELL":
                                     super.visitFieldInsn(opcode, owner, "BLOCK_CHANGE", desc);
@@ -685,7 +687,7 @@ public class Commodore {
                                     super.visitFieldInsn(opcode, owner, "CONTAINER_OPEN", desc);
                                     return;
                                 case "WOLF_SHAKING":
-                                    super.visitFieldInsn(opcode, owner, "ENTITY_SHAKE", desc);
+                                    super.visitFieldInsn(opcode, owner, "ENTITY_ACTION", desc);
                                     return;
                                 case "DISPENSE_FAIL":
                                     super.visitFieldInsn(opcode, owner, "BLOCK_ACTIVATE", desc);
@@ -836,6 +838,12 @@ public class Commodore {
                             return;
                         }
 
+                        if ( owner.startsWith( "org/bukkit" ) && desc.contains( "org/bukkit/util/Consumer" ) )
+                        {
+                            super.visitMethodInsn( opcode, owner, name, desc.replace( "org/bukkit/util/Consumer", "java/util/function/Consumer" ), itf );
+                            return;
+                        }
+
                         // Enums to class
                         if ((owner.equals("org/bukkit/block/Biome")
                                 || owner.equals("org/bukkit/Art")
@@ -925,7 +933,8 @@ public class Commodore {
                         if (preEnumKilling) {
                             if ((owner.startsWith("org/bukkit") && desc.contains("org/bukkit/Material"))
                                     || owner.equals("org/bukkit/Tag") || owner.equals("org/bukkit/entity/Piglin")
-                                    || owner.equals("org/bukkit/block/DecoratedPot")) {
+                                    || owner.equals("org/bukkit/block/DecoratedPot") || name.equals("getTargetBlock")
+                                    || name.equals("getLastTwoTargetBlocks") || name.equals("getLineOfSight")) {
                                 if (replaceMaterialMethod(owner, name, desc, (newName, newDesc) ->
                                         super.visitMethodInsn(Opcodes.INVOKESTATIC, "org/bukkit/craftbukkit/legacy/EnumEvil", newName, newDesc, false))) {
                                     return;
@@ -1092,10 +1101,17 @@ public class Commodore {
                             List<Object> newTypes = new ArrayList<>();
                             newTypes.add(samMethodType);
 
+                            if ( implMethod.getOwner().startsWith( "org/bukkit" ) && implMethod.getDesc().contains( "org/bukkit/util/Consumer" ) )
+                            {
+                                implMethod = new Handle( implMethod.getTag(), implMethod.getOwner(), implMethod.getName(),
+                                        implMethod.getDesc().replace( "org/bukkit/util/Consumer", "java/util/function/Consumer" ), implMethod.isInterface() );
+                            }
+
                             if (preEnumKilling) {
                                 if ((implMethod.getOwner().startsWith("org/bukkit") && implMethod.getDesc().contains("org/bukkit/Material"))
                                         || implMethod.getOwner().equals("org/bukkit/Tag") || implMethod.getOwner().equals("org/bukkit/entity/Piglin")
-                                        || implMethod.getOwner().equals("org/bukkit/block/DecoratedPot")) {
+                                        || implMethod.getOwner().equals("org/bukkit/block/DecoratedPot") || name.equals("getTargetBlock")
+                                        || name.equals("getLastTwoTargetBlocks") || name.equals("getLineOfSight")) {
 
                                     Handle[] handle = new Handle[1];
 

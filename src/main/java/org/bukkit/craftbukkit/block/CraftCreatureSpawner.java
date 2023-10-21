@@ -9,12 +9,17 @@ import net.minecraft.world.level.MobSpawnerData;
 import net.minecraft.world.level.block.entity.TileEntityMobSpawner;
 import org.bukkit.World;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.entity.EntityType;
 
 public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpawner> implements CreatureSpawner {
 
     public CraftCreatureSpawner(World world, TileEntityMobSpawner tileEntity) {
         super(world, tileEntity);
+    }
+
+    protected CraftCreatureSpawner(CraftCreatureSpawner state) {
+        super(state);
     }
 
     @Override
@@ -25,7 +30,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
         }
 
         Optional<EntityTypes<?>> type = EntityTypes.by(spawnData.getEntityToSpawn());
-        return type.map(entityTypes -> EntityType.fromName(EntityTypes.getKey(entityTypes).getPath())).orElse(null);
+        return type.map(CraftEntityType::minecraftToBukkit).orElse(null);
     }
 
     @Override
@@ -38,7 +43,7 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
         Preconditions.checkArgument(entityType != EntityType.UNKNOWN, "Can't spawn EntityType %s from mob spawners!", entityType);
 
         RandomSource rand = (this.isPlaced()) ? this.getWorldHandle().getRandom() : RandomSource.create();
-        this.getSnapshot().setEntityId(EntityTypes.byString(entityType.getName()).get(), rand);
+        this.getSnapshot().setEntityId(CraftEntityType.bukkitToMinecraft(entityType), rand);
     }
 
     @Override
@@ -134,5 +139,10 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
     @Override
     public void setSpawnRange(int spawnRange) {
         this.getSnapshot().getSpawner().spawnRange = spawnRange;
+    }
+
+    @Override
+    public CraftCreatureSpawner copy() {
+        return new CraftCreatureSpawner(this);
     }
 }

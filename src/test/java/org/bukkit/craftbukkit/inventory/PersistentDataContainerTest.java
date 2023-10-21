@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -10,6 +11,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -18,52 +20,52 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class PersistentDataContainerTest extends AbstractTestingBase {
 
     private static NamespacedKey VALID_KEY;
 
-    @Before
-    public void setup() {
+    @BeforeAll
+    public static void setup() {
         VALID_KEY = new NamespacedKey("test", "validkey");
     }
 
     /*
         Sets a test
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetNoAdapter() {
         ItemMeta itemMeta = createNewItemMeta();
-        itemMeta.getPersistentDataContainer().set(VALID_KEY, new PrimitiveTagType<>(boolean.class), true);
+        assertThrows(IllegalArgumentException.class, () -> itemMeta.getPersistentDataContainer().set(VALID_KEY, new PrimitiveTagType<>(boolean.class), true));
     }
 
     /*
         Contains a tag
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testHasNoAdapter() {
         ItemMeta itemMeta = createNewItemMeta();
         itemMeta.getPersistentDataContainer().set(VALID_KEY, PersistentDataType.INTEGER, 1); // We gotta set this so we at least try to compare it
-        itemMeta.getPersistentDataContainer().has(VALID_KEY, new PrimitiveTagType<>(boolean.class));
+        assertThrows(IllegalArgumentException.class, () -> itemMeta.getPersistentDataContainer().has(VALID_KEY, new PrimitiveTagType<>(boolean.class)));
     }
 
     /*
         Getting a tag
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetNoAdapter() {
         ItemMeta itemMeta = createNewItemMeta();
         itemMeta.getPersistentDataContainer().set(VALID_KEY, PersistentDataType.INTEGER, 1); //We gotta set this so we at least try to compare it
-        itemMeta.getPersistentDataContainer().get(VALID_KEY, new PrimitiveTagType<>(boolean.class));
+        assertThrows(IllegalArgumentException.class, () -> itemMeta.getPersistentDataContainer().get(VALID_KEY, new PrimitiveTagType<>(boolean.class)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetWrongType() {
         ItemMeta itemMeta = createNewItemMeta();
         itemMeta.getPersistentDataContainer().set(VALID_KEY, PersistentDataType.INTEGER, 1);
-        itemMeta.getPersistentDataContainer().get(VALID_KEY, PersistentDataType.STRING);
+        assertThrows(IllegalArgumentException.class, () -> itemMeta.getPersistentDataContainer().get(VALID_KEY, PersistentDataType.STRING));
     }
 
     @Test
@@ -163,6 +165,49 @@ public class PersistentDataContainerTest extends AbstractTestingBase {
         innerContainer.set(VALID_KEY, PersistentDataType.LONG, 5L);
         itemMeta.getPersistentDataContainer().set(requestKey("custom-inner-compound"), PersistentDataType.TAG_CONTAINER, innerContainer);
         return itemMeta;
+    }
+
+    /*
+        Test edge cases with strings
+     */
+    @Test
+    public void testStringEdgeCases() throws IOException, InvalidConfigurationException {
+        final ItemStack stack = new ItemStack(Material.DIAMOND);
+        final ItemMeta meta = stack.getItemMeta();
+        assertNotNull(meta);
+
+        final String arrayLookalike = "[\"UnicornParticle\",\"TotemParticle\",\"AngelParticle\",\"ColorSwitchParticle\"]";
+        final String jsonLookalike = """
+                {
+                 "key": 'A value wrapped in single quotes',
+                 "other": "A value with normal quotes",
+                 "array": ["working", "unit", "tests"]
+                }
+                """;
+
+        final PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(requestKey("string_int"), PersistentDataType.STRING, "5i");
+        pdc.set(requestKey("string_true"), PersistentDataType.STRING, "true");
+        pdc.set(requestKey("string_byte_array"), PersistentDataType.STRING, "[B;-128B]");
+        pdc.set(requestKey("string_array_lookalike"), PersistentDataType.STRING, arrayLookalike);
+        pdc.set(requestKey("string_json_lookalike"), PersistentDataType.STRING, jsonLookalike);
+
+        stack.setItemMeta(meta);
+
+        final YamlConfiguration config = new YamlConfiguration();
+        config.set("test", stack);
+        config.load(new StringReader(config.saveToString())); // Reload config from string
+
+        final ItemStack loadedStack = config.getItemStack("test");
+        assertNotNull(loadedStack);
+        final ItemMeta loadedMeta = loadedStack.getItemMeta();
+        assertNotNull(loadedMeta);
+
+        final PersistentDataContainer loadedPdc = loadedMeta.getPersistentDataContainer();
+        assertEquals("5i", loadedPdc.get(requestKey("string_int"), PersistentDataType.STRING));
+        assertEquals("true", loadedPdc.get(requestKey("string_true"), PersistentDataType.STRING));
+        assertEquals(arrayLookalike, loadedPdc.get(requestKey("string_array_lookalike"), PersistentDataType.STRING));
+        assertEquals(jsonLookalike, loadedPdc.get(requestKey("string_json_lookalike"), PersistentDataType.STRING));
     }
 
     /*

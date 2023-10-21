@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.SystemUtils;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
@@ -29,6 +30,10 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     public CraftSkull(World world, TileEntitySkull tileEntity) {
         super(world, tileEntity);
+    }
+
+    protected CraftSkull(CraftSkull state) {
+        super(state);
     }
 
     @Override
@@ -84,11 +89,11 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     @Override
     public OfflinePlayer getOwningPlayer() {
         if (profile != null) {
-            if (profile.getId() != null) {
+            if (!profile.getId().equals(SystemUtils.NIL_UUID)) {
                 return Bukkit.getOfflinePlayer(profile.getId());
             }
 
-            if (profile.getName() != null) {
+            if (!profile.getName().isEmpty()) {
                 return Bukkit.getOfflinePlayer(profile.getName());
             }
         }
@@ -197,5 +202,10 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
         if (getSkullType() == SkullType.PLAYER) {
             skull.setOwner(profile);
         }
+    }
+
+    @Override
+    public CraftSkull copy() {
+        return new CraftSkull(this);
     }
 }

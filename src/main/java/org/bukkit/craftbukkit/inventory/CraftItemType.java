@@ -14,11 +14,14 @@ import net.minecraft.world.item.ItemRecord;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
@@ -107,7 +110,7 @@ public class CraftItemType implements ItemType {
     @Override
     public ItemType getCraftingRemainingItem() {
         Item expectedItem = item.getCraftingRemainingItem();
-        return expectedItem == null ? null : minecraftToBukkit(item);
+        return expectedItem == null ? null : minecraftToBukkit(expectedItem);
     }
 
     @Override
@@ -121,7 +124,7 @@ public class CraftItemType implements ItemType {
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = item.getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(equipmentSlot));
         for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ATTRIBUTE).getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), equipmentSlot));
         }
 
@@ -131,6 +134,12 @@ public class CraftItemType implements ItemType {
     @Override
     public CreativeCategory getCreativeCategory() {
         return CreativeCategory.BUILDING_BLOCKS;
+    }
+
+    @Override
+    public boolean isEnabledByFeature(@NotNull World world) {
+        Preconditions.checkNotNull(world, "World cannot be null");
+        return getHandle().isEnabled(((CraftWorld) world).getHandle().enabledFeatures());
     }
 
     @NotNull

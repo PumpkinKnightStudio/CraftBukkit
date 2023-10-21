@@ -59,7 +59,7 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
             Preconditions.checkArgument(minecraft != null);
 
             IRegistry<CatVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.CAT_VARIANT);
-            Type bukkit = Registry.CAT_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+            Type bukkit = Registry.CAT_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
             Preconditions.checkArgument(bukkit != null);
 

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.critereon.LootDeserializationContext;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
@@ -38,11 +39,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.storage.SavedFile;
 import org.bukkit.Bukkit;
 import org.bukkit.FeatureFlag;
-import org.bukkit.Fluid;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -58,6 +57,7 @@ import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBiome;
@@ -121,20 +121,20 @@ public final class CraftMagicNumbers implements UnsafeValues {
     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
 
     static {
-        for (Block block : CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK)) {
-            BLOCK_MATERIAL.put(block, Material.getMaterial(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getKey(block).getPath().toUpperCase(Locale.ROOT)));
+        for (Block block : CraftRegistry.getMinecraftRegistry(Registries.BLOCK)) {
+            BLOCK_MATERIAL.put(block, Material.getMaterial(CraftRegistry.getMinecraftRegistry(Registries.BLOCK).getKey(block).getPath().toUpperCase(Locale.ROOT)));
         }
 
-        for (Item item : CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM)) {
-            ITEM_MATERIAL.put(item, Material.getMaterial(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM).getKey(item).getPath().toUpperCase(Locale.ROOT)));
+        for (Item item : CraftRegistry.getMinecraftRegistry(Registries.ITEM)) {
+            ITEM_MATERIAL.put(item, Material.getMaterial(CraftRegistry.getMinecraftRegistry(Registries.ITEM).getKey(item).getPath().toUpperCase(Locale.ROOT)));
         }
 
         Registry.MATERIAL.forEach(material -> {
             MinecraftKey key = key(material);
-            CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM).getOptional(key).ifPresent((item) -> {
+            CraftRegistry.getMinecraftRegistry(Registries.ITEM).getOptional(key).ifPresent((item) -> {
                 MATERIAL_ITEM.put(material, item);
             });
-            CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getOptional(key).ifPresent((block) -> {
+            CraftRegistry.getMinecraftRegistry(Registries.BLOCK).getOptional(key).ifPresent((block) -> {
                 MATERIAL_BLOCK.put(material, block);
             });
         });
@@ -146,10 +146,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     public static Material getMaterial(Item item) {
         return ITEM_MATERIAL.getOrDefault(item, Material.AIR);
-    }
-
-    public static Fluid getFluid(FluidType fluid) {
-        return CraftFluid.minecraftToBukkit(fluid);
     }
 
     public static Item getItem(Material material) {
@@ -166,10 +162,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return MATERIAL_BLOCK.get(material);
-    }
-
-    public static FluidType getFluid(Fluid fluid) {
-        return CraftFluid.bukkitToMinecraft(fluid);
     }
 
     public static MinecraftKey key(Material mat) {
@@ -257,7 +249,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "bcf3dcb22ad42792794079f9443df2c0";
+        return "3478a65bfd04b15b431fe107b3617dfc";
     }
 
     @Override
@@ -291,9 +283,9 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         JsonElement jsonelement = AdvancementDataWorld.GSON.fromJson(advancement, JsonElement.class);
         JsonObject jsonobject = ChatDeserializer.convertToJsonObject(jsonelement, "advancement");
-        net.minecraft.advancements.Advancement.SerializedAdvancement nms = net.minecraft.advancements.Advancement.SerializedAdvancement.fromJson(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().getLootData()));
+        net.minecraft.advancements.Advancement nms = net.minecraft.advancements.Advancement.fromJson(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().getLootData()));
         if (nms != null) {
-            MinecraftServer.getServer().getAdvancements().advancements.add(Maps.newHashMap(Collections.singletonMap(minecraftkey, nms)));
+            MinecraftServer.getServer().getAdvancements().advancements.put(minecraftkey, new AdvancementHolder(minecraftkey, nms));
             Advancement bukkit = Bukkit.getAdvancement(key);
 
             if (bukkit != null) {
@@ -319,36 +311,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
     public boolean removeAdvancement(NamespacedKey key) {
         File file = new File(getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
         return file.delete();
-    }
-
-    @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
-
-        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
-        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ATTRIBUTE).getKey(mapEntry.getKey()).toString());
-            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
-        }
-
-        return defaultAttributes.build();
-    }
-
-    @Override
-    public CreativeCategory getCreativeCategory(Material material) {
-        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
-    }
-
-    @Override
-    public String getBlockTranslationKey(Material material) {
-        Block block = getBlock(material);
-        return (block != null) ? block.getDescriptionId() : null;
-    }
-
-    @Override
-    public String getItemTranslationKey(Material material) {
-        Item item = getItem(material);
-        return (item != null) ? item.getDescriptionId() : null;
     }
 
     private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
@@ -406,6 +368,36 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return clazz;
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
+
+        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
+        for (Map.Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
+            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
+            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
+        }
+
+        return defaultAttributes.build();
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory(Material material) {
+        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
+    }
+
+    @Override
+    public String getBlockTranslationKey(Material material) {
+        Block block = getBlock(material);
+        return (block != null) ? block.getDescriptionId() : null;
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        Item item = getItem(material);
+        return (item != null) ? item.getDescriptionId() : null;
     }
 
     @Override

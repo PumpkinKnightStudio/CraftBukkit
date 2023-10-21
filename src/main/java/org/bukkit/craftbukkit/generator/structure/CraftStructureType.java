@@ -14,8 +14,8 @@ public class CraftStructureType extends StructureType {
     public static StructureType minecraftToBukkit(net.minecraft.world.level.levelgen.structure.StructureType<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<net.minecraft.world.level.levelgen.structure.StructureType<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.STRUCTURE_TYPE);
-        StructureType bukkit = Registry.STRUCTURE_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<net.minecraft.world.level.levelgen.structure.StructureType<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.STRUCTURE_TYPE);
+        StructureType bukkit = Registry.STRUCTURE_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 

@@ -1,10 +1,11 @@
 package org.bukkit.craftbukkit.potion;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.alchemy.PotionRegistry;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -22,8 +23,8 @@ public class CraftPotionType extends PotionType {
     public static PotionType minecraftToBukkit(PotionRegistry minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<PotionRegistry> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.POTION);
-        PotionType bukkit = Registry.POTION.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<PotionRegistry> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
+        PotionType bukkit = Registry.POTION.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 
@@ -36,22 +37,24 @@ public class CraftPotionType extends PotionType {
         return ((CraftPotionType) bukkit).getHandle();
     }
 
-    private static PotionEffect toBukkit(MobEffect effect) {
-        // Copy here from CraftPotionUtil, because of class loader order
-        PotionEffectType type = CraftPotionEffectType.minecraftToBukkit(effect.getEffect());
-        int amp = effect.getAmplifier();
-        int duration = effect.getDuration();
-        boolean ambient = effect.isAmbient();
-        boolean particles = effect.isVisible();
-        return new PotionEffect(type, duration, amp, ambient, particles);
+    public static String bukkitToString(PotionType potionType) {
+        Preconditions.checkArgument(potionType != null);
+
+        return potionType.getKey().toString();
+    }
+
+    public static PotionType stringToBukkit(String string) {
+        Preconditions.checkArgument(string != null);
+
+        return Registry.POTION.get(NamespacedKey.fromString(string));
     }
 
     private final NamespacedKey key;
     private final PotionRegistry potion;
-    private final List<PotionEffect> potionEffects;
-    private final boolean upgradeable;
-    private final boolean extendable;
-    private final int maxLevel;
+    private final Supplier<List<PotionEffect>> potionEffects;
+    private final Supplier<Boolean> upgradeable;
+    private final Supplier<Boolean> extendable;
+    private final Supplier<Integer> maxLevel;
     private final String name;
     private final int ordinal;
 
@@ -69,10 +72,10 @@ public class CraftPotionType extends PotionType {
         }
         this.ordinal = count++;
 
-        this.potionEffects = potion.getEffects().stream().map(CraftPotionType::toBukkit).toList();
-        this.upgradeable = Registry.POTION.get(new NamespacedKey(key.getNamespace(), "strong_" + key.getKey())) != null;
-        this.extendable = Registry.POTION.get(new NamespacedKey(key.getNamespace(), "long_" + key.getKey())) != null;
-        this.maxLevel = upgradeable ? 2 : 1;
+        this.potionEffects = Suppliers.memoize(() -> potion.getEffects().stream().map(CraftPotionUtil::toBukkit).toList());
+        this.upgradeable = Suppliers.memoize(() -> Registry.POTION.get(new NamespacedKey(key.getNamespace(), "strong_" + key.getKey())) != null);
+        this.extendable = Suppliers.memoize(() -> Registry.POTION.get(new NamespacedKey(key.getNamespace(), "long_" + key.getKey())) != null);
+        this.maxLevel = Suppliers.memoize(() -> isUpgradeable() ? 2 : 1);
     }
 
     public PotionRegistry getHandle() {
@@ -121,13 +124,13 @@ public class CraftPotionType extends PotionType {
     @Nullable
     @Override
     public PotionEffectType getEffectType() {
-        return potionEffects.isEmpty() ? null : potionEffects.get(0).getType();
+        return getPotionEffects().isEmpty() ? null : getPotionEffects().get(0).getType();
     }
 
     @NotNull
     @Override
     public List<PotionEffect> getPotionEffects() {
-        return potionEffects;
+        return potionEffects.get();
     }
 
     @Override
@@ -137,16 +140,16 @@ public class CraftPotionType extends PotionType {
 
     @Override
     public boolean isUpgradeable() {
-        return upgradeable;
+        return upgradeable.get();
     }
 
     @Override
     public boolean isExtendable() {
-        return extendable;
+        return extendable.get();
     }
 
     @Override
     public int getMaxLevel() {
-        return maxLevel;
+        return maxLevel.get();
     }
 }

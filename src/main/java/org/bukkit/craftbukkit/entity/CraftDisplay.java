@@ -45,12 +45,23 @@ public class CraftDisplay extends CraftEntity implements Display {
 
     @Override
     public int getInterpolationDuration() {
-        return getHandle().getInterpolationDuration();
+        return getHandle().getTransformationInterpolationDuration();
     }
 
     @Override
     public void setInterpolationDuration(int duration) {
-        getHandle().setInterpolationDuration(duration);
+        getHandle().setTransformationInterpolationDuration(duration);
+    }
+
+    @Override
+    public int getTeleportDuration() {
+        return this.getHandle().getEntityData().get(net.minecraft.world.entity.Display.DATA_POS_ROT_INTERPOLATION_DURATION_ID);
+    }
+
+    @Override
+    public void setTeleportDuration(int duration) {
+        Preconditions.checkArgument(duration >= 0 && duration <= 59, "duration (%s) cannot be lower than 0 or higher than 59", duration);
+        this.getHandle().getEntityData().set(net.minecraft.world.entity.Display.DATA_POS_ROT_INTERPOLATION_DURATION_ID, duration);
     }
 
     @Override
@@ -105,12 +116,12 @@ public class CraftDisplay extends CraftEntity implements Display {
 
     @Override
     public int getInterpolationDelay() {
-        return getHandle().getInterpolationDelay();
+        return getHandle().getTransformationInterpolationDelay();
     }
 
     @Override
     public void setInterpolationDelay(int ticks) {
-        getHandle().setInterpolationDelay(ticks);
+        getHandle().setTransformationInterpolationDelay(ticks);
     }
 
     @Override

@@ -15,8 +15,8 @@ public class CraftFluid extends Fluid {
     public static Fluid minecraftToBukkit(FluidType minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<FluidType> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.FLUID);
-        Fluid bukkit = Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<FluidType> registry = CraftRegistry.getMinecraftRegistry(Registries.FLUID);
+        Fluid bukkit = Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 

@@ -1,18 +1,20 @@
 package org.bukkit;
 
+import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.HashMultiset;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.stats.StatisticWrapper;
 import net.minecraft.world.entity.EntityTypes;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.entity.EntityType;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StatisticsAndAchievementsTest extends AbstractTestingBase {
 
@@ -27,7 +29,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
-            Assert.assertNotNull("No Statistic for field name " + name, Registry.STATISTIC.get(NamespacedKey.fromString(name.toLowerCase())));
+            assertNotNull(Registry.STATISTIC.get(NamespacedKey.fromString(name.toLowerCase())), "No Statistic for field name " + name);
         }
     }
 
@@ -40,13 +42,13 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
                 try {
                     Statistic statistic = (Statistic) Statistic.class.getField(bukkit.getKey().toUpperCase()).get(null);
 
-                    Assert.assertEquals("Keys are not the same for " + bukkit, bukkit, statistic.getKey());
+                    assertEquals(bukkit, statistic.getKey(), "Keys are not the same for " + bukkit);
                 } catch (NoSuchFieldException e) {
-                    Assert.fail("No Bukkit default statistic for " + bukkit);
+                    fail("No Bukkit default statistic for " + bukkit);
                 } catch (IllegalAccessException e) {
-                    Assert.fail("Bukkit field is not access able for " + bukkit);
+                    fail("Bukkit field is not access able for " + bukkit);
                 } catch (ClassCastException e) {
-                    Assert.fail("Bukkit field is not of type art for " + bukkit);
+                    fail("Bukkit field is not of type art for " + bukkit);
                 }
             }
         }
@@ -59,7 +61,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
             if (statistic.getType() == Statistic.Type.ENTITY) {
                 for (EntityType<?> entity : EntityType.values()) {
                     if (entity.getName() != null) {
-                        assertNotNull(statistic + " missing for " + entity, CraftStatistic.getEntityStatistic(BuiltInRegistries.ENTITY_TYPE, statistic, entity));
+                        assertNotNull(CraftStatistic.getEntityStatistic(statistic, entity), statistic + " missing for " + entity);
                     }
                 }
             }
@@ -75,15 +77,15 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
                 net.minecraft.stats.Statistic<?> statistic = wrapper.get(child);
                 String message = String.format("org.bukkit.Statistic is missing: '%s'", statistic);
 
-                Statistic subject = CraftStatistic.getBukkitStatistic(BuiltInRegistries.STAT_TYPE, statistic);
-                assertThat(message, subject, is(not(nullValue())));
+                Statistic subject = CraftStatistic.getBukkitStatistic(CraftRegistry.getMinecraftRegistry(Registries.STAT_TYPE), statistic);
+                assertThat(subject, is(not(nullValue())), message);
 
                 if (wrapper.getRegistry() == BuiltInRegistries.ITEM) {
-                    assertNotNull("Item type map missing for " + wrapper.getRegistry().getKey(child), CraftStatistic.getItemTypeFromStatistic(statistic));
+                    assertNotNull(CraftStatistic.getItemTypeFromStatistic(statistic), "Item type map missing for " + wrapper.getRegistry().getKey(child));
                 } else if (wrapper.getRegistry() == BuiltInRegistries.BLOCK) {
-                    assertNotNull("Block type map missing for " + wrapper.getRegistry().getKey(child), CraftStatistic.getBlockTypeFromStatistic(statistic));
+                    assertNotNull(CraftStatistic.getBlockTypeFromStatistic(statistic), "Block type map missing for " + wrapper.getRegistry().getKey(child));
                 } else if (wrapper.getRegistry() == BuiltInRegistries.ENTITY_TYPE) {
-                    assertNotNull("Entity type map missing for " + EntityTypes.getKey((EntityTypes<?>) child), CraftStatistic.getEntityTypeFromStatistic((net.minecraft.stats.Statistic<EntityTypes<?>>) statistic));
+                    assertNotNull(CraftStatistic.getEntityTypeFromStatistic((net.minecraft.stats.Statistic<EntityTypes<?>>) statistic), "Entity type map missing for " + EntityTypes.getKey((EntityTypes<?>) child));
                 }
 
                 statistics.add(subject);
@@ -92,7 +94,7 @@ public class StatisticsAndAchievementsTest extends AbstractTestingBase {
 
         for (Statistic statistic : Statistic.values()) {
             String message = String.format("org.bukkit.Statistic.%s does not have a corresponding minecraft statistic", statistic.name());
-            assertThat(message, statistics.remove(statistic, statistics.count(statistic)), is(greaterThan(0)));
+            assertThat(statistics.remove(statistic, statistics.count(statistic)), is(greaterThan(0)), message);
         }
     }
 }

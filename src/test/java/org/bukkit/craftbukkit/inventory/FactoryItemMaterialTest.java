@@ -1,25 +1,24 @@
 package org.bukkit.craftbukkit.inventory;
 
+import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.bukkit.Registry;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
-@Ignore // Ignore for now, since Mockito's Location feature is too heavy in combination with this test
+@EnabledIfSystemProperty(named = "testEnv", matches = "full", disabledReason = "Disable for now, since Mockito's Location feature is too heavy in combination with this test")
 public class FactoryItemMaterialTest extends AbstractTestingBase {
     static final ItemFactory factory = CraftItemFactory.instance();
     static final StringBuilder buffer = new StringBuilder();
@@ -36,19 +35,17 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         return buffer.delete(0, Integer.MAX_VALUE).append(from.getClass().getName()).append('(').append(from.getKey()).append(") to ").append(to.getClass().getName()).append('(').append(to.getKey()).append(')').toString();
     }
 
-    @Parameters(name = "ItemType[{index}]:{0}")
-    public static List<Object[]> data() {
-        List<Object[]> list = new ArrayList<Object[]>();
+    public static Stream<Arguments> data() {
+        List<Arguments> list = new ArrayList<>();
         for (ItemType itemType : itemTypes) {
-            list.add(new Object[] {itemType});
+            list.add(Arguments.of(itemType));
         }
-        return list;
+        return list.stream();
     }
 
-    @Parameter(0) public ItemType itemType;
-
-    @Test
-    public void itemStack() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void itemStack(ItemType itemType) {
         ItemStack bukkitStack = ItemStack.of(itemType);
         CraftItemStack craftStack = CraftItemStack.asCraftCopy(bukkitStack);
         ItemMeta meta = factory.getItemMeta(itemType);
@@ -60,8 +57,9 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         }
     }
 
-    @Test
-    public void generalCase() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void generalCase(ItemType itemType) {
         CraftMetaItem meta = (CraftMetaItem) factory.getItemMeta(itemType);
         if (meta == null) {
             assertThat(itemType, is(ItemType.AIR));
@@ -75,8 +73,9 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
         }
     }
 
-    @Test
-    public void asMetaFor() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void asMetaFor(ItemType itemType) {
         final CraftMetaItem baseMeta = (CraftMetaItem) factory.getItemMeta(itemType);
         if (baseMeta == null) {
             assertThat(itemType, is(ItemType.AIR));
@@ -91,19 +90,20 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
             final String testName = name(itemType, other);
 
             if (otherMeta == null) {
-                assertThat(testName, other, is(ItemType.AIR));
+                assertThat(other, is(ItemType.AIR), testName);
                 continue;
             }
 
-            assertTrue(testName, factory.isApplicable(otherMeta, craftStack));
-            assertTrue(testName, factory.isApplicable(otherMeta, bukkitStack));
-            assertTrue(testName, factory.isApplicable(otherMeta, other));
-            assertTrue(testName, otherMeta.applicableTo(other));
+            assertTrue(factory.isApplicable(otherMeta, craftStack), testName);
+            assertTrue(factory.isApplicable(otherMeta, bukkitStack), testName);
+            assertTrue(factory.isApplicable(otherMeta, other), testName);
+            assertTrue(otherMeta.applicableTo(other), testName);
         }
     }
 
-    @Test
-    public void blankEqualities() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void blankEqualities(ItemType itemType) {
         if (itemType == ItemType.AIR) {
             return;
         }
@@ -132,17 +132,17 @@ public class FactoryItemMaterialTest extends AbstractTestingBase {
             final CraftMetaItem otherMeta = (CraftMetaItem) factory.asMetaFor(baseMetaClone, other);
 
             if (otherMeta == null) {
-                assertThat(testName, other, is(ItemType.AIR));
+                assertThat(other, is(ItemType.AIR), testName);
                 continue;
             }
 
-            assertTrue(testName, factory.equals(baseMeta, otherMeta));
-            assertTrue(testName, factory.equals(otherMeta, baseMeta));
+            assertTrue(factory.equals(baseMeta, otherMeta), testName);
+            assertTrue(factory.equals(otherMeta, baseMeta), testName);
 
-            assertThat(testName, baseMeta, is(otherMeta));
-            assertThat(testName, otherMeta, is(baseMeta));
+            assertThat(baseMeta, is(otherMeta), testName);
+            assertThat(otherMeta, is(baseMeta), testName);
 
-            assertThat(testName, baseMeta.hashCode(), is(otherMeta.hashCode()));
+            assertThat(baseMeta.hashCode(), is(otherMeta.hashCode()), testName);
         }
     }
 }

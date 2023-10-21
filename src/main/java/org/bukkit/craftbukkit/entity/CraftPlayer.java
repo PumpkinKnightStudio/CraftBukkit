@@ -41,6 +41,9 @@ import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
@@ -56,7 +59,6 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
 import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
-import net.minecraft.network.protocol.game.PacketPlayOutCustomPayload;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
 import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
 import net.minecraft.network.protocol.game.PacketPlayOutExperience;
@@ -108,6 +110,7 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
@@ -133,6 +136,7 @@ import org.bukkit.craftbukkit.CraftEffect;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
 import org.bukkit.craftbukkit.CraftParticle;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
@@ -434,29 +438,29 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         if (getHandle().connection == null) return;
 
-        String instrumentName = switch (instrument.ordinal()) {
-            case 0 -> "harp";
-            case 1 -> "basedrum";
-            case 2 -> "snare";
-            case 3 -> "hat";
-            case 4 -> "bass";
-            case 5 -> "flute";
-            case 6 -> "bell";
-            case 7 -> "guitar";
-            case 8 -> "chime";
-            case 9 -> "xylophone";
-            case 10 -> "iron_xylophone";
-            case 11 -> "cow_bell";
-            case 12 -> "didgeridoo";
-            case 13 -> "bit";
-            case 14 -> "banjo";
-            case 15 -> "pling";
-            case 16 -> "xylophone";
+        Sound instrumentSound = switch (instrument.ordinal()) {
+            case 0 -> Sound.BLOCK_NOTE_BLOCK_HARP;
+            case 1 -> Sound.BLOCK_NOTE_BLOCK_BASEDRUM;
+            case 2 -> Sound.BLOCK_NOTE_BLOCK_SNARE;
+            case 3 -> Sound.BLOCK_NOTE_BLOCK_HAT;
+            case 4 -> Sound.BLOCK_NOTE_BLOCK_BASS;
+            case 5 -> Sound.BLOCK_NOTE_BLOCK_FLUTE;
+            case 6 -> Sound.BLOCK_NOTE_BLOCK_BELL;
+            case 7 -> Sound.BLOCK_NOTE_BLOCK_GUITAR;
+            case 8 -> Sound.BLOCK_NOTE_BLOCK_CHIME;
+            case 9 -> Sound.BLOCK_NOTE_BLOCK_XYLOPHONE;
+            case 10 -> Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE;
+            case 11 -> Sound.BLOCK_NOTE_BLOCK_COW_BELL;
+            case 12 -> Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO;
+            case 13 -> Sound.BLOCK_NOTE_BLOCK_BIT;
+            case 14 -> Sound.BLOCK_NOTE_BLOCK_BANJO;
+            case 15 -> Sound.BLOCK_NOTE_BLOCK_PLING;
+            case 16 -> Sound.BLOCK_NOTE_BLOCK_XYLOPHONE;
             default -> null;
         };
 
         float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.stringToMinecraft("block.note_block." + instrumentName)), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.bukkitToMinecraftHolder(instrumentSound), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -473,7 +477,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().connection == null) return;
 
-        playSound0(loc, getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.bukkitToMinecraft(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound0(loc, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
     }
 
     @Override
@@ -506,7 +510,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
 
-        playSound0(entity, getRegistryAccess().registryOrThrow(Registries.SOUND_EVENT).wrapAsHolder(CraftSound.bukkitToMinecraft(sound)), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound0(entity, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
     }
 
     @Override
@@ -580,9 +584,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public <T> void playEffect(Location loc, Effect effect, T data) {
         Preconditions.checkArgument(effect != null, "Effect cannot be null");
         if (data != null) {
-            Preconditions.checkArgument(effect.getData() != null, "Effect.%s does not have a valid Data", effect);
-            Preconditions.checkArgument(effect.getData().isAssignableFrom(data.getClass()), "%s data cannot be used for the %s effect", data.getClass().getName(), effect);
-        } else {
+            // Support legacy Material usage
+            if (data.getClass() != Material.class || (effect != Effect.RECORD_PLAY && effect != Effect.STEP_SOUND)) {
+                Preconditions.checkArgument(effect.getData() != null, "Effect.%s does not have a valid Data", effect);
+                Preconditions.checkArgument(effect.getData().isAssignableFrom(data.getClass()), "%s data cannot be used for the %s effect", data.getClass().getName(), effect);
+            }
+            } else {
             // Special case: the axis is optional for ELECTRIC_SPARK
             Preconditions.checkArgument(effect.getData() == null || effect == Effect.ELECTRIC_SPARK, "Wrong kind of data for the %s effect", effect);
         }
@@ -1134,32 +1141,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public int getStatistic(Statistic statistic, EntityType<?> entityType) {
-        return CraftStatistic.getStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType);
+        return CraftStatistic.getStatistic(getHandle().getStats(), statistic, entityType);
     }
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.incrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.decrementStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, amount);
     }
 
     @Override
     public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
-        CraftStatistic.setStatistic(getRegistryAccess().registryOrThrow(Registries.ENTITY_TYPE), getHandle().getStats(), statistic, entityType, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, entityType, newValue);
     }
 
     @Override
@@ -1681,10 +1688,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
 
         if (channels.contains(channel)) {
-            channel = StandardMessenger.validateAndCorrectChannel(channel);
-            PacketPlayOutCustomPayload packet = new PacketPlayOutCustomPayload(new MinecraftKey(channel), new PacketDataSerializer(Unpooled.wrappedBuffer(message)));
-            getHandle().connection.send(packet);
+            MinecraftKey id = new MinecraftKey(StandardMessenger.validateAndCorrectChannel(channel));
+            sendCustomPayload(id, message);
         }
+    }
+
+    private void sendCustomPayload(MinecraftKey id, byte[] message) {
+        ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(new CustomPacketPayload() {
+            @Override
+            public void write(PacketDataSerializer pds) {
+                pds.writeBytes(message);
+            }
+
+            @Override
+            public MinecraftKey id() {
+                return id;
+            }
+        });
+        getHandle().connection.send(packet);
     }
 
     @Override
@@ -1719,9 +1740,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (hash != null) {
             Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
 
-            getHandle().sendTexturePack(url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true));
+            getHandle().connection.send(new ClientboundResourcePackPacket(url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true)));
         } else {
-            getHandle().sendTexturePack(url, "", force, CraftChatMessage.fromStringOrNull(prompt, true));
+            getHandle().connection.send(new ClientboundResourcePackPacket(url, "", force, CraftChatMessage.fromStringOrNull(prompt, true)));
         }
     }
 
@@ -1761,7 +1782,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 }
             }
 
-            getHandle().connection.send(new PacketPlayOutCustomPayload(new MinecraftKey("register"), new PacketDataSerializer(Unpooled.wrappedBuffer(stream.toByteArray()))));
+            sendCustomPayload(new MinecraftKey("register"), stream.toByteArray());
         }
     }
 
@@ -2090,7 +2111,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (data != null) {
             Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
         }
-        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(((CraftParticle<T>) particle).createParticleParam(data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
+        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(CraftParticle.createParticleParam(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
         getHandle().connection.send(packetplayoutworldparticles);
 
     }
@@ -2108,17 +2129,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public int getClientViewDistance() {
-        return (getHandle().clientViewDistance == null) ? Bukkit.getViewDistance() : getHandle().clientViewDistance;
+        return (getHandle().requestedViewDistance() == 0) ? Bukkit.getViewDistance() : getHandle().requestedViewDistance();
     }
 
     @Override
     public int getPing() {
-        return getHandle().latency;
+        return getHandle().connection.latency();
     }
 
     @Override
     public String getLocale() {
-        return getHandle().locale;
+        return getHandle().language;
     }
 
     @Override

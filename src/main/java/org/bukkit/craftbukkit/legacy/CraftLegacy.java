@@ -407,7 +407,7 @@ public final class CraftLegacy {
                 }
 
                 // Preconditions.checkState(newId.contains("minecraft:"), "Unknown new material for " + matData);
-                Item newMaterial = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.ITEM).get(new MinecraftKey(newId));
+                Item newMaterial = CraftRegistry.getMinecraftRegistry(Registries.ITEM).get(new MinecraftKey(newId));
 
                 if (newMaterial == Items.AIR) {
                     continue;

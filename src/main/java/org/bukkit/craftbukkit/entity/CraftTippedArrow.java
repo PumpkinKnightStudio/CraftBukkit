@@ -3,13 +3,12 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectList;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.Arrow;
@@ -37,10 +36,10 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
 
     @Override
     public boolean addCustomEffect(PotionEffect effect, boolean override) {
-        int effectId = effect.getType().getId();
+        MobEffectList minecraft = CraftPotionEffectType.bukkitToMinecraft(effect.getType());
         MobEffect existing = null;
         for (MobEffect mobEffect : getHandle().effects) {
-            if (MobEffectList.getId(mobEffect.getEffect()) == effectId) {
+            if (mobEffect.getEffect() == minecraft) {
                 existing = mobEffect;
             }
         }
@@ -87,10 +86,10 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
 
     @Override
     public boolean removeCustomEffect(PotionEffectType effect) {
-        int effectId = effect.getId();
+        MobEffectList minecraft = CraftPotionEffectType.bukkitToMinecraft(effect);
         MobEffect existing = null;
         for (MobEffect mobEffect : getHandle().effects) {
-            if (MobEffectList.getId(mobEffect.getEffect()) == effectId) {
+            if (mobEffect.getEffect() == minecraft) {
                 existing = mobEffect;
             }
         }
@@ -105,16 +104,18 @@ public class CraftTippedArrow extends CraftArrow implements Arrow {
     @Override
     public void setBasePotionData(PotionData data) {
         Preconditions.checkArgument(data != null, "PotionData cannot be null");
-        this.getHandle().potion = BuiltInRegistries.POTION.get(new MinecraftKey(CraftPotionUtil.fromBukkit(data)));
+        this.getHandle().potion = CraftPotionType.bukkitToMinecraft(CraftPotionUtil.fromBukkit(data));
     }
 
     @Override
     public PotionData getBasePotionData() {
-        return CraftPotionUtil.toBukkit(BuiltInRegistries.POTION.getKey(this.getHandle().potion).toString());
+        return CraftPotionUtil.toBukkit(CraftPotionType.minecraftToBukkit(getHandle().potion));
     }
 
     @Override
     public void setBasePotionType(@NotNull PotionType potionType) {
+        Preconditions.checkArgument(potionType != null, "PotionType cannot be null use PotionType.EMPTY to represent no effect instead.");
+
         getHandle().potion = CraftPotionType.bukkitToMinecraft(potionType);
     }
 

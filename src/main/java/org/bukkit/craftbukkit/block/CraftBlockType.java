@@ -20,9 +20,11 @@ import net.minecraft.world.phys.MovingObjectPositionBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.World;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -45,6 +47,12 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
+    }
+
+    public static Block bukkitToMinecraft(BlockType<?> bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftBlockType<?>) bukkit).getHandle();
     }
 
     private static boolean isInteractable(Block block) {
@@ -117,6 +125,12 @@ public class CraftBlockType<B extends BlockData> implements BlockType<B> {
     @Override
     public boolean isAir() {
         return block.defaultBlockState().isAir();
+    }
+
+    @Override
+    public boolean isEnabledByFeature(@NotNull World world) {
+        Preconditions.checkNotNull(world, "World cannot be null");
+        return getHandle().isEnabled(((CraftWorld) world).getHandle().enabledFeatures());
     }
 
     @Override

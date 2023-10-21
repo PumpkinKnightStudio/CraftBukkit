@@ -17,6 +17,10 @@ public class CraftDropper extends CraftLootable<TileEntityDropper> implements Dr
         super(world, tileEntity);
     }
 
+    protected CraftDropper(CraftDropper state) {
+        super(state);
+    }
+
     @Override
     public Inventory getSnapshotInventory() {
         return new CraftInventory(this.getSnapshot());
@@ -39,7 +43,12 @@ public class CraftDropper extends CraftLootable<TileEntityDropper> implements Dr
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDropper drop = (BlockDropper) Blocks.DROPPER;
 
-            drop.dispenseFrom(world.getHandle(), this.getPosition());
+            drop.dispenseFrom(world.getHandle(), this.getHandle(), this.getPosition());
         }
+    }
+
+    @Override
+    public CraftDropper copy() {
+        return new CraftDropper(this);
     }
 }

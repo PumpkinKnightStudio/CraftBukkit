@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
@@ -13,11 +14,15 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 public class CraftSound extends Sound {
     private static int count = 0;
 
-    public static SoundEffect stringToMinecraft(String string) {
-        Preconditions.checkArgument(string != null);
+    public static Sound minecraftToBukkit(SoundEffect minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.SOUND_EVENT);
-        return registry.get(MinecraftKey.tryParse(string));
+        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry(Registries.SOUND_EVENT);
+        Sound bukkit = Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
     public static SoundEffect bukkitToMinecraft(Sound bukkit) {
@@ -26,15 +31,17 @@ public class CraftSound extends Sound {
         return ((CraftSound) bukkit).getHandle();
     }
 
-    public static Sound minecraftToBukkit(SoundEffect minecraft) {
-        Preconditions.checkArgument(minecraft != null);
-
-        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.SOUND_EVENT);
-        Sound bukkit = Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
-
+    public static Holder<SoundEffect> bukkitToMinecraftHolder(Sound bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        return bukkit;
+        IRegistry<SoundEffect> registry = CraftRegistry.getMinecraftRegistry(Registries.SOUND_EVENT);
+
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<SoundEffect> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own sound effect with out properly registering it.");
     }
 
     private final NamespacedKey key;

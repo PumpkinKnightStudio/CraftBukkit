@@ -9,13 +9,16 @@ import org.bukkit.DyeColor;
 import org.bukkit.World;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.Inventory;
 
 public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> implements ShulkerBox {
 
     public CraftShulkerBox(World world, TileEntityShulkerBox tileEntity) {
         super(world, tileEntity);
+    }
+
+    protected CraftShulkerBox(CraftShulkerBox state) {
+        super(state);
     }
 
     @Override
@@ -34,7 +37,7 @@ public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> impleme
 
     @Override
     public DyeColor getColor() {
-        EnumColor color = ((BlockShulkerBox) ((CraftBlockType<?>) this.getType()).getHandle()).color;
+        EnumColor color = ((BlockShulkerBox) CraftBlockType.bukkitToMinecraft(this.getType())).color;
 
         return (color == null) ? null : DyeColor.getByWoolData((byte) color.getId());
     }
@@ -59,5 +62,10 @@ public class CraftShulkerBox extends CraftLootable<TileEntityShulkerBox> impleme
             world.playSound(null, getPosition(), SoundEffects.SHULKER_BOX_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
         }
         getTileEntity().opened = false;
+    }
+
+    @Override
+    public CraftShulkerBox copy() {
+        return new CraftShulkerBox(this);
     }
 }

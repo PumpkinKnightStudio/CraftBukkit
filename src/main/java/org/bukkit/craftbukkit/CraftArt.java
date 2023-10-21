@@ -14,26 +14,38 @@ public class CraftArt extends Art {
     private static final int UNIT_MULTIPLIER = 16;
     private static int count = 0;
 
-    public static Art minecraftToBukkit(Holder<PaintingVariant> minecraft) {
+    public static Art minecraftToBukkit(PaintingVariant minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PAINTING_VARIANT);
-        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft.value())));
+        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
     }
 
-    public static Holder<PaintingVariant> bukkitToMinecraft(Art bukkit) {
-        Preconditions.checkArgument(bukkit != null);
-        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.PAINTING_VARIANT);
+    public static Art minecraftHolderToBukkit(Holder<PaintingVariant> minecraft) {
+        return minecraftToBukkit(minecraft.value());
+    }
 
-        if (registry.wrapAsHolder(((CraftArt) bukkit).getHandle()) instanceof Holder.c<PaintingVariant> holder) {
+    public static PaintingVariant bukkitToMinecraft(Art bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftArt) bukkit).getHandle();
+    }
+
+    public static Holder<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<PaintingVariant> holder) {
             return holder;
         }
 
-        throw new IllegalArgumentException("No Reference holder found for " + bukkit + ", this can happen if a plugin creates its own Art / Painting Variant with out properly registering it.");
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own painting variant with out properly registering it.");
     }
 
     private final NamespacedKey key;

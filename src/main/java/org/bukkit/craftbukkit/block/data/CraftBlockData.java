@@ -241,7 +241,7 @@ public class CraftBlockData implements BlockData {
 
     // Mimicked from BlockDataAbstract#toString()
     public String toString(Map<IBlockState<?>, Comparable<?>> states) {
-        StringBuilder stateString = new StringBuilder(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getKey(state.getBlock()).toString());
+        StringBuilder stateString = new StringBuilder(CraftRegistry.getMinecraftRegistry(Registries.BLOCK).getKey(state.getBlock()).toString());
 
         if (!states.isEmpty()) {
             stateString.append('[');
@@ -320,7 +320,7 @@ public class CraftBlockData implements BlockData {
     private static IBlockState<?> getState(Class<? extends Block> block, String name, boolean optional) {
         IBlockState<?> state = null;
 
-        for (Block instance : CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK)) {
+        for (Block instance : CraftRegistry.getMinecraftRegistry(Registries.BLOCK)) {
             if (instance.getClass() == block) {
                 if (state == null) {
                     state = instance.getStateDefinition().getProperty(name);
@@ -370,6 +370,7 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.BlockBanner.class, org.bukkit.craftbukkit.block.impl.CraftBanner::new);
         register(net.minecraft.world.level.block.BlockBannerWall.class, org.bukkit.craftbukkit.block.impl.CraftBannerWall::new);
         register(net.minecraft.world.level.block.BlockBarrel.class, org.bukkit.craftbukkit.block.impl.CraftBarrel::new);
+        register(net.minecraft.world.level.block.BlockBarrier.class, org.bukkit.craftbukkit.block.impl.CraftBarrier::new);
         register(net.minecraft.world.level.block.BlockBed.class, org.bukkit.craftbukkit.block.impl.CraftBed::new);
         register(net.minecraft.world.level.block.BlockBeehive.class, org.bukkit.craftbukkit.block.impl.CraftBeehive::new);
         register(net.minecraft.world.level.block.BlockBeetroot.class, org.bukkit.craftbukkit.block.impl.CraftBeetroot::new);
@@ -542,11 +543,11 @@ public class CraftBlockData implements BlockData {
             try {
                 // Material provided, force that material in
                 if (block != null) {
-                    data = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).getKey(block) + data;
+                    data = CraftRegistry.getMinecraftRegistry(Registries.BLOCK).getKey(block) + data;
                 }
 
                 StringReader reader = new StringReader(data);
-                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).asLookup(), reader, false);
+                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(CraftRegistry.getMinecraftRegistry(Registries.BLOCK).asLookup(), reader, false);
                 Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data: " + data);
 
                 blockData = arg.blockState();

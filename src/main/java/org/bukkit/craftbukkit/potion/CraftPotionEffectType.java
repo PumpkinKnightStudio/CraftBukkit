@@ -6,7 +6,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffectList;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionEffectType;
@@ -16,8 +15,8 @@ public class CraftPotionEffectType extends PotionEffectType {
     public static PotionEffectType minecraftToBukkit(MobEffectList minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<MobEffectList> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MOB_EFFECT);
-        PotionEffectType bukkit = Registry.POTION_EFFECT_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft)));
+        IRegistry<MobEffectList> registry = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT);
+        PotionEffectType bukkit = PotionEffectType.getByKey(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
         Preconditions.checkArgument(bukkit != null);
 
@@ -47,8 +46,10 @@ public class CraftPotionEffectType extends PotionEffectType {
         } else {
             this.name = key.toString();
         }
-        this.id = MobEffectList.getId(handle);
-        ID_MAP.put(id, this);
+        this.id = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT).getId(handle);
+        if (id > 33) {
+            ID_MAP.put(id, this);
+        }
     }
 
     @Override

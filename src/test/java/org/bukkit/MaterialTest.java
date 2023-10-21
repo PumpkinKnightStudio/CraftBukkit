@@ -1,9 +1,8 @@
 package org.bukkit;
 
+import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.Maps;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -23,8 +22,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MaterialTest extends AbstractTestingBase {
 
@@ -42,7 +40,7 @@ public class MaterialTest extends AbstractTestingBase {
             }
 
             String name = field.getName();
-            Assert.assertNotNull("No Material for field name " + name, Registry.MATERIAL.get(NamespacedKey.fromString(name.toLowerCase())));
+            assertNotNull(Registry.MATERIAL.get(NamespacedKey.fromString(name.toLowerCase())), "No Material for field name " + name);
         }
     }
 
@@ -61,13 +59,13 @@ public class MaterialTest extends AbstractTestingBase {
         try {
             Material material = (Material) Material.class.getField(minecraftKey.getPath().toUpperCase()).get(null);
 
-            Assert.assertEquals("Keys are not the same for " + minecraftKey, minecraftKey, CraftNamespacedKey.toMinecraft(material.getKey()));
+            assertEquals(minecraftKey, CraftNamespacedKey.toMinecraft(material.getKey()), "Keys are not the same for " + minecraftKey);
         } catch (NoSuchFieldException e) {
-            Assert.fail("No Bukkit default material for " + minecraftKey);
+            fail("No Bukkit default material for " + minecraftKey);
         } catch (IllegalAccessException e) {
-            Assert.fail("Bukkit field is not access able for " + minecraftKey);
+            fail("Bukkit field is not access able for " + minecraftKey);
         } catch (ClassCastException e) {
-            Assert.fail("Bukkit field is not of type material for" + minecraftKey);
+            fail("Bukkit field is not of type material for" + minecraftKey);
         }
     }
 
@@ -147,8 +145,8 @@ public class MaterialTest extends AbstractTestingBase {
 
             Material material = materials.remove(id);
 
-            assertThat("Missing " + name + "(" + id + ")", material, is(not(nullValue())));
-            assertNotNull("No item mapping for " + name, CraftMagicNumbers.getMaterial(item));
+            assertThat(material, is(not(nullValue())), "Missing " + name + "(" + id + ")");
+            assertNotNull(CraftMagicNumbers.getMaterial(item), "No item mapping for " + name);
         }
 
         assertThat(materials, is(Collections.EMPTY_MAP));

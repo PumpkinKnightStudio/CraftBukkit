@@ -3,19 +3,18 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.core.IRegistryCustom;
-import net.minecraft.core.Position;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.level.PlayerChunkMap;
 import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAreaEffectCloud;
@@ -544,7 +543,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         if (location.getWorld() != null && !location.getWorld().equals(getWorld())) {
             // Prevent teleportation to an other world during world generation
             Preconditions.checkState(!entity.generation, "Cannot teleport entity to an other world during world generation");
-            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toPosition(location));
+            entity.teleportTo(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location));
             return true;
         }
 
@@ -919,6 +918,23 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     }
 
     @Override
+    public Set<Player> getTrackedBy() {
+        Preconditions.checkState(!entity.generation, "Cannot get tracking players during world generation");
+        ImmutableSet.Builder<Player> players = ImmutableSet.builder();
+
+        WorldServer world = ((CraftWorld) getWorld()).getHandle();
+        PlayerChunkMap.EntityTracker entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
+
+        if (entityTracker != null) {
+            for (ServerPlayerConnection connection : entityTracker.seenBy) {
+                players.add(connection.getPlayer().getBukkitEntity());
+            }
+        }
+
+        return players.build();
+    }
+
+    @Override
     public void sendMessage(String message) {
 
     }
@@ -1153,9 +1169,5 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             });
         }
         return perm;
-    }
-
-    protected IRegistryCustom getRegistryAccess() {
-        return CraftRegistry.getMinecraftRegistry();
     }
 }

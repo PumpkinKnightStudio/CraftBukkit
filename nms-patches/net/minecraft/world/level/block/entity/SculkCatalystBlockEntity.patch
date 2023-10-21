@@ -1,6 +1,10 @@
 --- a/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
-@@ -35,11 +35,14 @@
+@@ -32,14 +32,18 @@
+     public SculkCatalystBlockEntity(BlockPosition blockposition, IBlockData iblockdata) {
+         super(TileEntityTypes.SCULK_CATALYST, blockposition, iblockdata);
+         this.catalystListener = new SculkCatalystBlockEntity.CatalystListener(iblockdata, new BlockPositionSource(blockposition));
++        catalystListener.level = level; // CraftBukkit
      }
  
      public static void serverTick(World world, BlockPosition blockposition, IBlockData iblockdata, SculkCatalystBlockEntity sculkcatalystblockentity) {
@@ -15,3 +19,17 @@
          this.catalystListener.sculkSpreader.load(nbttagcompound);
      }
  
+@@ -60,11 +64,13 @@
+         final SculkSpreader sculkSpreader;
+         private final IBlockData blockState;
+         private final PositionSource positionSource;
++        private World level; // CraftBukkit
+ 
+         public CatalystListener(IBlockData iblockdata, PositionSource positionsource) {
+             this.blockState = iblockdata;
+             this.positionSource = positionsource;
+             this.sculkSpreader = SculkSpreader.createLevelSpreader();
++            this.sculkSpreader.level = level; // CraftBukkit
+         }
+ 
+         @Override

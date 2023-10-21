@@ -13,9 +13,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemType;
@@ -36,14 +36,14 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
             ItemType.TIPPED_ARROW
     );
 
-    static final ItemMetaKey AMPLIFIER = new ItemMetaKey("Amplifier", "amplifier");
-    static final ItemMetaKey AMBIENT = new ItemMetaKey("Ambient", "ambient");
-    static final ItemMetaKey DURATION = new ItemMetaKey("Duration", "duration");
-    static final ItemMetaKey SHOW_PARTICLES = new ItemMetaKey("ShowParticles", "has-particles");
-    static final ItemMetaKey SHOW_ICON = new ItemMetaKey("ShowIcon", "has-icon");
-    static final ItemMetaKey POTION_EFFECTS = new ItemMetaKey("CustomPotionEffects", "custom-effects");
+    static final ItemMetaKey AMPLIFIER = new ItemMetaKey("amplifier", "amplifier");
+    static final ItemMetaKey AMBIENT = new ItemMetaKey("ambient", "ambient");
+    static final ItemMetaKey DURATION = new ItemMetaKey("duration", "duration");
+    static final ItemMetaKey SHOW_PARTICLES = new ItemMetaKey("show_particles", "has-particles");
+    static final ItemMetaKey SHOW_ICON = new ItemMetaKey("show_icon", "has-icon");
+    static final ItemMetaKey POTION_EFFECTS = new ItemMetaKey("custom_potion_effects", "custom-effects");
     static final ItemMetaKey POTION_COLOR = new ItemMetaKey("CustomPotionColor", "custom-color");
-    static final ItemMetaKey ID = new ItemMetaKey("Id", "potion-id");
+    static final ItemMetaKey ID = new ItemMetaKey("id", "potion-id");
     static final ItemMetaKey DEFAULT_POTION = new ItemMetaKey("Potion", "potion-type");
 
     // Having an initial "state" in ItemMeta seems bit dirty but the UNCRAFTABLE potion type
@@ -67,7 +67,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
     CraftMetaPotion(NBTTagCompound tag) {
         super(tag);
         if (tag.contains(DEFAULT_POTION.NBT)) {
-            type = Registry.POTION.get(NamespacedKey.fromString(tag.getString(DEFAULT_POTION.NBT)));
+            type = CraftPotionType.stringToBukkit(tag.getString(DEFAULT_POTION.NBT));
             if (type == null) {
                 type = PotionType.EMPTY;
             }
@@ -86,7 +86,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
             for (int i = 0; i < length; i++) {
                 NBTTagCompound effect = list.getCompound(i);
-                PotionEffectType type = PotionEffectType.getById(effect.getByte(ID.NBT));
+                PotionEffectType type = PotionEffectType.getByKey(NamespacedKey.fromString(effect.getString(ID.NBT)));
                 // SPIGOT-4047: Vanilla just disregards these
                 if (type == null) {
                     continue;
@@ -106,7 +106,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
         super(map);
         String typeString = SerializableMeta.getString(map, DEFAULT_POTION.BUKKIT, true);
         if (typeString != null) {
-            type = Registry.POTION.get(NamespacedKey.fromString(typeString));
+            type = CraftPotionType.stringToBukkit(typeString);
         }
         if (type == null) {
             type = PotionType.EMPTY;
@@ -132,7 +132,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
     void applyToItem(NBTTagCompound tag) {
         super.applyToItem(tag);
 
-        tag.putString(DEFAULT_POTION.NBT, type.getKey().toString());
+        tag.putString(DEFAULT_POTION.NBT, CraftPotionType.bukkitToString(type));
 
         if (hasColor()) {
             tag.putInt(POTION_COLOR.NBT, color.asRGB());
@@ -144,7 +144,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
             for (PotionEffect effect : customEffects) {
                 NBTTagCompound effectData = new NBTTagCompound();
-                effectData.putByte(ID.NBT, (byte) effect.getType().getId());
+                effectData.putString(ID.NBT, effect.getType().getKey().toString());
                 effectData.putByte(AMPLIFIER.NBT, (byte) effect.getAmplifier());
                 effectData.putInt(DURATION.NBT, effect.getDuration());
                 effectData.putBoolean(AMBIENT.NBT, effect.isAmbient());
@@ -182,17 +182,18 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
     @Override
     public void setBasePotionData(PotionData data) {
         Preconditions.checkArgument(data != null, "PotionData cannot be null");
-        this.type = Registry.POTION.get(NamespacedKey.fromString(CraftPotionUtil.fromBukkit(data)));
+        this.type = CraftPotionUtil.fromBukkit(data);
     }
 
     @Override
     public PotionData getBasePotionData() {
-        return CraftPotionUtil.toBukkit(type.getKey().toString());
+        return CraftPotionUtil.toBukkit(type);
     }
 
     @Override
     public void setBasePotionType(@NotNull PotionType potionType) {
-        Preconditions.checkArgument(potionType != null, "PotionType cannot be null");
+        Preconditions.checkArgument(potionType != null, "PotionType cannot be null use PotionType.EMPTY to represent no effect instead.");
+
         type = potionType;
     }
 
@@ -358,7 +359,7 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
     Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
         if (type != PotionType.EMPTY) {
-            builder.put(DEFAULT_POTION.BUKKIT, type.getKey().toString());
+            builder.put(DEFAULT_POTION.BUKKIT, CraftPotionType.bukkitToString(type));
         }
 
         if (hasColor()) {

@@ -19,6 +19,10 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
         super(world, tileEntity);
     }
 
+    protected CraftDispenser(CraftDispenser state) {
+        super(state);
+    }
+
     @Override
     public Inventory getSnapshotInventory() {
         return new CraftInventory(this.getSnapshot());
@@ -52,10 +56,15 @@ public class CraftDispenser extends CraftLootable<TileEntityDispenser> implement
             CraftWorld world = (CraftWorld) this.getWorld();
             BlockDispenser dispense = (BlockDispenser) Blocks.DISPENSER;
 
-            dispense.dispenseFrom(world.getHandle(), this.getPosition());
+            dispense.dispenseFrom(world.getHandle(), this.getHandle(), this.getPosition());
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public CraftDispenser copy() {
+        return new CraftDispenser(this);
     }
 }
