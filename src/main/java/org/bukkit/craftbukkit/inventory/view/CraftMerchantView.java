@@ -1,55 +1,25 @@
 package org.bukkit.craftbukkit.inventory.view;
 
 import net.minecraft.world.inventory.ContainerMerchant;
+import net.minecraft.world.item.trading.IMerchant;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.view.MerchantView;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftMerchantView extends CraftInventoryView<ContainerMerchant> implements MerchantView {
+    private final IMerchant trader;
 
-
-    public CraftMerchantView(HumanEntity player, Inventory viewing, ContainerMerchant container) {
+    public CraftMerchantView(HumanEntity player, Inventory viewing, ContainerMerchant container, IMerchant trader) {
         super(player, viewing, container);
+        this.trader = trader;
     }
 
+    @NotNull
     @Override
-    public int getTraderXp() {
-        return container.getTraderXp();
-    }
-
-    @Override
-    public int getTraderLevel() {
-        return container.getTraderLevel();
-    }
-
-    @Override
-    public boolean canRestock() {
-        return container.canRestock();
-    }
-
-    @Override
-    public boolean showProgressBar() {
-        return container.showProgressBar();
-    }
-
-    @Override
-    public void setTraderXp(int i) {
-        container.setXp(i);
-    }
-
-    @Override
-    public void setTraderLevel(int i) {
-        container.setMerchantLevel(i);
-    }
-
-    @Override
-    public void setCanRestock(boolean b) {
-        container.setCanRestock(b);
-    }
-
-    @Override
-    public void setShowProgressBar(boolean b) {
-        container.setShowProgressBar(b);
+    public Merchant getMerchant() {
+        return trader.getCraftMerchant();
     }
 }
