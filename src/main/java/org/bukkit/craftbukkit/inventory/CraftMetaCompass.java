@@ -110,7 +110,11 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.COMPASS;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == CompassMeta.class;
     }
 
     @Override

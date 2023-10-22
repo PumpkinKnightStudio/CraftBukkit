@@ -2,9 +2,7 @@ package org.bukkit.craftbukkit.inventory;
 
 import static org.bukkit.craftbukkit.inventory.CraftItemFactory.*;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Sets;
 import java.util.Map;
-import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -13,13 +11,6 @@ import org.bukkit.inventory.meta.ColorableArmorMeta;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaColorableArmor extends CraftMetaArmor implements ColorableArmorMeta {
-
-    private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
-            Material.LEATHER_HELMET,
-            Material.LEATHER_CHESTPLATE,
-            Material.LEATHER_LEGGINGS,
-            Material.LEATHER_BOOTS
-    );
 
     private Color color = DEFAULT_LEATHER_COLOR;
 
@@ -55,7 +46,11 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
 
     @Override
     boolean applicableTo(Material type) {
-        return LEATHER_ARMOR_MATERIALS.contains(type);
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == ColorableArmorMeta.class;
     }
 
     @Override

@@ -85,7 +85,11 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.TROPICAL_FISH_BUCKET;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == TropicalFishBucketMeta.class;
     }
 
     @Override

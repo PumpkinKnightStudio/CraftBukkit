@@ -1,15 +1,18 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Map;
+import java.util.function.Supplier;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemBlock;
 import net.minecraft.world.item.ItemRecord;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -27,7 +30,6 @@ import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
 public class CraftItemType<M extends ItemMeta> implements ItemType<M> {
     private final NamespacedKey key;
     private final Item item;
-    private final Class<M> itemMetaClass;
+    private final Supplier<CraftItemMetas.ItemMetaData<M>> itemMetaData;
 
     public static ItemType<?> minecraftToBukkit(Item minecraft) {
         Preconditions.checkArgument(minecraft != null);
@@ -57,22 +59,19 @@ public class CraftItemType<M extends ItemMeta> implements ItemType<M> {
     public CraftItemType(NamespacedKey key, Item item) {
         this.key = key;
         this.item = item;
-        this.itemMetaClass = getItemMetaClass(item);
-    }
-
-    // Cursed, this should be refactored when possible
-    private Class<M> getItemMetaClass(Item item) {
-        ItemMeta meta = new ItemStack(asMaterial()).getItemMeta();
-        if (meta != null) {
-            if (CraftMetaEntityTag.class != meta.getClass() && CraftMetaArmorStand.class != meta.getClass()) {
-                return (Class<M>) meta.getClass().getInterfaces()[0];
-            }
-        }
-        return (Class<M>) ItemMeta.class;
+        this.itemMetaData = Suppliers.memoize(() -> CraftItemMetas.getItemMetaData(this));
     }
 
     public Item getHandle() {
         return item;
+    }
+
+    public M getItemMeta(ItemStack itemStack) {
+        return itemMetaData.get().fromItemStack().apply(itemStack);
+    }
+
+    public M getItemMeta(ItemMeta itemMeta) {
+        return itemMetaData.get().fromItemMeta().apply(this, (CraftMetaItem) itemMeta);
     }
 
     @Override
@@ -92,7 +91,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType<M> {
 
     @Override
     public Class<M> getItemMetaClass() { // Impl note: This currently returns ItemMeta for air rather than null
-        return itemMetaClass;
+        return itemMetaData.get().metaClass();
     }
 
     @Override

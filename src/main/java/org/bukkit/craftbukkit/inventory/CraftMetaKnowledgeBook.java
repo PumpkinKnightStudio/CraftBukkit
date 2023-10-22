@@ -83,7 +83,11 @@ public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBo
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.KNOWLEDGE_BOOK;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == KnowledgeBookMeta.class;
     }
 
     @Override

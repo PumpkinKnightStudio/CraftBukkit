@@ -67,7 +67,11 @@ class CraftMetaCharge extends CraftMetaItem implements FireworkEffectMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.FIREWORK_STAR;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == FireworkEffectMeta.class;
     }
 
     @Override

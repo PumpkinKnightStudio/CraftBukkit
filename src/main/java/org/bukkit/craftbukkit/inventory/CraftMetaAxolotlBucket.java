@@ -83,7 +83,11 @@ public class CraftMetaAxolotlBucket extends CraftMetaItem implements AxolotlBuck
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.AXOLOTL_BUCKET;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == AxolotlBucketMeta.class;
     }
 
     @Override

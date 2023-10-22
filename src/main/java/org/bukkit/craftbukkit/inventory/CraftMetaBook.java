@@ -193,7 +193,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == BookMeta.class;
     }
 
     @Override

@@ -88,7 +88,11 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.BUNDLE;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == BundleMeta.class;
     }
 
     @Override

@@ -97,7 +97,11 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.SUSPICIOUS_STEW;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == SuspiciousStewMeta.class;
     }
 
     @Override

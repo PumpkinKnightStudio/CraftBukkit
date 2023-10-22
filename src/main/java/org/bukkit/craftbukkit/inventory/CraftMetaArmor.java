@@ -1,11 +1,9 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,34 +16,6 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
-
-    private static final Set<Material> ARMOR_MATERIALS = Sets.newHashSet(
-            Material.CHAINMAIL_HELMET,
-            Material.CHAINMAIL_CHESTPLATE,
-            Material.CHAINMAIL_LEGGINGS,
-            Material.CHAINMAIL_BOOTS,
-            Material.DIAMOND_HELMET,
-            Material.DIAMOND_CHESTPLATE,
-            Material.DIAMOND_LEGGINGS,
-            Material.DIAMOND_BOOTS,
-            Material.GOLDEN_HELMET,
-            Material.GOLDEN_CHESTPLATE,
-            Material.GOLDEN_LEGGINGS,
-            Material.GOLDEN_BOOTS,
-            Material.IRON_HELMET,
-            Material.IRON_CHESTPLATE,
-            Material.IRON_LEGGINGS,
-            Material.IRON_BOOTS,
-            Material.LEATHER_HELMET,
-            Material.LEATHER_CHESTPLATE,
-            Material.LEATHER_LEGGINGS,
-            Material.LEATHER_BOOTS,
-            Material.NETHERITE_HELMET,
-            Material.NETHERITE_CHESTPLATE,
-            Material.NETHERITE_LEGGINGS,
-            Material.NETHERITE_BOOTS,
-            Material.TURTLE_HELMET
-    );
 
     static final ItemMetaKey TRIM = new ItemMetaKey("Trim", "trim");
     static final ItemMetaKey TRIM_MATERIAL = new ItemMetaKey("material");
@@ -114,7 +84,11 @@ public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return ARMOR_MATERIALS.contains(type);
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == ArmorMeta.class;
     }
 
     @Override

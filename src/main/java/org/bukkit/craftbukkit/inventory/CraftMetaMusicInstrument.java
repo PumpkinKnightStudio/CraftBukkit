@@ -54,7 +54,11 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.GOAT_HORN;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == MusicInstrumentMeta.class;
     }
 
     @Override

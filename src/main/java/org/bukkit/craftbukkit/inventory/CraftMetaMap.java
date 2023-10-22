@@ -114,7 +114,11 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        return type == Material.FILLED_MAP;
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == MapMeta.class;
     }
 
     @Override
