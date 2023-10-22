@@ -3,13 +3,15 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Preconditions;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.Containers;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.inventory.util.CraftContainerCreator;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryView;
@@ -28,11 +30,13 @@ public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
 
     @NotNull
     @Override
-    public T create(@NotNull HumanEntity humanEntity) {
+    public T create(@NotNull HumanEntity humanEntity, @NotNull String title) {
         Preconditions.checkArgument(humanEntity instanceof CraftHumanEntity, "This human entity must be a CraftHumanEntity");
         Preconditions.checkArgument(((CraftHumanEntity) humanEntity).getHandle() instanceof EntityPlayer);
         final EntityPlayer player = (EntityPlayer) ((CraftHumanEntity) humanEntity).getHandle();
-        return (T) handle.create(player.nextContainerCounter(), player.getInventory()).getBukkitView();
+        final Container container = CraftContainerCreator.INSTANCE.create(this, player.nextContainerCounter(), player.getInventory(), title);
+        container.checkReachable = false;
+        return (T) container.getBukkitView();
     }
 
     @NotNull

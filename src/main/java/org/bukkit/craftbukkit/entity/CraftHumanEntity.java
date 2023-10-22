@@ -2,11 +2,13 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -47,6 +49,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -392,7 +395,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
 
         // Now open the window
-        Containers<?> windowType = CraftContainer.getNotchInventoryType(inventory.getTopInventory());
+        Containers<?> windowType = ((CraftMenuType<?>) inventory.getMenuType()).getHandle();
         String title = inventory.getTitle();
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;

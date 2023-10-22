@@ -30,6 +30,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftContainer extends Container {
 
@@ -71,6 +73,12 @@ public class CraftContainer extends Container {
             @Override
             public InventoryType getType() {
                 return inventory.getType();
+            }
+
+            @NotNull
+            @Override
+            public MenuType<?> getMenuType() {
+                return null;
             }
 
             @Override

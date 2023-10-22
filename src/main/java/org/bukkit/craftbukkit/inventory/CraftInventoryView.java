@@ -14,9 +14,12 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftInventoryView<T extends Container> implements InventoryView {
     protected final T container;
+    private final MenuType<?> type;
     private final CraftHumanEntity player;
     private final CraftInventory viewing;
     private final String originalTitle;
@@ -27,6 +30,7 @@ public class CraftInventoryView<T extends Container> implements InventoryView {
         this.player = (CraftHumanEntity) player;
         this.viewing = (CraftInventory) viewing;
         this.container = container;
+        this.type = container.getType() != null ? CraftMenuType.minecraftToBukkit(container.getType()) : null;
         this.originalTitle = CraftChatMessage.fromComponent(container.getTitle());
         this.title = originalTitle;
     }
@@ -53,6 +57,11 @@ public class CraftInventoryView<T extends Container> implements InventoryView {
             return InventoryType.CREATIVE;
         }
         return type;
+    }
+
+    @Override
+    public MenuType<?> getMenuType() {
+        return this.type;
     }
 
     @Override
