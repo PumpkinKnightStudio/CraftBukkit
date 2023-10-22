@@ -14,7 +14,7 @@
      private RecipeHolder<SmithingRecipe> selectedRecipe;
      private final List<RecipeHolder<SmithingRecipe>> recipes;
 +    // CraftBukkit start
-+    private CraftInventoryView<?> bukkitEntity;
++    private CraftInventoryView bukkitEntity;
 +    // CraftBukkit end
  
      public ContainerSmithing(int i, PlayerInventory playerinventory) {
