@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.inventory.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.ITileInventory;
@@ -12,12 +11,14 @@ import net.minecraft.world.entity.player.PlayerInventory;
 import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.ContainerAccess;
 import net.minecraft.world.inventory.ContainerAnvil;
+import net.minecraft.world.inventory.ContainerCartography;
 import net.minecraft.world.inventory.ContainerEnchantTable;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
-import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
 import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.inventory.MenuType;
 
@@ -29,16 +30,13 @@ public final class CraftContainerCreator {
 
     public CraftContainerCreator() {
         this.creator = new HashMap<>();
-        this.creator.put(MenuType.FURNACE, construct((i, playerinventory) -> new TileEntityFurnaceFurnace(BlockPosition.ZERO, Blocks.FURNACE.defaultBlockState())));
-        this.creator.put(MenuType.SMOKER, construct((i, playerinventory) -> new TileEntitySmoker(BlockPosition.ZERO, Blocks.SMOKER.defaultBlockState())));
-        this.creator.put(MenuType.BLAST_FURNACE, construct((i, playerinventory) -> new TileEntityBlastFurnace(BlockPosition.ZERO, Blocks.SMOKER.defaultBlockState())));
-        this.creator.put(MenuType.BREWING_STAND, construct((i, playerinventory) -> new TileEntityBrewingStand(BlockPosition.ZERO, Blocks.BREWING_STAND.defaultBlockState())));
-        this.creator.put(MenuType.ENCHANTMENT, construct((i, playerinventory) -> {
-            return new TileInventory((syncId, pi, entityhuman) -> {
-                return new ContainerEnchantTable(i, playerinventory, ContainerAccess.create(entityhuman.level(), entityhuman.blockPosition()));
-            }, IChatBaseComponent.empty());
-        }));
-        this.creator.put(MenuType.ANVIL, (i, playerinventory) -> new ContainerAnvil(i, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition())));
+        this.creator.put(MenuType.FURNACE, construct(TileEntityFurnaceFurnace::new, Blocks.FURNACE));
+        this.creator.put(MenuType.SMOKER, construct(TileEntitySmoker::new, Blocks.SMOKER));
+        this.creator.put(MenuType.BLAST_FURNACE, construct(TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));
+        this.creator.put(MenuType.ENCHANTMENT, custom((i, playerinventory) -> new TileInventory((syncId, pi, entityhuman) -> construct(ContainerAnvil::new).apply(syncId, pi), IChatBaseComponent.empty())));
+        this.creator.put(MenuType.CARTOGRAPHY_TABLE, construct(ContainerCartography::new));
+        this.creator.put(MenuType.ANVIL, construct(ContainerAnvil::new));
+        this.creator.put(MenuType.GRINDSTONE, construct(ContainerAnvil::new));
     }
 
     public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, String title) {
@@ -53,7 +51,23 @@ public final class CraftContainerCreator {
         return container;
     }
 
-    private static BiFunction<Integer, PlayerInventory, Container> construct(BiFunction<Integer, PlayerInventory, ITileInventory> entityFunction) {
+    private static BiFunction<Integer, PlayerInventory, Container> custom(BiFunction<Integer, PlayerInventory, ITileInventory> entityFunction) {
         return (i, playerinventory) -> entityFunction.apply(i, playerinventory).createMenu(i, playerinventory, playerinventory.player);
+    }
+
+    private static BiFunction<Integer, PlayerInventory, Container> construct(ITileInventoryBuilder builder, Block block) {
+        return (i, playerinventory) -> builder.build(playerinventory.player.blockPosition(), block.defaultBlockState()).createMenu(i, playerinventory, playerinventory.player);
+    }
+
+    private static BiFunction<Integer, PlayerInventory, Container> construct(ContainerAccessBuilder builder) {
+        return (i, playerinventory) -> builder.build(i, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()));
+    }
+
+    private interface ContainerAccessBuilder {
+        Container build(int syncId, PlayerInventory inventory, ContainerAccess access);
+    }
+
+    private interface ITileInventoryBuilder {
+        ITileInventory build(BlockPosition position, IBlockData data);
     }
 }
