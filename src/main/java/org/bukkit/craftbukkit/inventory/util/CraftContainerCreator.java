@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.ContainerAccess;
 import net.minecraft.world.inventory.ContainerAnvil;
 import net.minecraft.world.inventory.ContainerCartography;
 import net.minecraft.world.inventory.ContainerEnchantTable;
+import net.minecraft.world.inventory.ContainerGrindstone;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
@@ -33,13 +34,13 @@ public final class CraftContainerCreator {
         this.creator.put(MenuType.FURNACE, construct(TileEntityFurnaceFurnace::new, Blocks.FURNACE));
         this.creator.put(MenuType.SMOKER, construct(TileEntitySmoker::new, Blocks.SMOKER));
         this.creator.put(MenuType.BLAST_FURNACE, construct(TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));
-        this.creator.put(MenuType.ENCHANTMENT, custom((i, playerinventory) -> new TileInventory((syncId, pi, entityhuman) -> construct(ContainerAnvil::new).apply(syncId, pi), IChatBaseComponent.empty())));
+        this.creator.put(MenuType.ENCHANTMENT, custom((i, playerinventory) -> new TileInventory((syncId, pi, entityhuman) -> construct(ContainerEnchantTable::new).apply(syncId, pi), IChatBaseComponent.empty())));
         this.creator.put(MenuType.CARTOGRAPHY_TABLE, construct(ContainerCartography::new));
         this.creator.put(MenuType.ANVIL, construct(ContainerAnvil::new));
-        this.creator.put(MenuType.GRINDSTONE, construct(ContainerAnvil::new));
+        this.creator.put(MenuType.GRINDSTONE, construct(ContainerGrindstone::new));
     }
 
-    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, String title) {
+    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory) {
         final var function = creator.get(type);
         final Container container;
         if (function == null) {
@@ -47,6 +48,11 @@ public final class CraftContainerCreator {
         } else {
             container = function.apply(syncId, inventory);
         }
+        return container;
+    }
+
+    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, String title) {
+        final Container container = create(type, syncId, inventory);
         container.setTitle(IChatBaseComponent.literal(title));
         return container;
     }
