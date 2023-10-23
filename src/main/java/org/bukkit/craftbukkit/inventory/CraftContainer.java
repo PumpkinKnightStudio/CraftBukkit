@@ -52,6 +52,7 @@ public class CraftContainer extends Container {
     public CraftContainer(final Inventory inventory, final EntityHuman player, int id) {
         this(new InventoryView() {
 
+            private final MenuType<?> menuType = CraftMenuType.minecraftToBukkit(getNotchInventoryType(inventory));
             private final String originalTitle = (inventory instanceof CraftInventoryCustom) ? ((CraftInventoryCustom.MinecraftInventory) ((CraftInventory) inventory).getInventory()).getTitle() : inventory.getType().getDefaultTitle();
             private String title = originalTitle;
 
@@ -78,7 +79,7 @@ public class CraftContainer extends Container {
             @NotNull
             @Override
             public MenuType<?> getMenuType() {
-                return null;
+                return menuType;
             }
 
             @Override

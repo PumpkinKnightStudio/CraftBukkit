@@ -2,13 +2,11 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
