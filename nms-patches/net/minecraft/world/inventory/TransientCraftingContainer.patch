@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/TransientCraftingContainer.java
 +++ b/net/minecraft/world/inventory/TransientCraftingContainer.java
-@@ -8,6 +8,16 @@
+@@ -8,13 +8,84 @@
  import net.minecraft.world.entity.player.EntityHuman;
  import net.minecraft.world.item.ItemStack;
  
@@ -16,16 +16,18 @@
 +
  public class TransientCraftingContainer implements InventoryCrafting {
  
-     private final NonNullList<ItemStack> items;
-@@ -15,6 +25,68 @@
+-    private final NonNullList<ItemStack> items;
++    protected final NonNullList<ItemStack> items; // PAIL private -> protected
+     private final int width;
      private final int height;
-     private final Container menu;
- 
+-    private final Container menu;
++    protected Container menu; // PAIL private final -> protected
++
 +    // CraftBukkit start - add fields
 +    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
 +    private RecipeHolder<?> currentRecipe;
 +    public IInventory resultInventory;
-+    private EntityHuman owner;
++    protected EntityHuman owner;
 +    private int maxStack = MAX_STACK;
 +
 +    public List<ItemStack> getContents() {
@@ -35,7 +37,7 @@
 +    public void onOpen(CraftHumanEntity who) {
 +        transaction.add(who);
 +    }
-+
+ 
 +    public InventoryType getInvType() {
 +        return items.size() == 4 ? InventoryType.CRAFTING : InventoryType.WORKBENCH;
 +    }
@@ -82,7 +84,6 @@
 +        this.owner = player;
 +    }
 +    // CraftBukkit end
-+
      public TransientCraftingContainer(Container container, int i, int j) {
          this(container, i, j, NonNullList.withSize(i * j, ItemStack.EMPTY));
      }
