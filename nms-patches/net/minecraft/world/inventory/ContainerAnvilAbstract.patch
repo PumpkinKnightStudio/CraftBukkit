@@ -1,6 +1,57 @@
 --- a/net/minecraft/world/inventory/ContainerAnvilAbstract.java
 +++ b/net/minecraft/world/inventory/ContainerAnvilAbstract.java
-@@ -124,6 +124,7 @@
+@@ -9,7 +9,9 @@
+ import net.minecraft.world.entity.player.PlayerInventory;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.block.state.IBlockData;
+-
++// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftInventoryAnvilSubContainer;
++// CraftBukkit end
+ public abstract class ContainerAnvilAbstract extends Container {
+ 
+     private static final int INVENTORY_SLOTS_PER_ROW = 9;
+@@ -18,7 +20,7 @@
+     protected final EntityHuman player;
+     protected final IInventory inputSlots;
+     private final List<Integer> inputSlotIndexes;
+-    protected final InventoryCraftResult resultSlots = new InventoryCraftResult();
++    protected final InventoryCraftResult resultSlots; // CraftBukkit -> Move declaration to constructor
+     private final int resultSlotIndex;
+ 
+     protected abstract boolean mayPickup(EntityHuman entityhuman, boolean flag);
+@@ -26,13 +28,28 @@
+     protected abstract void onTake(EntityHuman entityhuman, ItemStack itemstack);
+ 
+     protected abstract boolean isValidBlock(IBlockData iblockdata);
+-
++    // CraftBukkit start -> add constructor for CraftInventoryBuilder
++    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftInventoryAnvilSubContainer inputSlots, InventoryCraftResult resultSlots) {
++        super(containers, i);
++        this.access = containeraccess;
++        this.player = playerinventory.player;
++        ItemCombinerMenuSlotDefinition itemcombinermenuslotdefinition = this.createInputSlotDefinitions();
++        this.resultSlots = new InventoryCraftResult();
++        this.inputSlots = inputSlots;
++        inputSlots.setSlotsChanged(this::slotsChanged);
++        this.inputSlotIndexes = itemcombinermenuslotdefinition.getInputSlotIndexes();
++        this.resultSlotIndex = itemcombinermenuslotdefinition.getResultSlotIndex();
++        this.createInputSlots(itemcombinermenuslotdefinition);
++        this.createResultSlot(itemcombinermenuslotdefinition);
++        this.createInventorySlots(playerinventory);
++    }
++    // CraftBukkit end
+     public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess) {
+         super(containers, i);
+         this.access = containeraccess;
+         this.player = playerinventory.player;
+         ItemCombinerMenuSlotDefinition itemcombinermenuslotdefinition = this.createInputSlotDefinitions();
+-
++        this.resultSlots = new InventoryCraftResult(); // CraftBukkit -> Move declaration to constructor
+         this.inputSlots = this.createContainer(itemcombinermenuslotdefinition.getNumOfInputSlots());
+         this.inputSlotIndexes = itemcombinermenuslotdefinition.getInputSlotIndexes();
+         this.resultSlotIndex = itemcombinermenuslotdefinition.getResultSlotIndex();
+@@ -124,6 +141,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {

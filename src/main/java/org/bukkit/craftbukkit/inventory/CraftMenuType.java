@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
 
     private final NamespacedKey key;
-    private Containers<?> handle;
+    private final Containers<?> handle;
 
     public CraftMenuType(NamespacedKey key, final Containers<?> handle) {
         this.key = key;
