@@ -17,8 +17,8 @@
  import org.slf4j.Logger;
  
 +// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftAnvilView;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftInventoryAnvilSubContainer;
 +// CraftBukkit end
 +
  public class ContainerAnvil extends ContainerAnvilAbstract {
@@ -32,7 +32,7 @@
 +    public static final int DEFAULT_DENIED_COST = -1;
 +    public int maximumRepairCost = 40;
 +    private CraftAnvilView bukkitEntity;
-+    public ContainerAnvil(int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftInventoryAnvilSubContainer inputSlots, InventoryCraftResult resultSlots) {
++    public ContainerAnvil(int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftChangeDetectingSubContainer inputSlots, InventoryCraftResult resultSlots) {
 +        super(Containers.ANVIL, i, playerinventory, containeraccess, inputSlots, resultSlots);
 +        this.cost = ContainerProperty.standalone();
 +        this.addDataSlot(this.cost);
