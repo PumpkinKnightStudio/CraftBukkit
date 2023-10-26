@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerEnchantTable.java
 +++ b/net/minecraft/world/inventory/ContainerEnchantTable.java
-@@ -27,6 +27,21 @@
+@@ -27,6 +27,22 @@
  import net.minecraft.world.level.block.BlockEnchantmentTable;
  import net.minecraft.world.level.block.Blocks;
  
@@ -11,6 +11,7 @@
 +import org.bukkit.NamespacedKey;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryEnchanting;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftEnchantingView;
 +import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 +import org.bukkit.enchantments.EnchantmentOffer;
@@ -22,32 +23,57 @@
  public class ContainerEnchantTable extends Container {
  
      static final MinecraftKey EMPTY_SLOT_LAPIS_LAZULI = new MinecraftKey("item/empty_slot_lapis_lazuli");
-@@ -37,6 +52,10 @@
+@@ -37,20 +53,40 @@
      public final int[] costs;
      public final int[] enchantClue;
      public final int[] levelClue;
 +    // CraftBukkit start
 +    private CraftEnchantingView bukkitEntity = null;
 +    private Player player;
++    public ContainerEnchantTable(int i, PlayerInventory playerInventory, ContainerAccess containeraccess) {
++        this(i, playerInventory, containeraccess, null);
++    }
 +    // CraftBukkit end
  
      public ContainerEnchantTable(int i, PlayerInventory playerinventory) {
          this(i, playerinventory, ContainerAccess.NULL);
-@@ -50,6 +69,13 @@
-                 super.setChanged();
-                 ContainerEnchantTable.this.slotsChanged(this);
-             }
+     }
+-
+-    public ContainerEnchantTable(int i, PlayerInventory playerinventory, ContainerAccess containeraccess) {
++    // CraftBukkit start -> Add constructor argument, enchantSlots:
++    public ContainerEnchantTable(int i, PlayerInventory playerinventory, ContainerAccess containeraccess, InventorySubcontainer enchantSlots) {
+         super(Containers.ENCHANTMENT, i);
+-        this.enchantSlots = new InventorySubcontainer(2) {
+-            @Override
+-            public void setChanged() {
+-                super.setChanged();
+-                ContainerEnchantTable.this.slotsChanged(this);
+-            }
+-        };
++        if(enchantSlots instanceof CraftChangeDetectingSubContainer craft) {
++            this.enchantSlots = enchantSlots;
++            craft.setContainer(this::slotsChanged, containeraccess);
++        } else {
++            this.enchantSlots = new InventorySubcontainer(2) {
++                @Override
++                public void setChanged() {
++                    super.setChanged();
++                    ContainerEnchantTable.this.slotsChanged(this);
++                }
 +
-+            // CraftBukkit start
-+            @Override
-+            public Location getLocation() {
-+                return containeraccess.getLocation();
-+            }
-+            // CraftBukkit end
-         };
++                // CraftBukkit start
++                @Override
++                public Location getLocation() {
++                    return containeraccess.getLocation();
++                }
++                // CraftBukkit end
++            };
++        }
++        // CraftBukkit end
          this.random = RandomSource.create();
          this.enchantmentSeed = ContainerProperty.standalone();
-@@ -97,6 +123,9 @@
+         this.costs = new int[3];
+@@ -97,6 +133,9 @@
          this.addDataSlot(ContainerProperty.shared(this.levelClue, 0));
          this.addDataSlot(ContainerProperty.shared(this.levelClue, 1));
          this.addDataSlot(ContainerProperty.shared(this.levelClue, 2));
@@ -57,7 +83,7 @@
      }
  
      @Override
-@@ -104,7 +133,7 @@
+@@ -104,7 +143,7 @@
          if (iinventory == this.enchantSlots) {
              ItemStack itemstack = iinventory.getItem(0);
  
@@ -66,7 +92,7 @@
                  this.access.execute((world, blockposition) -> {
                      int i = 0;
                      Iterator iterator = BlockEnchantmentTable.BOOKSHELF_OFFSETS.iterator();
-@@ -143,6 +172,41 @@
+@@ -143,6 +182,41 @@
                          }
                      }
  
@@ -108,7 +134,7 @@
                      this.broadcastChanges();
                  });
              } else {
-@@ -170,8 +234,25 @@
+@@ -170,8 +244,25 @@
                      ItemStack itemstack2 = itemstack;
                      List<WeightedRandomEnchant> list = this.getEnchantmentList(itemstack, i, this.costs[i]);
  
@@ -136,7 +162,7 @@
                          boolean flag = itemstack.is(Items.BOOK);
  
                          if (flag) {
-@@ -185,18 +266,30 @@
+@@ -185,18 +276,30 @@
                              this.enchantSlots.setItem(0, itemstack2);
                          }
  
@@ -175,7 +201,7 @@
                          if (!entityhuman.getAbilities().instabuild) {
                              itemstack1.shrink(j);
                              if (itemstack1.isEmpty()) {
-@@ -259,6 +352,7 @@
+@@ -259,6 +362,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {
@@ -183,7 +209,7 @@
          return stillValid(this.access, entityhuman, Blocks.ENCHANTING_TABLE);
      }
  
-@@ -309,4 +403,17 @@
+@@ -309,4 +413,17 @@
  
          return itemstack;
      }

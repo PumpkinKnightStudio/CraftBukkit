@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerGrindstone.java
 +++ b/net/minecraft/world/inventory/ContainerGrindstone.java
-@@ -19,8 +19,30 @@
+@@ -19,8 +19,34 @@
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.phys.Vec3D;
  
@@ -8,6 +8,7 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryGrindstone;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
 +
@@ -27,25 +28,54 @@
 +        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
++    public ContainerGrindstone(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
++        this(i, playerinventory, containeraccess, null, new InventoryCraftResult());
++    }
 +    // CraftBukkit end
      public static final int MAX_NAME_LENGTH = 35;
      public static final int INPUT_SLOT = 0;
      public static final int ADDITIONAL_SLOT = 1;
-@@ -46,6 +68,13 @@
-                 super.setChanged();
-                 ContainerGrindstone.this.slotsChanged(this);
-             }
+@@ -36,17 +62,30 @@
+     public ContainerGrindstone(int i, PlayerInventory playerinventory) {
+         this(i, playerinventory, ContainerAccess.NULL);
+     }
+-
+-    public ContainerGrindstone(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
++    // CraftBukkit start -> add constructor for CraftInventoryBuilder
++    public ContainerGrindstone(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess, InventorySubcontainer repairSlots, InventoryCraftResult resultSlot) {
+         super(Containers.GRINDSTONE, i);
+         this.resultSlots = new InventoryCraftResult();
+-        this.repairSlots = new InventorySubcontainer(2) {
+-            @Override
+-            public void setChanged() {
+-                super.setChanged();
+-                ContainerGrindstone.this.slotsChanged(this);
+-            }
+-        };
++        if (repairSlots instanceof CraftChangeDetectingSubContainer craft) {
++            this.repairSlots = craft;
++            craft.setContainer(this::slotsChanged, containeraccess);
++        } else {
++            this.repairSlots = new InventorySubcontainer(2) {
++                @Override
++                public void setChanged() {
++                    super.setChanged();
++                    ContainerGrindstone.this.slotsChanged(this);
++                }
 +
-+            // CraftBukkit start
-+            @Override
-+            public Location getLocation() {
-+                return containeraccess.getLocation();
-+            }
-+            // CraftBukkit end
-         };
++                // CraftBukkit start
++                @Override
++                public Location getLocation() {
++                    return containeraccess.getLocation();
++                }
++                // CraftBukkit end
++            };
++        }
++        // CraftBukkit end
          this.access = containeraccess;
          this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
-@@ -124,6 +153,7 @@
+             @Override
+@@ -124,6 +163,7 @@
              this.addSlot(new Slot(playerinventory, j, 8 + j * 18, 142));
          }
  
@@ -53,7 +83,7 @@
      }
  
      @Override
-@@ -145,7 +175,7 @@
+@@ -145,7 +185,7 @@
              boolean flag2 = !itemstack.isEmpty() && !itemstack.is(Items.ENCHANTED_BOOK) && !itemstack.isEnchanted() || !itemstack1.isEmpty() && !itemstack1.is(Items.ENCHANTED_BOOK) && !itemstack1.isEnchanted();
  
              if (itemstack.getCount() > 1 || itemstack1.getCount() > 1 || !flag1 && flag2) {
@@ -62,7 +92,7 @@
                  this.broadcastChanges();
                  return;
              }
-@@ -156,7 +186,7 @@
+@@ -156,7 +196,7 @@
  
              if (flag1) {
                  if (!itemstack.is(itemstack1.getItem())) {
@@ -71,7 +101,7 @@
                      this.broadcastChanges();
                      return;
                  }
-@@ -170,7 +200,7 @@
+@@ -170,7 +210,7 @@
                  itemstack2 = this.mergeEnchants(itemstack, itemstack1);
                  if (!itemstack2.isDamageableItem()) {
                      if (!ItemStack.matches(itemstack, itemstack1)) {
@@ -80,7 +110,7 @@
                          this.broadcastChanges();
                          return;
                      }
-@@ -183,12 +213,12 @@
+@@ -183,12 +223,12 @@
                  i = flag3 ? itemstack.getDamageValue() : itemstack1.getDamageValue();
                  itemstack2 = flag3 ? itemstack : itemstack1;
              }
@@ -96,7 +126,7 @@
          this.broadcastChanges();
      }
  
-@@ -250,6 +280,7 @@
+@@ -250,6 +290,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {

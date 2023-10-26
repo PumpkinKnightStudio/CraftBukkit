@@ -6,7 +6,7 @@
  import net.minecraft.world.level.block.state.IBlockData;
 -
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftInventoryAnvilSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +// CraftBukkit end
  public abstract class ContainerAnvilAbstract extends Container {
  
@@ -26,14 +26,14 @@
      protected abstract boolean isValidBlock(IBlockData iblockdata);
 -
 +    // CraftBukkit start -> add constructor for CraftInventoryBuilder
-+    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftInventoryAnvilSubContainer inputSlots, InventoryCraftResult resultSlots) {
++    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftChangeDetectingSubContainer inputSlots, InventoryCraftResult resultSlots) {
 +        super(containers, i);
 +        this.access = containeraccess;
 +        this.player = playerinventory.player;
 +        ItemCombinerMenuSlotDefinition itemcombinermenuslotdefinition = this.createInputSlotDefinitions();
 +        this.resultSlots = new InventoryCraftResult();
 +        this.inputSlots = inputSlots;
-+        inputSlots.setSlotsChanged(this::slotsChanged);
++        inputSlots.setContainer(this::slotsChanged, containeraccess);
 +        this.inputSlotIndexes = itemcombinermenuslotdefinition.getInputSlotIndexes();
 +        this.resultSlotIndex = itemcombinermenuslotdefinition.getResultSlotIndex();
 +        this.createInputSlots(itemcombinermenuslotdefinition);
