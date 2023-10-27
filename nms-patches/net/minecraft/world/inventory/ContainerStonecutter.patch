@@ -1,20 +1,22 @@
 --- a/net/minecraft/world/inventory/ContainerStonecutter.java
 +++ b/net/minecraft/world/inventory/ContainerStonecutter.java
-@@ -16,6 +16,13 @@
+@@ -16,6 +16,15 @@
  import net.minecraft.world.level.World;
  import net.minecraft.world.level.block.Blocks;
  
 +// CraftBukkit start
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftStonecutterView;
 +import org.bukkit.entity.Player;
++import java.util.Objects;
 +// CraftBukkit end
 +
  public class ContainerStonecutter extends Container {
  
      public static final int INPUT_SLOT = 0;
-@@ -35,6 +42,21 @@
+@@ -35,27 +44,58 @@
      Runnable slotUpdateListener;
      public final IInventory container;
      final InventoryCraftResult resultContainer;
@@ -32,14 +34,35 @@
 +        bukkitEntity = new CraftStonecutterView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
++    public ContainerStonecutter(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
++        this(i, playerinventory, containeraccess, null, null);
++    }
 +    // CraftBukkit end
  
      public ContainerStonecutter(int i, PlayerInventory playerinventory) {
          this(i, playerinventory, ContainerAccess.NULL);
-@@ -54,6 +76,13 @@
+     }
+ 
+-    public ContainerStonecutter(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
++    // CraftBukkit -> add IInventory container parameter
++    public ContainerStonecutter(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess, IInventory container, InventoryCraftResult resultContainer) {
+         super(Containers.STONECUTTER, i);
+         this.selectedRecipeIndex = ContainerProperty.standalone();
+         this.recipes = Lists.newArrayList();
+         this.input = ItemStack.EMPTY;
+         this.slotUpdateListener = () -> {
+         };
+-        this.container = new InventorySubcontainer(1) {
++        // Craftbukkit start -> set container to provided if not null
++        this.container = Objects.requireNonNullElseGet(container, () -> new InventorySubcontainer(1) {
+             @Override
+             public void setChanged() {
+                 super.setChanged();
                  ContainerStonecutter.this.slotsChanged(this);
                  ContainerStonecutter.this.slotUpdateListener.run();
              }
+-        };
+-        this.resultContainer = new InventoryCraftResult();
 +
 +            // CraftBukkit start
 +            @Override
@@ -47,10 +70,16 @@
 +                return containeraccess.getLocation();
 +            }
 +            // CraftBukkit end
-         };
-         this.resultContainer = new InventoryCraftResult();
++        });
++        if (this.container instanceof CraftChangeDetectingSubContainer changer) {
++            changer.setContainer(this::slotsChanged, containeraccess);
++        }
++        this.resultContainer = Objects.requireNonNullElseGet(resultContainer, InventoryCraftResult::new);
++        // CraftBukkit end
          this.access = containeraccess;
-@@ -105,6 +134,7 @@
+         this.level = playerinventory.player.level();
+         this.inputSlot = this.addSlot(new Slot(this.container, 0, 20, 33));
+@@ -105,6 +145,7 @@
          }
  
          this.addDataSlot(this.selectedRecipeIndex);
@@ -58,7 +87,7 @@
      }
  
      public int getSelectedRecipeIndex() {
-@@ -125,6 +155,7 @@
+@@ -125,6 +166,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {

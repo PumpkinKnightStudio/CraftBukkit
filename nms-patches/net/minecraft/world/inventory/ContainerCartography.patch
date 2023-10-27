@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerCartography.java
 +++ b/net/minecraft/world/inventory/ContainerCartography.java
-@@ -12,8 +12,30 @@
+@@ -12,8 +12,36 @@
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.saveddata.maps.WorldMap;
  
@@ -8,7 +8,10 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCartography;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftCraftingChangeDetectingSubContainer;
 +import org.bukkit.entity.Player;
++import java.util.Objects;
 +// CraftBukkit end
 +
  public class ContainerCartography extends Container {
@@ -27,28 +30,31 @@
 +        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
++    public ContainerCartography(int i, PlayerInventory playerInventory, final ContainerAccess containeraccess) {
++        this(i, playerInventory, containeraccess, null, null);
++    }
 +    // CraftBukkit end
      public static final int MAP_SLOT = 0;
      public static final int ADDITIONAL_SLOT = 1;
      public static final int RESULT_SLOT = 2;
-@@ -38,6 +60,13 @@
-                 ContainerCartography.this.slotsChanged(this);
-                 super.setChanged();
-             }
-+
-+            // CraftBukkit start
-+            @Override
-+            public Location getLocation() {
-+                return containeraccess.getLocation();
-+            }
-+            // CraftBukkit end
-         };
-         this.resultContainer = new InventoryCraftResult() {
+@@ -29,23 +57,44 @@
+     public ContainerCartography(int i, PlayerInventory playerinventory) {
+         this(i, playerinventory, ContainerAccess.NULL);
+     }
+-
+-    public ContainerCartography(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
++    // CraftBukkit start -> add resultContainer and container to parameters
++    public ContainerCartography(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess, IInventory container, InventoryCraftResult resultContainer) {
+         super(Containers.CARTOGRAPHY_TABLE, i);
+-        this.container = new InventorySubcontainer(2) {
++        this.container = Objects.requireNonNullElseGet(container, () -> new InventorySubcontainer(2) {
              @Override
-@@ -45,6 +74,13 @@
+             public void setChanged() {
                  ContainerCartography.this.slotsChanged(this);
                  super.setChanged();
              }
+-        };
+-        this.resultContainer = new InventoryCraftResult() {
 +
 +            // CraftBukkit start
 +            @Override
@@ -56,10 +62,33 @@
 +                return containeraccess.getLocation();
 +            }
 +            // CraftBukkit end
-         };
++        });
++        if (this.container instanceof CraftChangeDetectingSubContainer changer) {
++            changer.setContainer(this::slotsChanged, containeraccess);
++        }
++        this.resultContainer = Objects.requireNonNullElseGet(resultContainer, () -> new InventoryCraftResult() {
+             @Override
+             public void setChanged() {
+                 ContainerCartography.this.slotsChanged(this);
+                 super.setChanged();
+             }
+-        };
++
++            // CraftBukkit start
++            @Override
++            public Location getLocation() {
++                return containeraccess.getLocation();
++            }
++            // CraftBukkit end
++        });
++        if (this.resultContainer instanceof CraftCraftingChangeDetectingSubContainer changer) {
++            changer.setContainer(this::slotsChanged, containeraccess);
++        }
++        // CraftBukkit end
          this.access = containeraccess;
          this.addSlot(new Slot(this.container, 0, 15, 15) {
-@@ -95,10 +131,12 @@
+             @Override
+@@ -95,10 +144,12 @@
              this.addSlot(new Slot(playerinventory, j, 8 + j * 18, 142));
          }
  
