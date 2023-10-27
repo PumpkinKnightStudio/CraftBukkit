@@ -49,6 +49,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
+import org.bukkit.craftbukkit.inventory.util.CraftInventoryBuilder;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -301,11 +302,11 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             }
         }
 
-        Containers<?> container = CraftContainer.getNotchInventoryType(inventory);
+        final CraftMenuType<?> type = ((CraftMenuType<?>) inventory.getMenuType());
         if (iinventory instanceof ITileInventory) {
             getHandle().openMenu(iinventory);
         } else {
-            openCustomInventory(inventory, player, container);
+            openCustomInventory(inventory, player, type, "thing");
         }
 
         if (getHandle().containerMenu == formerContainer) {
@@ -313,6 +314,16 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
         getHandle().containerMenu.checkReachable = false;
         return getHandle().containerMenu.getBukkitView();
+    }
+
+    private static void openCustomInventory(Inventory inventory, EntityPlayer player, CraftMenuType<?> menuType, String title) {
+        if (player.connection == null) return;
+        Preconditions.checkArgument(menuType != null, "Unable to open windowType");
+        CraftInventoryBuilder.VirtualContainerBuilder<?> builder = CraftInventoryBuilder.INSTANCE.getContainer(menuType);
+        final Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), (CraftInventory) inventory);
+        player.connection.send(new PacketPlayOutOpenWindow(container.containerId, menuType.getHandle(), CraftChatMessage.fromString(title)[0]));
+        player.containerMenu = container;
+        player.initMenu(container);
     }
 
     private static void openCustomInventory(Inventory inventory, EntityPlayer player, Containers<?> windowType) {

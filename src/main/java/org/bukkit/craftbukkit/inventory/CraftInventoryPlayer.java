@@ -10,6 +10,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.inventory.PlayerInventory, EntityEquipment {
     public CraftInventoryPlayer(net.minecraft.world.entity.player.PlayerInventory inventory) {
@@ -165,6 +167,12 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
             default:
                 throw new IllegalArgumentException("Not implemented. This is a bug");
         }
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return null;
     }
 
     @Override

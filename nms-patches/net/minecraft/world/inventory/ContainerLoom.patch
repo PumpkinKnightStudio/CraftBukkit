@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerLoom.java
 +++ b/net/minecraft/world/inventory/ContainerLoom.java
-@@ -24,8 +24,35 @@
+@@ -24,8 +24,36 @@
  import net.minecraft.world.level.block.entity.EnumBannerPatternType;
  import net.minecraft.world.level.block.entity.TileEntityTypes;
  
@@ -9,6 +9,7 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryLoom;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
 +
@@ -30,19 +31,19 @@
 +    }
 +
 +    public ContainerLoom(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
-+        this(i, playerinventory, containeraccess, null);
++        this(i, playerinventory, containeraccess, null, null);
 +    }
 +    // CraftBukkit end
      private static final int PATTERN_NOT_SET = -1;
      private static final int INV_SLOT_START = 4;
      private static final int INV_SLOT_END = 31;
-@@ -47,26 +74,43 @@
+@@ -47,27 +75,47 @@
          this(i, playerinventory, ContainerAccess.NULL);
      }
  
 -    public ContainerLoom(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
-+    // CraftBukkit start -> Add inputContainer method
-+    public ContainerLoom(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess, IInventory inputContainer) { // Craftbukkit end
++    // CraftBukkit start -> Add inputContainer and resultContainer parameters
++    public ContainerLoom(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess, IInventory inputContainer, IInventory resultContainer) {
          super(Containers.LOOM, i);
          this.selectedBannerPatternIndex = ContainerProperty.standalone();
          this.selectablePatterns = List.of();
@@ -58,6 +59,25 @@
                  ContainerLoom.this.slotUpdateListener.run();
              }
 -        };
+-        this.outputContainer = new InventorySubcontainer(1) {
++
++            // CraftBukkit start
++            @Override
++            public Location getLocation() {
++                return containeraccess.getLocation();
++            }
++            // CraftBukkit end
++        });
++        if (this.inputContainer instanceof CraftChangeDetectingSubContainer changer) {
++            changer.setContainer(this::slotsChanged, containeraccess);
++        }
++        this.outputContainer = Objects.requireNonNullElseGet(resultContainer, () -> new InventorySubcontainer(1) {
+             @Override
+             public void setChanged() {
+                 super.setChanged();
+                 ContainerLoom.this.slotUpdateListener.run();
+             }
+-        };
 +
 +            // CraftBukkit start
 +            @Override
@@ -67,23 +87,10 @@
 +            // CraftBukkit end
 +        });
 +        // CraftBukkit end
-         this.outputContainer = new InventorySubcontainer(1) {
-             @Override
-             public void setChanged() {
-                 super.setChanged();
-                 ContainerLoom.this.slotUpdateListener.run();
-             }
-+
-+            // CraftBukkit start
-+            @Override
-+            public Location getLocation() {
-+                return containeraccess.getLocation();
-+            }
-+            // CraftBukkit end
-         };
          this.access = containeraccess;
          this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
-@@ -127,10 +171,12 @@
+             @Override
+@@ -127,10 +175,12 @@
          }
  
          this.addDataSlot(this.selectedBannerPatternIndex);
@@ -96,7 +103,7 @@
          return stillValid(this.access, entityhuman, Blocks.LOOM);
      }
  
-@@ -308,6 +354,11 @@
+@@ -308,6 +358,11 @@
  
              if (nbttagcompound != null && nbttagcompound.contains("Patterns", 9)) {
                  nbttaglist = nbttagcompound.getList("Patterns", 10);

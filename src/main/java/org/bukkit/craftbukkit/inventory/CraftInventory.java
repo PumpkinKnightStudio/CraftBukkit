@@ -30,6 +30,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventory implements Inventory {
     protected final IInventory inventory;
@@ -507,6 +509,37 @@ public class CraftInventory implements Inventory {
             return InventoryType.JUKEBOX;
         } else {
             return InventoryType.CHEST;
+        }
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        switch (getSize()) {
+            case 5 -> {
+                return MenuType.HOPPER;
+            }
+            case 9 -> {
+                return MenuType.GENERIC_9x1;
+            }
+            case 18 -> {
+                return MenuType.GENERIC_9x2;
+            }
+            case 27 -> {
+                return MenuType.GENERIC_9x3;
+            }
+            case 36 -> {
+                return MenuType.GENERIC_9x4;
+            }
+            case 45 -> {
+                return MenuType.GENERIC_9x5;
+            }
+            case 54 -> {
+                return MenuType.GENERIC_9x6;
+            }
+            default -> {
+                throw new IllegalStateException("Unable to get MenuType from a craft inventory of this size");
+            }
         }
     }
 

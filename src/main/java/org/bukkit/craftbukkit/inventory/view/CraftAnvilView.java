@@ -21,7 +21,7 @@ public class CraftAnvilView extends CraftInventoryView<ContainerAnvil> implement
     }
 
     @Override
-    public int getRepairCostAmount() {
+    public int getRepairItemCost() {
         return container.repairItemCountCost;
     }
 
@@ -46,7 +46,7 @@ public class CraftAnvilView extends CraftInventoryView<ContainerAnvil> implement
     }
 
     @Override
-    public void setRepairCostAmount(int i) {
+    public void setRepairItemCost(int i) {
         container.repairItemCountCost = i;
     }
 
@@ -62,11 +62,11 @@ public class CraftAnvilView extends CraftInventoryView<ContainerAnvil> implement
 
     public void updateFromLegacy(CraftInventoryAnvil legacy) {
         if (legacy.isRepairCostSet()) {
-            setRepairCostAmount(legacy.getRepairCost());
+            setRepairCost(legacy.getRepairCost());
         }
 
         if (legacy.isRepairCostAmountSet()) {
-            setRepairCostAmount(legacy.getRepairCostAmount());
+            setRepairItemCost(legacy.getRepairCostAmount());
         }
 
         if (legacy.isMaximumRepairCostSet()) {

@@ -14,7 +14,7 @@ public class CraftFurnaceView extends CraftInventoryView<ContainerFurnace> imple
     }
 
     @Override
-    public boolean isBurning() {
+    public boolean isLit() {
         return container.isLit();
     }
 }

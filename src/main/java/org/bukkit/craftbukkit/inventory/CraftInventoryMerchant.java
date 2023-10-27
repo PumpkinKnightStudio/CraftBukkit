@@ -2,9 +2,11 @@ package org.bukkit.craftbukkit.inventory;
 
 import net.minecraft.world.inventory.InventoryMerchant;
 import net.minecraft.world.item.trading.IMerchant;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.MerchantRecipe;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryMerchant extends CraftInventory implements MerchantInventory {
 
@@ -34,5 +36,11 @@ public class CraftInventoryMerchant extends CraftInventory implements MerchantIn
     @Override
     public Merchant getMerchant() {
         return merchant.getCraftMerchant();
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.MERCHANT;
     }
 }
