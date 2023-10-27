@@ -7,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.inventory.view.CraftAnvilView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.AnvilInventory;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryAnvil extends CraftResultInventory implements AnvilInventory {
 
@@ -44,7 +46,7 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     @Override
     @Deprecated
     public int getRepairCostAmount() {
-        onViewers((cav) -> this.costAmount = cav.getRepairCostAmount());
+        onViewers((cav) -> this.costAmount = cav.getRepairItemCost());
         return this.costAmount;
     }
 
@@ -52,7 +54,7 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     @Deprecated
     public void setRepairCostAmount(int amount) {
         this.repairCost = amount;
-        onViewers((cav) -> cav.setRepairCostAmount(amount));
+        onViewers((cav) -> cav.setRepairItemCost(amount));
     }
 
     @Override
@@ -74,6 +76,12 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     public int getMaximumRepairCost() {
         onViewers((cav) -> this.maximumRepairCost = cav.getMaximumRepairCost());
         return this.maximumRepairCost;
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.ANVIL;
     }
 
     @Override

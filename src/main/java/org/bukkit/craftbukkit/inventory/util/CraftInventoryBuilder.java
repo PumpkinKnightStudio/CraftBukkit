@@ -108,7 +108,7 @@ public class CraftInventoryBuilder {
         inventories.put(MenuType.LECTERN, (holder, type) -> new CraftInventoryLectern(new TileEntityLectern(BlockPosition.ZERO, Blocks.LECTERN.defaultBlockState()).bookAccess));
         containers.put(MenuType.LECTERN, (int syncId, PlayerInventory playerinventory, CraftInventory lectern) -> new ContainerLectern(syncId, lectern.getInventory(), new ContainerProperties(1), playerinventory));
         inventories.put(MenuType.LOOM, (holder, type) -> new CraftInventoryLoom(new CraftChangeDetectingSubContainer(3, holder), new InventorySubcontainer(1)));
-        containers.put(MenuType.LOOM, (int syncId, PlayerInventory playerinventory, CraftInventory loom) -> new ContainerLoom(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), loom.getInventory()));
+        containers.put(MenuType.LOOM, (int syncId, PlayerInventory playerinventory, CraftInventory loom) -> new ContainerLoom(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), loom.getInventory(), ((CraftInventoryLoom) loom).getResultInventory()));
         // skip MenuType.MERCHANT, this simply can't be virtually created.
         inventories.put(MenuType.SHULKER_BOX, (holder, type) -> new CraftInventory(new InventorySubcontainer(27)));
         containers.put(MenuType.SHULKER_BOX, (int syncId, PlayerInventory playerinventory, CraftInventory shulker) -> new ContainerShulkerBox(syncId, playerinventory, shulker.getInventory()));
@@ -126,9 +126,13 @@ public class CraftInventoryBuilder {
         return inventories.get(type).createInventory(holder, type);
     }
 
+    public VirtualContainerBuilder<?> getContainer(MenuType<?> menu) {
+        return containers.get(menu);
+    }
+
     public InventoryView openInventoryCustom(HumanEntity entity, Inventory inventory, String title) {
         EntityPlayer player = (EntityPlayer) ((CraftHumanEntity) entity).getHandle();
-        final CraftMenuType<?> menuType = (CraftMenuType<?>) CraftMenuType.getMenuType(inventory);
+        final CraftMenuType<?> menuType = (CraftMenuType<?>) inventory.getMenuType();
         final CraftInventory craft = (CraftInventory) inventory;
         final Container container = this.containers.get(menuType).createContainer(player.nextContainerCounter(), player.getInventory(), craft);
         container.setTitle(IChatBaseComponent.literal(title));
@@ -140,7 +144,7 @@ public class CraftInventoryBuilder {
         return container.getBukkitView();
     }
 
-    interface InventoryBuilder {
+    public interface InventoryBuilder {
         Inventory createInventory(InventoryHolder holder, MenuType<?> type);
 
         static InventoryBuilder generic(int columns, int rows) {
@@ -156,7 +160,7 @@ public class CraftInventoryBuilder {
         }
     }
 
-    interface VirtualContainerBuilder<T extends Inventory> {
+    public interface VirtualContainerBuilder<T extends Inventory> {
         VirtualContainerBuilder<CraftInventory> TILE = (int syncId, PlayerInventory playerinventory, CraftInventory inventory) -> ((ITileEntityContainer) inventory.getInventory()).createMenu(syncId, playerinventory, playerinventory.player);
 
         Container createContainer(int syncId, PlayerInventory playerinventory, CraftInventory inventory);

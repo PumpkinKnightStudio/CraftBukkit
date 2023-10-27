@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit.inventory;
 import net.minecraft.world.IInventory;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryEnchanting extends CraftInventory implements EnchantingInventory {
     public CraftInventoryEnchanting(IInventory inventory) {
@@ -27,5 +29,11 @@ public class CraftInventoryEnchanting extends CraftInventory implements Enchanti
     @Override
     public ItemStack getSecondary() {
         return getItem(1);
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.ENCHANTMENT;
     }
 }

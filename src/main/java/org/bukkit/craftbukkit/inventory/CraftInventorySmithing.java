@@ -5,8 +5,10 @@ import net.minecraft.world.inventory.InventoryCraftResult;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingInventory;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventorySmithing extends CraftResultInventory implements SmithingInventory {
 
@@ -41,5 +43,11 @@ public class CraftInventorySmithing extends CraftResultInventory implements Smit
     public Recipe getRecipe() {
         RecipeHolder<?> recipe = getResultInventory().getRecipeUsed();
         return (recipe == null) ? null : recipe.toBukkitRecipe();
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.SMITHING;
     }
 }

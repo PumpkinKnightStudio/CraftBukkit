@@ -9,6 +9,8 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryDoubleChest extends CraftInventory implements DoubleChestInventory {
     public ITileInventory tile;
@@ -56,6 +58,12 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
             System.arraycopy(items, left.getSize(), rightItems, 0, Math.min(right.getSize(), items.length - left.getSize()));
             right.setContents(rightItems);
         }
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.GENERIC_9x6;
     }
 
     @Override

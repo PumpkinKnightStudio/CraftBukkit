@@ -4,6 +4,8 @@ import net.minecraft.world.IInventory;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryBrewer extends CraftInventory implements BrewerInventory {
     public CraftInventoryBrewer(IInventory inventory) {
@@ -33,5 +35,11 @@ public class CraftInventoryBrewer extends CraftInventory implements BrewerInvent
     @Override
     public void setFuel(ItemStack fuel) {
         setItem(4, fuel);
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.BREWING_STAND;
     }
 }

@@ -4,6 +4,8 @@ import net.minecraft.world.level.block.entity.ChiseledBookShelfBlockEntity;
 import org.bukkit.block.ChiseledBookshelf;
 import org.bukkit.inventory.ChiseledBookshelfInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryChiseledBookshelf extends CraftInventory implements ChiseledBookshelfInventory {
 
@@ -21,6 +23,12 @@ public class CraftInventoryChiseledBookshelf extends CraftInventory implements C
         } else {
             this.getInventory().setItem(index, nms);
         }
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return null;
     }
 
     @Override

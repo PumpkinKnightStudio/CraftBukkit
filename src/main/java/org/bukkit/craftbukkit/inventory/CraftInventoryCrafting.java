@@ -7,7 +7,9 @@ import net.minecraft.world.IInventory;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Recipe;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryCrafting extends CraftInventory implements CraftingInventory {
     private final IInventory resultInventory;
@@ -28,6 +30,12 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
     @Override
     public int getSize() {
         return getResultInventory().getContainerSize() + getMatrixInventory().getContainerSize();
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return MenuType.CRAFTING;
     }
 
     @Override

@@ -4,6 +4,8 @@ import net.minecraft.world.IInventory;
 import org.bukkit.block.Jukebox;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.JukeboxInventory;
+import org.bukkit.inventory.MenuType;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftInventoryJukebox extends CraftInventory implements JukeboxInventory {
 
@@ -23,6 +25,12 @@ public class CraftInventoryJukebox extends CraftInventory implements JukeboxInve
     @Override
     public ItemStack getRecord() {
         return getItem(0);
+    }
+
+    @Nullable
+    @Override
+    public MenuType<?> getMenuType() {
+        return null;
     }
 
     @Override
