@@ -170,6 +170,7 @@ import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftBlastingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftCampfireRecipe;
 import org.bukkit.craftbukkit.inventory.CraftFurnaceRecipe;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
@@ -1892,28 +1893,42 @@ public final class CraftServer implements Server {
     @Override
     public Inventory createInventory(InventoryHolder owner, InventoryType type) {
         Preconditions.checkArgument(type != null, "InventoryType cannot be null");
-        Preconditions.checkArgument(type.isCreatable(), "InventoryType.%s cannot be used to create a inventory", type);
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, type);
+        final MenuType<?> menuType = type.getMenuType();
+        Preconditions.checkArgument(menuType != null, "InventoryType.%s cannot be used to create an inventory", type);
+        return CraftInventoryBuilder.INSTANCE.createInventory(owner, menuType);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-        Preconditions.checkArgument(type != null, "InventoryType cannot be null");
-        Preconditions.checkArgument(type.isCreatable(), "InventoryType.%s cannot be used to create a inventory", type);
         Preconditions.checkArgument(title != null, "title cannot be null");
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, type, title);
+        final CraftInventory inventory = (CraftInventory) createInventory(owner, type);
+        inventory.setAssociatedTitle(title);
+        return inventory;
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, int size) throws IllegalArgumentException {
         Preconditions.checkArgument(9 <= size && size <= 54 && size % 9 == 0, "Size for custom inventory must be a multiple of 9 between 9 and 54 slots (got %s)", size);
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, size);
+        final CraftInventoryBuilder builder = CraftInventoryBuilder.INSTANCE;
+        Inventory inventory = null;
+        switch (size) {
+            case 9 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x1);
+            case 18 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x2);
+            case 27 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x3);
+            case 36 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x4);
+            case 45 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x5);
+            case 54 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x6);
+        }
+        Preconditions.checkArgument(inventory != null, "Unable to create inventory of size %d".formatted(size));
+        return inventory;
     }
 
     @Override
     public Inventory createInventory(InventoryHolder owner, int size, String title) throws IllegalArgumentException {
-        Preconditions.checkArgument(9 <= size && size <= 54 && size % 9 == 0, "Size for custom inventory must be a multiple of 9 between 9 and 54 slots (got %s)", size);
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, size, title);
+        Preconditions.checkArgument(title != null, "title cannot be null");
+        CraftInventory inventory = (CraftInventory) createInventory(owner, size);
+        inventory.setAssociatedTitle(title);
+        return inventory;
     }
 
     @NotNull

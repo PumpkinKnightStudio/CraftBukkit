@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CraftInventory implements Inventory {
     protected final IInventory inventory;
+    private String associatedTitle;
 
     public CraftInventory(IInventory inventory) {
         this.inventory = inventory;
@@ -571,5 +572,14 @@ public class CraftInventory implements Inventory {
     @Override
     public Location getLocation() {
         return inventory.getLocation();
+    }
+
+    @Nullable
+    public String getAssociatedTitle() {
+        return associatedTitle;
+    }
+
+    public void setAssociatedTitle(final String associatedTitle) {
+        this.associatedTitle = associatedTitle;
     }
 }
