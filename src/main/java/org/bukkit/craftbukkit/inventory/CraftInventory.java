@@ -474,8 +474,6 @@ public class CraftInventory implements Inventory {
             return InventoryType.ENCHANTING;
         } else if (inventory instanceof TileEntityBrewingStand) {
             return InventoryType.BREWING;
-        } else if (inventory instanceof CraftInventoryCustom.MinecraftInventory) {
-            return ((CraftInventoryCustom.MinecraftInventory) inventory).getType();
         } else if (inventory instanceof InventoryEnderChest) {
             return InventoryType.ENDER_CHEST;
         } else if (inventory instanceof InventoryMerchant) {

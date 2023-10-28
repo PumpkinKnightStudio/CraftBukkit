@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
@@ -88,9 +89,9 @@ public class CraftInventoryBuilder {
         containers.put(MenuType.GENERIC_3x3, (int syncId, PlayerInventory playerinventory, CraftInventory inventory) -> new ContainerDispenser(syncId, playerinventory, inventory.getInventory()));
         inventories.put(MenuType.ANVIL, (holder, type) -> new CraftInventoryAnvil(null, new CraftChangeDetectingSubContainer(2, holder), new InventoryCraftResult()));
         containers.put(MenuType.ANVIL, (int syncId, PlayerInventory playerinventory, CraftInventory anvil) -> new ContainerAnvil(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) anvil.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) anvil).getResultInventory()));
-        // no custom inventory needed here as a beacon won't work even if it is done. This minimizes dif
+        // no custom inventory needed here as a beacon won't work even if it is done.
         inventories.put(MenuType.BEACON, (holder, type) -> new CraftInventoryBeacon(new InventorySubcontainer(1)));
-        containers.put(MenuType.BEACON, (int syncId, PlayerInventory playerinventory, CraftInventory beacon) -> new ContainerBeacon(syncId, beacon.getInventory()));
+        containers.put(MenuType.BEACON, (int syncId, PlayerInventory playerinventory, CraftInventory beacon) -> new ContainerBeacon(syncId, playerinventory, new ContainerProperties(3), ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition())));
         inventories.put(MenuType.BLAST_FURNACE, InventoryBuilder.tile(CraftInventoryFurnace::new, TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));
         containers.put(MenuType.BLAST_FURNACE, VirtualContainerBuilder.TILE);
         inventories.put(MenuType.BREWING_STAND, InventoryBuilder.tile(CraftInventoryBrewer::new, TileEntityBrewingStand::new, Blocks.BREWING_STAND));
@@ -112,8 +113,8 @@ public class CraftInventoryBuilder {
         // skip MenuType.MERCHANT, this simply can't be virtually created.
         inventories.put(MenuType.SHULKER_BOX, (holder, type) -> new CraftInventory(new InventorySubcontainer(27)));
         containers.put(MenuType.SHULKER_BOX, (int syncId, PlayerInventory playerinventory, CraftInventory shulker) -> new ContainerShulkerBox(syncId, playerinventory, shulker.getInventory()));
-        inventories.put(MenuType.SMITHING, (holder, type) -> new CraftInventorySmithing(null, new CraftChangeDetectingSubContainer(2, holder), new InventoryCraftResult()));
-        containers.put(MenuType.SMITHING, (int syncId, PlayerInventory playerinventory, CraftInventory smithing) -> new ContainerSmithing(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) smithing.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) smithing).getResultInventory()));
+        inventories.put(MenuType.SMITHING, (holder, type) -> new CraftInventorySmithing(null, new CraftChangeDetectingSubContainer(3, holder), new InventoryCraftResult()));
+        containers.put(MenuType.SMITHING, (int syncId, PlayerInventory playerinventory, CraftInventory smithing) -> new ContainerSmithing(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) smithing.getInventory(), (InventoryCraftResult) ((CraftInventorySmithing) smithing).getResultInventory()));
         inventories.put(MenuType.SMOKER, InventoryBuilder.tile(CraftInventoryFurnace::new, TileEntitySmoker::new, Blocks.SMOKER));
         containers.put(MenuType.SMOKER, VirtualContainerBuilder.TILE);
         inventories.put(MenuType.CARTOGRAPHY_TABLE, (holder, type) -> new CraftInventoryCartography(new CraftChangeDetectingSubContainer(2, holder), new CraftCraftingChangeDetectingSubContainer()));

@@ -25,13 +25,9 @@ import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.Containers;
 import net.minecraft.world.item.ItemCooldown;
 import net.minecraft.world.item.crafting.CraftingManager;
-import net.minecraft.world.item.crafting.IRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.trading.IMerchant;
 import net.minecraft.world.level.block.BlockBed;
-import net.minecraft.world.level.block.BlockEnchantmentTable;
-import net.minecraft.world.level.block.BlockWorkbench;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.GameMode;
@@ -42,7 +38,6 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
@@ -336,7 +331,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (title == null) {
             title = inventory.getAssociatedTitle() == null ? CraftMenuType.getDefaultTitle(menuType) : inventory.getAssociatedTitle();
         }
-        final Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), (CraftInventory) inventory);
+        final Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), inventory);
         container.setTitle(CraftChatMessage.fromStringOrNull(title));
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, menuType.getHandle(), CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;
@@ -369,7 +364,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
         // Accounts for Barrel, BlastFurnace, BrewingStand, Chest, Dispenser, Dropper, Furnace,
         // Hopper, Lectern, ShulkerBox, Smoker
-        if(block instanceof BlockInventoryHolder inventoryHolder) {
+        if (block.getState() instanceof BlockInventoryHolder inventoryHolder) {
             final MenuType<?> menuType = inventoryHolder.getInventory().getMenuType();
             if (menuType == null) {
                 return null;
@@ -398,8 +393,13 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         } else if (type == Material.STONECUTTER) {
             menuType = MenuType.STONECUTTER;
         }
+        if (menuType != null) {
+            final InventoryView view = menuType.create(this, location, CraftMenuType.getDefaultTitle(menuType));
+            openInventory(view);
+            return view;
+        }
 
-        return menuType != null ? menuType.create(this, CraftMenuType.getDefaultTitle(menuType)) : null;
+        return null;
     }
 
     @Override
@@ -441,7 +441,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (inventory instanceof CraftInventoryView) {
             container = ((CraftInventoryView) inventory).getHandle();
         } else {
-            container = new CraftContainer(inventory, this.getHandle(), player.nextContainerCounter());
+            throw new IllegalArgumentException("Unable to open non CraftInventoryView");
         }
 
         // Trigger an INVENTORY_OPEN event
