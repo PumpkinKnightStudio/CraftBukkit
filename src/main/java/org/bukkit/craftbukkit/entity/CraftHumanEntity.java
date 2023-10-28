@@ -2,11 +2,13 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -70,6 +72,8 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     private CraftInventoryPlayer inventory;
@@ -275,8 +279,15 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         return getHandle().containerMenu.getBukkitView();
     }
 
+    @Nullable
     @Override
-    public InventoryView openInventory(Inventory inventory) {
+    public InventoryView openInventory(final Inventory inventory) {
+        return openInventory(inventory, null);
+    }
+
+    @Override
+    public InventoryView openInventory(Inventory inventory, String title) {
+        Preconditions.checkArgument(inventory != null, "can not open null inventory");
         if (!(getHandle() instanceof EntityPlayer)) return null;
         EntityPlayer player = (EntityPlayer) getHandle();
         Container formerContainer = getHandle().containerMenu;
@@ -306,7 +317,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (iinventory instanceof ITileInventory) {
             getHandle().openMenu(iinventory);
         } else {
-            openCustomInventory(inventory, player, type, "thing");
+            openCustomInventory((CraftInventory) inventory, player, type, title);
         }
 
         if (getHandle().containerMenu == formerContainer) {
@@ -316,17 +327,21 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         return getHandle().containerMenu.getBukkitView();
     }
 
-    private static void openCustomInventory(Inventory inventory, EntityPlayer player, CraftMenuType<?> menuType, String title) {
+    private static void openCustomInventory(CraftInventory inventory, EntityPlayer player, CraftMenuType<?> menuType, String title) {
         if (player.connection == null) return;
         Preconditions.checkArgument(menuType != null, "Unable to open windowType");
         CraftInventoryBuilder.VirtualContainerBuilder<?> builder = CraftInventoryBuilder.INSTANCE.getContainer(menuType);
+        if (title == null) {
+            title = inventory.getAssociatedTitle() == null ? CraftMenuType.getDefaultTitle(menuType) : inventory.getAssociatedTitle();
+        }
         final Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), (CraftInventory) inventory);
+        container.setTitle(CraftChatMessage.fromStringOrNull(title));
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, menuType.getHandle(), CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;
         player.initMenu(container);
     }
 
-    private static void openCustomInventory(Inventory inventory, EntityPlayer player, Containers<?> windowType) {
+    /*private static void openCustomInventory(Inventory inventory, EntityPlayer player, Containers<?> windowType) {
         if (player.connection == null) return;
         Preconditions.checkArgument(windowType != null, "Unknown windowType");
         Container container = new CraftContainer(inventory, player, player.nextContainerCounter());
@@ -339,7 +354,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;
         player.initMenu(container);
-    }
+    }*/
 
     @Override
     public InventoryView openWorkbench(Location location, boolean force) {
