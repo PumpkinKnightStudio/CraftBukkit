@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
+import net.minecraft.network.protocol.game.PacketPlayOutOpenWindowHorse;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.ITileInventory;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.EnumMainHand;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.entity.projectile.EntityFireworks;
 import net.minecraft.world.inventory.Container;
+import net.minecraft.world.inventory.ContainerHorse;
 import net.minecraft.world.inventory.Containers;
 import net.minecraft.world.item.ItemCooldown;
 import net.minecraft.world.item.crafting.CraftingManager;
@@ -39,6 +41,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryAbstractHorse;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
@@ -51,6 +54,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
@@ -338,21 +342,6 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         player.initMenu(container);
     }
 
-    /*private static void openCustomInventory(Inventory inventory, EntityPlayer player, Containers<?> windowType) {
-        if (player.connection == null) return;
-        Preconditions.checkArgument(windowType != null, "Unknown windowType");
-        Container container = new CraftContainer(inventory, player, player.nextContainerCounter());
-
-        container = CraftEventFactory.callInventoryOpenEvent(player, container);
-        if (container == null) return;
-
-        String title = container.getBukkitView().getTitle();
-
-        player.connection.send(new PacketPlayOutOpenWindow(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
-        player.containerMenu = container;
-        player.initMenu(container);
-    }*/
-
     @Nullable
     @Override
     public InventoryView openBlock(@NotNull final Location location) {
@@ -400,6 +389,30 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
 
         return null;
+    }
+
+    @Nullable
+    @Override
+    public InventoryView openAnimalInventory(@NotNull final AbstractHorse horseLike) {
+        if(!(getHandle() instanceof EntityPlayer player)) return null;
+        final CraftAbstractHorse craft = (CraftAbstractHorse) horseLike;
+        final CraftInventoryAbstractHorse inventory = (CraftInventoryAbstractHorse) craft.getInventory();
+        final int next = player.nextContainerCounter();
+        ContainerHorse container = new ContainerHorse(next, player.getInventory(), inventory.getInventory(), craft.getHandle());
+        container.setTitle(craft.getHandle().getDisplayName());
+        container = (ContainerHorse) CraftEventFactory.callInventoryOpenEvent(player, container);
+        if (container == null) {
+            inventory.getInventory().startOpen(getHandle());
+        }
+
+        if (player.containerMenu != player.inventoryMenu) {
+            player.closeContainer();
+        }
+
+        player.connection.send(new PacketPlayOutOpenWindowHorse(next, inventory.getInventory().getContainerSize(), craft.getHandle().getId()));
+        player.containerMenu = container;
+        player.initMenu(container);
+        return container.getBukkitView();
     }
 
     @Override
