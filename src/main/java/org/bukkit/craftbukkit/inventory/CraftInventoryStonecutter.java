@@ -14,6 +14,6 @@ public class CraftInventoryStonecutter extends CraftResultInventory implements S
     @Nullable
     @Override
     public MenuType<?> getMenuType() {
-        return MenuType.SMITHING;
+        return MenuType.STONECUTTER;
     }
 }
