@@ -60,11 +60,13 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissibleBase;
@@ -356,44 +358,74 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         player.initMenu(container);
     }*/
 
+    @Nullable
+    @Override
+    public InventoryView openBlock(@NotNull final Location location) {
+        Preconditions.checkArgument(location != null, "A container can not be opened at a null location");
+        final Block block = location.getBlock();
+        if (block.getType().isAir()) {
+            return null;
+        }
+
+        // Accounts for Barrel, BlastFurnace, BrewingStand, Chest, Dispenser, Dropper, Furnace,
+        // Hopper, Lectern, ShulkerBox, Smoker
+        if(block instanceof BlockInventoryHolder inventoryHolder) {
+            final MenuType<?> menuType = inventoryHolder.getInventory().getMenuType();
+            if (menuType == null) {
+                return null;
+            }
+            return openInventory(inventoryHolder.getInventory());
+        }
+
+        final Material type = block.getType();
+        MenuType<?> menuType = null;
+        if (type == Material.ANVIL) {
+            menuType = MenuType.ANVIL;
+        } else if (type == Material.BEACON) {
+            menuType = MenuType.BEACON;
+        } else if (type == Material.CRAFTING_TABLE) {
+            menuType = MenuType.CRAFTING;
+        } else if (type == Material.ENCHANTING_TABLE) {
+            menuType = MenuType.ENCHANTMENT;
+        } else if (type == Material.GRINDSTONE) {
+            menuType = MenuType.GRINDSTONE;
+        } else if (type == Material.LOOM) {
+            menuType = MenuType.LOOM;
+        } else if (type == Material.SMITHING_TABLE) {
+            menuType = MenuType.SMITHING;
+        } else if (type == Material.CARTOGRAPHY_TABLE) {
+            menuType = MenuType.CARTOGRAPHY_TABLE;
+        } else if (type == Material.STONECUTTER) {
+            menuType = MenuType.STONECUTTER;
+        }
+
+        return menuType != null ? menuType.create(this, CraftMenuType.getDefaultTitle(menuType)) : null;
+    }
+
     @Override
     public InventoryView openWorkbench(Location location, boolean force) {
-        if (location == null) {
+        if(location == null) {
             location = getLocation();
         }
         if (!force) {
-            Block block = location.getBlock();
-            if (block.getType() != Material.CRAFTING_TABLE) {
-                return null;
-            }
+            return openBlock(location);
         }
-        getHandle().openMenu(((BlockWorkbench) Blocks.CRAFTING_TABLE).getMenuProvider(null, getHandle().level(), CraftLocation.toBlockPosition(location)));
-        if (force) {
-            getHandle().containerMenu.checkReachable = false;
-        }
-        return getHandle().containerMenu.getBukkitView();
+        InventoryView view = MenuType.CRAFTING.create(this, CraftMenuType.getDefaultTitle(MenuType.CRAFTING));
+        openInventory(view);
+        return view;
     }
 
     @Override
     public InventoryView openEnchanting(Location location, boolean force) {
-        if (location == null) {
+        if(location == null) {
             location = getLocation();
         }
         if (!force) {
-            Block block = location.getBlock();
-            if (block.getType() != Material.ENCHANTING_TABLE) {
-                return null;
-            }
+            return openBlock(location);
         }
-
-        // If there isn't an enchant table we can force create one, won't be very useful though.
-        BlockPosition pos = CraftLocation.toBlockPosition(location);
-        getHandle().openMenu(((BlockEnchantmentTable) Blocks.ENCHANTING_TABLE).getMenuProvider(null, getHandle().level(), pos));
-
-        if (force) {
-            getHandle().containerMenu.checkReachable = false;
-        }
-        return getHandle().containerMenu.getBukkitView();
+        InventoryView view = MenuType.ENCHANTMENT.create(this, CraftMenuType.getDefaultTitle(MenuType.ENCHANTMENT));
+        openInventory(view);
+        return view;
     }
 
     @Override
