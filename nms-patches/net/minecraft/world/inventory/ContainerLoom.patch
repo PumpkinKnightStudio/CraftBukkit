@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerLoom.java
 +++ b/net/minecraft/world/inventory/ContainerLoom.java
-@@ -24,8 +24,36 @@
+@@ -24,8 +24,37 @@
  import net.minecraft.world.level.block.entity.EnumBannerPatternType;
  import net.minecraft.world.level.block.entity.TileEntityTypes;
  
@@ -10,13 +10,14 @@
 +import org.bukkit.craftbukkit.inventory.CraftInventoryLoom;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.view.CraftLoomView;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
 +
  public class ContainerLoom extends Container {
  
 +    // CraftBukkit start
-+    private CraftInventoryView bukkitEntity = null;
++    private CraftLoomView bukkitEntity = null;
 +    private Player player;
 +
 +    @Override
@@ -26,7 +27,7 @@
 +        }
 +
 +        CraftInventoryLoom inventory = new CraftInventoryLoom(this.inputContainer, this.outputContainer);
-+        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
++        bukkitEntity = new CraftLoomView(this.player, inventory, this);
 +        return bukkitEntity;
 +    }
 +
@@ -37,7 +38,7 @@
      private static final int PATTERN_NOT_SET = -1;
      private static final int INV_SLOT_START = 4;
      private static final int INV_SLOT_END = 31;
-@@ -47,27 +75,47 @@
+@@ -47,27 +76,47 @@
          this(i, playerinventory, ContainerAccess.NULL);
      }
  
@@ -90,7 +91,7 @@
          this.access = containeraccess;
          this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
              @Override
-@@ -127,10 +175,12 @@
+@@ -127,10 +176,12 @@
          }
  
          this.addDataSlot(this.selectedBannerPatternIndex);
@@ -103,7 +104,7 @@
          return stillValid(this.access, entityhuman, Blocks.LOOM);
      }
  
-@@ -308,6 +358,11 @@
+@@ -308,6 +359,11 @@
  
              if (nbttagcompound != null && nbttagcompound.contains("Patterns", 9)) {
                  nbttaglist = nbttagcompound.getList("Patterns", 10);
