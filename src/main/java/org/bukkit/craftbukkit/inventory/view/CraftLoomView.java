@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.inventory.view;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.ContainerLoom;
 import net.minecraft.world.level.block.entity.EnumBannerPatternType;
 import org.bukkit.block.banner.PatternType;
