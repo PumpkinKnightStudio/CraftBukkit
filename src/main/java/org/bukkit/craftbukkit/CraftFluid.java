@@ -9,7 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftFluid extends Fluid {
+public class CraftFluid implements Fluid {
     private static int count = 0;
 
     public static Fluid minecraftToBukkit(FluidType minecraft) {

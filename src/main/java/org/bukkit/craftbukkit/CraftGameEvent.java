@@ -9,7 +9,7 @@ import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftGameEvent extends GameEvent {
+public class CraftGameEvent implements GameEvent {
 
     public static GameEvent minecraftToBukkit(net.minecraft.world.level.gameevent.GameEvent minecraft) {
         Preconditions.checkArgument(minecraft != null);

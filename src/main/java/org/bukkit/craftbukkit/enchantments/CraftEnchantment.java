@@ -9,7 +9,7 @@ import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.inventory.ItemStack;
 
-public class CraftEnchantment extends Enchantment {
+public class CraftEnchantment implements Enchantment {
     private final NamespacedKey key;
     private final net.minecraft.world.item.enchantment.Enchantment target;
     private final String name;

@@ -54,7 +54,7 @@ public class CraftFrog extends CraftAnimals implements org.bukkit.entity.Frog {
         getHandle().setVariant(CraftVariant.bukkitToMinecraft(variant));
     }
 
-    public static class CraftVariant extends Variant {
+    public static class CraftVariant implements Variant {
         private static int count = 0;
 
         public static Variant minecraftToBukkit(FrogVariant minecraft) {

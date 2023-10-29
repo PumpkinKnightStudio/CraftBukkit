@@ -29,7 +29,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftStatistic extends Statistic {
+public class CraftStatistic implements Statistic {
     private static int count = 0;
 
     public static Statistic getBukkitStatistic(IRegistry<StatisticWrapper<?>> registry, net.minecraft.stats.Statistic<?> statistic) {

@@ -4,14 +4,13 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.sounds.SoundEffect;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftSound extends Sound {
+public class CraftSound implements Sound {
     private static int count = 0;
 
     public static Sound minecraftToBukkit(SoundEffect minecraft) {

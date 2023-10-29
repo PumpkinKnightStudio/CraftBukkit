@@ -52,7 +52,7 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
         getHandle().setCollarColor(EnumColor.byId(color.getWoolData()));
     }
 
-    public static class CraftType extends Type {
+    public static class CraftType implements Type {
         private static int count = 0;
 
         public static Type minecraftToBukkit(CatVariant minecraft) {

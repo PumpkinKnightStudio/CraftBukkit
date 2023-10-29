@@ -10,7 +10,7 @@ import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftMusicInstrument extends MusicInstrument {
+public class CraftMusicInstrument implements MusicInstrument {
 
     public static MusicInstrument minecraftToBukkit(Instrument minecraft) {
         Preconditions.checkArgument(minecraft != null);

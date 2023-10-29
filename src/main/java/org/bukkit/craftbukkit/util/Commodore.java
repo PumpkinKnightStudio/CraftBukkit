@@ -46,6 +46,7 @@ public class Commodore {
     private static final List<InvocationInfo> INVOCATIONS = new ArrayList<>();
     private static final List<TypeInstructionInfo> TYPE_INSTRUCTIONS = new ArrayList<>();
     private static final List<MethodInfo> METHOD_INFO = new ArrayList<>();
+    private static final List<Predicate<String>> CLASS_TO_INTERFACE = new ArrayList<>();
 
     private static final Set<String> EVIL = new HashSet<>(Arrays.asList(
             "org/bukkit/World (III)I getBlockTypeIdAt",
@@ -62,7 +63,28 @@ public class Commodore {
     ));
 
     static {
-        Predicate<String> enumOrNormalMap = eq("java/util/EnumMap").or(eq("java/util/Map"));
+        // Change normal classes to interfaces
+        classToInterface(eq("org/bukkit/attribute/Attribute"));
+        classToInterface(eq("org/bukkit/block/banner/PatternType"));
+        classToInterface(eq("org/bukkit/block/Biome"));
+        classToInterface(eq("org/bukkit/enchantments/Enchantment"));
+        classToInterface(eq("org/bukkit/entity/Cat$Type"));
+        classToInterface(eq("org/bukkit/entity/EntityType"));
+        classToInterface(eq("ord/bukkit/entity/Frog$Variant"));
+        classToInterface(eq("org/bukkit/entity/Villager$Type"));
+        classToInterface(eq("org/bukkit/entity/Villager$Profession"));
+        classToInterface(eq("org/bukkit/generator/structure/Structure"));
+        classToInterface(eq("org/bukkit/generator/structure/StructureType"));
+        classToInterface(eq("org/bukkit/potion/PotionEffectType"));
+        classToInterface(eq("org/bukkit/potion/PotionType"));
+        classToInterface(eq("org/bukkit/Art"));
+        classToInterface(eq("org/bukkit/Fluid"));
+        classToInterface(eq("org/bukkit/GameEvent"));
+        classToInterface(eq("org/bukkit/MusicInstrument"));
+        classToInterface(eq("org/bukkit/Particle"));
+        classToInterface(eq("org/bukkit/Sound"));
+        classToInterface(eq("org/bukkit/Statistic"));
+
         // Need to do it in such a way for maven to correctly insert the version in the package
         String imposterMapString = "org/bukkit/craftbukkit/legacy/ImposterEnumMap";
         String imposterMapReturn = "L" + imposterMapString + ";";
@@ -132,6 +154,10 @@ public class Commodore {
 
     public static Function<String, String> append(String value) {
         return val -> val + value;
+    }
+
+    public static void classToInterface(Predicate<String> aClass) {
+        CLASS_TO_INTERFACE.add(aClass);
     }
 
     public static void renameMethod(boolean preEnumKill, boolean enumCompatibility, Predicate<String> name, Predicate<String> desc, Function<String, String> newName) {
@@ -812,6 +838,19 @@ public class Commodore {
 
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                        for (Predicate<String> pre : CLASS_TO_INTERFACE) {
+                            if (!pre.test(owner)) {
+                                continue;
+                            }
+
+                            if (opcode == Opcodes.INVOKEVIRTUAL) {
+                                opcode = Opcodes.INVOKEINTERFACE;
+                            }
+
+                            itf = true;
+                            break;
+                        }
+
                         // SPIGOT-4496
                         if (owner.equals("org/bukkit/map/MapView") && name.equals("getId") && desc.equals("()S")) {
                             // Should be same size on stack so just call other method
@@ -851,7 +890,6 @@ public class Commodore {
                                 || owner.equals("org/bukkit/entity/EntityType")
                                 || owner.equals("org/bukkit/Statistic")
                                 || owner.equals("org/bukkit/Sound")
-                                || owner.equals("org/bukkit/Material")
                                 || owner.equals("org/bukkit/attribute/Attribute")
                                 || owner.equals("org/bukkit/entity/Villager$Type")
                                 || owner.equals("org/bukkit/entity/Villager$Profession")
@@ -1100,6 +1138,16 @@ public class Commodore {
 
                             List<Object> newTypes = new ArrayList<>();
                             newTypes.add(samMethodType);
+
+                            for (Predicate<String> pre : CLASS_TO_INTERFACE) {
+                                if (!pre.test(implMethod.getOwner())) {
+                                    continue;
+                                }
+
+                                implMethod = new Handle(implMethod.getTag() == Opcodes.H_INVOKEVIRTUAL ? Opcodes.H_INVOKEINTERFACE : implMethod.getTag(),
+                                        implMethod.getOwner(), implMethod.getName(), implMethod.getDesc(), true);
+                                break;
+                            }
 
                             if ( implMethod.getOwner().startsWith( "org/bukkit" ) && implMethod.getDesc().contains( "org/bukkit/util/Consumer" ) )
                             {

@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.generator.structure.StructureType;
 
-public class CraftStructureType extends StructureType {
+public class CraftStructureType implements StructureType {
 
     public static StructureType minecraftToBukkit(net.minecraft.world.level.levelgen.structure.StructureType<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);

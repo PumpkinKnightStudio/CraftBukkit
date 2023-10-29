@@ -37,7 +37,7 @@ import org.bukkit.material.MaterialData;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
-public abstract class CraftParticle<D> extends Particle<D> {
+public abstract class CraftParticle<D> implements Particle<D> {
 
     private static int count = 0;
 

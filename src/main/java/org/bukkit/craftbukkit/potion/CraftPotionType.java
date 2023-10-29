@@ -17,7 +17,7 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CraftPotionType extends PotionType {
+public class CraftPotionType implements PotionType {
     private static int count = 0;
 
     public static PotionType minecraftToBukkit(PotionRegistry minecraft) {

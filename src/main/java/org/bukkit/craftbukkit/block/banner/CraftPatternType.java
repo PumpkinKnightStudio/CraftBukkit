@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftPatternType extends PatternType {
+public class CraftPatternType implements PatternType {
 
     private static int count = 0;
 

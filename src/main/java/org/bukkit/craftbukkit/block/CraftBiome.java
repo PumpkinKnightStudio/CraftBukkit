@@ -11,7 +11,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftBiome extends Biome {
+public class CraftBiome implements Biome {
     private static int count = 0;
 
     public static Biome minecraftToBukkit(BiomeBase minecraft) {

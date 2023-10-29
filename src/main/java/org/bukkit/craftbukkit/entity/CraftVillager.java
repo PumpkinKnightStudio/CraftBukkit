@@ -127,7 +127,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         return (entityzombievillager != null) ? (ZombieVillager) entityzombievillager.getBukkitEntity() : null;
     }
 
-    public static class CraftType extends Type {
+    public static class CraftType implements Type {
         private static int count = 0;
 
         public static Type minecraftToBukkit(VillagerType minecraft) {
@@ -216,7 +216,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         }
     }
 
-    public static class CraftProfession extends Profession {
+    public static class CraftProfession implements Profession {
         private static int count = 0;
 
         public static Profession minecraftToBukkit(VillagerProfession minecraft) {

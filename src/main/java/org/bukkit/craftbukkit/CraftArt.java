@@ -10,7 +10,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftArt extends Art {
+public class CraftArt implements Art {
     private static final int UNIT_MULTIPLIER = 16;
     private static int count = 0;
 

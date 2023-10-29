@@ -10,7 +10,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
-public class CraftAttribute extends Attribute {
+public class CraftAttribute implements Attribute {
     private static int count = 0;
 
     public static Attribute minecraftToBukkit(AttributeBase minecraft) {
