@@ -72,26 +72,26 @@ public class CraftInventoryBuilder {
     private CraftInventoryBuilder() {
         this.inventories = new HashMap<>();
         this.containers = new HashMap<>();
-        inventories.put(MenuType.GENERIC_9x1, InventoryBuilder.generic(1));
-        containers.put(MenuType.GENERIC_9x1, VirtualContainerBuilder.generic(MenuType.GENERIC_9x1, 1));
+        inventories.put(MenuType.GENERIC_9X1, InventoryBuilder.generic(1));
+        containers.put(MenuType.GENERIC_9X1, VirtualContainerBuilder.generic(MenuType.GENERIC_9X1, 1));
 
-        inventories.put(MenuType.GENERIC_9x2, InventoryBuilder.generic(2));
-        containers.put(MenuType.GENERIC_9x2, VirtualContainerBuilder.generic(MenuType.GENERIC_9x2, 2));
+        inventories.put(MenuType.GENERIC_9X2, InventoryBuilder.generic(2));
+        containers.put(MenuType.GENERIC_9X2, VirtualContainerBuilder.generic(MenuType.GENERIC_9X2, 2));
 
-        inventories.put(MenuType.GENERIC_9x3, InventoryBuilder.generic(3));
-        containers.put(MenuType.GENERIC_9x3, VirtualContainerBuilder.generic(MenuType.GENERIC_9x3, 3));
+        inventories.put(MenuType.GENERIC_9X3, InventoryBuilder.generic(3));
+        containers.put(MenuType.GENERIC_9X3, VirtualContainerBuilder.generic(MenuType.GENERIC_9X3, 3));
 
-        inventories.put(MenuType.GENERIC_9x4, InventoryBuilder.generic(4));
-        containers.put(MenuType.GENERIC_9x4, VirtualContainerBuilder.generic(MenuType.GENERIC_9x4, 4));
+        inventories.put(MenuType.GENERIC_9X4, InventoryBuilder.generic(4));
+        containers.put(MenuType.GENERIC_9X4, VirtualContainerBuilder.generic(MenuType.GENERIC_9X4, 4));
 
-        inventories.put(MenuType.GENERIC_9x5, InventoryBuilder.generic(5));
-        containers.put(MenuType.GENERIC_9x5, VirtualContainerBuilder.generic(MenuType.GENERIC_9x5, 5));
+        inventories.put(MenuType.GENERIC_9X5, InventoryBuilder.generic(5));
+        containers.put(MenuType.GENERIC_9X5, VirtualContainerBuilder.generic(MenuType.GENERIC_9X5, 5));
 
-        inventories.put(MenuType.GENERIC_9x6, InventoryBuilder.generic(6));
-        containers.put(MenuType.GENERIC_9x6, VirtualContainerBuilder.generic(MenuType.GENERIC_9x6, 6));
+        inventories.put(MenuType.GENERIC_9X6, InventoryBuilder.generic(6));
+        containers.put(MenuType.GENERIC_9X6, VirtualContainerBuilder.generic(MenuType.GENERIC_9X6, 6));
 
-        inventories.put(MenuType.GENERIC_3x3, InventoryBuilder.tile(CraftInventory::new, TileEntityDispenser::new, Blocks.DISPENSER));
-        containers.put(MenuType.GENERIC_3x3, (int syncId, PlayerInventory playerinventory, CraftInventory inventory) -> new ContainerDispenser(syncId, playerinventory, inventory.getInventory()));
+        inventories.put(MenuType.GENERIC_3X3, InventoryBuilder.tile(CraftInventory::new, TileEntityDispenser::new, Blocks.DISPENSER));
+        containers.put(MenuType.GENERIC_3X3, (int syncId, PlayerInventory playerinventory, CraftInventory inventory) -> new ContainerDispenser(syncId, playerinventory, inventory.getInventory()));
 
         inventories.put(MenuType.ANVIL, (holder, type) -> new CraftInventoryAnvil(null, new CraftChangeDetectingSubContainer(2, holder), new InventoryCraftResult()));
         containers.put(MenuType.ANVIL, (int syncId, PlayerInventory playerinventory, CraftInventory anvil) -> new ContainerAnvil(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) anvil.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) anvil).getResultInventory()));
