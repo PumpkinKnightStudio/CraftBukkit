@@ -110,7 +110,7 @@ public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
     }
 
     public static MenuType<?> minecraftToBukkit(Containers<?> container) {
-        Preconditions.checkNotNull(container);
+        Preconditions.checkArgument(container != null, "container type provided must not be null");
         IRegistry<Containers<?>> registry = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.MENU);
         MenuType<?> bukkit = Registry.MENU.get(CraftNamespacedKey.fromMinecraft(registry.getKey(container)));
         Preconditions.checkNotNull(bukkit);

@@ -3,10 +3,8 @@ package org.bukkit.craftbukkit.inventory.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.ITileInventory;
 import net.minecraft.world.TileInventory;
 import net.minecraft.world.entity.player.EntityHuman;
@@ -21,16 +19,13 @@ import net.minecraft.world.inventory.ContainerSmithing;
 import net.minecraft.world.inventory.ContainerWorkbench;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
 import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.MenuType;
 
 public final class CraftContainerBuilder {

@@ -10,6 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.resources.ResourceKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.support.AbstractTestingBase;
@@ -29,7 +30,13 @@ public class RegistryConstantsTest extends AbstractTestingBase {
         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
     }
 
-    private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {
+    @Test
+    public void testMenuType() {
+        this.testExcessConstants(MenuType.class, Registry.MENU);
+        this.testMissingConstants(MenuType.class, Registries.MENU);
+    }
+
+    private <T extends Keyed> void testExcessConstants(Class<? super T> clazz, Registry<T> registry) {
         List<NamespacedKey> excessKeys = new ArrayList<>();
 
         for (Field field : clazz.getFields()) {

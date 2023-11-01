@@ -8,7 +8,6 @@ import org.bukkit.inventory.view.FurnaceView;
 
 public class CraftFurnaceView extends CraftInventoryView<ContainerFurnace> implements FurnaceView {
 
-
     public CraftFurnaceView(HumanEntity player, Inventory viewing, ContainerFurnace container) {
         super(player, viewing, container);
     }

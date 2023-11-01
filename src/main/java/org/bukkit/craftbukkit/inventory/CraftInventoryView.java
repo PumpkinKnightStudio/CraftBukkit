@@ -114,7 +114,7 @@ public class CraftInventoryView<T extends Container> implements InventoryView {
 
         final EntityPlayer entityPlayer = (EntityPlayer) ((CraftHumanEntity) view.getPlayer()).getHandle();
         final int containerId = entityPlayer.containerMenu.containerId;
-        final Containers<?> windowType = ((CraftMenuType<?>) view.getMenuType()).getHandle();
+        final Containers<?> windowType = CraftMenuType.bukkitToMinecraft(view.getMenuType());
         entityPlayer.connection.send(new PacketPlayOutOpenWindow(containerId, windowType, CraftChatMessage.fromString(title)[0]));
         ((Player) view.getPlayer()).updateInventory();
     }

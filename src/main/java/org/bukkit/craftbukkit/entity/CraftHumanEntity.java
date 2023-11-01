@@ -2,13 +2,11 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -282,7 +280,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Nullable
     @Override
-    public InventoryView openInventory(final Inventory inventory) {
+    public InventoryView openInventory(Inventory inventory) {
         return openInventory(inventory, null);
     }
 
@@ -449,6 +447,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             // fire INVENTORY_CLOSE if one already open
             ((EntityPlayer) getHandle()).connection.handleContainerClose(new PacketPlayInCloseWindow(getHandle().containerMenu.containerId));
         }
+        Preconditions.checkArgument(inventory.getMenuType() != null, "The InventoryView you passed can not be opened"); // possibly redundant, but their may be edge cases
         EntityPlayer player = (EntityPlayer) getHandle();
         Container container;
         if (inventory instanceof CraftInventoryView) {
@@ -464,7 +463,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
 
         // Now open the window
-        Containers<?> windowType = ((CraftMenuType<?>) inventory.getMenuType()).getHandle();
+        Containers<?> windowType = CraftMenuType.bukkitToMinecraft(inventory.getMenuType());
         String title = inventory.getTitle();
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;

@@ -50,7 +50,7 @@
 -                ContainerEnchantTable.this.slotsChanged(this);
 -            }
 -        };
-+        if(enchantSlots instanceof CraftChangeDetectingSubContainer craft) {
++        if (enchantSlots instanceof CraftChangeDetectingSubContainer craft) {
 +            this.enchantSlots = enchantSlots;
 +            craft.setContainer(this::slotsChanged, containeraccess);
 +        } else {
