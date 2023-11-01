@@ -11,7 +11,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.view.StonecutterView;
 
-
 public class CraftStonecutterView extends CraftInventoryView<ContainerStonecutter> implements StonecutterView {
 
     public CraftStonecutterView(HumanEntity player, Inventory viewing, ContainerStonecutter container) {

@@ -8,7 +8,6 @@ import net.minecraft.world.inventory.ContainerAccess;
 import org.bukkit.Location;
 import org.bukkit.inventory.InventoryHolder;
 
-
 public class CraftChangeDetectingSubContainer extends InventorySubcontainer {
 
     private Consumer<IInventory> slotsChanged = (iinventory) -> {

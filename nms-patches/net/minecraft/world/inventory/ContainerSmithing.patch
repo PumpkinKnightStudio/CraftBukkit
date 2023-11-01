@@ -1,16 +1,18 @@
 --- a/net/minecraft/world/inventory/ContainerSmithing.java
 +++ b/net/minecraft/world/inventory/ContainerSmithing.java
-@@ -13,6 +13,9 @@
+@@ -13,6 +13,11 @@
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
  
-+import org.bukkit.craftbukkit.inventory.CraftInventoryView; // CraftBukkit
++// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 +import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++// CraftBukkit end
 +
  public class ContainerSmithing extends ContainerAnvilAbstract {
  
      public static final int TEMPLATE_SLOT = 0;
-@@ -28,6 +31,14 @@
+@@ -28,6 +33,14 @@
      @Nullable
      private RecipeHolder<SmithingRecipe> selectedRecipe;
      private final List<RecipeHolder<SmithingRecipe>> recipes;
@@ -25,7 +27,7 @@
  
      public ContainerSmithing(int i, PlayerInventory playerinventory) {
          this(i, playerinventory, ContainerAccess.NULL);
-@@ -97,7 +108,7 @@
+@@ -97,7 +110,7 @@
          List<RecipeHolder<SmithingRecipe>> list = this.level.getRecipeManager().getRecipesFor(Recipes.SMITHING, this.inputSlots, this.level);
  
          if (list.isEmpty()) {
@@ -34,7 +36,7 @@
          } else {
              RecipeHolder<SmithingRecipe> recipeholder = (RecipeHolder) list.get(0);
              ItemStack itemstack = ((SmithingRecipe) recipeholder.value()).assemble(this.inputSlots, this.level.registryAccess());
-@@ -105,7 +116,9 @@
+@@ -105,7 +118,9 @@
              if (itemstack.isItemEnabled(this.level.enabledFeatures())) {
                  this.selectedRecipe = recipeholder;
                  this.resultSlots.setRecipeUsed(recipeholder);
@@ -45,7 +47,7 @@
              }
          }
  
-@@ -137,4 +150,18 @@
+@@ -137,4 +152,18 @@
              return !this.getSlot(i).hasItem();
          }).findFirst();
      }

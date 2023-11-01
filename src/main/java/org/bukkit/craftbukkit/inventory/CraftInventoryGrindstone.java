@@ -1,12 +1,10 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.world.IInventory;
+import net.minecraft.world. IInventory;
 import org.bukkit.inventory.GrindstoneInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MenuType;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class CraftInventoryGrindstone extends CraftResultInventory implements GrindstoneInventory {
 
