@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -146,15 +145,6 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
     boolean isSkullEmpty() {
         return profile == null && noteBlockSound == null;
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == SkullMeta.class;
     }
 
     @Override

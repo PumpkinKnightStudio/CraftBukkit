@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -47,15 +46,6 @@ class CraftMetaBookSigned extends CraftMetaBook implements BookMeta {
     @Override
     boolean isEmpty() {
         return super.isEmpty();
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == BookMeta.class;
     }
 
     @Override

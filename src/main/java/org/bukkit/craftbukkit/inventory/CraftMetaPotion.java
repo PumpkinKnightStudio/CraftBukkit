@@ -10,7 +10,6 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
@@ -142,15 +141,6 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
 
     boolean isPotionEmpty() {
         return (type.getType() == PotionType.UNCRAFTABLE) && !(hasCustomEffects() || hasColor());
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == PotionMeta.class;
     }
 
     @Override

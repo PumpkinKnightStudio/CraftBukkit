@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -50,15 +49,6 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
         if (instrument != null) {
             tag.putString(GOAT_HORN_INSTRUMENT.NBT, instrument.getKey().toString());
         }
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == MusicInstrumentMeta.class;
     }
 
     @Override

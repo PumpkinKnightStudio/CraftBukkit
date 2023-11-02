@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.meta.ColorableArmorMeta;
 
@@ -42,15 +41,6 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
 
     boolean isLeatherArmorEmpty() {
         return !(hasColor());
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == ColorableArmorMeta.class;
     }
 
     @Override

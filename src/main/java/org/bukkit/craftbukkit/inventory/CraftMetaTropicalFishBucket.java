@@ -5,7 +5,6 @@ import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftTropicalFish;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
@@ -81,15 +80,6 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (entityTag != null) {
             tag.put(ENTITY_TAG.NBT, entityTag);
         }
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == TropicalFishBucketMeta.class;
     }
 
     @Override

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
@@ -84,15 +83,6 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
 
             tag.put(ITEMS.NBT, list);
         }
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == BundleMeta.class;
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -198,15 +197,6 @@ public class CraftMetaBanner extends CraftMetaItem implements BannerMeta {
     @Override
     boolean isEmpty() {
         return super.isEmpty() && patterns.isEmpty() && base == null;
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == BannerMeta.class;
     }
 
     @Override

@@ -8,7 +8,6 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
@@ -79,15 +78,6 @@ public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBo
 
     boolean isBookEmpty() {
         return !(hasRecipes());
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == KnowledgeBookMeta.class;
     }
 
     @Override

@@ -12,7 +12,6 @@ import net.minecraft.nbt.NBTTagList;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific.To;
@@ -245,15 +244,6 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
         }
 
         compound.putIntArray(key.NBT, colorArray);
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == FireworkMeta.class;
     }
 
     @Override

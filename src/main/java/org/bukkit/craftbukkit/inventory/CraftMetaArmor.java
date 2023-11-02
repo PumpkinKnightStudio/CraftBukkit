@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -80,15 +79,6 @@ public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
             trimCompound.putString(TRIM_PATTERN.NBT, trim.getPattern().getKey().toString());
             itemTag.put(TRIM.NBT, trimCompound);
         }
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == ArmorMeta.class;
     }
 
     @Override

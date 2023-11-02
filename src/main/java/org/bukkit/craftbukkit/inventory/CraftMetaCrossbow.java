@@ -96,15 +96,6 @@ public class CraftMetaCrossbow extends CraftMetaItem implements CrossbowMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == CrossbowMeta.class;
-    }
-
-    @Override
     boolean isEmpty() {
         return super.isEmpty() && isCrossbowEmpty();
     }

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -93,15 +92,6 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     boolean isStewEmpty() {
         return !hasCustomEffects();
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == SuspiciousStewMeta.class;
     }
 
     @Override

@@ -107,15 +107,6 @@ public class CraftMetaSpawnEgg extends CraftMetaItem implements SpawnEggMeta {
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == SpawnEggMeta.class;
-    }
-
-    @Override
     boolean isEmpty() {
         return super.isEmpty() && isSpawnEggEmpty();
     }

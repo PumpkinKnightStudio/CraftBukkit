@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Axolotl;
@@ -79,15 +78,6 @@ public class CraftMetaAxolotlBucket extends CraftMetaItem implements AxolotlBuck
         if (entityTag != null) {
             tag.put(ENTITY_TAG.NBT, entityTag);
         }
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == AxolotlBucketMeta.class;
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.enchantments.Enchantment;
@@ -54,16 +53,6 @@ class CraftMetaEnchantedBook extends CraftMetaItem implements EnchantmentStorage
         applyEnchantments(enchantments, itemTag, STORED_ENCHANTMENTS);
     }
 
-    @Override
-    boolean applicableTo(Material type) {
-        if (!type.isItem()) {
-            return false;
-        }
-
-        return type.asItemType().getItemMetaClass() == EnchantmentStorageMeta.class;
-    }
-
-    @Override
     boolean isEmpty() {
         return super.isEmpty() && isEnchantedEmpty();
     }
