@@ -253,6 +253,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.view.AnvilView;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
@@ -1587,7 +1588,7 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static PrepareAnvilEvent callPrepareAnvilEvent(InventoryView view, ItemStack item) {
+    public static PrepareAnvilEvent callPrepareAnvilEvent(AnvilView view, ItemStack item) {
         PrepareAnvilEvent event = new PrepareAnvilEvent(view, CraftItemStack.asCraftMirror(item).clone());
         event.getView().getPlayer().getServer().getPluginManager().callEvent(event);
         event.getInventory().setItem(2, event.getResult());

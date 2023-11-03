@@ -519,22 +519,22 @@ public class CraftInventory implements Inventory {
                 return MenuType.HOPPER;
             }
             case 9 -> {
-                return MenuType.GENERIC_9x1;
+                return MenuType.GENERIC_9X1;
             }
             case 18 -> {
-                return MenuType.GENERIC_9x2;
+                return MenuType.GENERIC_9X2;
             }
             case 27 -> {
-                return MenuType.GENERIC_9x3;
+                return MenuType.GENERIC_9X3;
             }
             case 36 -> {
-                return MenuType.GENERIC_9x4;
+                return MenuType.GENERIC_9X4;
             }
             case 45 -> {
-                return MenuType.GENERIC_9x5;
+                return MenuType.GENERIC_9X5;
             }
             case 54 -> {
-                return MenuType.GENERIC_9x6;
+                return MenuType.GENERIC_9X6;
             }
             default -> {
                 throw new IllegalStateException("Unable to get MenuType from a craft inventory of this size");
