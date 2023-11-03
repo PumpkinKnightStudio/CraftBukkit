@@ -8,7 +8,9 @@ import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftPotionEffectType extends PotionEffectType {
 
@@ -47,9 +49,6 @@ public class CraftPotionEffectType extends PotionEffectType {
             this.name = key.toString();
         }
         this.id = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT).getId(handle);
-        if (id > 33) {
-            ID_MAP.put(id, this);
-        }
     }
 
     @Override
@@ -64,6 +63,12 @@ public class CraftPotionEffectType extends PotionEffectType {
     @Override
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    @Override
+    public PotionEffect createEffect(int duration, int amplifier) {
+        return new PotionEffect(this, isInstant() ? 1 : (int) (duration * getDurationModifier()), amplifier);
     }
 
     @Override

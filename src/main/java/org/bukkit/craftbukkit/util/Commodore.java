@@ -62,7 +62,6 @@ public class Commodore {
     ));
 
     static {
-        Predicate<String> enumOrNormalMap = eq("java/util/EnumMap").or(eq("java/util/Map"));
         // Need to do it in such a way for maven to correctly insert the version in the package
         String imposterMapString = "org/bukkit/craftbukkit/legacy/ImposterEnumMap";
         String imposterMapReturn = "L" + imposterMapString + ";";
