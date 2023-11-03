@@ -63,7 +63,7 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
     @Nullable
     @Override
     public MenuType<?> getMenuType() {
-        return MenuType.GENERIC_9x6;
+        return MenuType.GENERIC_9X6;
     }
 
     @Override

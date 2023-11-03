@@ -1911,12 +1911,12 @@ public final class CraftServer implements Server {
         final CraftInventoryBuilder builder = CraftInventoryBuilder.INSTANCE;
         Inventory inventory = null;
         switch (size) {
-            case 9 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x1);
-            case 18 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x2);
-            case 27 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x3);
-            case 36 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x4);
-            case 45 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x5);
-            case 54 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9x6);
+            case 9 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X1);
+            case 18 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X2);
+            case 27 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X3);
+            case 36 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X4);
+            case 45 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X5);
+            case 54 -> inventory = builder.createInventory(owner, MenuType.GENERIC_9X6);
         }
         Preconditions.checkArgument(inventory != null, "Unable to create inventory of size %d".formatted(size));
         return inventory;
