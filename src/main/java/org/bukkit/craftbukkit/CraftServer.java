@@ -168,8 +168,6 @@ import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftBlastingRecipe;
 import org.bukkit.craftbukkit.inventory.CraftCampfireRecipe;
 import org.bukkit.craftbukkit.inventory.CraftFurnaceRecipe;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.bukkit.craftbukkit.inventory.CraftItemCraftResult;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
