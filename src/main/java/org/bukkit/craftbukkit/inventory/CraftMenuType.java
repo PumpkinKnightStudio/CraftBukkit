@@ -67,11 +67,11 @@ public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
     @Nullable
     public static String getDefaultTitle(MenuType<?> type) {
         String translationKey = null;
-        if (type == MenuType.GENERIC_9x1 || type == MenuType.GENERIC_9x2 || type == MenuType.GENERIC_9x3) {
+        if (type == MenuType.GENERIC_9X1 || type == MenuType.GENERIC_9X2 || type == MenuType.GENERIC_9X3) {
             translationKey = "container.chest";
-        } else if (type == MenuType.GENERIC_9x4 || type == MenuType.GENERIC_9x5 || type == MenuType.GENERIC_9x6) {
+        } else if (type == MenuType.GENERIC_9X4 || type == MenuType.GENERIC_9X5 || type == MenuType.GENERIC_9X6) {
             translationKey = "container.chestDouble";
-        } else if (type == MenuType.GENERIC_3x3) {
+        } else if (type == MenuType.GENERIC_3X3) {
             translationKey = "container.dispenser";
         } else if (type == MenuType.ANVIL) {
             translationKey = "container.repair";
