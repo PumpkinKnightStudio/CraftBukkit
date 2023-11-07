@@ -441,6 +441,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Override
     public void openInventory(InventoryView inventory) {
+        Preconditions.checkArgument(inventory.getPlayer() == this, "The inventory view attempted to open, but failed because it did not belong to the player it was opened with");
         if (!(getHandle() instanceof EntityPlayer)) return; // TODO: NPC support?
         if (((EntityPlayer) getHandle()).connection == null) return;
         if (getHandle().containerMenu != getHandle().inventoryMenu) {
