@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
+import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
 import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import net.minecraft.world.level.block.state.IBlockData;
@@ -36,20 +37,21 @@ public final class CraftContainerBuilder {
 
     public CraftContainerBuilder() {
         this.builders = new HashMap<>();
-        this.builders.put(MenuType.CRAFTING, ContainerBuilder.locationBound(ContainerWorkbench::new));
-        this.builders.put(MenuType.FURNACE, ContainerBuilder.tileEntity(TileEntityFurnaceFurnace::new, Blocks.FURNACE));
-        this.builders.put(MenuType.SMOKER, ContainerBuilder.tileEntity(TileEntitySmoker::new, Blocks.SMOKER));
+        this.builders.put(MenuType.ANVIL, ContainerBuilder.locationBound(ContainerAnvil::new));
         this.builders.put(MenuType.BEACON, ContainerBuilder.tileEntity(TileEntityBeacon::new, Blocks.BEACON));
         this.builders.put(MenuType.BLAST_FURNACE, ContainerBuilder.tileEntity(TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));
+        this.builders.put(MenuType.BREWING_STAND, ContainerBuilder.tileEntity(TileEntityBrewingStand::new, Blocks.BREWING_STAND));
+        this.builders.put(MenuType.CARTOGRAPHY_TABLE, ContainerBuilder.locationBound(ContainerCartography::new));
+        this.builders.put(MenuType.CRAFTING, ContainerBuilder.locationBound(ContainerWorkbench::new));
         this.builders.put(MenuType.ENCHANTMENT, (i, playerinventory, position) -> {
             return new TileInventory((syncId, inventory, human) -> {
                 return ContainerBuilder.locationBound(ContainerEnchantTable::new).build(syncId, inventory, position);
             }, IChatBaseComponent.empty()).createMenu(i, playerinventory, playerinventory.player);
         });
-        this.builders.put(MenuType.CARTOGRAPHY_TABLE, ContainerBuilder.locationBound(ContainerCartography::new));
-        this.builders.put(MenuType.ANVIL, ContainerBuilder.locationBound(ContainerAnvil::new));
+        this.builders.put(MenuType.FURNACE, ContainerBuilder.tileEntity(TileEntityFurnaceFurnace::new, Blocks.FURNACE));
         this.builders.put(MenuType.GRINDSTONE, ContainerBuilder.locationBound(ContainerGrindstone::new));
         this.builders.put(MenuType.SMITHING, ContainerBuilder.locationBound(ContainerSmithing::new));
+        this.builders.put(MenuType.SMOKER, ContainerBuilder.tileEntity(TileEntitySmoker::new, Blocks.SMOKER));
     }
 
     public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory) {

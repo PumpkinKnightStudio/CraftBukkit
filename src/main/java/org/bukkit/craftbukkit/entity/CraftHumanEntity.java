@@ -342,7 +342,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Nullable
     @Override
-    public InventoryView openBlock(@NotNull final Location location) {
+    public InventoryView openContainer(@NotNull final Location location) {
         Preconditions.checkArgument(location != null, "A container can not be opened at a null location");
         final Block block = location.getBlock();
         if (block.getType().isAir()) {
@@ -419,7 +419,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             location = getLocation();
         }
         if (!force) {
-            return openBlock(location);
+            return openContainer(location);
         }
         InventoryView view = MenuType.CRAFTING.create(this, CraftMenuType.getDefaultTitle(MenuType.CRAFTING));
         openInventory(view);
@@ -432,7 +432,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             location = getLocation();
         }
         if (!force) {
-            return openBlock(location);
+            return openContainer(location);
         }
         InventoryView view = MenuType.ENCHANTMENT.create(this, CraftMenuType.getDefaultTitle(MenuType.ENCHANTMENT));
         openInventory(view);
