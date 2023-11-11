@@ -9,6 +9,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MenuType;
 import org.jetbrains.annotations.Nullable;
@@ -171,8 +172,9 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Nullable
     @Override
-    public MenuType<?> getMenuType() {
-        return null;
+    public MenuType<InventoryView> getMenuType() {
+        // Player Inventory is client side, but we can open a 9x4 to map the actual slots best as possible
+        return MenuType.GENERIC_9X4;
     }
 
     @Override
