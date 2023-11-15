@@ -49,7 +49,7 @@ public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
         Preconditions.checkArgument(humanEntity instanceof CraftHumanEntity, "This human entity must be a CraftHumanEntity");
         Preconditions.checkArgument(((CraftHumanEntity) humanEntity).getHandle() instanceof EntityPlayer);
         final EntityPlayer player = (EntityPlayer) ((CraftHumanEntity) humanEntity).getHandle();
-        final Container container = CraftContainerBuilder.INSTANCE.create(this, player.nextContainerCounter(), player.getInventory(), CraftLocation.toBlockPosition(location), title);
+        final Container container = CraftContainerBuilder.INSTANCE.create(this, player.nextContainerCounter(), player.getInventory(), location, title);
         container.checkReachable = false;
         return (T) container.getBukkitView();
     }

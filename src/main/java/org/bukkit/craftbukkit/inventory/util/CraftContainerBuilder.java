@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.ITileInventory;
@@ -19,14 +20,19 @@ import net.minecraft.world.inventory.ContainerSmithing;
 import net.minecraft.world.inventory.ContainerWorkbench;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
 import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
+import net.minecraft.world.level.block.entity.TileEntityContainer;
 import net.minecraft.world.level.block.entity.TileEntityFurnaceFurnace;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
 import net.minecraft.world.level.block.state.IBlockData;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.inventory.MenuType;
 
 public final class CraftContainerBuilder {
@@ -55,16 +61,28 @@ public final class CraftContainerBuilder {
     }
 
     public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory) {
-        return create(type, syncId, inventory, inventory.player.blockPosition());
+        final ContainerBuilder builder = builders.get(type);
+        return builder == null ? type.getHandle().create(syncId, inventory) : builder.build(syncId, inventory, inventory.player.blockPosition());
     }
 
-    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, BlockPosition position) {
-        final var function = builders.get(type);
+    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, Location location) {
+        final ContainerBuilder builder = builders.get(type);
         final Container container;
-        if (function == null) {
-            container = type.getHandle().create(syncId, inventory);
+        if (builder == null) {
+            final CraftWorld world = (CraftWorld) location.getWorld();
+            TileEntity entity = world.getHandle().getBlockEntity(CraftLocation.toBlockPosition(location));
+            Container temp = null;
+            if (entity instanceof TileEntityContainer entityContainer) {
+                temp = entityContainer.createMenu(syncId, inventory, inventory.player);
+            }
+
+            if (temp != null && temp.getType() == type.getHandle()) {
+                container = temp;
+            } else {
+                container = type.getHandle().create(syncId, inventory);
+            }
         } else {
-            container = function.build(syncId, inventory, position);
+            container = builder.build(syncId, inventory, CraftLocation.toBlockPosition(location));
         }
         return container;
     }
@@ -75,8 +93,8 @@ public final class CraftContainerBuilder {
         return container;
     }
 
-    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, BlockPosition position, String title) {
-        final Container container = create(type, syncId, inventory, position);
+    public Container create(final CraftMenuType<?> type, int syncId, PlayerInventory inventory, Location location, String title) {
+        final Container container = create(type, syncId, inventory, location);
         container.setTitle(CraftChatMessage.fromStringOrNull(title));
         return container;
     }
