@@ -39,14 +39,14 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     @Override
     @Deprecated
     public String getRenameText() {
-        onViewers((cav) -> this.renameText = cav.getRenameText());
+        syncWithArbitraryViewValue((cav) -> this.renameText = cav.getRenameText());
         return this.renameText;
     }
 
     @Override
     @Deprecated
     public int getRepairCostAmount() {
-        onViewers((cav) -> this.costAmount = cav.getRepairItemCost());
+        syncWithArbitraryViewValue((cav) -> this.costAmount = cav.getRepairItemCost());
         return this.costAmount;
     }
 
@@ -54,13 +54,13 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     @Deprecated
     public void setRepairCostAmount(int amount) {
         this.repairCost = amount;
-        onViewers((cav) -> cav.setRepairItemCost(amount));
+        syncViews((cav) -> cav.setRepairItemCost(amount));
     }
 
     @Override
     @Deprecated
     public int getRepairCost() {
-        onViewers((cav) -> this.repairCost = cav.getRepairCost());
+        syncWithArbitraryViewValue((cav) -> this.repairCost = cav.getRepairCost());
         return this.repairCost;
     }
 
@@ -68,13 +68,13 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     @Deprecated
     public void setRepairCost(int i) {
         this.repairCost = i;
-        onViewers((cav) -> cav.setRepairCost(i));
+        syncViews((cav) -> cav.setRepairCost(i));
     }
 
     @Override
     @Deprecated
     public int getMaximumRepairCost() {
-        onViewers((cav) -> this.maximumRepairCost = cav.getMaximumRepairCost());
+        syncWithArbitraryViewValue((cav) -> this.maximumRepairCost = cav.getMaximumRepairCost());
         return this.maximumRepairCost;
     }
 
@@ -89,7 +89,7 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     public void setMaximumRepairCost(int levels) {
         Preconditions.checkArgument(levels >= 0, "Maximum repair cost must be positive (or 0)");
         this.maximumRepairCost = levels;
-        onViewers((cav) -> cav.setMaximumRepairCost(levels));
+        syncViews((cav) -> cav.setMaximumRepairCost(levels));
     }
 
     public boolean isRepairCostSet() {
@@ -105,11 +105,24 @@ public class CraftInventoryAnvil extends CraftResultInventory implements AnvilIn
     }
 
     // used to lazily update and apply values from the view to the inventory
-    private void onViewers(Consumer<CraftAnvilView> consumer) {
+    private void syncViews(Consumer<CraftAnvilView> consumer) {
         for (HumanEntity viewer : getViewers()) {
             if (viewer.getOpenInventory() instanceof CraftAnvilView cav) {
                 consumer.accept(cav);
             }
+        }
+    }
+
+    /*
+     * This method provides the best effort guess on whatever the value could be
+     * It is possible these values are wrong given there are more than 1 views of this inventory,
+     * however it is a limitation seeing as these anvil values are supposed to be in the Container
+     * not the inventory.
+     */
+    private void syncWithArbitraryViewValue(Consumer<CraftAnvilView> consumer) {
+        final HumanEntity entity = getViewers().get(0);
+        if (entity != null && entity.getOpenInventory() instanceof CraftAnvilView cav) {
+            consumer.accept(cav);
         }
     }
 }
