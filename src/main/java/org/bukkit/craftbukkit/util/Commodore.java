@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -48,6 +49,20 @@ public class Commodore
             "org/bukkit/inventory/ItemStack ()I getTypeId",
             "org/bukkit/inventory/ItemStack (I)V setTypeId"
     ) );
+    private static final List<Predicate<String>> CLASS_TO_INTERFACE = new ArrayList<>();
+
+    static {
+        // Change Classes to interface
+        classToInterface(eq("org/bukkit/inventory/InventoryView"));
+    }
+
+    public static Predicate<String> eq(String value) {
+        return value::equals;
+    }
+
+    public static void classToInterface(Predicate<String> aClass) {
+        CLASS_TO_INTERFACE.add(aClass);
+    }
 
     public static void main(String[] args)
     {
@@ -301,6 +316,18 @@ public class Commodore
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf)
                     {
+                        for (Predicate<String> pre: CLASS_TO_INTERFACE) {
+                            if(!pre.test(owner)) {
+                                continue;
+                            }
+
+                            if (opcode == Opcodes.INVOKEVIRTUAL) {
+                                opcode = Opcodes.INVOKEINTERFACE;
+                            }
+
+                            itf = true;
+                            break;
+                        }
                         // SPIGOT-4496
                         if ( owner.equals( "org/bukkit/map/MapView" ) && name.equals( "getId" ) && desc.equals( "()S" ) )
                         {
