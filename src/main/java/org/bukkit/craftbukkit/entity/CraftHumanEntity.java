@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -66,6 +68,7 @@ import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.view.MerchantView;
 import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
@@ -472,14 +475,21 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
-    public InventoryView openMerchant(Villager villager, boolean force) {
+    public <T extends InventoryView> void openInventory(@NotNull final MenuType<T> menuType, @NotNull String title, @NotNull final Consumer<T> consumer) {
+        final T view = menuType.create(this, title);
+        consumer.accept(view);
+        openInventory(view);
+    }
+
+    @Override
+    public MerchantView openMerchant(Villager villager, boolean force) {
         Preconditions.checkNotNull(villager, "villager cannot be null");
 
         return this.openMerchant((Merchant) villager, force);
     }
 
     @Override
-    public InventoryView openMerchant(Merchant merchant, boolean force) {
+    public MerchantView openMerchant(Merchant merchant, boolean force) {
         Preconditions.checkNotNull(merchant, "merchant cannot be null");
 
         if (!force && merchant.isTrading()) {
@@ -508,7 +518,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         mcMerchant.setTradingPlayer(this.getHandle());
         mcMerchant.openTradingScreen(this.getHandle(), name, level);
 
-        return this.getHandle().containerMenu.getBukkitView();
+        return (MerchantView) this.getHandle().containerMenu.getBukkitView();
     }
 
     @Override
