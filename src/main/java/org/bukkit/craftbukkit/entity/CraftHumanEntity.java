@@ -68,6 +68,7 @@ import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.view.EnchantingView;
 import org.bukkit.inventory.view.MerchantView;
 import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.Permission;
@@ -430,16 +431,16 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     }
 
     @Override
-    public InventoryView openEnchanting(Location location, boolean force) {
+    public EnchantingView openEnchanting(Location location, boolean force) {
         if(location == null) {
             location = getLocation();
         }
         if (!force) {
-            return openContainer(location);
+            return (EnchantingView) openContainer(location);
         }
         InventoryView view = MenuType.ENCHANTMENT.create(this, CraftMenuType.getDefaultTitle(MenuType.ENCHANTMENT));
         openInventory(view);
-        return view;
+        return (EnchantingView) view;
     }
 
     @Override
