@@ -97,7 +97,7 @@ public class CraftInventoryBuilder {
         containers.put(MenuType.ANVIL, (int syncId, PlayerInventory playerinventory, CraftInventory anvil) -> new ContainerAnvil(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) anvil.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) anvil).getResultInventory()));
 
         // no custom inventory needed here as a beacon won't work even if it is done.
-        inventories.put(MenuType.BEACON, (holder, type) -> new CraftInventoryBeacon(new InventorySubcontainer(1)));
+        inventories.put(MenuType.BEACON, (holder, type) -> new CraftInventoryBeacon(new InventorySubcontainer(1, holder)));
         containers.put(MenuType.BEACON, (int syncId, PlayerInventory playerinventory, CraftInventory beacon) -> new ContainerBeacon(syncId, playerinventory, new ContainerProperties(3), ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition())));
 
         inventories.put(MenuType.BLAST_FURNACE, InventoryBuilder.tile(CraftInventoryFurnace::new, TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));
@@ -121,6 +121,8 @@ public class CraftInventoryBuilder {
         inventories.put(MenuType.HOPPER, InventoryBuilder.generic(5, 1));
         containers.put(MenuType.HOPPER, (int syncId, PlayerInventory playerinventory, CraftInventory hopper) -> new ContainerHopper(syncId, playerinventory, hopper.getInventory()));
 
+        // Creating the CraftInventoryLectern is pretty unavoidable unless we don't want it to be functional
+        // this can be decoupled if LecternInventory ever becomes public static
         inventories.put(MenuType.LECTERN, (holder, type) -> new CraftInventoryLectern(new TileEntityLectern(BlockPosition.ZERO, Blocks.LECTERN.defaultBlockState()).bookAccess));
         containers.put(MenuType.LECTERN, (int syncId, PlayerInventory playerinventory, CraftInventory lectern) -> new ContainerLectern(syncId, lectern.getInventory(), new ContainerProperties(1), playerinventory));
 
@@ -128,7 +130,7 @@ public class CraftInventoryBuilder {
         containers.put(MenuType.LOOM, (int syncId, PlayerInventory playerinventory, CraftInventory loom) -> new ContainerLoom(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), loom.getInventory(), ((CraftInventoryLoom) loom).getResultInventory()));
 
         // skip MenuType.MERCHANT, this simply can't be virtually created.
-        inventories.put(MenuType.SHULKER_BOX, (holder, type) -> new CraftInventory(new InventorySubcontainer(27)));
+        inventories.put(MenuType.SHULKER_BOX, (holder, type) -> new CraftInventory(new InventorySubcontainer(27, holder)));
         containers.put(MenuType.SHULKER_BOX, (int syncId, PlayerInventory playerinventory, CraftInventory shulker) -> new ContainerShulkerBox(syncId, playerinventory, shulker.getInventory()));
 
         inventories.put(MenuType.SMITHING, (holder, type) -> new CraftInventorySmithing(null, new CraftChangeDetectingSubContainer(3, holder), new InventoryCraftResult()));
@@ -170,7 +172,7 @@ public class CraftInventoryBuilder {
         Inventory createInventory(InventoryHolder holder, MenuType<?> type);
 
         static InventoryBuilder generic(int columns, int rows) {
-            return (holder, type) -> new CraftInventory(new InventorySubcontainer(rows * columns));
+            return (holder, type) -> new CraftInventory(new InventorySubcontainer(rows * columns, holder));
         }
 
         static InventoryBuilder generic(int rows) {
