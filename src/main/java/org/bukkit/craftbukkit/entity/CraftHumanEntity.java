@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
