@@ -20,6 +20,7 @@ import net.minecraft.world.inventory.ContainerSmithing;
 import net.minecraft.world.inventory.ContainerWorkbench;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
@@ -43,6 +44,7 @@ public final class CraftContainerBuilder {
 
     public CraftContainerBuilder() {
         this.builders = new HashMap<>();
+        this.builders.put(MenuType.CRAFTER_3x3, ContainerBuilder.tileEntity(CrafterBlockEntity::new, Blocks.CRAFTER));
         this.builders.put(MenuType.ANVIL, ContainerBuilder.locationBound(ContainerAnvil::new));
         this.builders.put(MenuType.BEACON, ContainerBuilder.tileEntity(TileEntityBeacon::new, Blocks.BEACON));
         this.builders.put(MenuType.BLAST_FURNACE, ContainerBuilder.tileEntity(TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));

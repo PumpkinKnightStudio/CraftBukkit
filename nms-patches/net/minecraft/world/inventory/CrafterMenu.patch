@@ -1,12 +1,13 @@
 --- a/net/minecraft/world/inventory/CrafterMenu.java
 +++ b/net/minecraft/world/inventory/CrafterMenu.java
-@@ -8,8 +8,27 @@
+@@ -8,31 +8,61 @@
  import net.minecraft.world.level.World;
  import net.minecraft.world.level.block.CrafterBlock;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafter;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftTransientCraftingContainer;
 +// CraftBukkit end
 +
  public class CrafterMenu extends Container implements ICrafting {
@@ -24,11 +25,46 @@
 +        bukkitEntity = new CraftInventoryView(this.player.getBukkitEntity(), inventory, this);
 +        return bukkitEntity;
 +    }
++    public CrafterMenu(int i, PlayerInventory playerinventory, InventoryCrafting inventorycrafting, IContainerProperties icontainerproperties) {
++        this(i, playerinventory, inventorycrafting, new InventoryCraftResult(), icontainerproperties);
++    }
 +    // CraftBukkit end
      protected static final int SLOT_COUNT = 9;
      private static final int INV_SLOT_START = 9;
      private static final int INV_SLOT_END = 36;
-@@ -116,6 +135,7 @@
+     private static final int USE_ROW_SLOT_START = 36;
+     private static final int USE_ROW_SLOT_END = 45;
+-    private final InventoryCraftResult resultContainer = new InventoryCraftResult();
++    private final InventoryCraftResult resultContainer; // CraftBukkit move initialize in constructor
+     private final IContainerProperties containerData;
+     private final EntityHuman player;
+     private final InventoryCrafting container;
+ 
+     public CrafterMenu(int i, PlayerInventory playerinventory) {
+         super(Containers.CRAFTER_3x3, i);
++        this.resultContainer = new InventoryCraftResult(); // CraftBukkit move initialize in constructor
+         this.player = playerinventory.player;
+         this.containerData = new ContainerProperties(10);
+         this.container = new TransientCraftingContainer(this, 3, 3);
+         this.addSlots(playerinventory);
+     }
+ 
+-    public CrafterMenu(int i, PlayerInventory playerinventory, InventoryCrafting inventorycrafting, IContainerProperties icontainerproperties) {
++    // CraftBukkit add parameter
++    public CrafterMenu(int i, PlayerInventory playerinventory, InventoryCrafting inventorycrafting, InventoryCraftResult resultInventory, IContainerProperties icontainerproperties) {
+         super(Containers.CRAFTER_3x3, i);
++        this.resultContainer = resultInventory;
+         this.player = playerinventory.player;
+         this.containerData = icontainerproperties;
+         this.container = inventorycrafting;
++        if (container instanceof CraftTransientCraftingContainer craftContainer) {
++            craftContainer.setContainer(this, player);
++        }
++        // CraftBukkit end
+         checkContainerSize(inventorycrafting, 9);
+         inventorycrafting.startOpen(playerinventory.player);
+         this.addSlots(playerinventory);
+@@ -116,6 +146,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {

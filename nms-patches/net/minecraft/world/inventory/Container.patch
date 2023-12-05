@@ -173,7 +173,7 @@
                  }
              } else {
                  int j2;
-@@ -609,13 +702,14 @@
+@@ -609,13 +703,14 @@
              ItemStack itemstack = this.getCarried();
  
              if (!itemstack.isEmpty()) {
@@ -189,7 +189,7 @@
              }
          }
  
-@@ -832,6 +926,11 @@
+@@ -832,6 +927,11 @@
      }
  
      public ItemStack getCarried() {
