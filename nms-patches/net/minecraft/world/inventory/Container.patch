@@ -172,8 +172,8 @@
 +                    // CraftBukkit end
                  }
              } else {
-                 Slot slot2;
-@@ -605,13 +699,14 @@
+                 int j2;
+@@ -609,13 +702,14 @@
              ItemStack itemstack = this.getCarried();
  
              if (!itemstack.isEmpty()) {
@@ -189,7 +189,7 @@
              }
          }
  
-@@ -828,6 +923,11 @@
+@@ -832,6 +926,11 @@
      }
  
      public ItemStack getCarried() {
