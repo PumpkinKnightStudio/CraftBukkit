@@ -8,7 +8,7 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryGrindstone;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
 +
@@ -52,9 +52,9 @@
 -                ContainerGrindstone.this.slotsChanged(this);
 -            }
 -        };
-+        if (repairSlots instanceof CraftChangeDetectingSubContainer craft) {
++        if (repairSlots instanceof CraftMultiInventorySubContainer craft) {
 +            this.repairSlots = craft;
-+            craft.setContainer(this::slotsChanged, containeraccess);
++            craft.addInstance(playerinventory.player, this::slotsChanged);
 +        } else {
 +            this.repairSlots = new InventorySubcontainer(2) {
 +                @Override

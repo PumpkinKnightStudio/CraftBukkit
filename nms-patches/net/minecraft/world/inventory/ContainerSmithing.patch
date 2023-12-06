@@ -6,7 +6,7 @@
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import net.minecraft.world.InventorySubcontainer;
 +// CraftBukkit end
 +
  public class ContainerSmithing extends ContainerAnvilAbstract {
@@ -18,7 +18,7 @@
      private final List<RecipeHolder<SmithingRecipe>> recipes;
 +    // CraftBukkit start
 +    private CraftInventoryView bukkitEntity;
-+    public ContainerSmithing(int i , PlayerInventory playerinventory, ContainerAccess containeracess, CraftChangeDetectingSubContainer inputSlots, InventoryCraftResult resultSlots) {
++    public ContainerSmithing(int i , PlayerInventory playerinventory, ContainerAccess containeracess, InventorySubcontainer inputSlots, InventoryCraftResult resultSlots) {
 +        super(Containers.SMITHING, i, playerinventory, containeracess, inputSlots, resultSlots);
 +        this.level = playerinventory.player.level();
 +        this.recipes = this.level.getRecipeManager().getAllRecipesFor(Recipes.SMITHING);

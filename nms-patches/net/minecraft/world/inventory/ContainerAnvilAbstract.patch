@@ -5,7 +5,7 @@
  import net.minecraft.world.item.ItemStack;
  import net.minecraft.world.level.block.state.IBlockData;
 +// CraftBukkit start
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 +// CraftBukkit end
  
  public abstract class ContainerAnvilAbstract extends Container {
@@ -19,20 +19,22 @@
      private final int resultSlotIndex;
  
      protected abstract boolean mayPickup(EntityHuman entityhuman, boolean flag);
-@@ -27,12 +30,29 @@
+@@ -27,12 +30,31 @@
  
      protected abstract boolean isValidBlock(IBlockData iblockdata);
  
 -    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess) {
 +    // CraftBukkit start -> add constructor for CraftInventoryBuilder
-+    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess, CraftChangeDetectingSubContainer inputSlots, InventoryCraftResult resultSlots) {
++    public ContainerAnvilAbstract(@Nullable Containers<?> containers, int i, PlayerInventory playerinventory, ContainerAccess containeraccess, InventorySubcontainer inputSlots, InventoryCraftResult resultSlots) {
          super(containers, i);
          this.access = containeraccess;
          this.player = playerinventory.player;
          ItemCombinerMenuSlotDefinition itemcombinermenuslotdefinition = this.createInputSlotDefinitions();
 +        this.resultSlots = new InventoryCraftResult();
 +        this.inputSlots = inputSlots;
-+        inputSlots.setContainer(this::slotsChanged, containeraccess);
++        if (this.inputSlots instanceof CraftMultiInventorySubContainer cmisc) {
++            cmisc.addInstance(player, this::slotsChanged);
++        }
 +        this.inputSlotIndexes = itemcombinermenuslotdefinition.getInputSlotIndexes();
 +        this.resultSlotIndex = itemcombinermenuslotdefinition.getResultSlotIndex();
 +        this.createInputSlots(itemcombinermenuslotdefinition);
@@ -50,7 +52,7 @@
          this.inputSlots = this.createContainer(itemcombinermenuslotdefinition.getNumOfInputSlots());
          this.inputSlotIndexes = itemcombinermenuslotdefinition.getInputSlotIndexes();
          this.resultSlotIndex = itemcombinermenuslotdefinition.getResultSlotIndex();
-@@ -124,6 +144,7 @@
+@@ -124,6 +146,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {

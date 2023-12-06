@@ -7,7 +7,7 @@
 +// CraftBukkit start
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftStonecutterView;
 +import org.bukkit.entity.Player;
 +import java.util.Objects;
@@ -71,8 +71,8 @@
 +            }
 +            // CraftBukkit end
 +        });
-+        if (this.container instanceof CraftChangeDetectingSubContainer changer) {
-+            changer.setContainer(this::slotsChanged, containeraccess);
++        if (this.container instanceof CraftMultiInventorySubContainer changer) {
++            changer.addInstance(playerinventory.player, this::slotsChanged);
 +        }
 +        this.resultContainer = Objects.requireNonNullElseGet(resultContainer, InventoryCraftResult::new);
 +        // CraftBukkit end

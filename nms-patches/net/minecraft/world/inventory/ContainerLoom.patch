@@ -8,7 +8,7 @@
 +import java.util.Objects;
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryLoom;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftLoomView;
 +import org.bukkit.entity.Player;
 +// CraftBukkit end
@@ -68,8 +68,8 @@
 +            }
 +            // CraftBukkit end
 +        });
-+        if (this.inputContainer instanceof CraftChangeDetectingSubContainer changer) {
-+            changer.setContainer(this::slotsChanged, containeraccess);
++        if (this.inputContainer instanceof CraftMultiInventorySubContainer changer) {
++            changer.addInstance(playerinventory.player, this::slotsChanged);
 +        }
 +        this.outputContainer = Objects.requireNonNullElseGet(resultContainer, () -> new InventorySubcontainer(1) {
              @Override

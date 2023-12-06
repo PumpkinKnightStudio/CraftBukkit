@@ -8,8 +8,8 @@
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCartography;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftCraftingChangeDetectingSubContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiCraftResultContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 +import org.bukkit.entity.Player;
 +import java.util.Objects;
 +// CraftBukkit end
@@ -63,8 +63,8 @@
 +            }
 +            // CraftBukkit end
 +        });
-+        if (this.container instanceof CraftChangeDetectingSubContainer changer) {
-+            changer.setContainer(this::slotsChanged, containeraccess);
++        if (this.container instanceof CraftMultiInventorySubContainer changer) {
++            changer.addInstance(playerinventory.player, this::slotsChanged);
 +        }
 +        this.resultContainer = Objects.requireNonNullElseGet(resultContainer, () -> new InventoryCraftResult() {
              @Override
@@ -81,8 +81,8 @@
 +            }
 +            // CraftBukkit end
 +        });
-+        if (this.resultContainer instanceof CraftCraftingChangeDetectingSubContainer changer) {
-+            changer.setContainer(this::slotsChanged, containeraccess);
++        if (this.resultContainer instanceof CraftMultiCraftResultContainer changer) {
++            changer.addInstance(playerinventory.player, this::slotsChanged);
 +        }
 +        // CraftBukkit end
          this.access = containeraccess;

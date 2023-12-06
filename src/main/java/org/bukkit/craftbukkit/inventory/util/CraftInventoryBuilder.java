@@ -33,7 +33,6 @@ import net.minecraft.world.inventory.InventoryCraftResult;
 import net.minecraft.world.inventory.InventoryCrafting;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
 import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
@@ -57,8 +56,8 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryLoom;
 import org.bukkit.craftbukkit.inventory.CraftInventorySmithing;
 import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
-import org.bukkit.craftbukkit.inventory.subcontainer.CraftChangeDetectingSubContainer;
-import org.bukkit.craftbukkit.inventory.subcontainer.CraftCraftingChangeDetectingSubContainer;
+import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiCraftResultContainer;
+import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiInventorySubContainer;
 import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiTransientCraftingContainer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
@@ -100,8 +99,8 @@ public class CraftInventoryBuilder {
         inventories.put(MenuType.CRAFTER_3X3, (holder, type) -> new CraftInventoryCrafter(new CraftMultiTransientCraftingContainer(3, 3), new InventoryCraftResult()));
         containers.put(MenuType.CRAFTER_3X3, (int syncId, PlayerInventory playerinventory, CraftInventory crafter) -> new CrafterMenu(syncId, playerinventory, (InventoryCrafting) ((CraftInventoryCrafter) crafter).getIngredientsInventory(), (InventoryCraftResult) ((CraftInventoryCrafter) crafter).getResultInventory(), new ContainerProperties(10)));
 
-        inventories.put(MenuType.ANVIL, (holder, type) -> new CraftInventoryAnvil(null, new CraftChangeDetectingSubContainer(2, holder), new InventoryCraftResult()));
-        containers.put(MenuType.ANVIL, (int syncId, PlayerInventory playerinventory, CraftInventory anvil) -> new ContainerAnvil(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) anvil.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) anvil).getResultInventory()));
+        inventories.put(MenuType.ANVIL, (holder, type) -> new CraftInventoryAnvil(null, new CraftMultiInventorySubContainer(2, holder), new InventoryCraftResult()));
+        containers.put(MenuType.ANVIL, (int syncId, PlayerInventory playerinventory, CraftInventory anvil) -> new ContainerAnvil(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftMultiInventorySubContainer) anvil.getInventory(), (InventoryCraftResult) ((CraftInventoryAnvil) anvil).getResultInventory()));
 
         // no custom inventory needed here as a beacon won't work even if it is done.
         inventories.put(MenuType.BEACON, (holder, type) -> new CraftInventoryBeacon(new InventorySubcontainer(1, holder)));
@@ -116,14 +115,14 @@ public class CraftInventoryBuilder {
         inventories.put(MenuType.CRAFTING, (holder, type) -> new CraftInventoryCrafting(new CraftMultiTransientCraftingContainer(3, 3), new InventoryCraftResult()));
         containers.put(MenuType.CRAFTING, (int syncId, PlayerInventory playerinventory, CraftInventory craft) -> new ContainerWorkbench(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftMultiTransientCraftingContainer) craft.getInventory(), (InventoryCraftResult) ((CraftInventoryCrafting) craft).getResultInventory()));
 
-        inventories.put(MenuType.ENCHANTMENT, (holder, type) -> new CraftInventoryEnchanting(new CraftChangeDetectingSubContainer(2, holder)));
+        inventories.put(MenuType.ENCHANTMENT, (holder, type) -> new CraftInventoryEnchanting(new CraftMultiInventorySubContainer(2, holder)));
         containers.put(MenuType.ENCHANTMENT, (int syncId, PlayerInventory playerinventory, CraftInventory enchanting) -> new ContainerEnchantTable(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (InventorySubcontainer) enchanting.getInventory()));
 
         inventories.put(MenuType.FURNACE, InventoryBuilder.tile(CraftInventoryFurnace::new, TileEntityFurnaceFurnace::new, Blocks.FURNACE));
         containers.put(MenuType.FURNACE, VirtualContainerBuilder.TILE);
 
-        inventories.put(MenuType.GRINDSTONE, (holder, type) -> new CraftInventoryGrindstone(new CraftChangeDetectingSubContainer(2, holder), new InventoryCraftResult()));
-        containers.put(MenuType.GRINDSTONE, (int syncId, PlayerInventory playerinventory, CraftInventory grindstone) -> new ContainerGrindstone(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) ((CraftInventoryGrindstone) grindstone).getInventory(), (InventoryCraftResult) ((CraftInventoryGrindstone) grindstone).getResultInventory()));
+        inventories.put(MenuType.GRINDSTONE, (holder, type) -> new CraftInventoryGrindstone(new CraftMultiInventorySubContainer(2, holder), new InventoryCraftResult()));
+        containers.put(MenuType.GRINDSTONE, (int syncId, PlayerInventory playerinventory, CraftInventory grindstone) -> new ContainerGrindstone(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftMultiInventorySubContainer) ((CraftInventoryGrindstone) grindstone).getInventory(), (InventoryCraftResult) ((CraftInventoryGrindstone) grindstone).getResultInventory()));
 
         inventories.put(MenuType.HOPPER, InventoryBuilder.generic(5, 1));
         containers.put(MenuType.HOPPER, (int syncId, PlayerInventory playerinventory, CraftInventory hopper) -> new ContainerHopper(syncId, playerinventory, hopper.getInventory()));
@@ -133,23 +132,23 @@ public class CraftInventoryBuilder {
         inventories.put(MenuType.LECTERN, (holder, type) -> new CraftInventoryLectern(new TileEntityLectern(BlockPosition.ZERO, Blocks.LECTERN.defaultBlockState()).bookAccess));
         containers.put(MenuType.LECTERN, (int syncId, PlayerInventory playerinventory, CraftInventory lectern) -> new ContainerLectern(syncId, lectern.getInventory(), new ContainerProperties(1), playerinventory));
 
-        inventories.put(MenuType.LOOM, (holder, type) -> new CraftInventoryLoom(new CraftChangeDetectingSubContainer(3, holder), new InventorySubcontainer(1)));
+        inventories.put(MenuType.LOOM, (holder, type) -> new CraftInventoryLoom(new CraftMultiInventorySubContainer(3, holder), new InventorySubcontainer(1)));
         containers.put(MenuType.LOOM, (int syncId, PlayerInventory playerinventory, CraftInventory loom) -> new ContainerLoom(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), loom.getInventory(), ((CraftInventoryLoom) loom).getResultInventory()));
 
         // skip MenuType.MERCHANT, this simply can't be virtually created.
         inventories.put(MenuType.SHULKER_BOX, (holder, type) -> new CraftInventory(new InventorySubcontainer(27, holder)));
         containers.put(MenuType.SHULKER_BOX, (int syncId, PlayerInventory playerinventory, CraftInventory shulker) -> new ContainerShulkerBox(syncId, playerinventory, shulker.getInventory()));
 
-        inventories.put(MenuType.SMITHING, (holder, type) -> new CraftInventorySmithing(null, new CraftChangeDetectingSubContainer(3, holder), new InventoryCraftResult()));
-        containers.put(MenuType.SMITHING, (int syncId, PlayerInventory playerinventory, CraftInventory smithing) -> new ContainerSmithing(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) smithing.getInventory(), (InventoryCraftResult) ((CraftInventorySmithing) smithing).getResultInventory()));
+        inventories.put(MenuType.SMITHING, (holder, type) -> new CraftInventorySmithing(null, new CraftMultiInventorySubContainer(3, holder), new InventoryCraftResult()));
+        containers.put(MenuType.SMITHING, (int syncId, PlayerInventory playerinventory, CraftInventory smithing) -> new ContainerSmithing(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftMultiInventorySubContainer) smithing.getInventory(), (InventoryCraftResult) ((CraftInventorySmithing) smithing).getResultInventory()));
 
         inventories.put(MenuType.SMOKER, InventoryBuilder.tile(CraftInventoryFurnace::new, TileEntitySmoker::new, Blocks.SMOKER));
         containers.put(MenuType.SMOKER, VirtualContainerBuilder.TILE);
 
-        inventories.put(MenuType.CARTOGRAPHY_TABLE, (holder, type) -> new CraftInventoryCartography(new CraftChangeDetectingSubContainer(2, holder), new CraftCraftingChangeDetectingSubContainer()));
-        containers.put(MenuType.CARTOGRAPHY_TABLE, (int syncId, PlayerInventory playerinventory, CraftInventory table) -> new ContainerCartography(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), (CraftChangeDetectingSubContainer) table.getInventory(), (CraftCraftingChangeDetectingSubContainer) ((CraftInventoryCartography) table).getResultInventory()));
+        inventories.put(MenuType.CARTOGRAPHY_TABLE, (holder, type) -> new CraftInventoryCartography(new CraftMultiInventorySubContainer(2, holder), new CraftMultiCraftResultContainer()));
+        containers.put(MenuType.CARTOGRAPHY_TABLE, (int syncId, PlayerInventory playerinventory, CraftInventory table) -> new ContainerCartography(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), table.getInventory(), (CraftMultiCraftResultContainer) ((CraftInventoryCartography) table).getResultInventory()));
 
-        inventories.put(MenuType.STONECUTTER, (holder, type) -> new CraftInventoryStonecutter(new CraftChangeDetectingSubContainer(1, holder), new InventoryCraftResult()));
+        inventories.put(MenuType.STONECUTTER, (holder, type) -> new CraftInventoryStonecutter(new CraftMultiInventorySubContainer(1, holder), new InventoryCraftResult()));
         containers.put(MenuType.STONECUTTER, (int syncId, PlayerInventory playerinventory, CraftInventory cutter) -> new ContainerStonecutter(syncId, playerinventory, ContainerAccess.create(playerinventory.player.level(), playerinventory.player.blockPosition()), cutter.getInventory(), (InventoryCraftResult) ((CraftInventoryStonecutter) cutter).getResultInventory()));
     }
 
