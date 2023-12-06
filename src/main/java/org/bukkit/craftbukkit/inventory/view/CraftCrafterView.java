@@ -18,7 +18,7 @@ public class CraftCrafterView extends CraftInventoryView<CrafterMenu> implements
     }
 
     @Override
-    public void setSlotDisabled(final int i) {
-        container.setSlotState(i, true);
+    public void setSlotStatus(final int i, final boolean enabled) {
+        container.setSlotState(i, enabled);
     }
 }

@@ -73,6 +73,8 @@ public class CraftMenuType<T extends InventoryView> implements MenuType<T> {
             translationKey = "container.chestDouble";
         } else if (type == MenuType.GENERIC_3X3) {
             translationKey = "container.dispenser";
+        } else if (type == MenuType.CRAFTER_3X3) {
+            translationKey = "container.crafter";
         } else if (type == MenuType.ANVIL) {
             translationKey = "container.repair";
         } else if (type == MenuType.BEACON) {
