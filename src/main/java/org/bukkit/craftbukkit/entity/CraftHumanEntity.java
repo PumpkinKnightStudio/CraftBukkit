@@ -337,8 +337,12 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (title == null) {
             title = inventory.getAssociatedTitle() == null ? CraftMenuType.getDefaultTitle(menuType) : inventory.getAssociatedTitle();
         }
-        final Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), inventory);
+        Container container = builder.createContainer(player.nextContainerCounter(), player.getInventory(), inventory);
         container.setTitle(CraftChatMessage.fromStringOrNull(title));
+        container = CraftEventFactory.callInventoryOpenEvent(player, container);
+        if (container == null) {
+            return;
+        }
         player.connection.send(new PacketPlayOutOpenWindow(container.containerId, menuType.getHandle(), CraftChatMessage.fromString(title)[0]));
         player.containerMenu = container;
         player.initMenu(container);

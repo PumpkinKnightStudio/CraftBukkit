@@ -44,7 +44,7 @@ public final class CraftContainerBuilder {
 
     public CraftContainerBuilder() {
         this.builders = new HashMap<>();
-        this.builders.put(MenuType.CRAFTER_3x3, ContainerBuilder.tileEntity(CrafterBlockEntity::new, Blocks.CRAFTER));
+        this.builders.put(MenuType.CRAFTER_3X3, ContainerBuilder.tileEntity(CrafterBlockEntity::new, Blocks.CRAFTER));
         this.builders.put(MenuType.ANVIL, ContainerBuilder.locationBound(ContainerAnvil::new));
         this.builders.put(MenuType.BEACON, ContainerBuilder.tileEntity(TileEntityBeacon::new, Blocks.BEACON));
         this.builders.put(MenuType.BLAST_FURNACE, ContainerBuilder.tileEntity(TileEntityBlastFurnace::new, Blocks.BLAST_FURNACE));

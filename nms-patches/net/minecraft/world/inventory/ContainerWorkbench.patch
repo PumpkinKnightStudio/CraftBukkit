@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ContainerWorkbench.java
 +++ b/net/minecraft/world/inventory/ContainerWorkbench.java
-@@ -15,6 +15,15 @@
+@@ -15,6 +15,13 @@
  import net.minecraft.world.level.World;
  import net.minecraft.world.level.block.Blocks;
  
@@ -8,15 +8,13 @@
 +import net.minecraft.world.item.crafting.RecipeRepair;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+import org.bukkit.craftbukkit.inventory.CraftResultInventory;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftTransientCraftingContainer;
-+import org.bukkit.entity.Player;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiTransientCraftingContainer;
 +// CraftBukkit end
 +
  public class ContainerWorkbench extends ContainerRecipeBook<InventoryCrafting> {
  
      public static final int RESULT_SLOT = 0;
-@@ -24,19 +33,31 @@
+@@ -24,19 +31,31 @@
      private static final int INV_SLOT_END = 37;
      private static final int USE_ROW_SLOT_START = 37;
      private static final int USE_ROW_SLOT_END = 46;
@@ -45,15 +43,15 @@
 +        // CraftBukkit start - Switched order of IInventory construction and stored player
 +        this.resultSlots = resultInventory;
 +        this.craftSlots = inventory == null ? new TransientCraftingContainer(this, 3, 3, playerinventory.player) : inventory; // CraftBukkit - pass player
-+        if (this.craftSlots instanceof CraftTransientCraftingContainer craft) {
-+            craft.setContainer(this, playerinventory.player);
++        if (this.craftSlots instanceof CraftMultiTransientCraftingContainer cmctcc) {
++            cmctcc.openInstance(playerinventory.player, this);
 +        }
 +        this.craftSlots.resultInventory = this.resultSlots;
 +        // CraftBukkit end
          this.access = containeraccess;
          this.player = playerinventory.player;
          this.addSlot(new SlotResult(playerinventory.player, this.craftSlots, this.resultSlots, 0, 124, 35));
-@@ -80,6 +101,7 @@
+@@ -80,6 +99,7 @@
                      }
                  }
              }
@@ -61,7 +59,7 @@
  
              inventorycraftresult.setItem(0, itemstack);
              container.setRemoteSlot(0, itemstack);
-@@ -120,6 +142,7 @@
+@@ -120,6 +140,7 @@
  
      @Override
      public boolean stillValid(EntityHuman entityhuman) {
@@ -69,7 +67,7 @@
          return stillValid(this.access, entityhuman, Blocks.CRAFTING_TABLE);
      }
  
-@@ -208,4 +231,17 @@
+@@ -208,4 +229,17 @@
      public boolean shouldMoveToInventory(int i) {
          return i != this.getResultSlotIndex();
      }

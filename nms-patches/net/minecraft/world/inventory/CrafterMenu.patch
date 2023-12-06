@@ -6,7 +6,7 @@
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafter;
-+import org.bukkit.craftbukkit.inventory.subcontainer.CraftTransientCraftingContainer;
++import org.bukkit.craftbukkit.inventory.subcontainer.CraftMultiTransientCraftingContainer;
 +import org.bukkit.craftbukkit.inventory.view.CraftCrafterView;
 +// CraftBukkit end
 +
@@ -57,8 +57,8 @@
          this.player = playerinventory.player;
          this.containerData = icontainerproperties;
          this.container = inventorycrafting;
-+        if (container instanceof CraftTransientCraftingContainer craftContainer) {
-+            craftContainer.setContainer(this, player);
++        if (this.container instanceof CraftMultiTransientCraftingContainer cmtcc) {
++            cmtcc.openInstance(player, this);
 +        }
 +        // CraftBukkit end
          checkContainerSize(inventorycrafting, 9);
