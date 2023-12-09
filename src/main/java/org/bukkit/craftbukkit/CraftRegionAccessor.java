@@ -29,6 +29,7 @@ import net.minecraft.world.entity.decoration.EntityPainting;
 import net.minecraft.world.entity.item.EntityFallingBlock;
 import net.minecraft.world.entity.item.EntityTNTPrimed;
 import net.minecraft.world.entity.monster.EntityZombie;
+import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.projectile.EntityEgg;
 import net.minecraft.world.entity.projectile.EntityEnderSignal;
 import net.minecraft.world.entity.projectile.EntityEvokerFangs;
@@ -65,6 +66,7 @@ import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.BlockStateListPopulator;
@@ -196,6 +198,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.WanderingTrader;
 import org.bukkit.entity.Warden;
+import org.bukkit.entity.WindCharge;
 import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.WitherSkeleton;
@@ -335,7 +338,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @Override
-    public boolean generateTree(Location location, Random random, TreeType treeType, Consumer<BlockState> consumer) {
+    public boolean generateTree(Location location, Random random, TreeType treeType, Consumer<? super BlockState> consumer) {
         return generateTree(location, random, treeType, (consumer == null) ? null : (block) -> {
             consumer.accept(block);
             return true;
@@ -343,7 +346,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @Override
-    public boolean generateTree(Location location, Random random, TreeType treeType, Predicate<BlockState> predicate) {
+    public boolean generateTree(Location location, Random random, TreeType treeType, Predicate<? super BlockState> predicate) {
         BlockPosition pos = CraftLocation.toBlockPosition(location);
         BlockStateListPopulator populator = new BlockStateListPopulator(getHandle());
         boolean result = generateTree(populator, getHandle().getMinecraftWorld().getChunkSource().getGenerator(), pos, new RandomSourceWrapper(random), treeType);
@@ -530,28 +533,53 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public abstract Iterable<net.minecraft.world.entity.Entity> getNMSEntities();
 
     @Override
+    @SuppressWarnings("unchecked")
+    public <T extends Entity> T createEntity(Location location, Class<T> clazz) throws IllegalArgumentException {
+        net.minecraft.world.entity.Entity entity = createEntity(location, clazz, true);
+
+        if (!isNormalWorld()) {
+            entity.generation = true;
+        }
+
+        return (T) entity.getBukkitEntity();
+    }
+
+    @Override
     public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
         return spawn(location, clazz, null, CreatureSpawnEvent.SpawnReason.CUSTOM);
     }
 
     @Override
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> function) throws IllegalArgumentException {
         return spawn(location, clazz, function, CreatureSpawnEvent.SpawnReason.CUSTOM);
     }
 
     @Override
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, boolean randomizeData, Consumer<T> function) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, boolean randomizeData, Consumer<? super T> function) throws IllegalArgumentException {
         return spawn(location, clazz, function, CreatureSpawnEvent.SpawnReason.CUSTOM, randomizeData);
     }
 
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> function, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
         return spawn(location, clazz, function, reason, true);
     }
 
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, CreatureSpawnEvent.SpawnReason reason, boolean randomizeData) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> function, CreatureSpawnEvent.SpawnReason reason, boolean randomizeData) throws IllegalArgumentException {
         net.minecraft.world.entity.Entity entity = createEntity(location, clazz, randomizeData);
 
         return addEntity(entity, reason, function, randomizeData);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends Entity> T addEntity(T entity) {
+        Preconditions.checkArgument(!entity.isInWorld(), "Entity has already been added to a world");
+        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+        if (nmsEntity.level() != getHandle().getLevel()) {
+            nmsEntity = nmsEntity.changeDimension(getHandle().getLevel());
+        }
+
+        addEntityWithPassengers(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        return (T) nmsEntity.getBukkitEntity();
     }
 
     @SuppressWarnings("unchecked")
@@ -560,7 +588,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Entity> T addEntity(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason, Consumer<T> function, boolean randomizeData) throws IllegalArgumentException {
+    public <T extends Entity> T addEntity(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason, Consumer<? super T> function, boolean randomizeData) throws IllegalArgumentException {
         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
 
         if (randomizeData && entity instanceof EntityInsentient) {
@@ -581,8 +609,10 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
     public abstract void addEntityToWorld(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason);
 
+    public abstract void addEntityWithPassengers(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason);
+
     @SuppressWarnings("unchecked")
-    public net.minecraft.world.entity.Entity createEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
+    public net.minecraft.world.entity.Entity makeEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
         return createEntity(location, clazz, true);
     }
 
@@ -649,6 +679,8 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
                     entity = EntityTypes.WITHER_SKULL.create(world);
                 } else if (DragonFireball.class.isAssignableFrom(clazz)) {
                     entity = EntityTypes.DRAGON_FIREBALL.create(world);
+                } else if (WindCharge.class.isAssignableFrom(clazz)) {
+                    entity = EntityTypes.WIND_CHARGE.create(world);
                 } else {
                     entity = EntityTypes.FIREBALL.create(world);
                 }
@@ -885,6 +917,8 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
                 entity = EntityTypes.WARDEN.create(world);
             } else if (Sniffer.class.isAssignableFrom(clazz)) {
                 entity = EntityTypes.SNIFFER.create(world);
+            } else if (Breeze.class.isAssignableFrom(clazz)) {
+                entity = EntityTypes.BREEZE.create(world);
             }
 
             if (entity != null) {

@@ -1,10 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeItemStack;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.item.crafting.ShapedRecipes;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -57,6 +59,6 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 data.set(i * width + j, toNMS(ingred.get(row.charAt(j)), false));
             }
         }
-        MinecraftServer.getServer().getRecipeManager().addRecipe(new RecipeHolder<>(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult()))));
+        MinecraftServer.getServer().getRecipeManager().addRecipe(new RecipeHolder<>(CraftNamespacedKey.toMinecraft(this.getKey()), new ShapedRecipes(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), new ShapedRecipePattern(width, shape.length, data, Optional.empty()), CraftItemStack.asNMSCopy(this.getResult()))));
     }
 }

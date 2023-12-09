@@ -24,6 +24,7 @@ import net.minecraft.world.entity.EntityFlying;
 import net.minecraft.world.entity.EntityLightning;
 import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EntityTameableAnimal;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.GlowSquid;
 import net.minecraft.world.entity.Interaction;
 import net.minecraft.world.entity.Marker;
@@ -121,6 +122,7 @@ import net.minecraft.world.entity.monster.EntityZoglin;
 import net.minecraft.world.entity.monster.EntityZombie;
 import net.minecraft.world.entity.monster.EntityZombieHusk;
 import net.minecraft.world.entity.monster.EntityZombieVillager;
+import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.monster.hoglin.EntityHoglin;
 import net.minecraft.world.entity.monster.piglin.EntityPiglin;
 import net.minecraft.world.entity.monster.piglin.EntityPiglinAbstract;
@@ -151,6 +153,7 @@ import net.minecraft.world.entity.projectile.EntityThrownExpBottle;
 import net.minecraft.world.entity.projectile.EntityThrownTrident;
 import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.projectile.EntityWitherSkull;
+import net.minecraft.world.entity.projectile.WindCharge;
 import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.entity.vehicle.EntityBoat;
 import net.minecraft.world.entity.vehicle.EntityMinecartAbstract;
@@ -164,6 +167,7 @@ import net.minecraft.world.entity.vehicle.EntityMinecartTNT;
 import net.minecraft.world.phys.AxisAlignedBB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
+import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -178,8 +182,10 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 import org.bukkit.craftbukkit.util.CraftVector;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
@@ -331,6 +337,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
                     }
                     else if (entity instanceof EntityZoglin) { return new CraftZoglin(server, (EntityZoglin) entity); }
                     else if (entity instanceof Warden) { return new CraftWarden(server, (Warden) entity); }
+                    else if (entity instanceof Breeze) { return new CraftBreeze(server, (Breeze) entity); }
 
                     else  { return new CraftMonster(server, (EntityMonster) entity); }
                 }
@@ -398,6 +405,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             else if (entity instanceof EntityLargeFireball) { return new CraftLargeFireball(server, (EntityLargeFireball) entity); }
             else if (entity instanceof EntityWitherSkull) { return new CraftWitherSkull(server, (EntityWitherSkull) entity); }
             else if (entity instanceof EntityDragonFireball) { return new CraftDragonFireball(server, (EntityDragonFireball) entity); }
+            else if (entity instanceof WindCharge) { return new CraftWindCharge(server, (WindCharge) entity); }
             else { return new CraftFireball(server, (EntityFireball) entity); }
         }
         else if (entity instanceof EntityEnderSignal) { return new CraftEnderSignal(server, (EntityEnderSignal) entity); }
@@ -632,6 +640,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public void remove() {
+        entity.pluginRemoved = true;
         entity.discard();
     }
 
@@ -642,7 +651,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public boolean isValid() {
-        return entity.isAlive() && entity.valid && entity.isChunkLoaded();
+        return entity.isAlive() && entity.valid && entity.isChunkLoaded() && isInWorld();
     }
 
     @Override
@@ -767,7 +776,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public void playEffect(EntityEffect type) {
-        Preconditions.checkArgument(type != null, "type");
+        Preconditions.checkArgument(type != null, "Type cannot be null");
         Preconditions.checkState(!entity.generation, "Cannot play effect during world generation");
 
         if (type.getApplicable().isInstance(this)) {
@@ -1113,6 +1122,42 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public SpawnCategory getSpawnCategory() {
         return CraftSpawnCategory.toBukkit(getHandle().getType().getCategory());
+    }
+
+    @Override
+    public boolean isInWorld() {
+        return getHandle().inWorld;
+    }
+
+    @Override
+    public EntitySnapshot createSnapshot() {
+        return CraftEntitySnapshot.create(this);
+    }
+
+    @Override
+    public org.bukkit.entity.Entity copy() {
+        Entity copy = copy(getHandle().level());
+        Preconditions.checkArgument(copy != null, "Error creating new entity.");
+
+        return copy.getBukkitEntity();
+    }
+
+    @Override
+    public org.bukkit.entity.Entity copy(Location location) {
+        Preconditions.checkArgument(location.getWorld() != null, "Location has no world");
+
+        Entity copy = copy(((CraftWorld) location.getWorld()).getHandle());
+        Preconditions.checkArgument(copy != null, "Error creating new entity.");
+
+        copy.setPos(location.getX(), location.getY(), location.getZ());
+        return location.getWorld().addEntity(copy.getBukkitEntity());
+    }
+
+    private Entity copy(net.minecraft.world.level.World level) {
+        NBTTagCompound compoundTag = new NBTTagCompound();
+        getHandle().saveAsPassenger(compoundTag, false);
+
+        return EntityTypes.loadEntityRecursive(compoundTag, level, java.util.function.Function.identity());
     }
 
     public void storeBukkitValues(NBTTagCompound c) {

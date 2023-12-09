@@ -87,7 +87,7 @@ public class RegistryConstantsTest extends AbstractTestingBase {
 
     @Test
     public void testPotionEffectType() {
-        this.testExcessConstants(PotionEffectType.class, Registry.POTION_EFFECT_TYPE);
+        this.testExcessConstants(PotionEffectType.class, Registry.EFFECT);
         this.testMissingConstants(PotionEffectType.class, Registries.MOB_EFFECT);
     }
 
@@ -135,7 +135,7 @@ public class RegistryConstantsTest extends AbstractTestingBase {
 
     @Test
     public void testCatType() {
-        this.testExcessConstants(Cat.Type.class, Registry.CAT_TYPE);
+        this.testExcessConstants(Cat.Type.class, Registry.CAT_VARIANT);
         this.testMissingConstants(Cat.Type.class, Registries.CAT_VARIANT);
     }
 

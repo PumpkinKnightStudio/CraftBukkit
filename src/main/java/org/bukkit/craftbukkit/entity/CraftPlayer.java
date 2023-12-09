@@ -14,6 +14,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.ClientboundResourcePackPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
@@ -206,6 +207,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     public GameProfile getProfile() {
         return getHandle().getGameProfile();
+    }
+
+    @Override
+    public void remove() {
+        // Will lead to an inconsistent player state if we remove the player as any other entity.
+        throw new UnsupportedOperationException(String.format("Cannot remove player %s, use Player#kickPlayer(String) instead.", getName()));
     }
 
     @Override
@@ -438,29 +445,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         if (getHandle().connection == null) return;
 
-        Sound instrumentSound = switch (instrument.ordinal()) {
-            case 0 -> Sound.BLOCK_NOTE_BLOCK_HARP;
-            case 1 -> Sound.BLOCK_NOTE_BLOCK_BASEDRUM;
-            case 2 -> Sound.BLOCK_NOTE_BLOCK_SNARE;
-            case 3 -> Sound.BLOCK_NOTE_BLOCK_HAT;
-            case 4 -> Sound.BLOCK_NOTE_BLOCK_BASS;
-            case 5 -> Sound.BLOCK_NOTE_BLOCK_FLUTE;
-            case 6 -> Sound.BLOCK_NOTE_BLOCK_BELL;
-            case 7 -> Sound.BLOCK_NOTE_BLOCK_GUITAR;
-            case 8 -> Sound.BLOCK_NOTE_BLOCK_CHIME;
-            case 9 -> Sound.BLOCK_NOTE_BLOCK_XYLOPHONE;
-            case 10 -> Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE;
-            case 11 -> Sound.BLOCK_NOTE_BLOCK_COW_BELL;
-            case 12 -> Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO;
-            case 13 -> Sound.BLOCK_NOTE_BLOCK_BIT;
-            case 14 -> Sound.BLOCK_NOTE_BLOCK_BANJO;
-            case 15 -> Sound.BLOCK_NOTE_BLOCK_PLING;
-            case 16 -> Sound.BLOCK_NOTE_BLOCK_XYLOPHONE;
-            default -> null;
-        };
+        Sound instrumentSound = instrument.getSound();
+        if (instrumentSound == null) return;
 
-        float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.bukkitToMinecraftHolder(instrumentSound), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f, getHandle().getRandom().nextLong()));
+        float pitch = note.getPitch();
+        getHandle().connection.send(new PacketPlayOutNamedSoundEffect(CraftSound.bukkitToMinecraftHolder(instrumentSound), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, pitch, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -475,24 +464,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
-
-        playSound0(loc, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound(loc, sound, category, volume, pitch, getHandle().random.nextLong());
     }
 
     @Override
     public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
-
-        playSound0(loc, Holder.direct(SoundEffect.createVariableRangeEvent(new MinecraftKey(sound))), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound(loc, sound, category, volume, pitch, getHandle().random.nextLong());
     }
 
-    private void playSound0(Location loc, Holder<SoundEffect> soundEffectHolder, net.minecraft.sounds.SoundCategory categoryNMS, float volume, float pitch) {
+    @Override
+    public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
+        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
+
+        playSound0(loc, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch, seed);
+    }
+
+    @Override
+    public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
+        if (loc == null || sound == null || category == null || getHandle().connection == null) return;
+
+        playSound0(loc, Holder.direct(SoundEffect.createVariableRangeEvent(new MinecraftKey(sound))), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch, seed);
+    }
+
+    private void playSound0(Location loc, Holder<SoundEffect> soundEffectHolder, net.minecraft.sounds.SoundCategory categoryNMS, float volume, float pitch, long seed) {
         Preconditions.checkArgument(loc != null, "Location cannot be null");
 
         if (getHandle().connection == null) return;
 
-        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(soundEffectHolder, categoryNMS, loc.getX(), loc.getY(), loc.getZ(), volume, pitch, getHandle().getRandom().nextLong());
+        PacketPlayOutNamedSoundEffect packet = new PacketPlayOutNamedSoundEffect(soundEffectHolder, categoryNMS, loc.getX(), loc.getY(), loc.getZ(), volume, pitch, seed);
         getHandle().connection.send(packet);
     }
 
@@ -508,19 +507,29 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
-
-        playSound0(entity, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound(entity, sound, category, volume, pitch, getHandle().random.nextLong());
     }
 
     @Override
     public void playSound(org.bukkit.entity.Entity entity, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
-
-        playSound0(entity, Holder.direct(SoundEffect.createVariableRangeEvent(new MinecraftKey(sound))), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch);
+        playSound(entity, sound, category, volume, pitch, getHandle().random.nextLong());
     }
 
-    private void playSound0(org.bukkit.entity.Entity entity, Holder<SoundEffect> soundEffectHolder, net.minecraft.sounds.SoundCategory categoryNMS, float volume, float pitch) {
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
+        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
+
+        playSound0(entity, CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch, seed);
+    }
+
+    @Override
+    public void playSound(org.bukkit.entity.Entity entity, String sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
+        if (!(entity instanceof CraftEntity craftEntity) || sound == null || category == null || getHandle().connection == null) return;
+
+        playSound0(entity, Holder.direct(SoundEffect.createVariableRangeEvent(new MinecraftKey(sound))), net.minecraft.sounds.SoundCategory.valueOf(category.name()), volume, pitch, seed);
+    }
+
+    private void playSound0(org.bukkit.entity.Entity entity, Holder<SoundEffect> soundEffectHolder, net.minecraft.sounds.SoundCategory categoryNMS, float volume, float pitch, long seed) {
         Preconditions.checkArgument(entity != null, "Entity cannot be null");
         Preconditions.checkArgument(soundEffectHolder != null, "Holder of SoundEffect cannot be null");
         Preconditions.checkArgument(categoryNMS != null, "SoundCategory cannot be null");
@@ -528,7 +537,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().connection == null) return;
         if (!(entity instanceof CraftEntity craftEntity)) return;
 
-        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(soundEffectHolder, categoryNMS, craftEntity.getHandle(), volume, pitch, getHandle().getRandom().nextLong());
+        PacketPlayOutEntitySound packet = new PacketPlayOutEntitySound(soundEffectHolder, categoryNMS, craftEntity.getHandle(), volume, pitch, seed);
         getHandle().connection.send(packet);
     }
 
@@ -1051,12 +1060,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, getHandle());
     }
 
     @Override
@@ -1066,27 +1075,27 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, amount, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, amount, getHandle());
     }
 
     @Override
     public void setStatistic(Statistic statistic, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, newValue, getHandle());
     }
 
     @Override
     public void incrementStatistic(Statistic statistic, ItemType itemType) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, ItemType itemType) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType, getHandle());
     }
 
     @Override
@@ -1096,27 +1105,27 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, ItemType itemType, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, itemType, amount, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, ItemType itemType, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, itemType, amount, getHandle());
     }
 
     @Override
     public void setStatistic(Statistic statistic, ItemType itemType, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, itemType, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, itemType, newValue, getHandle());
     }
 
     @Override
     public void incrementStatistic(Statistic statistic, BlockType<?> blockType) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, BlockType<?> blockType) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType, getHandle());
     }
 
     @Override
@@ -1126,27 +1135,27 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, blockType, amount, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, BlockType<?> blockType, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, blockType, amount, getHandle());
     }
 
     @Override
     public void setStatistic(Statistic statistic, BlockType<?> blockType, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, blockType, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, blockType, newValue, getHandle());
     }
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, getHandle());
     }
 
     @Override
@@ -1156,17 +1165,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void incrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.incrementStatistic(getHandle().getStats(), statistic, entityType, amount, getHandle());
     }
 
     @Override
     public void decrementStatistic(Statistic statistic, EntityType<?> entityType, int amount) {
-        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, amount);
+        CraftStatistic.decrementStatistic(getHandle().getStats(), statistic, entityType, amount, getHandle());
     }
 
     @Override
     public void setStatistic(Statistic statistic, EntityType<?> entityType, int newValue) {
-        CraftStatistic.setStatistic(getHandle().getStats(), statistic, entityType, newValue);
+        CraftStatistic.setStatistic(getHandle().getStats(), statistic, entityType, newValue, getHandle());
     }
 
     @Override
@@ -1737,12 +1746,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void setResourcePack(String url, byte[] hash, String prompt, boolean force) {
         Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
 
+        setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)), url, hash, prompt, force);
+    }
+
+    @Override
+    public void setResourcePack(UUID id, String url, byte[] hash, String prompt, boolean force) {
+        Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
+
         if (hash != null) {
             Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
 
-            getHandle().connection.send(new ClientboundResourcePackPacket(url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true)));
+            getHandle().connection.send(new ClientboundResourcePackPushPacket(id, url, BaseEncoding.base16().lowerCase().encode(hash), force, CraftChatMessage.fromStringOrNull(prompt, true)));
         } else {
-            getHandle().connection.send(new ClientboundResourcePackPacket(url, "", force, CraftChatMessage.fromStringOrNull(prompt, true)));
+            getHandle().connection.send(new ClientboundResourcePackPushPacket(id, url, "", force, CraftChatMessage.fromStringOrNull(prompt, true)));
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffectList;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionEffect;
@@ -14,41 +15,24 @@ import org.jetbrains.annotations.NotNull;
 
 public class CraftPotionEffectType extends PotionEffectType {
 
-    public static PotionEffectType minecraftToBukkit(MobEffectList minecraft) {
-        Preconditions.checkArgument(minecraft != null);
-
-        IRegistry<MobEffectList> registry = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT);
-        PotionEffectType bukkit = PotionEffectType.getByKey(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
-
-        Preconditions.checkArgument(bukkit != null);
-
-        return bukkit;
-    }
-
-    public static MobEffectList bukkitToMinecraft(PotionEffectType bukkit) {
-        Preconditions.checkArgument(bukkit != null);
-
-        return ((CraftPotionEffectType) bukkit).getHandle();
-    }
-
     private final NamespacedKey key;
     private final MobEffectList handle;
-    private final String name;
     private final int id;
 
     public CraftPotionEffectType(NamespacedKey key, MobEffectList handle) {
         this.key = key;
         this.handle = handle;
-        // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
-        // in case plugins use for example the name as key in a config file to receive potion effect type specific values.
-        // Custom potion effect types will return the key with namespace. For a plugin this should look than like a new potion effect type
-        // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
-        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
-            this.name = key.getKey().toUpperCase();
-        } else {
-            this.name = key.toString();
-        }
-        this.id = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT).getId(handle);
+        this.id = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT).getId(handle) + 1;
+    }
+
+    public MobEffectList getHandle() {
+        return handle;
+    }
+
+    @NotNull
+    @Override
+    public NamespacedKey getKey() {
+        return key;
     }
 
     @Override
@@ -56,13 +40,49 @@ public class CraftPotionEffectType extends PotionEffectType {
         return 1.0D;
     }
 
-    public MobEffectList getHandle() {
-        return handle;
+    @Override
+    public int getId() {
+        return id;
     }
 
     @Override
     public String getName() {
-        return name;
+        return switch (getId()) {
+            case 1 -> "SPEED";
+            case 2 -> "SLOW";
+            case 3 -> "FAST_DIGGING";
+            case 4 -> "SLOW_DIGGING";
+            case 5 -> "INCREASE_DAMAGE";
+            case 6 -> "HEAL";
+            case 7 -> "HARM";
+            case 8 -> "JUMP";
+            case 9 -> "CONFUSION";
+            case 10 -> "REGENERATION";
+            case 11 -> "DAMAGE_RESISTANCE";
+            case 12 -> "FIRE_RESISTANCE";
+            case 13 -> "WATER_BREATHING";
+            case 14 -> "INVISIBILITY";
+            case 15 -> "BLINDNESS";
+            case 16 -> "NIGHT_VISION";
+            case 17 -> "HUNGER";
+            case 18 -> "WEAKNESS";
+            case 19 -> "POISON";
+            case 20 -> "WITHER";
+            case 21 -> "HEALTH_BOOST";
+            case 22 -> "ABSORPTION";
+            case 23 -> "SATURATION";
+            case 24 -> "GLOWING";
+            case 25 -> "LEVITATION";
+            case 26 -> "LUCK";
+            case 27 -> "UNLUCK";
+            case 28 -> "SLOW_FALLING";
+            case 29 -> "CONDUIT_POWER";
+            case 30 -> "DOLPHINS_GRACE";
+            case 31 -> "BAD_OMEN";
+            case 32 -> "HERO_OF_THE_VILLAGE";
+            case 33 -> "DARKNESS";
+            default -> getKey().toString();
+        };
     }
 
     @NotNull
@@ -82,22 +102,12 @@ public class CraftPotionEffectType extends PotionEffectType {
     }
 
     @Override
-    public NamespacedKey getKey() {
-        return key;
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
 
-        if (!(other instanceof CraftPotionEffectType)) {
+        if (!(other instanceof PotionEffectType)) {
             return false;
         }
 
@@ -112,5 +122,22 @@ public class CraftPotionEffectType extends PotionEffectType {
     @Override
     public String toString() {
         return "CraftPotionEffectType[" + getKey() + "]";
+    }
+
+    public static PotionEffectType minecraftToBukkit(MobEffectList minecraft) {
+        Preconditions.checkArgument(minecraft != null);
+
+        IRegistry<MobEffectList> registry = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT);
+        PotionEffectType bukkit = Registry.EFFECT.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
+    }
+
+    public static MobEffectList bukkitToMinecraft(PotionEffectType bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return ((CraftPotionEffectType) bukkit).getHandle();
     }
 }

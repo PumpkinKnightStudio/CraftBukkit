@@ -225,7 +225,7 @@ public final class CraftItemStack extends ItemStack {
         if (handle == null) {
             return 0;
         }
-        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.getRaw(ench), handle);
+        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraft(ench), handle);
     }
 
     @Override
@@ -413,7 +413,7 @@ public final class CraftItemStack extends ItemStack {
                 || type == ItemType.WITHER_SPAWN_EGG || type == ItemType.WOLF_SPAWN_EGG
                 || type == ItemType.ZOGLIN_SPAWN_EGG || type == ItemType.ZOMBIE_HORSE_SPAWN_EGG
                 || type == ItemType.ZOMBIE_SPAWN_EGG || type == ItemType.ZOMBIE_VILLAGER_SPAWN_EGG
-                || type == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || type == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG || type == ItemType.BREEZE_SPAWN_EGG) {
             return new CraftMetaSpawnEgg(item.getTag());
         }
         if (type == ItemType.ARMOR_STAND) {
@@ -441,7 +441,8 @@ public final class CraftItemStack extends ItemStack {
                 || type == ItemType.SCULK_SHRIEKER || type == ItemType.SCULK_SENSOR
                 || type == ItemType.CALIBRATED_SCULK_SENSOR || type == ItemType.CHISELED_BOOKSHELF
                 || type == ItemType.DECORATED_POT || type == ItemType.SUSPICIOUS_SAND
-                || type == ItemType.SUSPICIOUS_GRAVEL) {
+                || type == ItemType.SUSPICIOUS_GRAVEL || type == ItemType.CRAFTER
+                || type == ItemType.TRIAL_SPAWNER) {
             return new CraftMetaBlockState(item.getTag(), CraftItemType.minecraftToBukkit(item.getItem()));
         }
         if (type == ItemType.TROPICAL_FISH_BUCKET) {
