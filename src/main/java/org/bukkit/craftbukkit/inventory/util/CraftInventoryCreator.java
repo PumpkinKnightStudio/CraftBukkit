@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.inventory.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -57,10 +58,20 @@ public final class CraftInventoryCreator {
         return DEFAULT_CONVERTER.createInventory(holder, size, title);
     }
 
+    public Inventory createInventory(InventoryHolder holder, InventoryType type, BaseComponent title) {
+        return converterMap.get(type).createInventory(holder, type, title);
+    }
+
+    public Inventory createInventory(InventoryHolder holder, int size, BaseComponent title) {
+        return DEFAULT_CONVERTER.createInventory(holder, size, title);
+    }
+
     public interface InventoryConverter {
 
         Inventory createInventory(InventoryHolder holder, InventoryType type);
 
         Inventory createInventory(InventoryHolder holder, InventoryType type, String title);
+
+        Inventory createInventory(InventoryHolder holder, InventoryType type, BaseComponent title);
     }
 }

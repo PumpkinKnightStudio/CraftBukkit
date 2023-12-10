@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.world.level.block.entity.TileEntityCommand;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -44,5 +45,25 @@ public class CraftCommandBlock extends CraftBlockEntityState<TileEntityCommand> 
     @Override
     public CraftCommandBlock copy(Location location) {
         return new CraftCommandBlock(this, location);
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements CommandBlock.Components {
+
+        @Override
+        public BaseComponent getName() {
+            return CraftChatMessage.toBungee(getSnapshot().getCommandBlock().getName());
+        }
+
+        @Override
+        public void setName(BaseComponent name) {
+            getSnapshot().getCommandBlock().setCustomName(CraftChatMessage.fromBungeeOrNull(name));
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

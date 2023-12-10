@@ -35,6 +35,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
@@ -399,20 +403,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getPlayerListName() {
-        return getHandle().listName == null ? getName() : CraftChatMessage.fromComponent(getHandle().listName);
+        BaseComponent name = components.getPlayerListName();
+        return (name != null) ? BaseComponent.toLegacyText(name) : null;
     }
 
     @Override
     public void setPlayerListName(String name) {
-        if (name == null) {
-            name = getName();
-        }
-        getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromStringOrNull(name);
-        for (EntityPlayer player : (List<EntityPlayer>) server.getHandle().players) {
-            if (player.getBukkitEntity().canSee(this)) {
-                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.a.UPDATE_DISPLAY_NAME, getHandle()));
-            }
-        }
+        this.components.setPlayerListName((name != null) ? TextComponent.fromLegacy(name) : null);
     }
 
     private IChatBaseComponent playerListHeader;
@@ -430,21 +427,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeader(String header) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true);
-        updatePlayerListHeaderFooter();
+        this.components.setPlayerListHeader((header != null) ? TextComponent.fromLegacy(header) : null);
     }
 
     @Override
     public void setPlayerListFooter(String footer) {
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true);
-        updatePlayerListHeaderFooter();
+        this.components.setPlayerListFooter((footer != null) ? TextComponent.fromLegacy(footer) : null);
     }
 
     @Override
     public void setPlayerListHeaderFooter(String header, String footer) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true);
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true);
-        updatePlayerListHeaderFooter();
+        this.components.setPlayerListHeaderFooter(
+            (header != null) ? TextComponent.fromLegacy(header) : null,
+            (footer != null) ? TextComponent.fromLegacy(footer) : null
+        );
     }
 
     private void updatePlayerListHeaderFooter() {
@@ -476,9 +472,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void kickPlayer(String message) {
-        if (getHandle().connection == null) return;
-
-        getHandle().connection.disconnect(message == null ? "" : message);
+        this.components.kickPlayer((message != null) ? TextComponent.fromLegacy(message) : null);
     }
 
     @Override
@@ -789,27 +783,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendSignChange(Location loc, String[] lines, DyeColor dyeColor, boolean hasGlowingText) {
-        Preconditions.checkArgument(loc != null, "Location cannot be null");
-        Preconditions.checkArgument(dyeColor != null, "DyeColor cannot be null");
+        BaseComponent[] componentLines = null;
 
-        if (lines == null) {
-            lines = new String[4];
+        if (lines != null) {
+            componentLines = new BaseComponent[lines.length];
+            for (int i = 0; i < lines.length; i++) {
+                componentLines[i] = TextComponent.fromLegacy(lines[i]);
+            }
         }
-        Preconditions.checkArgument(lines.length >= 4, "Must have at least 4 lines (%s)", lines.length);
 
-        if (getHandle().connection == null) return;
-
-        IChatBaseComponent[] components = CraftSign.sanitizeLines(lines);
-        TileEntitySign sign = new TileEntitySign(CraftLocation.toBlockPosition(loc), Blocks.OAK_SIGN.defaultBlockState());
-        SignText text = sign.getFrontText();
-        text = text.setColor(EnumColor.byId(dyeColor.getWoolData()));
-        text = text.setHasGlowingText(hasGlowingText);
-        for (int i = 0; i < components.length; i++) {
-            text = text.setMessage(i, components[i]);
-        }
-        sign.setText(text, true);
-
-        getHandle().connection.send(new PacketPlayOutTileEntityData(sign.getBlockPos(), sign.getType(), sign.getUpdateTag(getHandle().registryAccess())));
+        this.components.sendSignChange(loc, componentLines, dyeColor, hasGlowingText);
     }
 
     @Override
@@ -1817,7 +1800,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setResourcePack(String url, byte[] hash, String prompt) {
-        setResourcePack(url, hash, prompt, false);
+        this.components.setResourcePack(url, hash, (prompt != null) ? TextComponent.fromLegacy(prompt) : null);
     }
 
     @Override
@@ -1827,36 +1810,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setResourcePack(String url, byte[] hash, String prompt, boolean force) {
-        Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
-
-        setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)), url, hash, prompt, force);
+        this.components.setResourcePack(url, hash, (prompt != null) ? TextComponent.fromLegacy(prompt) : null, force);
     }
 
     @Override
     public void setResourcePack(UUID id, String url, byte[] hash, String prompt, boolean force) {
-        Preconditions.checkArgument(id != null, "Resource pack ID cannot be null");
-        Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
-
-        String hashStr = "";
-        if (hash != null) {
-            Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
-            hashStr = BaseEncoding.base16().lowerCase().encode(hash);
-        }
-
-        this.handlePushResourcePack(new ClientboundResourcePackPushPacket(id, url, hashStr, force, CraftChatMessage.fromStringOrOptional(prompt, true)), true);
+        this.components.setResourcePack(id, url, hash, (prompt != null) ? TextComponent.fromLegacy(prompt) : null, force);
     }
 
     @Override
     public void addResourcePack(UUID id, String url, byte[] hash, String prompt, boolean force) {
-        Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
-
-        String hashStr = "";
-        if (hash != null) {
-            Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
-            hashStr = BaseEncoding.base16().lowerCase().encode(hash);
-        }
-
-        this.handlePushResourcePack(new ClientboundResourcePackPushPacket(id, url, hashStr, force, CraftChatMessage.fromStringOrOptional(prompt, true)), false);
+        this.components.addResourcePack(id, url, hash, (prompt != null) ? TextComponent.fromLegacy(prompt) : null, force);
     }
 
     @Override
@@ -2164,18 +2128,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        ClientboundSetTitlesAnimationPacket times = new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut);
-        getHandle().connection.send(times);
-
-        if (title != null) {
-            ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromString(title)[0]);
-            getHandle().connection.send(packetTitle);
-        }
-
-        if (subtitle != null) {
-            ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromString(subtitle)[0]);
-            getHandle().connection.send(packetSubtitle);
-        }
+        this.components.sendTitle(
+            (title != null) ? TextComponent.fromLegacy(title) : null,
+            (subtitle != null) ? TextComponent.fromLegacy(title) : null,
+            fadeIn, stay, fadeOut
+        );
     }
 
     @Override
@@ -2310,5 +2267,183 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public boolean isAllowingServerListings() {
         return getHandle().allowsListing();
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents extends CraftEntity.CraftComponents implements Player.Components {
+
+        @Override
+        public BaseComponent getPlayerListName() {
+            return (getHandle().listName == null) ? new TextComponent(getName()) : ComponentSerializer.deserialize(CraftChatMessage.toJSON(getHandle().listName));
+        }
+
+        @Override
+        public void setPlayerListName(BaseComponent name) {
+            getHandle().listName = CraftChatMessage.fromBungeeOrNull(name);
+            for (EntityPlayer player : server.getHandle().players) {
+                if (player.getBukkitEntity().canSee(CraftPlayer.this)) {
+                    player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.a.UPDATE_DISPLAY_NAME, getHandle()));
+                }
+            }
+        }
+
+        @Override
+        public BaseComponent getPlayerListHeader() {
+            return CraftChatMessage.toBungeeOrNull(playerListHeader);
+        }
+
+        @Override
+        public BaseComponent getPlayerListFooter() {
+            return CraftChatMessage.toBungeeOrNull(playerListFooter);
+        }
+
+        @Override
+        public void setPlayerListHeader(BaseComponent header) {
+            CraftPlayer.this.playerListHeader = CraftChatMessage.fromBungeeOrNull(header);
+            updatePlayerListHeaderFooter();
+        }
+
+        @Override
+        public void setPlayerListFooter(BaseComponent footer) {
+            CraftPlayer.this.playerListFooter = CraftChatMessage.fromBungeeOrNull(footer);
+            updatePlayerListHeaderFooter();
+        }
+
+        @Override
+        public void setPlayerListHeaderFooter(BaseComponent header, BaseComponent footer) {
+            CraftPlayer.this.playerListHeader = CraftChatMessage.fromBungeeOrNull(header);
+            CraftPlayer.this.playerListFooter = CraftChatMessage.fromBungeeOrNull(footer);
+            updatePlayerListHeaderFooter();
+        }
+
+        @Override
+        public void kickPlayer(BaseComponent message) {
+            if (getHandle().connection == null) return;
+
+            getHandle().connection.disconnect(CraftChatMessage.fromBungeeOrEmpty(message));
+        }
+
+        @Override
+        public void sendSignChange(Location loc, BaseComponent[] lines) {
+            sendSignChange(loc, lines, DyeColor.BLACK);
+        }
+
+        @Override
+        public void sendSignChange(Location loc, BaseComponent[] lines, DyeColor dyeColor) {
+            sendSignChange(loc, lines, dyeColor, false);
+        }
+
+        @Override
+        public void sendSignChange(Location loc, BaseComponent[] lines, DyeColor dyeColor, boolean hasGlowingText) {
+            Preconditions.checkArgument(loc != null, "Location cannot be null");
+            Preconditions.checkArgument(dyeColor != null, "DyeColor cannot be null");
+
+            if (lines == null) {
+                lines = new BaseComponent[4];
+            }
+            Preconditions.checkArgument(lines.length >= 4, "Must have at least 4 lines (%s)", lines.length);
+
+            if (getHandle().connection == null) return;
+
+            IChatBaseComponent[] components = CraftSign.sanitizeLines(lines);
+            TileEntitySign sign = new TileEntitySign(CraftLocation.toBlockPosition(loc), Blocks.OAK_SIGN.defaultBlockState());
+            SignText text = sign.getFrontText();
+            text = text.setColor(EnumColor.byId(dyeColor.getWoolData()));
+            text = text.setHasGlowingText(hasGlowingText);
+            for (int i = 0; i < components.length; i++) {
+                text = text.setMessage(i, components[i]);
+            }
+            sign.setText(text, true);
+
+            getHandle().connection.send(new PacketPlayOutTileEntityData(sign.getBlockPos(), sign.getType(), sign.getUpdateTag(getHandle().registryAccess())));
+        }
+
+        @Override
+        public void setResourcePack(String url, byte[] hash, BaseComponent prompt) {
+            setResourcePack(url, hash, prompt, false);
+        }
+
+        @Override
+        public void setResourcePack(String url, byte[] hash, BaseComponent prompt, boolean force) {
+            Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
+
+            setResourcePack(UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)), url, hash, prompt, force);
+        }
+
+        @Override
+        public void setResourcePack(UUID id, String url, byte[] hash, BaseComponent prompt, boolean force) {
+            Preconditions.checkArgument(id != null, "Resource pack ID cannot be null");
+            Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
+
+            String hashStr = "";
+            if (hash != null) {
+                Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
+                hashStr = BaseEncoding.base16().lowerCase().encode(hash);
+            }
+
+            IChatBaseComponent nmsPrompt = CraftChatMessage.fromBungeeOrNull(prompt);
+            handlePushResourcePack(new ClientboundResourcePackPushPacket(id, url, hashStr, force, Optional.ofNullable(nmsPrompt)), true);
+        }
+
+        @Override
+        public void addResourcePack(UUID id, String url, byte[] hash, BaseComponent prompt, boolean force) {
+            Preconditions.checkArgument(url != null, "Resource pack URL cannot be null");
+
+            String hashStr = "";
+            if (hash != null) {
+                Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
+                hashStr = BaseEncoding.base16().lowerCase().encode(hash);
+            }
+
+            IChatBaseComponent nmsPrompt = CraftChatMessage.fromBungeeOrNull(prompt);
+            handlePushResourcePack(new ClientboundResourcePackPushPacket(id, url, hashStr, force, Optional.ofNullable(nmsPrompt)), false);
+        }
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            this.sendMessage(ChatMessageType.SYSTEM, component);
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component) {
+            this.sendMessage(ChatMessageType.CHAT, sender, component);
+        }
+
+        @Override
+        public void sendMessage(ChatMessageType position, BaseComponent component) {
+            this.sendMessage(position, null, component);
+        }
+
+        @Override
+        public void sendMessage(ChatMessageType position, UUID sender, BaseComponent component) {
+            if (getHandle().connection == null) {
+                return;
+            }
+
+            IChatBaseComponent nmsComponent = CraftChatMessage.fromBungee(component);
+            getHandle().connection.send(new net.minecraft.network.protocol.game.ClientboundSystemChatPacket(nmsComponent, position == ChatMessageType.ACTION_BAR));
+        }
+
+        @Override
+        public void sendTitle(BaseComponent title, BaseComponent subtitle, int fadeIn, int stay, int fadeOut) {
+            ClientboundSetTitlesAnimationPacket times = new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut);
+            getHandle().connection.send(times);
+
+            if (title != null) {
+                ClientboundSetTitleTextPacket packetTitle = new ClientboundSetTitleTextPacket(CraftChatMessage.fromBungee(title));
+                getHandle().connection.send(packetTitle);
+            }
+
+            if (subtitle != null) {
+                ClientboundSetSubtitleTextPacket packetSubtitle = new ClientboundSetSubtitleTextPacket(CraftChatMessage.fromBungee(subtitle));
+                getHandle().connection.send(packetSubtitle);
+            }
+        }
+    };
+
+    @Override
+    public Player.Components components() {
+        return components;
     }
 }

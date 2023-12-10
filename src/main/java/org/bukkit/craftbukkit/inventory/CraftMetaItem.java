@@ -36,6 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
@@ -1692,6 +1694,46 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Override
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    protected class CraftComponents implements ItemMeta.Components {
+
+        @Override
+        public BaseComponent getDisplayName() {
+            return CraftChatMessage.toBungeeOrNull(displayName);
+        }
+
+        @Override
+        public void setDisplayName(BaseComponent displayName) {
+            CraftMetaItem.this.displayName = CraftChatMessage.fromBungeeOrNull(displayName);
+        }
+
+        @Override
+        public List<BaseComponent> getLore() {
+            return (CraftMetaItem.this.lore == null) ? null : new ArrayList<>(Lists.transform(CraftMetaItem.this.lore, CraftChatMessage::toBungeeOrEmpty));
+        }
+
+        @Override
+        public void setLore(List<BaseComponent> lore) {
+            if (lore == null || lore.isEmpty()) {
+                CraftMetaItem.this.lore = null;
+            } else {
+                if (CraftMetaItem.this.lore == null) {
+                    CraftMetaItem.this.lore = new ArrayList<>(lore.size());
+                } else {
+                    CraftMetaItem.this.lore.clear();
+                }
+
+                safelyAdd(Lists.transform(lore, ComponentSerializer::toString), CraftMetaItem.this.lore, true);
+            }
+        }
+    };
+
+    @Override
+    public Components components() {
+        return components;
     }
 
     public static Set<DataComponentType> getHandledTags() {

@@ -7,8 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.EnumChatFormat;
 import net.minecraft.network.chat.ChatClickable;
 import net.minecraft.network.chat.ChatClickable.EnumClickAction;
@@ -268,6 +272,78 @@ public final class CraftChatMessage {
             message = trimMessage(message, maxLength);
             return fromStringToJSON(message, keepNewlines);
         }
+    }
+
+    public static BaseComponent toBungee(IChatBaseComponent component) {
+        return ComponentSerializer.deserialize(toJSON(component));
+    }
+
+    public static BaseComponent toBungeeOr(IChatBaseComponent component, Supplier<BaseComponent> defaultValueSupplier) {
+        if (component == null) {
+            return defaultValueSupplier.get();
+        }
+
+        try {
+            return toBungee(component);
+        } catch (JsonParseException e) {
+            return defaultValueSupplier.get();
+        }
+    }
+
+    public static BaseComponent toBungeeOr(IChatBaseComponent component, BaseComponent defaultValue) {
+        if (component == null) {
+            return defaultValue;
+        }
+
+        try {
+            return toBungee(component);
+        } catch (JsonParseException e) {
+            return defaultValue;
+        }
+    }
+
+    public static BaseComponent toBungeeOrNull(IChatBaseComponent component) {
+        return toBungeeOr(component, (BaseComponent) null);
+    }
+
+    public static BaseComponent toBungeeOrEmpty(IChatBaseComponent component) {
+        return toBungeeOr(component, TextComponent::new);
+    }
+
+    public static IChatBaseComponent fromBungee(BaseComponent component) {
+        return fromJSON(ComponentSerializer.toString(component));
+    }
+
+    public static IChatBaseComponent fromBungeeOr(BaseComponent component, Supplier<IChatBaseComponent> defaultValueSupplier) {
+        if (component == null) {
+            return defaultValueSupplier.get();
+        }
+
+        try {
+            return fromBungee(component);
+        } catch (JsonParseException e) {
+            return defaultValueSupplier.get();
+        }
+    }
+
+    public static IChatBaseComponent fromBungeeOr(BaseComponent component, IChatBaseComponent defaultValue) {
+        if (component == null) {
+            return defaultValue;
+        }
+
+        try {
+            return fromBungee(component);
+        } catch (JsonParseException e) {
+            return defaultValue;
+        }
+    }
+
+    public static IChatBaseComponent fromBungeeOrNull(BaseComponent component) {
+        return fromBungeeOr(component, (IChatBaseComponent) null);
+    }
+
+    public static IChatBaseComponent fromBungeeOrEmpty(BaseComponent component) {
+        return fromBungeeOr(component, IChatBaseComponent::empty);
     }
 
     public static String trimMessage(String message, int maxLength) {

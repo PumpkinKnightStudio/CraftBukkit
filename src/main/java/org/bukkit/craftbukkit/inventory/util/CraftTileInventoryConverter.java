@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.inventory.util;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.IInventory;
 import net.minecraft.world.level.block.Blocks;
@@ -33,9 +35,14 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
 
     @Override
     public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
+        return createInventory(holder, type, (title != null) ? TextComponent.fromLegacy(title) : null);
+    }
+
+    @Override
+    public Inventory createInventory(InventoryHolder holder, InventoryType type, BaseComponent title) {
         IInventory te = getTileEntity();
         if (te instanceof TileEntityLootable) {
-            ((TileEntityLootable) te).name = CraftChatMessage.fromStringOrNull(title);
+            ((TileEntityLootable) te).name = CraftChatMessage.fromBungeeOrNull(title);
         }
 
         return getInventory(te);

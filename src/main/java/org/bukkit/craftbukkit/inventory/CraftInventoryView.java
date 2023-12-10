@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.inventory.Container;
@@ -19,16 +21,18 @@ public class CraftInventoryView extends InventoryView {
     private final Container container;
     private final CraftHumanEntity player;
     private final CraftInventory viewing;
-    private final String originalTitle;
-    private String title;
+    private final BaseComponent originalTitle;
+    private BaseComponent title;
+    private final CraftComponents components;
 
     public CraftInventoryView(HumanEntity player, Inventory viewing, Container container) {
         // TODO: Should we make sure it really IS a CraftHumanEntity first? And a CraftInventory?
         this.player = (CraftHumanEntity) player;
         this.viewing = (CraftInventory) viewing;
         this.container = container;
-        this.originalTitle = CraftChatMessage.fromComponent(container.getTitle());
-        this.title = originalTitle;
+        this.originalTitle = CraftChatMessage.toBungee(container.getTitle());
+        this.title = originalTitle.duplicate();
+        this.components = new CraftComponents();
     }
 
     @Override
@@ -75,29 +79,52 @@ public class CraftInventoryView extends InventoryView {
 
     @Override
     public String getTitle() {
-        return title;
+        return BaseComponent.toLegacyText(title);
     }
 
     @Override
     public String getOriginalTitle() {
-        return originalTitle;
+        return BaseComponent.toLegacyText(originalTitle);
     }
 
     @Override
     public void setTitle(String title) {
-        sendInventoryTitleChange(this, title);
-        this.title = title;
+        this.components.setTitle(TextComponent.fromLegacy(title));
     }
 
     public boolean isInTop(int rawSlot) {
         return rawSlot < viewing.getSize();
     }
 
+    private final class CraftComponents implements InventoryView.Components {
+
+        @Override
+        public BaseComponent getTitle() {
+            return title.duplicate();
+        }
+
+        @Override
+        public BaseComponent getOriginalTitle() {
+            return originalTitle.duplicate();
+        }
+
+        @Override
+        public void setTitle(BaseComponent title) {
+            sendInventoryTitleChange(CraftInventoryView.this, title);
+            CraftInventoryView.this.title = title.duplicate();
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
+    }
+
     public Container getHandle() {
         return container;
     }
 
-    public static void sendInventoryTitleChange(InventoryView view, String title) {
+    public static void sendInventoryTitleChange(InventoryView view, BaseComponent title) {
         Preconditions.checkArgument(view != null, "InventoryView cannot be null");
         Preconditions.checkArgument(title != null, "Title cannot be null");
         Preconditions.checkArgument(view.getPlayer() instanceof Player, "NPCs are not currently supported for this function");
@@ -106,7 +133,8 @@ public class CraftInventoryView extends InventoryView {
         final EntityPlayer entityPlayer = (EntityPlayer) ((CraftHumanEntity) view.getPlayer()).getHandle();
         final int containerId = entityPlayer.containerMenu.containerId;
         final Containers<?> windowType = CraftContainer.getNotchInventoryType(view.getTopInventory());
-        entityPlayer.connection.send(new PacketPlayOutOpenWindow(containerId, windowType, CraftChatMessage.fromString(title)[0]));
+        final net.minecraft.network.chat.IChatBaseComponent nmsTitle = CraftChatMessage.fromBungee(title);
+        entityPlayer.connection.send(new PacketPlayOutOpenWindow(containerId, windowType, nmsTitle));
         ((Player) view.getPlayer()).updateInventory();
     }
 }

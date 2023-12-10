@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -819,6 +820,36 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         getHandle().saveAsPassenger(compoundTag, false);
 
         return EntityTypes.loadEntityRecursive(compoundTag, level, java.util.function.Function.identity());
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    protected class CraftComponents implements org.bukkit.entity.Entity.Components {
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            // Do nothing. By default, entities cannot see messages
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component) {
+            // Do nothing. By default, entities cannot see messages
+        }
+
+        @Override
+        public BaseComponent getCustomName() {
+            return CraftChatMessage.toBungeeOrNull(getHandle().getCustomName());
+        }
+
+        @Override
+        public void setCustomName(BaseComponent name) {
+            getHandle().setCustomName(CraftChatMessage.fromBungeeOrNull(name));
+        }
+    };
+
+    @Override
+    public Components components() {
+        return components;
     }
 
     public void storeBukkitValues(NBTTagCompound c) {

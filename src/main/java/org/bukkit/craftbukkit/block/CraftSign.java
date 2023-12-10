@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import java.util.UUID;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.level.block.entity.TileEntitySign;
 import org.bukkit.Bukkit;
@@ -129,8 +130,8 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
 
     @Override
     public void applyTo(T sign) {
-        getSnapshot().setText(front.applyLegacyStringToSignSide(), true);
-        getSnapshot().setText(back.applyLegacyStringToSignSide(), false);
+        getSnapshot().setText(front.applyToAndGetHandle(), true);
+        getSnapshot().setText(back.applyToAndGetHandle(), false);
 
         super.applyTo(sign);
     }
@@ -175,15 +176,17 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
         return components;
     }
 
-    public static String[] revertComponents(IChatBaseComponent[] components) {
-        String[] lines = new String[components.length];
-        for (int i = 0; i < lines.length; i++) {
-            lines[i] = revertComponent(components[i]);
-        }
-        return lines;
-    }
+    public static IChatBaseComponent[] sanitizeLines(BaseComponent[] lines) {
+        IChatBaseComponent[] components = new IChatBaseComponent[4];
 
-    private static String revertComponent(IChatBaseComponent component) {
-        return CraftChatMessage.fromComponent(component);
+        for (int i = 0; i < 4; i++) {
+            if (i < lines.length) {
+                components[i] = CraftChatMessage.fromBungeeOrEmpty(lines[i]);
+            } else {
+                components[i] = IChatBaseComponent.empty();
+            }
+        }
+
+        return components;
     }
 }

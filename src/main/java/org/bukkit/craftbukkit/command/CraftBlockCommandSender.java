@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.command;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.commands.CommandListenerWrapper;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.level.block.entity.TileEntity;
@@ -35,6 +36,7 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
         super(SHARED_PERM);
         this.block = commandBlockListenerAbstract;
         this.tile = tile;
+        this.components = new CraftComponents();
     }
 
     @Override
@@ -69,6 +71,15 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
     @Override
     public void setOp(boolean value) {
         SHARED_PERM.setOp(value);
+    }
+
+    private final class CraftComponents extends ServerCommandSender.CraftComponents {
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            block.source.sendSystemMessage(CraftChatMessage.fromBungee(component));
+        }
+
     }
 
     public CommandListenerWrapper getWrapper() {

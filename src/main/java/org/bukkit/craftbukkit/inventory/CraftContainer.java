@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.world.IInventory;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.entity.player.PlayerInventory;
@@ -49,48 +51,84 @@ public class CraftContainer extends Container {
     }
 
     public CraftContainer(final Inventory inventory, final EntityHuman player, int id) {
-        this(new InventoryView() {
+        this(new ContainerInventoryView(inventory, player), player, id);
+    }
 
-            private final String originalTitle = (inventory instanceof CraftInventoryCustom) ? ((CraftInventoryCustom.MinecraftInventory) ((CraftInventory) inventory).getInventory()).getTitle() : inventory.getType().getDefaultTitle();
-            private String title = originalTitle;
+    private static final class ContainerInventoryView extends InventoryView {
+
+        private final BaseComponent originalTitle;
+        private BaseComponent title;
+
+        private final Inventory inventory;
+        private final EntityHuman player;
+
+        public ContainerInventoryView(Inventory inventory, EntityHuman player) {
+            this.inventory = inventory;
+            this.player = player;
+            this.originalTitle = (inventory instanceof CraftInventoryCustom) ? ((CraftInventoryCustom.MinecraftInventory) ((CraftInventory) inventory).getInventory()).getTitleComponent() : new TextComponent(inventory.getType().getDefaultTitle());
+            this.title = originalTitle.duplicate();
+        }
+
+        @Override
+        public Inventory getTopInventory() {
+            return inventory;
+        }
+
+        @Override
+        public Inventory getBottomInventory() {
+            return getPlayer().getInventory();
+        }
+
+        @Override
+        public HumanEntity getPlayer() {
+            return player.getBukkitEntity();
+        }
+
+        @Override
+        public InventoryType getType() {
+            return inventory.getType();
+        }
+
+        @Override
+        public String getTitle() {
+            return BaseComponent.toLegacyText(title);
+        }
+
+        @Override
+        public String getOriginalTitle() {
+            return BaseComponent.toLegacyText(originalTitle);
+        }
+
+        @Override
+        public void setTitle(String title) {
+            this.components.setTitle(TextComponent.fromLegacy(title));
+        }
+
+        private final CraftComponents components = new CraftComponents();
+
+        private final class CraftComponents implements InventoryView.Components {
 
             @Override
-            public Inventory getTopInventory() {
-                return inventory;
+            public BaseComponent getTitle() {
+                return title.duplicate();
             }
 
             @Override
-            public Inventory getBottomInventory() {
-                return getPlayer().getInventory();
+            public BaseComponent getOriginalTitle() {
+                return originalTitle.duplicate();
             }
 
             @Override
-            public HumanEntity getPlayer() {
-                return player.getBukkitEntity();
+            public void setTitle(BaseComponent title) {
+                CraftInventoryView.sendInventoryTitleChange(ContainerInventoryView.this, title);
+                ContainerInventoryView.this.title = title.duplicate();
             }
+        }
 
-            @Override
-            public InventoryType getType() {
-                return inventory.getType();
-            }
-
-            @Override
-            public String getTitle() {
-                return title;
-            }
-
-            @Override
-            public String getOriginalTitle() {
-                return originalTitle;
-            }
-
-            @Override
-            public void setTitle(String title) {
-                CraftInventoryView.sendInventoryTitleChange(this, title);
-                this.title = title;
-            }
-
-        }, player, id);
+        @Override
+        public Components components() {
+            return components;
+        }
     }
 
     @Override

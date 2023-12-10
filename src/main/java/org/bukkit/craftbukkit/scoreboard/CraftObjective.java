@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import com.google.common.base.Preconditions;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
 import org.bukkit.OfflinePlayer;
@@ -34,17 +36,12 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
 
     @Override
     public String getDisplayName() {
-        checkState();
-
-        return CraftChatMessage.fromComponent(objective.getDisplayName());
+        return BaseComponent.toLegacyText(components.getDisplayName());
     }
 
     @Override
     public void setDisplayName(String displayName) {
-        Preconditions.checkArgument(displayName != null, "Display name cannot be null");
-        checkState();
-
-        objective.setDisplayName(CraftChatMessage.fromString(displayName)[0]); // SPIGOT-4112: not nullable
+        this.components.setDisplayName((displayName != null) ? TextComponent.fromLegacy(displayName) : null);
     }
 
     @Override
@@ -144,6 +141,31 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
         return getScoreboard();
     }
 
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements Objective.Components {
+
+        @Override
+        public BaseComponent getDisplayName() {
+            checkState();
+
+            return CraftChatMessage.toBungee(objective.getDisplayName());
+        }
+
+        @Override
+        public void setDisplayName(BaseComponent displayName) {
+            Preconditions.checkArgument(displayName != null, "displayName cannot be null");
+
+            checkState();
+            objective.setDisplayName(CraftChatMessage.fromBungee(displayName));
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -162,6 +184,5 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
         final CraftObjective other = (CraftObjective) obj;
         return !(this.objective != other.objective && (this.objective == null || !this.objective.equals(other.objective)));
     }
-
 
 }

@@ -4,13 +4,18 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.server.network.FilteredText;
 import net.minecraft.world.item.component.WritableBookContent;
@@ -238,6 +243,90 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta, WritableBo
 
     private boolean isValidPage(int page) {
         return page > 0 && page <= getPageCount();
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents extends CraftMetaItem.CraftComponents implements BookMeta.Components {
+
+        private String pageToJSON(String page) {
+            IChatBaseComponent component = CraftChatMessage.fromString(page, true, true)[0];
+            return CraftChatMessage.toJSON(component);
+        }
+
+        private String componentToPage(/* @NotNull */ BaseComponent component) {
+            return CraftChatMessage.fromJSONComponent(ComponentSerializer.toString(component));
+        }
+
+        @Override
+        public BaseComponent getPage(final int page) {
+            Preconditions.checkArgument(isValidPage(page), "Invalid page number");
+            return ComponentSerializer.deserialize(pageToJSON(pages.get(page - 1)));
+        }
+
+        @Override
+        public void setPage(final int page, final BaseComponent text) {
+            if (!isValidPage(page)) {
+                throw new IllegalArgumentException("Invalid page number " + page + "/" + getPageCount());
+            }
+
+            BaseComponent newText = (text == null) ? new TextComponent() : text;
+            CraftMetaBook.this.pages.set(page - 1, componentToPage(newText));
+        }
+
+        @Override
+        public void setPages(List<BaseComponent> pages) {
+            if (pages.isEmpty()) {
+                CraftMetaBook.this.pages = null;
+                return;
+            }
+
+            if (CraftMetaBook.this.pages != null) {
+                CraftMetaBook.this.pages.clear();
+            }
+
+            for (BaseComponent page : pages) {
+                this.addPage(page);
+            }
+        }
+
+        @Override
+        public void addPage(final BaseComponent page) {
+            CraftMetaBook.this.internalAddPage(componentToPage(page != null ? page : new TextComponent()));
+        }
+
+        @Override
+        public void addPages(final List<BaseComponent> pages) {
+            for (BaseComponent page : pages) {
+                this.addPage(page);
+            }
+        }
+
+        @Override
+        public List<BaseComponent> getPages() {
+            if (CraftMetaBook.this.pages == null) {
+                return ImmutableList.of();
+            }
+
+            final List<String> copy = ImmutableList.copyOf(CraftMetaBook.this.pages);
+            return new AbstractList<>() {
+
+                @Override
+                public BaseComponent get(int index) {
+                    return ComponentSerializer.deserialize(pageToJSON(copy.get(index)));
+                }
+
+                @Override
+                public int size() {
+                    return copy.size();
+                }
+            };
+        }
+    }
+
+    @Override
+    public BookMeta.Components components() {
+        return components;
     }
 
     @Override

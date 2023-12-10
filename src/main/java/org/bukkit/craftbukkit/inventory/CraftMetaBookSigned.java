@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.IChatBaseComponent;
@@ -284,6 +285,65 @@ public class CraftMetaBookSigned extends CraftMetaItem implements BookMeta {
 
     public void setResolved(boolean resolved) {
         this.resolved = resolved;
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents extends CraftMetaItem.CraftComponents implements BookMeta.Components {
+
+        @Override
+        public BaseComponent getPage(final int page) {
+            Preconditions.checkArgument(isValidPage(page), "Invalid page number");
+            return CraftChatMessage.toBungee(pages.get(page - 1));
+        }
+
+        @Override
+        public void setPage(final int page, final BaseComponent text) {
+            if (!isValidPage(page)) {
+                throw new IllegalArgumentException("Invalid page number " + page + "/" + getPageCount());
+            }
+
+            CraftMetaBookSigned.this.pages.set(page - 1, CraftChatMessage.fromBungeeOrNull(text));
+        }
+
+        @Override
+        public void setPages(List<BaseComponent> pages) {
+            if (pages.isEmpty()) {
+                CraftMetaBookSigned.this.pages = null;
+                return;
+            }
+
+            if (CraftMetaBookSigned.this.pages != null) {
+                CraftMetaBookSigned.this.pages.clear();
+            }
+
+            for (BaseComponent page : pages) {
+                this.addPage(page);
+            }
+        }
+
+        @Override
+        public void addPage(final BaseComponent page) {
+            CraftMetaBookSigned.this.internalAddPage(CraftChatMessage.fromBungeeOrEmpty(page));
+        }
+
+        @Override
+        public void addPages(final List<BaseComponent> pages) {
+            for (BaseComponent page : pages) {
+                this.addPage(page);
+            }
+        }
+
+        @Override
+        public List<BaseComponent> getPages() {
+            if (CraftMetaBookSigned.this.pages == null) return ImmutableList.of();
+            return CraftMetaBookSigned.this.pages.stream().map(CraftChatMessage::toBungee).collect(ImmutableList.toImmutableList());
+        }
+    }
+
+    @Override
+    public BookMeta.Components components() {
+        return components;
     }
 
     @Override

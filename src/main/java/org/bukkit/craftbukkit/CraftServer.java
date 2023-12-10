@@ -43,6 +43,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jline.console.ConsoleReader;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.CommandDispatcher;
 import net.minecraft.commands.CommandListenerWrapper;
@@ -1738,27 +1740,7 @@ public final class CraftServer implements Server {
 
     @Override
     public int broadcast(String message, String permission) {
-        Set<CommandSender> recipients = new HashSet<>();
-        for (Permissible permissible : getPluginManager().getPermissionSubscriptions(permission)) {
-            if (permissible instanceof CommandSender && permissible.hasPermission(permission)) {
-                recipients.add((CommandSender) permissible);
-            }
-        }
-
-        BroadcastMessageEvent broadcastMessageEvent = new BroadcastMessageEvent(!Bukkit.isPrimaryThread(), message, recipients);
-        getPluginManager().callEvent(broadcastMessageEvent);
-
-        if (broadcastMessageEvent.isCancelled()) {
-            return 0;
-        }
-
-        message = broadcastMessageEvent.getMessage();
-
-        for (CommandSender recipient : recipients) {
-            recipient.sendMessage(message);
-        }
-
-        return recipients.size();
+        return components.broadcast(TextComponent.fromLegacy(message), permission);
     }
 
     @Override
@@ -2016,10 +1998,7 @@ public final class CraftServer implements Server {
 
     @Override
     public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-        Preconditions.checkArgument(type != null, "InventoryType cannot be null");
-        Preconditions.checkArgument(type.isCreatable(), "InventoryType.%s cannot be used to create a inventory", type);
-        Preconditions.checkArgument(title != null, "title cannot be null");
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, type, title);
+        return components.createInventory(owner, type, (title != null) ? TextComponent.fromLegacy(title) : null);
     }
 
     @Override
@@ -2030,13 +2009,12 @@ public final class CraftServer implements Server {
 
     @Override
     public Inventory createInventory(InventoryHolder owner, int size, String title) throws IllegalArgumentException {
-        Preconditions.checkArgument(9 <= size && size <= 54 && size % 9 == 0, "Size for custom inventory must be a multiple of 9 between 9 and 54 slots (got %s)", size);
-        return CraftInventoryCreator.INSTANCE.createInventory(owner, size, title);
+        return components.createInventory(owner, size, (title != null) ? TextComponent.fromLegacy(title) : null);
     }
 
     @Override
     public Merchant createMerchant(String title) {
-        return new CraftMerchantCustom(title == null ? InventoryType.MERCHANT.getDefaultTitle() : title);
+        return components.createMerchant((title != null) ? TextComponent.fromLegacy(title) : null);
     }
 
     @Override
@@ -2260,22 +2238,7 @@ public final class CraftServer implements Server {
 
     @Override
     public KeyedBossBar createBossBar(NamespacedKey key, String title, BarColor barColor, BarStyle barStyle, BarFlag... barFlags) {
-        Preconditions.checkArgument(key != null, "NamespacedKey key cannot be null");
-        Preconditions.checkArgument(barColor != null, "BarColor key cannot be null");
-        Preconditions.checkArgument(barStyle != null, "BarStyle key cannot be null");
-
-        BossBattleCustom bossBattleCustom = getServer().getCustomBossEvents().create(CraftNamespacedKey.toMinecraft(key), CraftChatMessage.fromString(title, true)[0]);
-        CraftKeyedBossbar craftKeyedBossbar = new CraftKeyedBossbar(bossBattleCustom);
-        craftKeyedBossbar.setColor(barColor);
-        craftKeyedBossbar.setStyle(barStyle);
-        for (BarFlag flag : barFlags) {
-            if (flag == null) {
-                continue;
-            }
-            craftKeyedBossbar.addFlag(flag);
-        }
-
-        return craftKeyedBossbar;
+        return components.createBossBar(key, (title != null) ? TextComponent.fromLegacy(title) : null, barColor, barStyle, barFlags);
     }
 
     @Override
@@ -2488,5 +2451,83 @@ public final class CraftServer implements Server {
     @Override
     public UnsafeValues getUnsafe() {
         return CraftMagicNumbers.INSTANCE;
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements Server.Components {
+
+        @Override
+        public int broadcast(BaseComponent message) {
+            return broadcast(message, BROADCAST_CHANNEL_USERS);
+        }
+
+        @Override
+        public int broadcast(BaseComponent message, String permission) {
+            Set<CommandSender> recipients = new HashSet<>();
+            for (Permissible permissible : getPluginManager().getPermissionSubscriptions(permission)) {
+                if (permissible instanceof CommandSender && permissible.hasPermission(permission)) {
+                    recipients.add((CommandSender) permissible);
+                }
+            }
+
+            BroadcastMessageEvent event = new BroadcastMessageEvent(!Bukkit.isPrimaryThread(), message, recipients);
+            getPluginManager().callEvent(event);
+
+            if (event.isCancelled()) {
+                return 0;
+            }
+
+            message = event.components().getMessage();
+
+            for (CommandSender recipient : recipients) {
+                recipient.components().sendMessage(message);
+            }
+
+            return recipients.size();
+        }
+
+        @Override
+        public Inventory createInventory(InventoryHolder owner, InventoryType type, BaseComponent title) {
+            Preconditions.checkArgument(type.isCreatable(), "Cannot open an inventory of type ", type);
+            return CraftInventoryCreator.INSTANCE.createInventory(owner, type, title);
+        }
+
+        @Override
+        public Inventory createInventory(InventoryHolder owner, int size, BaseComponent title) {
+            Preconditions.checkArgument(9 <= size && size <= 54 && size % 9 == 0, "Size for custom inventory must be a multiple of 9 between 9 and 54 slots (got " + size + ")");
+            return CraftInventoryCreator.INSTANCE.createInventory(owner, size, title);
+        }
+
+        @Override
+        public Merchant createMerchant(BaseComponent title) {
+            return new CraftMerchantCustom((title == null) ? new TextComponent(InventoryType.MERCHANT.getDefaultTitle()) : title);
+        }
+
+        @Override
+        public BossBar createBossBar(BaseComponent title, BarColor color, BarStyle style, BarFlag... flags) {
+            return new CraftBossBar(title, color, style, flags);
+        }
+
+        @Override
+        public KeyedBossBar createBossBar(NamespacedKey key, BaseComponent title, BarColor color, BarStyle style, BarFlag... flags) {
+            Preconditions.checkArgument(key != null, "key");
+
+            net.minecraft.network.chat.IChatBaseComponent nmsTitle = CraftChatMessage.fromBungee(title);
+            BossBattleCustom bossBattleCustom = getServer().getCustomBossEvents().create(CraftNamespacedKey.toMinecraft(key), nmsTitle);
+            CraftKeyedBossbar craftKeyedBossbar = new CraftKeyedBossbar(bossBattleCustom);
+            craftKeyedBossbar.setColor(color);
+            craftKeyedBossbar.setStyle(style);
+            for (BarFlag flag : flags) {
+                craftKeyedBossbar.addFlag(flag);
+            }
+
+            return craftKeyedBossbar;
+        }
+    };
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

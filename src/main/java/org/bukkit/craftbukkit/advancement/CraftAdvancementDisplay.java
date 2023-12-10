@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.advancement;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.advancements.AdvancementDisplay;
 import org.bukkit.advancement.AdvancementDisplayType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -61,5 +62,25 @@ public class CraftAdvancementDisplay implements org.bukkit.advancement.Advanceme
     @Override
     public AdvancementDisplayType getType() {
         return AdvancementDisplayType.values()[handle.getType().ordinal()];
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements org.bukkit.advancement.AdvancementDisplay.Components {
+
+        @Override
+        public BaseComponent getTitle() {
+            return CraftChatMessage.toBungeeOrEmpty(handle.getTitle());
+        }
+
+        @Override
+        public BaseComponent getDescription() {
+            return CraftChatMessage.toBungeeOrEmpty(handle.getDescription());
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

@@ -2,11 +2,13 @@ package org.bukkit.craftbukkit.block;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.world.ChestLock;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeacon;
 import org.bukkit.Location;
+import org.bukkit.Nameable;
 import org.bukkit.World;
 import org.bukkit.block.Beacon;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
@@ -106,5 +108,25 @@ public class CraftBeacon extends CraftBlockEntityState<TileEntityBeacon> impleme
     @Override
     public CraftBeacon copy(Location location) {
         return new CraftBeacon(this, location);
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements Nameable.Components {
+
+        @Override
+        public BaseComponent getCustomName() {
+            return CraftChatMessage.toBungeeOrNull(getSnapshot().name);
+        }
+
+        @Override
+        public void setCustomName(BaseComponent name) {
+            getSnapshot().setCustomName(CraftChatMessage.fromBungeeOrNull(name));
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

@@ -2,6 +2,8 @@ package org.bukkit.craftbukkit.command;
 
 import java.util.Set;
 import java.util.UUID;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -12,6 +14,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
 public abstract class ServerCommandSender implements CommandSender {
+    protected Components components = new CraftComponents();
     private final PermissibleBase perm;
 
     protected ServerCommandSender() {
@@ -94,5 +97,23 @@ public abstract class ServerCommandSender implements CommandSender {
     @Override
     public void sendMessage(UUID uuid, String... messages) {
         this.sendMessage(messages); // ServerCommandSenders have no use for senders
+    }
+
+    protected class CraftComponents implements CommandSender.Components {
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            ServerCommandSender.this.sendMessage(TextComponent.toLegacyText(component));
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component) {
+            this.sendMessage(component);
+        }
+    };
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

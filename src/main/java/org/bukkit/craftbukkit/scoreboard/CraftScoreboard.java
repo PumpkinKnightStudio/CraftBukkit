@@ -4,6 +4,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
@@ -48,15 +51,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
 
     @Override
     public CraftObjective registerNewObjective(String name, Criteria criteria, String displayName, RenderType renderType) {
-        Preconditions.checkArgument(name != null, "Objective name cannot be null");
-        Preconditions.checkArgument(criteria != null, "Criteria cannot be null");
-        Preconditions.checkArgument(displayName != null, "Display name cannot be null");
-        Preconditions.checkArgument(renderType != null, "RenderType cannot be null");
-        Preconditions.checkArgument(name.length() <= Short.MAX_VALUE, "The name '%s' is longer than the limit of 32767 characters (%s)", name, name.length());
-        Preconditions.checkArgument(board.getObjective(name) == null, "An objective of name '%s' already exists", name);
-
-        ScoreboardObjective objective = board.addObjective(name, ((CraftCriteria) criteria).criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType), true, null);
-        return new CraftObjective(this, objective);
+        return components.registerNewObjective(name, criteria, (displayName != null) ? TextComponent.fromLegacy(displayName) : null, renderType);
     }
 
     @Override
@@ -213,6 +208,35 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
     // CraftBukkit method
     public Scoreboard getHandle() {
         return board;
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements org.bukkit.scoreboard.Scoreboard.Components {
+
+        @Override
+        public CraftObjective registerNewObjective(String name, Criteria criteria, BaseComponent displayName) {
+            return registerNewObjective(name, criteria, displayName, RenderType.INTEGER);
+        }
+
+        @Override
+        public CraftObjective registerNewObjective(String name, Criteria criteria, BaseComponent displayName, RenderType renderType) {
+            Preconditions.checkArgument(name != null, "name cannot be null");
+            Preconditions.checkArgument(criteria != null, "criteria cannot be null");
+            Preconditions.checkArgument(displayName != null, "displayName cannot be null");
+            Preconditions.checkArgument(renderType != null, "renderType cannot be null");
+            Preconditions.checkArgument(name.length() <= Short.MAX_VALUE, "The name '%s' is longer than the limit of 32767 characters (%s)", name, name.length());
+            Preconditions.checkArgument(board.getObjective(name) == null, "An objective of name '%s' already exists", name);
+
+            IChatBaseComponent nmsDisplayName = CraftChatMessage.fromBungee(displayName);
+            ScoreboardObjective objective = board.addObjective(name, ((CraftCriteria) criteria).criteria, nmsDisplayName, CraftScoreboardTranslations.fromBukkitRender(renderType), true, null);
+            return new CraftObjective(CraftScoreboard.this, objective);
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 
     static ScoreHolder getScoreHolder(String entry) {

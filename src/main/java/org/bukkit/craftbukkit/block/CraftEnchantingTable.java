@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.world.level.block.entity.TileEntityEnchantTable;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -44,5 +45,25 @@ public class CraftEnchantingTable extends CraftBlockEntityState<TileEntityEnchan
     @Override
     public CraftEnchantingTable copy(Location location) {
         return new CraftEnchantingTable(this, location);
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements org.bukkit.Nameable.Components {
+
+        @Override
+        public BaseComponent getCustomName() {
+            return CraftChatMessage.toBungeeOrNull(getSnapshot().getCustomName());
+        }
+
+        @Override
+        public void setCustomName(BaseComponent name) {
+            getSnapshot().setCustomName(CraftChatMessage.fromBungeeOrNull(name));
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 }

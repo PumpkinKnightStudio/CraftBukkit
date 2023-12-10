@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.network.protocol.game.PacketPlayOutBoss;
 import net.minecraft.server.level.BossBattleServer;
 import net.minecraft.server.level.EntityPlayer;
@@ -25,8 +27,12 @@ public class CraftBossBar implements BossBar {
     private Map<BarFlag, FlagContainer> flags;
 
     public CraftBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
+        this((title != null) ? TextComponent.fromLegacy(title) : null, color, style, flags);
+    }
+
+    public CraftBossBar(BaseComponent title, BarColor color, BarStyle style, BarFlag... flags) {
         handle = new BossBattleServer(
-                CraftChatMessage.fromString(title, true)[0],
+                CraftChatMessage.fromBungeeOrEmpty(title),
                 convertColor(color),
                 convertStyle(style)
         );
@@ -213,6 +219,27 @@ public class CraftBossBar implements BossBar {
         for (Player player : getPlayers()) {
             removePlayer(player);
         }
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements BossBar.Components {
+
+        @Override
+        public BaseComponent getTitle() {
+            return CraftChatMessage.toBungeeOrEmpty(handle.name);
+        }
+
+        @Override
+        public void setTitle(BaseComponent title) {
+            handle.name = CraftChatMessage.fromBungeeOrEmpty(title);
+            handle.broadcast(PacketPlayOutBoss::createUpdateNamePacket);
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 
     private final class FlagContainer {

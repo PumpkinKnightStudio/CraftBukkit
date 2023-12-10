@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit.scoreboard;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.world.scores.ScoreboardTeam;
 import net.minecraft.world.scores.ScoreboardTeamBase;
 import net.minecraft.world.scores.ScoreboardTeamBase.EnumNameTagVisibility;
@@ -30,47 +32,32 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
 
     @Override
     public String getDisplayName() {
-        checkState();
-
-        return CraftChatMessage.fromComponent(team.getDisplayName());
+        return BaseComponent.toLegacyText(components.getDisplayName());
     }
 
     @Override
     public void setDisplayName(String displayName) {
-        Preconditions.checkArgument(displayName != null, "Display name cannot be null");
-        checkState();
-
-        team.setDisplayName(CraftChatMessage.fromString(displayName)[0]); // SPIGOT-4112: not nullable
+        this.components.setDisplayName((displayName != null) ? TextComponent.fromLegacy(displayName) : null);
     }
 
     @Override
     public String getPrefix() {
-        checkState();
-
-        return CraftChatMessage.fromComponent(team.getPlayerPrefix());
+        return BaseComponent.toLegacyText(components.getPrefix());
     }
 
     @Override
     public void setPrefix(String prefix) {
-        Preconditions.checkArgument(prefix != null, "Prefix cannot be null");
-        checkState();
-
-        team.setPlayerPrefix(CraftChatMessage.fromStringOrNull(prefix));
+        this.components.setDisplayName((prefix != null) ? TextComponent.fromLegacy(prefix) : null);
     }
 
     @Override
     public String getSuffix() {
-        checkState();
-
-        return CraftChatMessage.fromComponent(team.getPlayerSuffix());
+        return BaseComponent.toLegacyText(components.getSuffix());
     }
 
     @Override
     public void setSuffix(String suffix) {
-        Preconditions.checkArgument(suffix != null, "Suffix cannot be null");
-        checkState();
-
-        team.setPlayerSuffix(CraftChatMessage.fromStringOrNull(suffix));
+        this.components.setDisplayName((suffix != null) ? TextComponent.fromLegacy(suffix) : null);
     }
 
     @Override
@@ -283,6 +270,58 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
         Preconditions.checkState(getScoreboard().board.getPlayerTeam(team.getName()) != null, "Unregistered scoreboard component");
 
         return getScoreboard();
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements Team.Components {
+
+        @Override
+        public BaseComponent getDisplayName() {
+            checkState();
+            return CraftChatMessage.toBungee(team.getDisplayName());
+        }
+
+        @Override
+        public void setDisplayName(BaseComponent displayName) {
+            Preconditions.checkArgument(displayName != null, "displayName cannot be null");
+
+            checkState();
+            team.setDisplayName(CraftChatMessage.fromBungee(displayName));
+        }
+
+        @Override
+        public BaseComponent getPrefix() {
+            checkState();
+            return CraftChatMessage.toBungee(team.getPlayerPrefix());
+        }
+
+        @Override
+        public void setPrefix(BaseComponent prefix) {
+            Preconditions.checkArgument(prefix != null, "prefix cannot be null");
+
+            checkState();
+            team.setDisplayName(CraftChatMessage.fromBungee(prefix));
+        }
+
+        @Override
+        public BaseComponent getSuffix() {
+            checkState();
+            return CraftChatMessage.toBungee(team.getPlayerSuffix());
+        }
+
+        @Override
+        public void setSuffix(BaseComponent suffix) {
+            Preconditions.checkArgument(suffix != null, "suffix cannot be null");
+
+            checkState();
+            team.setDisplayName(CraftChatMessage.fromBungee(suffix));
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 
     @Override

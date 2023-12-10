@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.inventory.util;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCustom;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -22,6 +23,15 @@ public class CraftCustomInventoryConverter implements CraftInventoryCreator.Inve
     }
 
     public Inventory createInventory(InventoryHolder owner, int size, String title) {
+        return new CraftInventoryCustom(owner, size, title);
+    }
+
+    @Override
+    public Inventory createInventory(InventoryHolder owner, InventoryType type, BaseComponent title) {
+        return new CraftInventoryCustom(owner, type, title);
+    }
+
+    public Inventory createInventory(InventoryHolder owner, int size, BaseComponent title) {
         return new CraftInventoryCustom(owner, size, title);
     }
 }

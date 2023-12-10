@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.IInventory;
 import net.minecraft.world.entity.player.EntityHuman;
@@ -31,11 +33,19 @@ public class CraftInventoryCustom extends CraftInventory {
         super(new MinecraftInventory(owner, size, title));
     }
 
+    public CraftInventoryCustom(InventoryHolder owner, InventoryType type, BaseComponent title) {
+        super(new MinecraftInventory(owner, type, title));
+    }
+
+    public CraftInventoryCustom(InventoryHolder owner, int size, BaseComponent title) {
+        super(new MinecraftInventory(owner, size, title));
+    }
+
     static class MinecraftInventory implements IInventory {
         private final NonNullList<ItemStack> items;
         private int maxStack = MAX_STACK;
         private final List<HumanEntity> viewers;
-        private final String title;
+        private final BaseComponent title;
         private InventoryType type;
         private final InventoryHolder owner;
 
@@ -49,14 +59,23 @@ public class CraftInventoryCustom extends CraftInventory {
             this.type = type;
         }
 
+        public MinecraftInventory(InventoryHolder owner, InventoryType type, BaseComponent title) {
+            this(owner, type.getDefaultSize(), title);
+            this.type = type;
+        }
+
         public MinecraftInventory(InventoryHolder owner, int size) {
             this(owner, size, "Chest");
         }
 
         public MinecraftInventory(InventoryHolder owner, int size, String title) {
-            Preconditions.checkArgument(title != null, "title cannot be null");
+            this(owner, size, TextComponent.fromLegacy(title));
+        }
+
+        public MinecraftInventory(InventoryHolder owner, int size, BaseComponent title) {
+            Preconditions.checkArgument(title != null, "Title cannot be null");
             this.items = NonNullList.withSize(size, ItemStack.EMPTY);
-            this.title = title;
+            this.title = title.duplicate();
             this.viewers = new ArrayList<HumanEntity>();
             this.owner = owner;
             this.type = InventoryType.CHEST;
@@ -184,7 +203,11 @@ public class CraftInventoryCustom extends CraftInventory {
         }
 
         public String getTitle() {
-            return title;
+            return TextComponent.toLegacyText(title);
+        }
+
+        public BaseComponent getTitleComponent() {
+            return title.duplicate();
         }
 
         @Override

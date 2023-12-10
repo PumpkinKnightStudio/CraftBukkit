@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.command;
 
 import java.util.Set;
 import java.util.UUID;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.commands.CommandListenerWrapper;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -130,6 +131,27 @@ public class ProxiedNativeCommandSender implements ProxiedCommandSender {
     @Override
     public void setOp(boolean value) {
         getCaller().setOp(value);
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements CommandSender.Components {
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            getCaller().components().sendMessage(component);
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component) {
+            getCaller().components().sendMessage(sender, component);
+        }
+
+    }
+
+    @Override
+    public Components components() {
+        return components;
     }
 
 }

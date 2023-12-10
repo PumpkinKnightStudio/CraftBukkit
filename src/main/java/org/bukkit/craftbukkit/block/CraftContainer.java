@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.world.ChestLock;
 import net.minecraft.world.level.block.entity.TileEntityContainer;
 import org.bukkit.Location;
@@ -57,4 +58,24 @@ public abstract class CraftContainer<T extends TileEntityContainer> extends Craf
 
     @Override
     public abstract CraftContainer<T> copy(Location location);
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents implements org.bukkit.Nameable.Components {
+
+        @Override
+        public BaseComponent getCustomName() {
+            return CraftChatMessage.toBungeeOrNull(getSnapshot().getCustomName());
+        }
+
+        @Override
+        public void setCustomName(BaseComponent name) {
+            getSnapshot().name = CraftChatMessage.fromBungeeOrNull(name);
+        }
+    }
+
+    @Override
+    public Components components() {
+        return components;
+    }
 }

@@ -1,16 +1,21 @@
 package org.bukkit.craftbukkit.command;
 
 import java.net.SocketAddress;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.rcon.RemoteControlCommandListener;
 import org.bukkit.command.RemoteConsoleCommandSender;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 public class CraftRemoteConsoleCommandSender extends ServerCommandSender implements RemoteConsoleCommandSender {
 
     private final RemoteControlCommandListener listener;
 
     public CraftRemoteConsoleCommandSender(RemoteControlCommandListener listener) {
+        super();
         this.listener = listener;
+        this.components = new CraftComponents();
     }
 
     public RemoteControlCommandListener getListener() {
@@ -47,5 +52,16 @@ public class CraftRemoteConsoleCommandSender extends ServerCommandSender impleme
     @Override
     public void setOp(boolean value) {
         throw new UnsupportedOperationException("Cannot change operator status of remote controller.");
+    }
+
+    private final class CraftComponents extends ServerCommandSender.CraftComponents {
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+            BaseComponent messageWithNewLine = component.duplicate();
+            messageWithNewLine.addExtra(new TextComponent("\n")); // Send a newline after each message, to preserve formatting.
+            listener.sendSystemMessage(CraftChatMessage.fromBungee(messageWithNewLine));
+        }
+
     }
 }

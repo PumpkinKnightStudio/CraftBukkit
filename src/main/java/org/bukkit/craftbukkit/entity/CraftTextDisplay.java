@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.world.entity.Display;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.CraftServer;
@@ -125,6 +126,26 @@ public class CraftTextDisplay extends CraftDisplay implements TextDisplay {
             default:
                 throw new IllegalArgumentException("Unknown alignment " + alignment);
         }
+    }
+
+    private final CraftComponents components = new CraftComponents();
+
+    private final class CraftComponents extends CraftEntity.CraftComponents implements TextDisplay.Components {
+
+        @Override
+        public BaseComponent getText() {
+            return CraftChatMessage.toBungeeOrEmpty(getHandle().getText());
+        }
+
+        @Override
+        public void setText(BaseComponent text) {
+            getHandle().setText(CraftChatMessage.fromBungeeOrEmpty(text));
+        }
+    };
+
+    @Override
+    public TextDisplay.Components components() {
+        return components;
     }
 
     private boolean getFlag(int flag) {
