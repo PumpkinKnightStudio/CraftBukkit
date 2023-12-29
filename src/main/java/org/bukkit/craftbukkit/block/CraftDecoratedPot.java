@@ -12,7 +12,9 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.DecoratedPot;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftInventoryDecoratedPot;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
+import org.bukkit.inventory.DecoratedPotInventory;
 
 public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEntity> implements DecoratedPot {
 
@@ -25,11 +27,25 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
     }
 
     @Override
+    public DecoratedPotInventory getSnapshotInventory() {
+        return new CraftInventoryDecoratedPot(this.getSnapshot());
+    }
+
+    @Override
+    public DecoratedPotInventory getInventory() {
+        if (!this.isPlaced()) {
+            return this.getSnapshotInventory();
+        }
+
+        return new CraftInventoryDecoratedPot(this.getTileEntity());
+    }
+
+    @Override
     public void setSherd(Side face, Material sherd) {
         Preconditions.checkArgument(face != null, "face must not be null");
         Preconditions.checkArgument(sherd == null || sherd == Material.BRICK || Tag.ITEMS_DECORATED_POT_SHERDS.isTagged(sherd), "sherd is not a valid sherd material: %s", sherd);
 
-        Item sherdItem = (sherd != null) ? CraftMagicNumbers.getItem(sherd) : Items.BRICK;
+        Item sherdItem = (sherd != null) ? CraftItemType.bukkitToMinecraft(sherd) : Items.BRICK;
         DecoratedPotBlockEntity.Decoration decorations = getSnapshot().getDecorations();
 
         switch (face) {
@@ -54,7 +70,7 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
             default -> throw new IllegalArgumentException("Unexpected value: " + face);
         };
 
-        return CraftMagicNumbers.getMaterial(sherdItem);
+        return CraftItemType.minecraftToBukkit(sherdItem);
     }
 
     @Override
@@ -62,16 +78,16 @@ public class CraftDecoratedPot extends CraftBlockEntityState<DecoratedPotBlockEn
         DecoratedPotBlockEntity.Decoration decorations = getSnapshot().getDecorations();
 
         Map<Side, Material> sherds = new EnumMap<>(Side.class);
-        sherds.put(Side.BACK, CraftMagicNumbers.getMaterial(decorations.back()));
-        sherds.put(Side.LEFT, CraftMagicNumbers.getMaterial(decorations.left()));
-        sherds.put(Side.RIGHT, CraftMagicNumbers.getMaterial(decorations.right()));
-        sherds.put(Side.FRONT, CraftMagicNumbers.getMaterial(decorations.front()));
+        sherds.put(Side.BACK, CraftItemType.minecraftToBukkit(decorations.back()));
+        sherds.put(Side.LEFT, CraftItemType.minecraftToBukkit(decorations.left()));
+        sherds.put(Side.RIGHT, CraftItemType.minecraftToBukkit(decorations.right()));
+        sherds.put(Side.FRONT, CraftItemType.minecraftToBukkit(decorations.front()));
         return sherds;
     }
 
     @Override
     public List<Material> getShards() {
-        return getSnapshot().getDecorations().sorted().map(CraftMagicNumbers::getMaterial).collect(Collectors.toUnmodifiableList());
+        return getSnapshot().getDecorations().sorted().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
