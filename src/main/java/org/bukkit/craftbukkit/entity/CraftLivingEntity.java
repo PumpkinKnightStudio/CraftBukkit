@@ -137,7 +137,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public void setAbsorptionAmount(double amount) {
         Preconditions.checkArgument(amount >= 0 && Double.isFinite(amount), "amount < 0 or non-finite");
 
-        getHandle().getAttribute(GenericAttributes.MAX_ABSORPTION).setBaseValue(amount);
+        double currentMaxAbsorptionAmount = getHandle().getAttributeBaseValue(GenericAttributes.MAX_ABSORPTION);
+        
+        if (amount > currentMaxAbsorptionAmount) {
+          getHandle().getAttribute(GenericAttributes.MAX_ABSORPTION).setBaseValue(amount);
+        }
+        
         getHandle().setAbsorptionAmount((float) amount);
     }
 
