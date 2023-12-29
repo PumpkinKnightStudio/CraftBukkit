@@ -60,7 +60,6 @@ import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.Overridden;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
-import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
@@ -308,7 +307,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.customModelData = meta.customModelData;
         this.blockData = meta.blockData;
 
-        if (meta.hasEnchants()) {
+        if (meta.enchantments != null) {
             this.enchantments = new LinkedHashMap<Enchantment, Integer>(meta.enchantments);
         }
 
@@ -680,7 +679,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     static void applyEnchantments(Map<Enchantment, Integer> enchantments, NBTTagCompound tag, ItemMetaKey key) {
-        if (enchantments == null || enchantments.size() == 0) {
+        if (enchantments == null) {
             return;
         }
 
@@ -829,7 +828,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Override
     public boolean removeEnchant(Enchantment ench) {
         Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
-        return hasEnchants() && enchantments.remove(ench) != null;
+        boolean enchantmentRemoved = hasEnchants() && enchantments.remove(ench) != null;
+        // If we no longer have any enchantments, then clear enchantment tag
+        if (enchantmentRemoved && enchantments.isEmpty()) {
+            enchantments = null;
+        }
+        return enchantmentRemoved;
     }
 
     @Override
@@ -875,8 +879,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return (this.hideFlag & bitModifier) == bitModifier;
     }
 
-    private byte getBitModifier(ItemFlag hideFlag) {
-        return (byte) (1 << hideFlag.ordinal());
+    private int getBitModifier(ItemFlag hideFlag) {
+        return 1 << hideFlag.ordinal();
     }
 
     @Override

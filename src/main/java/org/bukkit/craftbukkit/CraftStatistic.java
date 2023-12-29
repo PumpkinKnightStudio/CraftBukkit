@@ -57,19 +57,19 @@ public class CraftStatistic extends Statistic {
     public static net.minecraft.stats.Statistic getItemTypeStatistic(org.bukkit.Statistic stat, ItemType itemType) {
         try {
             if (stat == Statistic.CRAFT_ITEM) {
-                return StatisticList.ITEM_CRAFTED.get(((CraftItemType) itemType).getHandle());
+                return StatisticList.ITEM_CRAFTED.get(CraftItemType.bukkitToMinecraft(itemType));
             }
             if (stat == Statistic.USE_ITEM) {
-                return StatisticList.ITEM_USED.get(((CraftItemType) itemType).getHandle());
+                return StatisticList.ITEM_USED.get(CraftItemType.bukkitToMinecraft(itemType));
             }
             if (stat == Statistic.BREAK_ITEM) {
-                return StatisticList.ITEM_BROKEN.get(((CraftItemType) itemType).getHandle());
+                return StatisticList.ITEM_BROKEN.get(CraftItemType.bukkitToMinecraft(itemType));
             }
             if (stat == Statistic.PICKUP) {
-                return StatisticList.ITEM_PICKED_UP.get(((CraftItemType) itemType).getHandle());
+                return StatisticList.ITEM_PICKED_UP.get(CraftItemType.bukkitToMinecraft(itemType));
             }
             if (stat == Statistic.DROP) {
-                return StatisticList.ITEM_DROPPED.get(((CraftItemType) itemType).getHandle());
+                return StatisticList.ITEM_DROPPED.get(CraftItemType.bukkitToMinecraft(itemType));
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;
@@ -80,7 +80,7 @@ public class CraftStatistic extends Statistic {
     public static net.minecraft.stats.Statistic getBlockTypeStatistic(org.bukkit.Statistic stat, BlockType<?> blockType) {
         try {
             if (stat == Statistic.MINE_BLOCK) {
-                return StatisticList.BLOCK_MINED.get(((CraftBlockType<?>) blockType).getHandle());
+                return StatisticList.BLOCK_MINED.get(CraftBlockType.bukkitToMinecraft(blockType));
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;

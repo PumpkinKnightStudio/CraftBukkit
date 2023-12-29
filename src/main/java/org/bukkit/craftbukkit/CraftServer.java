@@ -12,9 +12,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.awt.image.BufferedImage;
@@ -50,16 +48,12 @@ import net.minecraft.commands.CommandDispatcher;
 import net.minecraft.commands.CommandListenerWrapper;
 import net.minecraft.commands.arguments.ArgumentEntity;
 import net.minecraft.core.BlockPosition;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.DynamicOpsNBT;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.resources.MinecraftKey;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerCommand;
@@ -114,7 +108,6 @@ import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.level.storage.Convertable;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
-import net.minecraft.world.level.storage.SaveData;
 import net.minecraft.world.level.storage.WorldDataServer;
 import net.minecraft.world.level.storage.WorldNBTStorage;
 import net.minecraft.world.level.storage.loot.LootDataManager;
@@ -132,6 +125,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Registry;
 import org.bukkit.Server;
+import org.bukkit.ServerTickManager;
 import org.bukkit.StructureType;
 import org.bukkit.UnsafeValues;
 import org.bukkit.Warning.WarningState;
@@ -298,6 +292,7 @@ public final class CraftServer implements Server {
     public String minimumAPI;
     public CraftScoreboardManager scoreboardManager;
     public CraftDataPackManager dataPackManager;
+    private CraftServerTickManager serverTickManager;
     public boolean playerCommandState;
     private boolean printSaveWarning;
     private CraftIconCache icon;
@@ -325,6 +320,7 @@ public final class CraftServer implements Server {
         this.serverVersion = CraftServer.class.getPackage().getImplementationVersion();
         this.structureManager = new CraftStructureManager(console.getStructureManager());
         this.dataPackManager = new CraftDataPackManager(this.getServer().getPackRepository());
+        this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
 
         Bukkit.setServer(this);
 
@@ -730,6 +726,11 @@ public final class CraftServer implements Server {
     @Override
     public DataPackManager getDataPackManager() {
         return this.dataPackManager;
+    }
+
+    @Override
+    public ServerTickManager getServerTickManager() {
+        return this.serverTickManager;
     }
 
     @Override

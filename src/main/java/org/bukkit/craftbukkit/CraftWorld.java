@@ -138,7 +138,6 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BiomeSearchResult;
 import org.bukkit.util.BoundingBox;
@@ -146,7 +145,6 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class CraftWorld extends CraftRegionAccessor implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
@@ -1034,6 +1032,16 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         return Difficulty.getByValue(this.getHandle().getDifficulty().ordinal());
     }
 
+    @Override
+    public int getViewDistance() {
+        return world.getChunkSource().chunkMap.serverViewDistance;
+    }
+
+    @Override
+    public int getSimulationDistance() {
+        return world.getChunkSource().chunkMap.getDistanceManager().simulationDistance;
+    }
+
     public BlockMetadataStore getBlockMetadata() {
         return blockMetadata;
     }
@@ -1169,7 +1177,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkArgument(data != null, "MaterialData cannot be null");
         Preconditions.checkArgument(location != null, "Location cannot be null");
 
-        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), ((CraftBlockType<?>) data.getItemType().asBlockType()).getHandle().defaultBlockState(), SpawnReason.CUSTOM);
+        EntityFallingBlock entity = EntityFallingBlock.fall(world, BlockPosition.containing(location.getX(), location.getY(), location.getZ()), CraftBlockType.bukkitToMinecraft(data.getItemType().asBlockType()).defaultBlockState(), SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
     }
 

@@ -8,6 +8,7 @@ import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -33,7 +34,7 @@ public class CraftEffect {
                 datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
             } else {
                 Preconditions.checkArgument(data == ItemType.AIR || ((ItemType) data).isRecord(), "Invalid record type!");
-                datavalue = Item.getId(((CraftItemType) data).getHandle());
+                datavalue = Item.getId(CraftItemType.bukkitToMinecraft((ItemType) data));
             }
             break;
         case SMOKE:
@@ -71,7 +72,7 @@ public class CraftEffect {
                 Preconditions.checkArgument(((Material) data).isBlock(), "Material is not a block!");
                 datavalue = Block.getId(CraftMagicNumbers.getBlock((Material) data).defaultBlockState());
             } else {
-                datavalue = Block.getId(((CraftBlockType<?>) data).getHandle().defaultBlockState());
+                datavalue = Block.getId(CraftBlockType.bukkitToMinecraft((BlockType<?>) data).defaultBlockState());
             }
             break;
         case COMPOSTER_FILL_ATTEMPT:

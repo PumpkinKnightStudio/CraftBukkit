@@ -32,7 +32,7 @@ public final class CraftItemStack extends ItemStack {
             return net.minecraft.world.item.ItemStack.EMPTY;
         }
 
-        Item item = ((CraftItemType) original.getType()).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(original.getType());
 
         if (item == null) {
             return net.minecraft.world.item.ItemStack.EMPTY;
@@ -121,12 +121,12 @@ public final class CraftItemStack extends ItemStack {
             return;
         } else if (type == ItemType.AIR) {
             handle = null;
-        } else if (((CraftItemType) type).getHandle() == null) { // :(  --Smile again, with the new system this should never happen
+        } else if (CraftItemType.bukkitToMinecraft(type) == null) { // :(  --Smile again, with the new system this should never happen
             handle = null;
         } else if (handle == null) {
-            handle = new net.minecraft.world.item.ItemStack(((CraftItemType) type).getHandle(), 1);
+            handle = new net.minecraft.world.item.ItemStack(CraftItemType.bukkitToMinecraft(type), 1);
         } else {
-            handle.setItem(((CraftItemType) type).getHandle());
+            handle.setItem(CraftItemType.bukkitToMinecraft(type));
             if (hasItemMeta()) {
                 // This will create the appropriate item meta, which will contain all the data we intend to keep
                 setItemMeta(handle, getItemMeta(handle));
@@ -500,7 +500,7 @@ public final class CraftItemStack extends ItemStack {
         if (itemMeta == null) return true;
 
         Item oldItem = item.getItem();
-        Item newItem = ((CraftItemType) CraftItemFactory.instance().updateItemType(itemMeta, CraftItemType.minecraftToBukkit(oldItem))).getHandle();
+        Item newItem = CraftItemType.bukkitToMinecraft(CraftItemFactory.instance().updateItemType(itemMeta, CraftItemType.minecraftToBukkit(oldItem)));
         if (oldItem != newItem) {
             item.setItem(newItem);
         }

@@ -17,7 +17,7 @@ public class CraftItemTag extends CraftTag<Item, ItemType> {
 
     @Override
     public boolean isTagged(ItemType item) {
-        return ((CraftItemType) item).getHandle().builtInRegistryHolder().is(tag);
+        return CraftItemType.bukkitToMinecraft(item).builtInRegistryHolder().is(tag);
     }
 
     @Override

@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
 import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
@@ -542,7 +543,7 @@ public class CraftBlockData implements BlockData {
 
     public static <B extends BlockData> B newData(BlockType<B> blockType, String data) {
         IBlockData blockData;
-        Block block = blockType != null ? ((CraftBlockType<B>) blockType).getHandle() : null;
+        Block block = blockType != null ? CraftBlockType.bukkitToMinecraft(blockType) : null;
         Map<IBlockState<?>, Comparable<?>> parsed = null;
 
         // Data provided, use it
@@ -639,7 +640,11 @@ public class CraftBlockData implements BlockData {
         return state.isFaceSturdy(BlockAccessAir.INSTANCE, BlockPosition.ZERO, CraftBlock.blockFaceToNotch(face), CraftBlockSupport.toNMS(support));
     }
 
-    @NotNull
+    @Override
+    public Color getMapColor() {
+        return Color.fromRGB(state.getMapColor(null, null).col);
+    }
+
     @Override
     public ItemType getPlacementType() {
         return CraftItemType.minecraftToBukkit(state.getBlock().asItem());

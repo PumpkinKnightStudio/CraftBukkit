@@ -56,7 +56,6 @@ import net.minecraft.world.level.block.entity.TileEntityStructure;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.world.level.block.piston.TileEntityPiston;
 import net.minecraft.world.level.block.state.IBlockData;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -121,7 +120,7 @@ public final class CraftBlockStates {
                 // block with unhandled TileEntity:
                 return new CraftBlockEntityState<>(world, tileEntity);
             }
-            Preconditions.checkState(tileEntity == null, "Unexpected BlockState for %s", CraftBlockType.minecraftToBukkit(blockData.getBlock()).getKey());
+            Preconditions.checkState(tileEntity == null, "Unexpected BlockState for %s", CraftBlockType.minecraftToBukkit(blockData.getBlock()));
             return new CraftBlockState(world, blockPosition, blockData);
         }
     };
@@ -377,7 +376,7 @@ public final class CraftBlockStates {
         BlockStateFactory<?> factory = getFactory(blockType);
 
         if (factory instanceof BlockEntityStateFactory) {
-            return ((BlockEntityStateFactory<?, ?>) factory).createTileEntity(BlockPosition.ZERO, ((CraftBlockType) blockType).getHandle().defaultBlockState());
+            return ((BlockEntityStateFactory<?, ?>) factory).createTileEntity(BlockPosition.ZERO, CraftBlockType.bukkitToMinecraft(blockType).defaultBlockState());
         }
 
         return null;
@@ -400,8 +399,8 @@ public final class CraftBlockStates {
     }
 
     public static BlockState getBlockState(BlockPosition blockPosition, BlockType<?> blockType, @Nullable NBTTagCompound blockEntityTag) {
-        Preconditions.checkNotNull(blockType, "block type is null");
-        IBlockData blockData = ((CraftBlockType<?>) blockType).getHandle().defaultBlockState();
+        Preconditions.checkNotNull(blockType, "blocktype is null");
+        IBlockData blockData = CraftBlockType.bukkitToMinecraft(blockType).defaultBlockState();
         return getBlockState(blockPosition, blockData, blockEntityTag);
     }
 
