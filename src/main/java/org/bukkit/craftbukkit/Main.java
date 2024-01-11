@@ -133,6 +133,8 @@ public class Main {
                 acceptsAll(asList("demo"), "Demo mode");
 
                 acceptsAll(asList("initSettings"), "Only create configuration files and then exit"); // SPIGOT-5761: Add initSettings option
+
+                acceptsAll(asList("verbose"), "Enables additional verbose logging");
             }
         };
 
@@ -187,6 +189,10 @@ public class Main {
                 if (options.has("nojline")) {
                     System.setProperty("user.language", "en");
                     useJline = false;
+                }
+
+                if (options.has("verbose")) {
+                    System.setProperty("bukkit.verbose", "true");
                 }
 
                 if (useJline) {
