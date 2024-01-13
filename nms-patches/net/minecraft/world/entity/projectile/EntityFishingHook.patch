@@ -1,23 +1,29 @@
 --- a/net/minecraft/world/entity/projectile/EntityFishingHook.java
 +++ b/net/minecraft/world/entity/projectile/EntityFishingHook.java
-@@ -46,6 +46,12 @@
+@@ -46,6 +46,14 @@
  import net.minecraft.world.phys.Vec3D;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
++import org.bukkit.Location;
 +import org.bukkit.entity.Player;
 +import org.bukkit.entity.FishHook;
 +import org.bukkit.event.player.PlayerFishEvent;
++import org.bukkit.event.player.PlayerFishLureEvent;
 +// CraftBukkit end
 +
  public class EntityFishingHook extends IProjectile {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -67,6 +73,18 @@
+@@ -67,6 +75,22 @@
      private final int luck;
      private final int lureSpeed;
  
-+    // CraftBukkit start - Extra variables to enable modification of fishing wait time, values are minecraft defaults
++    // CraftBukkit start
++    // Variables related to PlayerFishLureEvent
++    private Double lastLureX, lastLureZ;
++
++    // Extra variables to enable modification of fishing wait time, values are minecraft defaults
 +    public int minWaitTime = 100;
 +    public int maxWaitTime = 600;
 +    public int minLureTime = 20;
@@ -32,7 +38,7 @@
      private EntityFishingHook(EntityTypes<? extends EntityFishingHook> entitytypes, World world, int i, int j) {
          super(entitytypes, world);
          this.syncronizedRandom = RandomSource.create();
-@@ -261,7 +279,7 @@
+@@ -261,7 +285,7 @@
      private void checkCollision() {
          MovingObjectPosition movingobjectposition = ProjectileHelper.getHitResultOnMoveVector(this, this::canHitEntity);
  
@@ -41,7 +47,7 @@
      }
  
      @Override
-@@ -294,11 +312,11 @@
+@@ -294,11 +318,11 @@
          int i = 1;
          BlockPosition blockposition1 = blockposition.above();
  
@@ -55,7 +61,7 @@
              --i;
          }
  
-@@ -308,6 +326,10 @@
+@@ -308,6 +332,10 @@
                  this.timeUntilLured = 0;
                  this.timeUntilHooked = 0;
                  this.getEntityData().set(EntityFishingHook.DATA_BITING, false);
@@ -66,11 +72,66 @@
              }
          } else {
              float f;
-@@ -341,6 +363,13 @@
+@@ -319,8 +347,10 @@
+             IBlockData iblockdata;
+ 
+             if (this.timeUntilHooked > 0) {
++                int oldTimeUntilHooked = this.timeUntilHooked; // CraftBukkit
+                 this.timeUntilHooked -= i;
+                 if (this.timeUntilHooked > 0) {
++                    float oldFishAngle = this.fishAngle; // CraftBukkit
+                     this.fishAngle += (float) this.random.triangle(0.0D, 9.188D);
+                     f = this.fishAngle * 0.017453292F;
+                     f1 = MathHelper.sin(f);
+@@ -328,6 +358,40 @@
+                     d0 = this.getX() + (double) (f1 * (float) this.timeUntilHooked * 0.1F);
+                     d1 = (double) ((float) MathHelper.floor(this.getY()) + 1.0F);
+                     d2 = this.getZ() + (double) (f2 * (float) this.timeUntilHooked * 0.1F);
++
++                    // CraftBukkit start
++                    Location oldLocation = new Location(worldserver.getWorld(), (lastLureX != null) ? lastLureX.doubleValue() : d0, d1, (lastLureZ != null) ? lastLureZ.doubleValue() : d2);
++                    Location location = new Location(worldserver.getWorld(), d0, d1, d2);
++
++                    PlayerFishLureEvent event = new PlayerFishLureEvent((Player) this.getPlayerOwner().getBukkitEntity(), (FishHook) this.getBukkitEntity(), oldLocation, location, fishAngle, timeUntilHooked);
++                    this.level().getCraftServer().getPluginManager().callEvent(event);
++                    this.fishAngle = event.getAngleFromHook();
++                    if (event.isCancelled()) {
++                        /*
++                         * If the event is cancelled, we're going to just ensure that the fish particles remain
++                         * at the previous position by resetting the fishAngle and timeUntilHooked values to
++                         * their values before they were modified by this movement.
++                         *
++                         * Not returning here allows the particles to still be (optionally) displayed (at the old
++                         * position) without having any other side effects.
++                         */
++                        this.timeUntilHooked = oldTimeUntilHooked;
++                        this.fishAngle = oldFishAngle;
++                        if (lastLureX != null && lastLureZ != null) {
++                            d0 = lastLureX.doubleValue();
++                            d2 = lastLureZ.doubleValue();
++                        }
++                    } else {
++                        this.timeUntilHooked = event.getTimeUntilHooked();
++                        this.lastLureX = d0;
++                        this.lastLureZ = d2;
++                    }
++
++                    if (!event.isSpawnFishParticles()) {
++                        return;
++                    }
++                    // CraftBukkit end
++
+                     iblockdata = worldserver.getBlockState(BlockPosition.containing(d0, d1 - 1.0D, d2));
+                     if (iblockdata.is(Blocks.WATER)) {
+                         if (this.random.nextFloat() < 0.15F) {
+@@ -341,6 +405,16 @@
                          worldserver.sendParticles(Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
                      }
                  } else {
 +                    // CraftBukkit start
++                    this.lastLureX = null;
++                    this.lastLureZ = null;
++
 +                    PlayerFishEvent playerFishEvent = new PlayerFishEvent((Player) this.getPlayerOwner().getBukkitEntity(), null, (FishHook) this.getBukkitEntity(), PlayerFishEvent.State.BITE);
 +                    this.level().getCraftServer().getPluginManager().callEvent(playerFishEvent);
 +                    if (playerFishEvent.isCancelled()) {
@@ -80,13 +141,21 @@
                      this.playSound(SoundEffects.FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
                      double d3 = this.getY() + 0.5D;
  
-@@ -373,12 +402,16 @@
+@@ -373,12 +447,24 @@
                  }
  
                  if (this.timeUntilLured <= 0) {
 -                    this.fishAngle = MathHelper.nextFloat(this.random, 0.0F, 360.0F);
 -                    this.timeUntilHooked = MathHelper.nextInt(this.random, 20, 80);
-+                    // CraftBukkit start - logic to modify fishing wait time, lure time, and lure angle
++                    // CraftBukkit start
++                    PlayerFishEvent event = new PlayerFishEvent((Player) this.getPlayerOwner().getBukkitEntity(), null, (FishHook) this.getBukkitEntity(), PlayerFishEvent.State.FISH_APPEARANCE);
++                    this.level().getCraftServer().getPluginManager().callEvent(event);
++                    if (event.isCancelled()) {
++                        this.timeUntilLured += i;
++                        return;
++                    }
++
++                    // logic to modify fishing wait time, lure time, and lure angle
 +                    this.fishAngle = MathHelper.nextFloat(this.random, this.minLureAngle, this.maxLureAngle);
 +                    this.timeUntilHooked = MathHelper.nextInt(this.random, this.minLureTime, this.maxLureTime);
 +                    // CraftBukkit end
@@ -101,7 +170,7 @@
              }
          }
  
-@@ -445,6 +478,14 @@
+@@ -445,6 +531,14 @@
              int i = 0;
  
              if (this.hookedIn != null) {
@@ -116,7 +185,7 @@
                  this.pullEntity(this.hookedIn);
                  CriterionTriggers.FISHING_ROD_HOOKED.trigger((EntityPlayer) entityhuman, itemstack, this, Collections.emptyList());
                  this.level().broadcastEntityEvent(this, (byte) 31);
-@@ -460,6 +501,15 @@
+@@ -460,6 +554,15 @@
                  while (iterator.hasNext()) {
                      ItemStack itemstack1 = (ItemStack) iterator.next();
                      EntityItem entityitem = new EntityItem(this.level(), this.getX(), this.getY(), this.getZ(), itemstack1);
@@ -132,7 +201,7 @@
                      double d0 = entityhuman.getX() - this.getX();
                      double d1 = entityhuman.getY() - this.getY();
                      double d2 = entityhuman.getZ() - this.getZ();
-@@ -467,7 +517,11 @@
+@@ -467,7 +570,11 @@
  
                      entityitem.setDeltaMovement(d0 * 0.1D, d1 * 0.1D + Math.sqrt(Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2)) * 0.08D, d2 * 0.1D);
                      this.level().addFreshEntity(entityitem);
@@ -145,7 +214,7 @@
                      if (itemstack1.is(TagsItem.FISHES)) {
                          entityhuman.awardStat(StatisticList.FISH_CAUGHT, 1);
                      }
-@@ -477,8 +531,25 @@
+@@ -477,8 +584,25 @@
              }
  
              if (this.onGround()) {
