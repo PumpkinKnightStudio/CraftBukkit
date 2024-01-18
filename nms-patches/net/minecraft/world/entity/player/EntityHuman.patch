@@ -233,7 +233,7 @@
 +    // CraftBukkit start
      @Override
 -    protected void actuallyHurt(DamageSource damagesource, float f) {
-+    protected boolean damageEntity0(DamageSource damagesource, float f) { // void -> boolean
++    protected float damageEntity0(DamageSource damagesource, float f) { // void -> float, returned value means the final damage.
 +        if (true) {
 +            return super.damageEntity0(damagesource, f);
 +        }
@@ -254,7 +254,7 @@
                  this.gameEvent(GameEvent.ENTITY_DAMAGE);
              }
          }
-+        return false; // CraftBukkit
++        return 0; // CraftBukkit
      }
  
      @Override
