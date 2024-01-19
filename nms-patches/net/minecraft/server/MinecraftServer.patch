@@ -722,7 +722,15 @@
              this.packRepository.setSelected(collection);
              WorldDataConfiguration worlddataconfiguration = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
  
-@@ -1853,7 +2189,7 @@
+@@ -1494,6 +1830,7 @@
+             this.getPlayerList().reloadResources();
+             this.functionManager.replaceLibrary(this.resources.managers.getFunctionLibrary());
+             this.structureTemplateManager.onResourceManagerReload(this.resources.resourceManager);
++            this.server.invalidateRegistryCaches(); // CraftBukkit - invalidate internal registry tag cache
+         }, this);
+ 
+         if (this.isSameThread()) {
+@@ -1853,7 +2190,7 @@
              try {
                  label51:
                  {
@@ -731,7 +739,7 @@
  
                      try {
                          arraylist = Lists.newArrayList(NativeModuleLister.listModules());
-@@ -1903,6 +2239,22 @@
+@@ -1903,6 +2240,22 @@
  
      }
  
@@ -754,7 +762,7 @@
      private void startMetricsRecordingTick() {
          if (this.willStartRecordingMetrics) {
              this.metricsRecorder = ActiveMetricsRecorder.createStarted(new ServerMetricsSamplersProvider(SystemUtils.timeSource, this.isDedicatedServer()), SystemUtils.timeSource, SystemUtils.ioPool(), new MetricsPersister("server"), this.onMetricsRecordingStopped, (path) -> {
-@@ -2029,6 +2381,11 @@
+@@ -2029,6 +2382,11 @@
  
      }
  

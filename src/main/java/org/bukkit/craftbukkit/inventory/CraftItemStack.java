@@ -9,7 +9,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -19,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
+import org.bukkit.tag.BlockTags;
+import org.bukkit.tag.ItemTags;
 
 @DelegateDeserialization(ItemStack.class)
 public final class CraftItemStack extends ItemStack {
@@ -372,7 +373,7 @@ public final class CraftItemStack extends ItemStack {
         if (type == ItemType.ENCHANTED_BOOK) {
             return new CraftMetaEnchantedBook(item.getTag());
         }
-        if (type.hasBlockType() && Tag.BANNERS.isTagged(type.getBlockType())) {
+        if (ItemTags.BANNERS.isTagged(type)) {
             return new CraftMetaBanner(item.getTag());
         }
         if (type == ItemType.ALLAY_SPAWN_EGG || type == ItemType.AXOLOTL_SPAWN_EGG
@@ -425,13 +426,13 @@ public final class CraftItemStack extends ItemStack {
         if (type == ItemType.FURNACE || type == ItemType.CHEST
                 || type == ItemType.TRAPPED_CHEST || type == ItemType.JUKEBOX
                 || type == ItemType.DISPENSER || type == ItemType.DROPPER
-                || (type.hasBlockType() && Tag.SIGNS.isTagged(type.getBlockType())) || type == ItemType.SPAWNER
+                || ItemTags.SIGNS.isTagged(type) || type == ItemType.SPAWNER
                 || type == ItemType.BREWING_STAND || type == ItemType.ENCHANTING_TABLE
                 || type == ItemType.COMMAND_BLOCK || type == ItemType.REPEATING_COMMAND_BLOCK
                 || type == ItemType.CHAIN_COMMAND_BLOCK || type == ItemType.BEACON
                 || type == ItemType.DAYLIGHT_DETECTOR || type == ItemType.HOPPER
                 || type == ItemType.COMPARATOR || type == ItemType.SHIELD
-                || type == ItemType.STRUCTURE_BLOCK || (type.hasBlockType() && Tag.SHULKER_BOXES.isTagged(type.getBlockType()))
+                || type == ItemType.STRUCTURE_BLOCK || (type.hasBlockType() && BlockTags.SHULKER_BOXES.isTagged(type.getBlockType()))
                 || type == ItemType.ENDER_CHEST || type == ItemType.BARREL
                 || type == ItemType.BELL || type == ItemType.BLAST_FURNACE
                 || type == ItemType.CAMPFIRE || type == ItemType.SOUL_CAMPFIRE

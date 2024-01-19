@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,6 +23,7 @@ import net.minecraft.world.level.block.Block;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Statistic;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
@@ -372,7 +375,7 @@ public class CraftStatistic extends Statistic {
         return getKey().hashCode();
     }
 
-    public static class CraftStatisticRegistry implements Registry<Statistic> {
+    public static class CraftStatisticRegistry implements CraftRegistryInternal<Statistic> {
         private static final NamespacedKey CUSTOM_BUKKIT = NamespacedKey.minecraft("custom");
         private static final MinecraftKey CUSTOM_MINECRAFT = CraftNamespacedKey.toMinecraft(CUSTOM_BUKKIT);
         private static final BiMap<NamespacedKey, MinecraftKey> STATISTIC_KEYS = HashBiMap.create();
@@ -499,5 +502,23 @@ public class CraftStatistic extends Statistic {
         public Iterator<Statistic> iterator() {
            return stream().iterator();
         }
+
+        @Override
+        public boolean hasTag(NamespacedKey key) {
+            return false;
+        }
+
+        @Override
+        public Tag<Statistic> getTag(NamespacedKey key) {
+            throw new IllegalArgumentException("Unknown tag with key '" + key + "'");
+        }
+
+        @Override
+        public Collection<Tag<Statistic>> getTags() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void invalidate() {}
     }
 }

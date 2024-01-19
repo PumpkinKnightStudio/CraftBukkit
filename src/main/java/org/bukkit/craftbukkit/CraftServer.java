@@ -72,11 +72,9 @@ import net.minecraft.server.players.IpBanEntry;
 import net.minecraft.server.players.OpListEntry;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.WhiteListEntry;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.MobSpawnerCat;
 import net.minecraft.world.entity.npc.MobSpawnerTrader;
@@ -97,13 +95,11 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.MobSpawner;
 import net.minecraft.world.level.WorldSettings;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.dimension.WorldDimension;
 import net.minecraft.world.level.levelgen.MobSpawnerPatrol;
 import net.minecraft.world.level.levelgen.MobSpawnerPhantom;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.saveddata.maps.MapIcon;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.level.storage.Convertable;
@@ -127,6 +123,7 @@ import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.ServerTickManager;
 import org.bukkit.StructureType;
+import org.bukkit.Tag;
 import org.bukkit.UnsafeValues;
 import org.bukkit.Warning.WarningState;
 import org.bukkit.World;
@@ -191,10 +188,6 @@ import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.bukkit.craftbukkit.scoreboard.CraftCriteria;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
 import org.bukkit.craftbukkit.structure.CraftStructureManager;
-import org.bukkit.craftbukkit.tag.CraftBlockTag;
-import org.bukkit.craftbukkit.tag.CraftEntityTag;
-import org.bukkit.craftbukkit.tag.CraftFluidTag;
-import org.bukkit.craftbukkit.tag.CraftItemTag;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftIconCache;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -278,7 +271,7 @@ public final class CraftServer implements Server {
     protected final DedicatedServer console;
     protected final DedicatedPlayerList playerList;
     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
-    private final Map<Class<?>, Registry<?>> registries = new HashMap<>();
+    private final Map<Class<?>, CraftRegistryInternal<?>> registries = new HashMap<>();
     private YamlConfiguration configuration;
     private YamlConfiguration commandsConfiguration;
     private final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
@@ -2364,7 +2357,7 @@ public final class CraftServer implements Server {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Keyed> org.bukkit.Tag<T> getTag(String registry, NamespacedKey tag, Class<? super T> clazz) {
+    public <T extends Keyed> Tag<T> getTag(String registry, NamespacedKey tag, Class<? super T> clazz) {
         Preconditions.checkArgument(registry != null, "registry cannot be null");
         Preconditions.checkArgument(tag != null, "NamespacedKey tag cannot be null");
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
@@ -2372,67 +2365,50 @@ public final class CraftServer implements Server {
 
         //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
-            case org.bukkit.Tag.REGISTRY_BLOCKS -> {
+            case Tag.REGISTRY_BLOCKS -> {
                 Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace (%s) must have BlockType type", clazz.getName());
-                TagKey<Block> blockTagKey = TagKey.create(Registries.BLOCK, key);
-                if (getServer().registryAccess().registryOrThrow(Registries.BLOCK).getTag(blockTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftBlockTag(getServer().registryAccess().registryOrThrow(Registries.BLOCK), blockTagKey);
-                }
+                return (Tag<T>) Registry.BLOCK.getTag(tag);
             }
-            case org.bukkit.Tag.REGISTRY_ITEMS -> {
+            case Tag.REGISTRY_ITEMS -> {
                 Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace (%s) must have ItemType type", clazz.getName());
-                TagKey<Item> itemTagKey = TagKey.create(Registries.ITEM, key);
-                if (getServer().registryAccess().registryOrThrow(Registries.ITEM).getTag(itemTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftItemTag(getServer().registryAccess().registryOrThrow(Registries.ITEM), itemTagKey);
-                }
+                return (Tag<T>) Registry.ITEM.getTag(tag);
             }
-            case org.bukkit.Tag.REGISTRY_FLUIDS -> {
+            case Tag.REGISTRY_FLUIDS -> {
                 Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace (%s) must have fluid type", clazz.getName());
-                TagKey<FluidType> fluidTagKey = TagKey.create(Registries.FLUID, key);
-                if (getServer().registryAccess().registryOrThrow(Registries.FLUID).getTag(fluidTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftFluidTag(getServer().registryAccess().registryOrThrow(Registries.FLUID), fluidTagKey);
-                }
+                return (Tag<T>) Registry.FLUID.getTag(tag);
             }
-            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
+            case Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace (%s) must have entity type", clazz.getName());
-                TagKey<EntityTypes<?>> entityTagKey = TagKey.create(Registries.ENTITY_TYPE, key);
-                if (getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE).getTag(entityTagKey).isPresent()) {
-                    return (org.bukkit.Tag<T>) new CraftEntityTag(getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE), entityTagKey);
-                }
+                return (Tag<T>) Registry.ENTITY_TYPE.getTag(tag);
             }
             default -> throw new IllegalArgumentException();
         }
-
-        return null;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Keyed> Iterable<org.bukkit.Tag<T>> getTags(String registry, Class<? super T> clazz) {
+    public <T extends Keyed> Iterable<Tag<T>> getTags(String registry, Class<? super T> clazz) {
         Preconditions.checkArgument(registry != null, "registry cannot be null");
         Preconditions.checkArgument(clazz != null, "Class clazz cannot be null");
 
         //  || clazz == Material.class check is for older plugins, which use Material instead of BlockType / ItemType
         switch (registry) {
-            case org.bukkit.Tag.REGISTRY_BLOCKS -> {
+            case Tag.REGISTRY_BLOCKS -> {
                 Preconditions.checkArgument(clazz == BlockType.class || clazz == Material.class, "Block namespace (%s) must have BlockType type", clazz.getName());
-                IRegistry<Block> blockTags = getServer().registryAccess().registryOrThrow(Registries.BLOCK);
-                return blockTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftBlockTag(blockTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return Registry.BLOCK.getTags().stream().map(tag -> (Tag<T>) tag).collect(ImmutableList.toImmutableList());
             }
-            case org.bukkit.Tag.REGISTRY_ITEMS -> {
+            case Tag.REGISTRY_ITEMS -> {
                 Preconditions.checkArgument(clazz == ItemType.class || clazz == Material.class, "Item namespace (%s) must have ItemType type", clazz.getName());
                 IRegistry<Item> itemTags = getServer().registryAccess().registryOrThrow(Registries.ITEM);
-                return itemTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftItemTag(itemTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return Registry.ITEM.getTags().stream().map(tag -> (Tag<T>) tag).collect(ImmutableList.toImmutableList());
             }
-            case org.bukkit.Tag.REGISTRY_FLUIDS -> {
+            case Tag.REGISTRY_FLUIDS -> {
                 Preconditions.checkArgument(clazz == Fluid.class, "Fluid namespace (%s) must have fluid type", clazz.getName());
-                IRegistry<FluidType> fluidTags = getServer().registryAccess().registryOrThrow(Registries.FLUID);
-                return fluidTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftFluidTag(fluidTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return Registry.FLUID.getTags().stream().map(tag -> (Tag<T>) tag).collect(ImmutableList.toImmutableList());
             }
-            case org.bukkit.Tag.REGISTRY_ENTITY_TYPES -> {
+            case Tag.REGISTRY_ENTITY_TYPES -> {
                 Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace (%s) must have entity type", clazz.getName());
-                IRegistry<EntityTypes<?>> entityTags = getServer().registryAccess().registryOrThrow(Registries.ENTITY_TYPE);
-                return entityTags.getTags().map(pair -> (org.bukkit.Tag<T>) new CraftEntityTag(entityTags, pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return Registry.ENTITY_TYPE.getTags().stream().map(tag -> (Tag<T>) tag).collect(ImmutableList.toImmutableList());
             }
             default -> throw new IllegalArgumentException();
         }
@@ -2473,6 +2449,10 @@ public final class CraftServer implements Server {
     @Override
     public <T extends Keyed> Registry<T> getRegistry(Class<? super T> aClass) {
         return (Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.registryAccess()));
+    }
+
+    public void invalidateRegistryCaches() {
+        this.registries.values().forEach(CraftRegistryInternal::invalidate);
     }
 
     @Deprecated

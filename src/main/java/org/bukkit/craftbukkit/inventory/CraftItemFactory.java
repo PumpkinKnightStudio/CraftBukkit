@@ -12,7 +12,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemMonsterEgg;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.bukkit.Color;
-import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -25,6 +24,8 @@ import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.tag.BlockTags;
+import org.bukkit.tag.ItemTags;
 
 public final class CraftItemFactory implements ItemFactory {
     static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
@@ -116,7 +117,7 @@ public final class CraftItemFactory implements ItemFactory {
         if (itemType == ItemType.ENCHANTED_BOOK) {
             return meta instanceof CraftMetaEnchantedBook ? meta : new CraftMetaEnchantedBook(meta);
         }
-        if (itemType.hasBlockType() && Tag.BANNERS.isTagged(itemType.getBlockType())) {
+        if (ItemTags.BANNERS.isTagged(itemType)) {
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
         }
         if (itemType == ItemType.ALLAY_SPAWN_EGG || itemType == ItemType.AXOLOTL_SPAWN_EGG
@@ -169,13 +170,13 @@ public final class CraftItemFactory implements ItemFactory {
         if (itemType == ItemType.FURNACE || itemType == ItemType.CHEST
                 || itemType == ItemType.TRAPPED_CHEST || itemType == ItemType.JUKEBOX
                 || itemType == ItemType.DISPENSER || itemType == ItemType.DROPPER
-                || (itemType.hasBlockType() && Tag.SIGNS.isTagged(itemType.getBlockType())) || itemType == ItemType.SPAWNER
+                || ItemTags.SIGNS.isTagged(itemType) || itemType == ItemType.SPAWNER
                 || itemType == ItemType.BREWING_STAND || itemType == ItemType.ENCHANTING_TABLE
                 || itemType == ItemType.COMMAND_BLOCK || itemType == ItemType.REPEATING_COMMAND_BLOCK
                 || itemType == ItemType.CHAIN_COMMAND_BLOCK || itemType == ItemType.BEACON
                 || itemType == ItemType.DAYLIGHT_DETECTOR || itemType == ItemType.HOPPER
                 || itemType == ItemType.COMPARATOR || itemType == ItemType.SHIELD
-                || itemType == ItemType.STRUCTURE_BLOCK || (itemType.hasBlockType() && Tag.SHULKER_BOXES.isTagged(itemType.getBlockType()))
+                || itemType == ItemType.STRUCTURE_BLOCK || (itemType.hasBlockType() && BlockTags.SHULKER_BOXES.isTagged(itemType.getBlockType()))
                 || itemType == ItemType.ENDER_CHEST || itemType == ItemType.BARREL
                 || itemType == ItemType.BELL || itemType == ItemType.BLAST_FURNACE
                 || itemType == ItemType.CAMPFIRE || itemType == ItemType.SOUL_CAMPFIRE
