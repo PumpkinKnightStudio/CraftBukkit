@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
+import org.bukkit.scoreboard.format.NumberFormatType;
 import org.bukkit.support.AbstractTestingBase;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,12 @@ public class RegistryConstantsTest extends AbstractTestingBase {
     public void testTrimPattern() {
         this.testExcessConstants(TrimPattern.class, Registry.TRIM_PATTERN);
         this.testMissingConstants(TrimPattern.class, Registries.TRIM_PATTERN);
+    }
+
+    @Test
+    public void testNumberFormatType() {
+        this.testExcessConstants(NumberFormatType.class, Registry.NUMBER_FORMAT_TYPE);
+        this.testMissingConstants(NumberFormatType.class, Registries.NUMBER_FORMAT_TYPE);
     }
 
     private <T extends Keyed> void testExcessConstants(Class<T> clazz, Registry<T> registry) {

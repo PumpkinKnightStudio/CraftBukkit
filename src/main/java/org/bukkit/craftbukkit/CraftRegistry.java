@@ -22,6 +22,7 @@ import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.scoreboard.format.CraftNumberFormatType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.generator.structure.Structure;
@@ -29,6 +30,7 @@ import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.format.NumberFormatType;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
@@ -72,6 +74,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == TrimPattern.class) {
             return new CraftRegistry<>(TrimPattern.class, registryHolder.registryOrThrow(Registries.TRIM_PATTERN), CraftTrimPattern::new);
+        }
+        if (bukkitClass == NumberFormatType.class) {
+            return new CraftRegistry<>(NumberFormatType.class, registryHolder.registryOrThrow(Registries.NUMBER_FORMAT_TYPE), CraftNumberFormatType::new);
         }
 
         return null;

@@ -11,6 +11,7 @@ import net.minecraft.world.scores.ScoreboardTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.scoreboard.format.CraftNumberFormat;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -18,6 +19,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.format.NumberFormat;
 
 public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
     final Scoreboard board;
@@ -48,6 +50,16 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
 
     @Override
     public CraftObjective registerNewObjective(String name, Criteria criteria, String displayName, RenderType renderType) {
+        return registerNewObjective(name, criteria, displayName, renderType, null);
+    }
+
+    @Override
+    public CraftObjective registerNewObjective(String name, Criteria criteria, String displayName, NumberFormat format) {
+        return registerNewObjective(name, criteria, displayName, RenderType.INTEGER, format);
+    }
+
+    @Override
+    public CraftObjective registerNewObjective(String name, Criteria criteria, String displayName, RenderType renderType, NumberFormat format) {
         Preconditions.checkArgument(name != null, "Objective name cannot be null");
         Preconditions.checkArgument(criteria != null, "Criteria cannot be null");
         Preconditions.checkArgument(displayName != null, "Display name cannot be null");
@@ -55,7 +67,8 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         Preconditions.checkArgument(name.length() <= Short.MAX_VALUE, "The name '%s' is longer than the limit of 32767 characters (%s)", name, name.length());
         Preconditions.checkArgument(board.getObjective(name) == null, "An objective of name '%s' already exists", name);
 
-        ScoreboardObjective objective = board.addObjective(name, ((CraftCriteria) criteria).criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType), true, null);
+        net.minecraft.network.chat.numbers.NumberFormat nmsFormat = (format != null) ? CraftNumberFormat.bukkitToMinecraft(format) : null;
+        ScoreboardObjective objective = board.addObjective(name, ((CraftCriteria) criteria).criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType), true, nmsFormat);
         return new CraftObjective(this, objective);
     }
 

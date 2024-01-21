@@ -4,12 +4,14 @@ import com.google.common.base.Preconditions;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardObjective;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.craftbukkit.scoreboard.format.CraftNumberFormat;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.format.NumberFormat;
 
 final class CraftObjective extends CraftScoreboardComponent implements Objective {
     private final ScoreboardObjective objective;
@@ -128,6 +130,21 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
         checkState();
 
         return new CraftScore(this, CraftScoreboard.getScoreHolder(entry));
+    }
+
+    @Override
+    public void setNumberFormat(NumberFormat format) {
+        checkState();
+
+        this.objective.setNumberFormat((format != null) ? CraftNumberFormat.bukkitToMinecraft(format) : null);
+    }
+
+    @Override
+    public NumberFormat getNumberFormat() {
+        checkState();
+
+        net.minecraft.network.chat.numbers.NumberFormat nmsFormat = objective.numberFormat();
+        return (nmsFormat != null) ? CraftNumberFormat.minecraftToBukkit(nmsFormat) : null;
     }
 
     @Override

@@ -1,0 +1,20 @@
+--- a/net/minecraft/network/chat/numbers/FixedFormat.java
++++ b/net/minecraft/network/chat/numbers/FixedFormat.java
+@@ -15,7 +15,7 @@
+ 
+         @Override
+         public MapCodec<FixedFormat> mapCodec() {
+-            return null.CODEC;
++            return CODEC; // CraftBukkit - decompile error
+         }
+ 
+         public void writeToStream(PacketDataSerializer packetdataserializer, FixedFormat fixedformat) {
+@@ -29,7 +29,7 @@
+             return new FixedFormat(ichatbasecomponent);
+         }
+     };
+-    final IChatBaseComponent value;
++    public final IChatBaseComponent value; // PAIL package private -> public
+ 
+     public FixedFormat(IChatBaseComponent ichatbasecomponent) {
+         this.value = ichatbasecomponent;

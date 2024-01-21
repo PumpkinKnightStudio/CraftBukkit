@@ -1,0 +1,39 @@
+--- a/net/minecraft/network/chat/ChatModifier.java
++++ b/net/minecraft/network/chat/ChatModifier.java
+@@ -15,17 +15,17 @@
+     public static final ChatModifier EMPTY = new ChatModifier((ChatHexColor) null, (Boolean) null, (Boolean) null, (Boolean) null, (Boolean) null, (Boolean) null, (ChatClickable) null, (ChatHoverable) null, (String) null, (MinecraftKey) null);
+     public static final MinecraftKey DEFAULT_FONT = new MinecraftKey("minecraft", "default");
+     @Nullable
+-    final ChatHexColor color;
++    public final ChatHexColor color; // PAIL package private -> public
+     @Nullable
+-    final Boolean bold;
++    public final Boolean bold; // PAIL package private -> public
+     @Nullable
+-    final Boolean italic;
++    public final Boolean italic; // PAIL package private -> public
+     @Nullable
+-    final Boolean underlined;
++    public final Boolean underlined; // PAIL package private -> public
+     @Nullable
+-    final Boolean strikethrough;
++    public final Boolean strikethrough; // PAIL package private -> public
+     @Nullable
+-    final Boolean obfuscated;
++    public final Boolean obfuscated; // PAIL package private -> public
+     @Nullable
+     final ChatClickable clickEvent;
+     @Nullable
+@@ -33,10 +33,10 @@
+     @Nullable
+     final String insertion;
+     @Nullable
+-    final MinecraftKey font;
++    public final MinecraftKey font; // PAIL package private -> public
+ 
+     private static ChatModifier create(Optional<ChatHexColor> optional, Optional<Boolean> optional1, Optional<Boolean> optional2, Optional<Boolean> optional3, Optional<Boolean> optional4, Optional<Boolean> optional5, Optional<ChatClickable> optional6, Optional<ChatHoverable> optional7, Optional<String> optional8, Optional<MinecraftKey> optional9) {
+-        ChatModifier chatmodifier = new ChatModifier((ChatHexColor) optional.orElse((Object) null), (Boolean) optional1.orElse((Object) null), (Boolean) optional2.orElse((Object) null), (Boolean) optional3.orElse((Object) null), (Boolean) optional4.orElse((Object) null), (Boolean) optional5.orElse((Object) null), (ChatClickable) optional6.orElse((Object) null), (ChatHoverable) optional7.orElse((Object) null), (String) optional8.orElse((Object) null), (MinecraftKey) optional9.orElse((Object) null));
++        ChatModifier chatmodifier = new ChatModifier((ChatHexColor) optional.orElse(null), (Boolean) optional1.orElse(null), (Boolean) optional2.orElse(null), (Boolean) optional3.orElse(null), (Boolean) optional4.orElse(null), (Boolean) optional5.orElse(null), (ChatClickable) optional6.orElse(null), (ChatHoverable) optional7.orElse(null), (String) optional8.orElse(null), (MinecraftKey) optional9.orElse(null)); // CraftBukkit - decompile error
+ 
+         return chatmodifier.equals(ChatModifier.EMPTY) ? ChatModifier.EMPTY : chatmodifier;
+     }
