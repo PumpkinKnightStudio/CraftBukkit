@@ -6,9 +6,9 @@ import net.minecraft.network.chat.numbers.FixedFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.scoreboard.format.NumberFormat;
-import org.bukkit.scoreboard.format.NumberFormatBlank;
-import org.bukkit.scoreboard.format.NumberFormatFixed;
-import org.bukkit.scoreboard.format.NumberFormatStyled;
+import org.bukkit.scoreboard.format.BlankNumberFormat;
+import org.bukkit.scoreboard.format.FixedNumberFormat;
+import org.bukkit.scoreboard.format.StyledNumberFormat;
 
 public final class CraftNumberFormat {
 
@@ -29,11 +29,11 @@ public final class CraftNumberFormat {
     public static net.minecraft.network.chat.numbers.NumberFormat bukkitToMinecraft(NumberFormat bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        if (bukkit instanceof NumberFormatBlank) {
+        if (bukkit instanceof BlankNumberFormat) {
             return BlankFormat.INSTANCE;
-        } else if (bukkit instanceof NumberFormatFixed fixed) {
+        } else if (bukkit instanceof FixedNumberFormat fixed) {
             return new FixedFormat(CraftChatMessage.fromBungee(fixed.components().getText()));
-        } else if (bukkit instanceof NumberFormatStyled styled) {
+        } else if (bukkit instanceof StyledNumberFormat styled) {
             return new StyledFormat(CraftChatMessage.toMinecraft(styled.getStyle()));
         }
 
