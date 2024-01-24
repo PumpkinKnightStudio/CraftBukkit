@@ -438,23 +438,6 @@
                      this.markHurt();
                  }
  
-@@ -1298,14 +1520,14 @@
-             }
- 
-             if (this instanceof EntityPlayer) {
--                CriterionTriggers.ENTITY_HURT_PLAYER.trigger((EntityPlayer) this, damagesource, f1, f, flag);
-+                CriterionTriggers.ENTITY_HURT_PLAYER.trigger((EntityPlayer) this, damagesource, f1, f, flag); // CraftBukkit - Broadcast the final damage instead of original damage.
-                 if (f2 > 0.0F && f2 < 3.4028235E37F) {
-                     ((EntityPlayer) this).awardStat(StatisticList.DAMAGE_BLOCKED_BY_SHIELD, Math.round(f2 * 10.0F));
-                 }
-             }
- 
-             if (entity1 instanceof EntityPlayer) {
--                CriterionTriggers.PLAYER_HURT_ENTITY.trigger((EntityPlayer) entity1, this, damagesource, f1, f, flag);
-+                CriterionTriggers.PLAYER_HURT_ENTITY.trigger((EntityPlayer) entity1, this, damagesource, f1, f, flag); // CraftBukkit - Broadcast the final damage instead of original damage.
-             }
- 
-             return flag2;
 @@ -1328,19 +1550,32 @@
              EnumHand[] aenumhand = EnumHand.values();
              int i = aenumhand.length;
@@ -676,7 +659,7 @@
 +            };
 +            float hardHatModifier = hardHat.apply((double) f).floatValue();
 +            f += hardHatModifier;
-+
+ 
 +            Function<Double, Double> blocking = new Function<Double, Double>() {
 +                @Override
 +                public Double apply(Double f) {
@@ -759,7 +742,7 @@
 +                float armorDamage = (float) (event.getDamage() + event.getDamage(DamageModifier.BLOCKING) + event.getDamage(DamageModifier.HARD_HAT));
 +                this.hurtArmor(damagesource, armorDamage);
 +            }
- 
++
 +            // Apply blocking code // PAIL: steal from above
 +            if (event.getDamage(DamageModifier.BLOCKING) < 0) {
 +                this.level().broadcastEntityEvent(this, (byte) 29); // SPIGOT-4635 - shield damage sound
