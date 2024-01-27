@@ -173,7 +173,7 @@
 +                    PlayerFishEvent event = new PlayerFishEvent((Player) this.getPlayerOwner().getBukkitEntity(), null, (FishHook) this.getBukkitEntity(), PlayerFishEvent.State.FISH_APPEARANCE);
 +                    this.level().getCraftServer().getPluginManager().callEvent(event);
 +                    if (event.isCancelled()) {
-+                        this.timeUntilLured += i;
++                        this.timeUntilLured = 0; // Reset to 0 so a new random value can be set below
 +                        return;
 +                    }
 +
