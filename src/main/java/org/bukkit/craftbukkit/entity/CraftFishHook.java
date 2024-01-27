@@ -105,9 +105,7 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
             return false;
         }
 
-        // Resetting these values to 0 will allow "timeUntilLured" to be reset using appropriate values
-        getHandle().timeUntilHooked = 0;
-        getHandle().timeUntilLured = 0;
+        getHandle().disinterestLuredFish = true;
         return true;
     }
 

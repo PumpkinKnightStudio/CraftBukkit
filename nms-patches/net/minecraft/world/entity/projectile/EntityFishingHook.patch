@@ -26,13 +26,14 @@
      private float fishAngle;
      private boolean openWater;
      @Nullable
-@@ -67,6 +75,22 @@
+@@ -67,6 +75,23 @@
      private final int luck;
      private final int lureSpeed;
  
 +    // CraftBukkit start
 +    // Variables related to PlayerFishLureEvent
 +    private Vec3D lastLurePos;
++    public boolean disinterestLuredFish = false;
 +
 +    // Extra variables to enable modification of fishing wait time, values are minecraft defaults
 +    public int minWaitTime = 100;
@@ -49,7 +50,7 @@
      private EntityFishingHook(EntityTypes<? extends EntityFishingHook> entitytypes, World world, int i, int j) {
          super(entitytypes, world);
          this.syncronizedRandom = RandomSource.create();
-@@ -261,7 +285,7 @@
+@@ -261,7 +286,7 @@
      private void checkCollision() {
          MovingObjectPosition movingobjectposition = ProjectileHelper.getHitResultOnMoveVector(this, this::canHitEntity);
  
@@ -58,7 +59,7 @@
      }
  
      @Override
-@@ -294,11 +318,11 @@
+@@ -294,11 +319,11 @@
          int i = 1;
          BlockPosition blockposition1 = blockposition.above();
  
@@ -72,7 +73,7 @@
              --i;
          }
  
-@@ -308,6 +332,10 @@
+@@ -308,6 +333,10 @@
                  this.timeUntilLured = 0;
                  this.timeUntilHooked = 0;
                  this.getEntityData().set(EntityFishingHook.DATA_BITING, false);
@@ -83,7 +84,7 @@
              }
          } else {
              float f;
-@@ -319,8 +347,10 @@
+@@ -319,8 +348,10 @@
              IBlockData iblockdata;
  
              if (this.timeUntilHooked > 0) {
@@ -94,7 +95,7 @@
                      this.fishAngle += (float) this.random.triangle(0.0D, 9.188D);
                      f = this.fishAngle * 0.017453292F;
                      f1 = MathHelper.sin(f);
-@@ -328,6 +358,52 @@
+@@ -328,6 +359,54 @@
                      d0 = this.getX() + (double) (f1 * (float) this.timeUntilHooked * 0.1F);
                      d1 = (double) ((float) MathHelper.floor(this.getY()) + 1.0F);
                      d2 = this.getZ() + (double) (f2 * (float) this.timeUntilHooked * 0.1F);
@@ -111,9 +112,11 @@
 +                    PlayerFishLureEvent event = new PlayerFishLureEvent((Player) this.getPlayerOwner().getBukkitEntity(), (FishHook) this.getBukkitEntity(), lastLocation, location, fishAngle, timeUntilHooked);
 +                    this.level().getCraftServer().getPluginManager().callEvent(event);
 +
-+                    if (event.isFishDisinterested()) {
-+                        ((FishHook) getBukkitEntity()).disinterestLuredFish();
++                    if (event.isFishDisinterested() || disinterestLuredFish) {
++                        this.timeUntilHooked = 0;
++                        this.timeUntilLured = 0;
 +                        this.lastLurePos = null;
++                        this.disinterestLuredFish = false;
 +                        return;
 +                    }
 +
@@ -147,7 +150,7 @@
                      iblockdata = worldserver.getBlockState(BlockPosition.containing(d0, d1 - 1.0D, d2));
                      if (iblockdata.is(Blocks.WATER)) {
                          if (this.random.nextFloat() < 0.15F) {
-@@ -341,6 +417,15 @@
+@@ -341,6 +420,15 @@
                          worldserver.sendParticles(Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
                      }
                  } else {
@@ -163,7 +166,7 @@
                      this.playSound(SoundEffects.FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
                      double d3 = this.getY() + 0.5D;
  
-@@ -373,12 +458,24 @@
+@@ -373,12 +461,24 @@
                  }
  
                  if (this.timeUntilLured <= 0) {
@@ -192,7 +195,7 @@
              }
          }
  
-@@ -445,6 +542,14 @@
+@@ -445,6 +545,14 @@
              int i = 0;
  
              if (this.hookedIn != null) {
@@ -207,7 +210,7 @@
                  this.pullEntity(this.hookedIn);
                  CriterionTriggers.FISHING_ROD_HOOKED.trigger((EntityPlayer) entityhuman, itemstack, this, Collections.emptyList());
                  this.level().broadcastEntityEvent(this, (byte) 31);
-@@ -460,6 +565,15 @@
+@@ -460,6 +568,15 @@
                  while (iterator.hasNext()) {
                      ItemStack itemstack1 = (ItemStack) iterator.next();
                      EntityItem entityitem = new EntityItem(this.level(), this.getX(), this.getY(), this.getZ(), itemstack1);
@@ -223,7 +226,7 @@
                      double d0 = entityhuman.getX() - this.getX();
                      double d1 = entityhuman.getY() - this.getY();
                      double d2 = entityhuman.getZ() - this.getZ();
-@@ -467,7 +581,11 @@
+@@ -467,7 +584,11 @@
  
                      entityitem.setDeltaMovement(d0 * 0.1D, d1 * 0.1D + Math.sqrt(Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2)) * 0.08D, d2 * 0.1D);
                      this.level().addFreshEntity(entityitem);
@@ -236,7 +239,7 @@
                      if (itemstack1.is(TagsItem.FISHES)) {
                          entityhuman.awardStat(StatisticList.FISH_CAUGHT, 1);
                      }
-@@ -477,8 +595,25 @@
+@@ -477,8 +598,25 @@
              }
  
              if (this.onGround()) {
