@@ -15,6 +15,17 @@
  public class EntityFishingHook extends IProjectile {
  
      private static final Logger LOGGER = LogUtils.getLogger();
+@@ -57,8 +65,8 @@
+     private static final DataWatcherObject<Boolean> DATA_BITING = DataWatcher.defineId(EntityFishingHook.class, DataWatcherRegistry.BOOLEAN);
+     private int life;
+     private int nibble;
+-    private int timeUntilLured;
+-    private int timeUntilHooked;
++    public int timeUntilLured; // PAIL private -> public
++    public int timeUntilHooked; // PAIL private -> public
+     private float fishAngle;
+     private boolean openWater;
+     @Nullable
 @@ -67,6 +75,22 @@
      private final int luck;
      private final int lureSpeed;
@@ -83,7 +94,7 @@
                      this.fishAngle += (float) this.random.triangle(0.0D, 9.188D);
                      f = this.fishAngle * 0.017453292F;
                      f1 = MathHelper.sin(f);
-@@ -328,6 +358,45 @@
+@@ -328,6 +358,51 @@
                      d0 = this.getX() + (double) (f1 * (float) this.timeUntilHooked * 0.1F);
                      d1 = (double) ((float) MathHelper.floor(this.getY()) + 1.0F);
                      d2 = this.getZ() + (double) (f2 * (float) this.timeUntilHooked * 0.1F);
@@ -99,6 +110,12 @@
 +
 +                    PlayerFishLureEvent event = new PlayerFishLureEvent((Player) this.getPlayerOwner().getBukkitEntity(), (FishHook) this.getBukkitEntity(), lastLocation, location, fishAngle, timeUntilHooked);
 +                    this.level().getCraftServer().getPluginManager().callEvent(event);
++
++                    if (event.isFishDisinterested()) {
++                        ((FishHook) getBukkitEntity()).disinterestLuredFish();
++                        return;
++                    }
++
 +                    this.fishAngle = event.getAngleFromHook();
 +                    if (event.isCancelled()) {
 +                        /*
@@ -129,7 +146,7 @@
                      iblockdata = worldserver.getBlockState(BlockPosition.containing(d0, d1 - 1.0D, d2));
                      if (iblockdata.is(Blocks.WATER)) {
                          if (this.random.nextFloat() < 0.15F) {
-@@ -341,6 +410,15 @@
+@@ -341,6 +416,15 @@
                          worldserver.sendParticles(Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
                      }
                  } else {
@@ -145,7 +162,7 @@
                      this.playSound(SoundEffects.FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
                      double d3 = this.getY() + 0.5D;
  
-@@ -373,12 +451,24 @@
+@@ -373,12 +457,24 @@
                  }
  
                  if (this.timeUntilLured <= 0) {
@@ -174,7 +191,7 @@
              }
          }
  
-@@ -445,6 +535,14 @@
+@@ -445,6 +541,14 @@
              int i = 0;
  
              if (this.hookedIn != null) {
@@ -189,7 +206,7 @@
                  this.pullEntity(this.hookedIn);
                  CriterionTriggers.FISHING_ROD_HOOKED.trigger((EntityPlayer) entityhuman, itemstack, this, Collections.emptyList());
                  this.level().broadcastEntityEvent(this, (byte) 31);
-@@ -460,6 +558,15 @@
+@@ -460,6 +564,15 @@
                  while (iterator.hasNext()) {
                      ItemStack itemstack1 = (ItemStack) iterator.next();
                      EntityItem entityitem = new EntityItem(this.level(), this.getX(), this.getY(), this.getZ(), itemstack1);
@@ -205,7 +222,7 @@
                      double d0 = entityhuman.getX() - this.getX();
                      double d1 = entityhuman.getY() - this.getY();
                      double d2 = entityhuman.getZ() - this.getZ();
-@@ -467,7 +574,11 @@
+@@ -467,7 +580,11 @@
  
                      entityitem.setDeltaMovement(d0 * 0.1D, d1 * 0.1D + Math.sqrt(Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2)) * 0.08D, d2 * 0.1D);
                      this.level().addFreshEntity(entityitem);
@@ -218,7 +235,7 @@
                      if (itemstack1.is(TagsItem.FISHES)) {
                          entityhuman.awardStat(StatisticList.FISH_CAUGHT, 1);
                      }
-@@ -477,8 +588,25 @@
+@@ -477,8 +594,25 @@
              }
  
              if (this.onGround()) {

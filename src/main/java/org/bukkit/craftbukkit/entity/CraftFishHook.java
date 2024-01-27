@@ -85,6 +85,33 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
     }
 
     @Override
+    public int getTimeUntilLured() {
+        return getHandle().timeUntilLured;
+    }
+
+    @Override
+    public int getTimeUntilHooked() {
+        return getHandle().timeUntilHooked;
+    }
+
+    @Override
+    public boolean isLuringFish() {
+        return getHandle().timeUntilHooked > 0;
+    }
+
+    @Override
+    public boolean disinterestLuredFish() {
+        if (!isLuringFish()) {
+            return false;
+        }
+
+        // Resetting these values to 0 will allow "timeUntilLured" to be reset using appropriate values
+        getHandle().timeUntilHooked = 0;
+        getHandle().timeUntilLured = 0;
+        return true;
+    }
+
+    @Override
     public float getMinLureAngle() {
         return getHandle().minLureAngle;
     }
