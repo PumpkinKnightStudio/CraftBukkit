@@ -68,6 +68,11 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
 
     @Override
     public void setSpawnedEntity(EntitySnapshot snapshot) {
+        if (snapshot == null) {
+            this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
+            this.getSnapshot().getSpawner().nextSpawnData = new MobSpawnerData();
+            return;
+        }
         NBTTagCompound compoundTag = ((CraftEntitySnapshot) snapshot).getData();
 
         this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty();
@@ -76,6 +81,8 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
 
     @Override
     public void addPotentialSpawn(EntitySnapshot snapshot, int weight, SpawnRule spawnRule) {
+        Preconditions.checkArgument(snapshot != null, "Snapshot cannot be null");
+
         NBTTagCompound compoundTag = ((CraftEntitySnapshot) snapshot).getData();
 
         SimpleWeightedRandomList.a<MobSpawnerData> builder = SimpleWeightedRandomList.builder(); // PAIL rename Builder
@@ -86,11 +93,15 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
 
     @Override
     public void addPotentialSpawn(SpawnerEntry spawnerEntry) {
+        Preconditions.checkArgument(spawnerEntry != null, "Entry cannot be null");
+
         addPotentialSpawn(spawnerEntry.getSnapshot(), spawnerEntry.getSpawnWeight(), spawnerEntry.getSpawnRule());
     }
 
     @Override
     public void setPotentialSpawns(Collection<SpawnerEntry> entries) {
+        Preconditions.checkArgument(entries != null, "Entries cannot be null");
+
         SimpleWeightedRandomList.a<MobSpawnerData> builder = SimpleWeightedRandomList.builder();
         for (SpawnerEntry spawnerEntry : entries) {
             NBTTagCompound compoundTag = ((CraftEntitySnapshot) spawnerEntry.getSnapshot()).getData();
