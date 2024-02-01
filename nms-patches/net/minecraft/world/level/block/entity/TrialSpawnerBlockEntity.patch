@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/level/block/entity/TrialSpawnerBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/TrialSpawnerBlockEntity.java
+@@ -22,7 +22,7 @@
+ public class TrialSpawnerBlockEntity extends TileEntity implements Spawner, TrialSpawner.a {
+ 
+     private static final Logger LOGGER = LogUtils.getLogger();
+-    private TrialSpawner trialSpawner;
++    public TrialSpawner trialSpawner; // PAIL make public
+ 
+     public TrialSpawnerBlockEntity(BlockPosition blockposition, IBlockData iblockdata) {
+         super(TileEntityTypes.TRIAL_SPAWNER, blockposition, iblockdata);
+@@ -34,7 +34,7 @@
+     @Override
+     public void load(NBTTagCompound nbttagcompound) {
+         super.load(nbttagcompound);
+-        DataResult dataresult = this.trialSpawner.codec().parse(DynamicOpsNBT.INSTANCE, nbttagcompound);
++        DataResult<TrialSpawner> dataresult = this.trialSpawner.codec().parse(DynamicOpsNBT.INSTANCE, nbttagcompound); // Craftbukkit - decompile error
+         Logger logger = TrialSpawnerBlockEntity.LOGGER;
+ 
+         Objects.requireNonNull(logger);

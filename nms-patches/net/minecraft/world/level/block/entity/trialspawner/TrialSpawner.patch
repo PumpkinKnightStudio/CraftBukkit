@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawner.java
++++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawner.java
+@@ -48,7 +48,7 @@
+     private static final float SPAWNING_AMBIENT_SOUND_CHANCE = 0.02F;
+     private final TrialSpawnerConfig config;
+     private final TrialSpawnerData data;
+-    private final TrialSpawner.a stateAccessor;
++    public final TrialSpawner.a stateAccessor; // PAIL private -> public
+     private PlayerDetector playerDetector;
+     private boolean overridePeacefulAndMobSpawnRule;
+ 

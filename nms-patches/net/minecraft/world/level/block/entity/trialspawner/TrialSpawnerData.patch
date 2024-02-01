@@ -1,0 +1,18 @@
+--- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
++++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
+@@ -50,12 +50,12 @@
+             return trialspawnerdata.ejectingLootTable;
+         })).apply(instance, TrialSpawnerData::new);
+     });
+-    protected final Set<UUID> detectedPlayers;
+-    protected final Set<UUID> currentMobs;
++    public final Set<UUID> detectedPlayers; // PAIL protected -> public
++    public final Set<UUID> currentMobs; // PAIL protected -> public
+     protected long cooldownEndsAt;
+     protected long nextMobSpawnsAt;
+     protected int totalMobsSpawned;
+-    protected Optional<MobSpawnerData> nextSpawnData;
++    public Optional<MobSpawnerData> nextSpawnData; // PAIL protected -> public
+     protected Optional<MinecraftKey> ejectingLootTable;
+     protected SimpleWeightedRandomList<MobSpawnerData> spawnPotentials;
+     @Nullable
