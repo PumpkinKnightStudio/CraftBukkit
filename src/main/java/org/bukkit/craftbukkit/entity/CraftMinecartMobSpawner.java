@@ -61,15 +61,27 @@ final class CraftMinecartMobSpawner extends CraftMinecart implements SpawnerMine
 
     @Override
     public void setSpawnedEntity(EntitySnapshot snapshot) {
+        setSpawnedEntity(snapshot, null);
+    }
+
+    @Override
+    public void setSpawnedEntity(EntitySnapshot snapshot, SpawnRule spawnRule) {
+        getHandle().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
+
         if (snapshot == null) {
-            getHandle().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
             getHandle().getSpawner().nextSpawnData = new MobSpawnerData();
             return;
         }
         NBTTagCompound compoundTag = ((CraftEntitySnapshot) snapshot).getData();
 
-        getHandle().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty();
-        getHandle().getSpawner().nextSpawnData = new MobSpawnerData(compoundTag, Optional.empty());
+        getHandle().getSpawner().nextSpawnData = new MobSpawnerData(compoundTag, Optional.ofNullable(toMinecraftRule(spawnRule)));
+    }
+
+    @Override
+    public void setSpawnedEntity(SpawnerEntry spawnerEntry) {
+        Preconditions.checkArgument(spawnerEntry != null, "Entry cannot be null");
+
+        setSpawnedEntity(spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule());
     }
 
     @Override

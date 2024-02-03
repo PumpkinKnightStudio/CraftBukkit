@@ -68,15 +68,27 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<TileEntityMobSpa
 
     @Override
     public void setSpawnedEntity(EntitySnapshot snapshot) {
+        setSpawnedEntity(snapshot, null);
+    }
+
+    @Override
+    public void setSpawnedEntity(EntitySnapshot snapshot, SpawnRule spawnRule) {
+        this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
+
         if (snapshot == null) {
-            this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
             this.getSnapshot().getSpawner().nextSpawnData = new MobSpawnerData();
             return;
         }
         NBTTagCompound compoundTag = ((CraftEntitySnapshot) snapshot).getData();
 
-        this.getSnapshot().getSpawner().spawnPotentials = SimpleWeightedRandomList.empty();
-        this.getSnapshot().getSpawner().nextSpawnData = new MobSpawnerData(compoundTag, Optional.empty());
+        this.getSnapshot().getSpawner().nextSpawnData = new MobSpawnerData(compoundTag, Optional.ofNullable(toMinecraftRule(spawnRule)));
+    }
+
+    @Override
+    public void setSpawnedEntity(SpawnerEntry spawnerEntry) {
+        Preconditions.checkArgument(spawnerEntry != null, "Entry cannot be null");
+
+        setSpawnedEntity(spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule());
     }
 
     @Override

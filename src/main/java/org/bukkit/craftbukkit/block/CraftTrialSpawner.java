@@ -237,6 +237,11 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
 
     @Override
     public void setSpawnedEntity(EntitySnapshot snapshot) {
+        setSpawnedEntity(snapshot, null);
+    }
+
+    @Override
+    public void setSpawnedEntity(EntitySnapshot snapshot, SpawnRule spawnRule) {
         if (snapshot == null) {
             getTrialData().nextSpawnData = Optional.empty();
             config.spawnPotentialsDefinition = SimpleWeightedRandomList.empty(); // need clear the spawnPotentials to avoid nextSpawnData being replaced later
@@ -244,10 +249,17 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
         }
 
         NBTTagCompound compoundTag = ((CraftEntitySnapshot) snapshot).getData();
-        MobSpawnerData data = new MobSpawnerData(compoundTag, Optional.empty());
+        MobSpawnerData data = new MobSpawnerData(compoundTag, Optional.ofNullable(toMinecraftRule(spawnRule)));
 
         getTrialData().nextSpawnData = Optional.of(data);
         config.spawnPotentialsDefinition = SimpleWeightedRandomList.single(data);
+    }
+
+    @Override
+    public void setSpawnedEntity(SpawnerEntry spawnerEntry) {
+        Preconditions.checkArgument(spawnerEntry != null, "Entry cannot be null");
+
+        setSpawnedEntity(spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule());
     }
 
     @Override
