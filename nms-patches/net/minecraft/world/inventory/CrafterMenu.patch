@@ -36,15 +36,3 @@
          return this.container.stillValid(entityhuman);
      }
  
-@@ -145,4 +165,11 @@
- 
-     @Override
-     public void dataChanged(Container container, int i, int j) {}
-+
-+    // Craftbukkit start
-+    @Override
-+    public void slotChanged(Container container, int i, ItemStack before, ItemStack after) {
-+       slotChanged(container, i, after);
-+    }
-+    // Craftbukkit end
- }
