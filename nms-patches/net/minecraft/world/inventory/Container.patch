@@ -65,6 +65,15 @@
      public void removeSlotListener(ICrafting icrafting) {
          this.containerListeners.remove(icrafting);
      }
+@@ -253,7 +297,7 @@
+             while (iterator.hasNext()) {
+                 ICrafting icrafting = (ICrafting) iterator.next();
+ 
+-                icrafting.slotChanged(this, i, itemstack2);
++                icrafting.slotChanged(this, i, itemstack1, itemstack2); // Craftbukkit - Add previous ItemStack
+             }
+         }
+ 
 @@ -380,7 +424,7 @@
                  }
              } else if (this.quickcraftStatus == 2) {

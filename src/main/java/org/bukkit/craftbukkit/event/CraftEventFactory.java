@@ -230,6 +230,7 @@ import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerInventoryChangeEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
@@ -1899,5 +1900,10 @@ public class CraftEventFactory {
 
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+
+    public static void callInventoryChangeEvent(Player player, int slot, ItemStack before, ItemStack after) {
+        PlayerInventoryChangeEvent event = new PlayerInventoryChangeEvent(player, slot, CraftItemStack.asBukkitCopy(before), CraftItemStack.asBukkitCopy(after));
+        Bukkit.getPluginManager().callEvent(event);
     }
 }

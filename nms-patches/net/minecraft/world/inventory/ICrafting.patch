@@ -1,0 +1,9 @@
+--- a/net/minecraft/world/inventory/ICrafting.java
++++ b/net/minecraft/world/inventory/ICrafting.java
+@@ -7,4 +7,6 @@
+     void slotChanged(Container container, int i, ItemStack itemstack);
+ 
+     void dataChanged(Container container, int i, int j);
++
++    void slotChanged(Container container, int i, ItemStack before, ItemStack after); // Craftbukkit - Add slotChanged method that includes the previous ItemStack.
+ }
