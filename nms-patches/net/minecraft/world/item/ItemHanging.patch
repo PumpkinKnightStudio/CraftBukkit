@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/ItemHanging.java
 +++ b/net/minecraft/world/item/ItemHanging.java
-@@ -15,6 +15,11 @@
+@@ -22,6 +22,11 @@
  import net.minecraft.world.level.World;
  import net.minecraft.world.level.gameevent.GameEvent;
  
@@ -11,8 +11,8 @@
 +
  public class ItemHanging extends Item {
  
-     private final EntityTypes<? extends EntityHanging> type;
-@@ -58,6 +63,18 @@
+     private static final IChatBaseComponent TOOLTIP_RANDOM_VARIANT = IChatBaseComponent.translatable("painting.random").withStyle(EnumChatFormat.GRAY);
+@@ -72,6 +77,19 @@
  
              if (((EntityHanging) object).survives()) {
                  if (!world.isClientSide) {
@@ -20,8 +20,9 @@
 +                    Player who = (itemactioncontext.getPlayer() == null) ? null : (Player) itemactioncontext.getPlayer().getBukkitEntity();
 +                    org.bukkit.block.Block blockClicked = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 +                    org.bukkit.block.BlockFace blockFace = org.bukkit.craftbukkit.block.CraftBlock.notchToBlockFace(enumdirection);
++                    org.bukkit.inventory.EquipmentSlot hand = org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(itemactioncontext.getHand());
 +
-+                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) ((EntityHanging) object).getBukkitEntity(), who, blockClicked, blockFace, org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack));
++                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) ((EntityHanging) object).getBukkitEntity(), who, blockClicked, blockFace, hand, org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack));
 +                    world.getCraftServer().getPluginManager().callEvent(event);
 +
 +                    if (event.isCancelled()) {
@@ -29,5 +30,5 @@
 +                    }
 +                    // CraftBukkit end
                      ((EntityHanging) object).playPlacementSound();
-                     world.gameEvent(entityhuman, GameEvent.ENTITY_PLACE, blockposition);
+                     world.gameEvent((Entity) entityhuman, GameEvent.ENTITY_PLACE, ((EntityHanging) object).position());
                      world.addFreshEntity((Entity) object);

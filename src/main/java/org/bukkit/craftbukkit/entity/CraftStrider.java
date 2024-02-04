@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.monster.EntityStrider;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Strider;
 
 public class CraftStrider extends CraftAnimals implements Strider {
@@ -35,7 +34,7 @@ public class CraftStrider extends CraftAnimals implements Strider {
 
     @Override
     public int getBoostTicks() {
-        return getHandle().steering.boosting ? getHandle().steering.boostTimeTotal : 0;
+        return getHandle().steering.boosting ? getHandle().steering.boostTimeTotal() : 0;
     }
 
     @Override
@@ -56,7 +55,7 @@ public class CraftStrider extends CraftAnimals implements Strider {
             return;
         }
 
-        int max = getHandle().steering.boostTimeTotal;
+        int max = getHandle().steering.boostTimeTotal();
         Preconditions.checkArgument(ticks >= 0 && ticks <= max, "boost ticks must not exceed 0 or %d (inclusive)", max);
 
         this.getHandle().steering.boostTime = ticks;
@@ -75,10 +74,5 @@ public class CraftStrider extends CraftAnimals implements Strider {
     @Override
     public String toString() {
         return "CraftStrider";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.STRIDER;
     }
 }

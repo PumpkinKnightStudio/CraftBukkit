@@ -1,16 +1,27 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.level.block.BlockFurnace;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Furnace;
 import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Recipe;
 
 public abstract class CraftFurnace<T extends TileEntityFurnace> extends CraftContainer<T> implements Furnace {
 
     public CraftFurnace(World world, T tileEntity) {
         super(world, tileEntity);
+    }
+
+    protected CraftFurnace(CraftFurnace<T> state) {
+        super(state);
     }
 
     @Override
@@ -58,4 +69,20 @@ public abstract class CraftFurnace<T extends TileEntityFurnace> extends CraftCon
     public void setCookTimeTotal(int cookTimeTotal) {
         this.getSnapshot().cookingTotalTime = cookTimeTotal;
     }
+
+    @Override
+    public Map<CookingRecipe<?>, Integer> getRecipesUsed() {
+        ImmutableMap.Builder<CookingRecipe<?>, Integer> recipesUsed = ImmutableMap.builder();
+        for (Map.Entry<MinecraftKey, Integer> entrySet : this.getSnapshot().getRecipesUsed().object2IntEntrySet()) {
+            Recipe recipe = Bukkit.getRecipe(CraftNamespacedKey.fromMinecraft(entrySet.getKey()));
+            if (recipe instanceof CookingRecipe<?> cookingRecipe) {
+                recipesUsed.put(cookingRecipe, entrySet.getValue());
+            }
+        }
+
+        return recipesUsed.build();
+    }
+
+    @Override
+    public abstract CraftFurnace<T> copy();
 }

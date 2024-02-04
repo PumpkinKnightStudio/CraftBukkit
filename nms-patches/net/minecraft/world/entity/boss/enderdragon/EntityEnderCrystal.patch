@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/boss/enderdragon/EntityEnderCrystal.java
 +++ b/net/minecraft/world/entity/boss/enderdragon/EntityEnderCrystal.java
-@@ -21,6 +21,11 @@
+@@ -20,6 +20,11 @@
  import net.minecraft.world.level.block.BlockFireAbstract;
  import net.minecraft.world.level.dimension.end.EnderDragonBattle;
  
@@ -12,39 +12,40 @@
  public class EntityEnderCrystal extends Entity {
  
      private static final DataWatcherObject<Optional<BlockPosition>> DATA_BEAM_TARGET = DataWatcher.defineId(EntityEnderCrystal.class, DataWatcherRegistry.OPTIONAL_BLOCK_POS);
-@@ -56,7 +61,11 @@
+@@ -55,7 +60,11 @@
              BlockPosition blockposition = this.blockPosition();
  
-             if (((WorldServer) this.level).dragonFight() != null && this.level.getBlockState(blockposition).isAir()) {
--                this.level.setBlockAndUpdate(blockposition, BlockFireAbstract.getState(this.level, blockposition));
+             if (((WorldServer) this.level()).getDragonFight() != null && this.level().getBlockState(blockposition).isAir()) {
+-                this.level().setBlockAndUpdate(blockposition, BlockFireAbstract.getState(this.level(), blockposition));
 +                // CraftBukkit start
-+                if (!CraftEventFactory.callBlockIgniteEvent(this.level, blockposition, this).isCancelled()) {
-+                    this.level.setBlockAndUpdate(blockposition, BlockFireAbstract.getState(this.level, blockposition));
++                if (!CraftEventFactory.callBlockIgniteEvent(this.level(), blockposition, this).isCancelled()) {
++                    this.level().setBlockAndUpdate(blockposition, BlockFireAbstract.getState(this.level(), blockposition));
 +                }
 +                // CraftBukkit end
              }
          }
  
-@@ -96,9 +105,22 @@
+@@ -95,11 +104,23 @@
              return false;
          } else {
-             if (!this.isRemoved() && !this.level.isClientSide) {
+             if (!this.isRemoved() && !this.level().isClientSide) {
 +                // CraftBukkit start - All non-living entities need this
 +                if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f, false)) {
 +                    return false;
 +                }
 +                // CraftBukkit end
                  this.remove(Entity.RemovalReason.KILLED);
-                 if (!damagesource.isExplosion()) {
--                    this.level.explode((Entity) null, this.getX(), this.getY(), this.getZ(), 6.0F, Explosion.Effect.DESTROY);
+                 if (!damagesource.is(DamageTypeTags.IS_EXPLOSION)) {
+                     DamageSource damagesource1 = damagesource.getEntity() != null ? this.damageSources().explosion(this, damagesource.getEntity()) : null;
+ 
+-                    this.level().explode(this, damagesource1, (ExplosionDamageCalculator) null, this.getX(), this.getY(), this.getZ(), 6.0F, false, World.a.BLOCK);
 +                    // CraftBukkit start
-+                    ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 6.0F, false);
-+                    this.level.getCraftServer().getPluginManager().callEvent(event);
++                    ExplosionPrimeEvent event = CraftEventFactory.callExplosionPrimeEvent(this, 6.0F, false);
 +                    if (event.isCancelled()) {
 +                        this.unsetRemoved();
 +                        return false;
 +                    }
-+                    this.level.explode(this, this.getX(), this.getY(), this.getZ(), event.getRadius(), event.getFire(), Explosion.Effect.DESTROY);
++                    this.level().explode(this, damagesource1, (ExplosionDamageCalculator) null, this.getX(), this.getY(), this.getZ(), event.getRadius(), event.getFire(), World.a.BLOCK);
 +                    // CraftBukkit end
                  }
  

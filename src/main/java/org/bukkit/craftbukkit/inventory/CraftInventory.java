@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -9,6 +10,8 @@ import net.minecraft.world.inventory.InventoryCrafting;
 import net.minecraft.world.inventory.InventoryEnderChest;
 import net.minecraft.world.inventory.InventoryMerchant;
 import net.minecraft.world.level.block.BlockComposter;
+import net.minecraft.world.level.block.entity.ChiseledBookShelfBlockEntity;
+import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import net.minecraft.world.level.block.entity.IHopper;
 import net.minecraft.world.level.block.entity.TileEntityBarrel;
 import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
@@ -16,10 +19,10 @@ import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
 import net.minecraft.world.level.block.entity.TileEntityDropper;
 import net.minecraft.world.level.block.entity.TileEntityFurnace;
+import net.minecraft.world.level.block.entity.TileEntityJukeBox;
 import net.minecraft.world.level.block.entity.TileEntityLectern;
 import net.minecraft.world.level.block.entity.TileEntityShulkerBox;
 import net.minecraft.world.level.block.entity.TileEntitySmoker;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -82,9 +85,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public void setContents(ItemStack[] items) {
-        if (getSize() < items.length) {
-            throw new IllegalArgumentException("Invalid inventory size; expected " + getSize() + " or less");
-        }
+        Preconditions.checkArgument(items.length <= getSize(), "Invalid inventory size (%s); expected %s or less", items.length, getSize());
 
         for (int i = 0; i < getSize(); i++) {
             if (i >= items.length) {
@@ -102,7 +103,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public boolean contains(Material material) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
         for (ItemStack item : getStorageContents()) {
             if (item != null && item.getType() == material) {
@@ -127,7 +128,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public boolean contains(Material material, int amount) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
         if (amount <= 0) {
             return true;
@@ -176,9 +177,9 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> all(Material material) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
-        HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
+        HashMap<Integer, ItemStack> slots = new HashMap<>();
 
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
@@ -192,7 +193,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> all(ItemStack item) {
-        HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
+        HashMap<Integer, ItemStack> slots = new HashMap<>();
         if (item != null) {
             ItemStack[] inventory = getStorageContents();
             for (int i = 0; i < inventory.length; i++) {
@@ -206,7 +207,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int first(Material material) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
@@ -255,7 +256,7 @@ public class CraftInventory implements Inventory {
     }
 
     public int firstPartial(Material material) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
@@ -284,8 +285,8 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> addItem(ItemStack... items) {
-        Validate.noNullElements(items, "Item cannot be null");
-        HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
+        Preconditions.checkArgument(items != null, "items cannot be null");
+        HashMap<Integer, ItemStack> leftover = new HashMap<>();
 
         /* TODO: some optimization
          *  - Create a 'firstPartial' with a 'fromIndex'
@@ -295,6 +296,7 @@ public class CraftInventory implements Inventory {
 
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
+            Preconditions.checkArgument(item != null, "ItemStack cannot be null");
             while (true) {
                 // Do we already have a stack of it?
                 int firstPartial = firstPartial(item);
@@ -350,13 +352,14 @@ public class CraftInventory implements Inventory {
 
     @Override
     public HashMap<Integer, ItemStack> removeItem(ItemStack... items) {
-        Validate.notNull(items, "Items cannot be null");
+        Preconditions.checkArgument(items != null, "items cannot be null");
         HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
 
         // TODO: optimization
 
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
+            Preconditions.checkArgument(item != null, "ItemStack cannot be null");
             int toDelete = item.getAmount();
 
             while (true) {
@@ -398,7 +401,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public void remove(Material material) {
-        Validate.notNull(material, "Material cannot be null");
+        Preconditions.checkArgument(material != null, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
@@ -452,7 +455,11 @@ public class CraftInventory implements Inventory {
     public InventoryType getType() {
         // Thanks to Droppers extending Dispensers, Blast Furnaces & Smokers extending Furnace, order is important.
         if (inventory instanceof InventoryCrafting) {
-            return inventory.getContainerSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
+            if (inventory instanceof CrafterBlockEntity) {
+                return InventoryType.CRAFTER;
+            } else {
+                return inventory.getContainerSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
+            }
         } else if (inventory instanceof PlayerInventory) {
             return InventoryType.PLAYER;
         } else if (inventory instanceof TileEntityDropper) {
@@ -489,6 +496,8 @@ public class CraftInventory implements Inventory {
             return InventoryType.BARREL;
         } else if (inventory instanceof TileEntityLectern.LecternInventory) {
             return InventoryType.LECTERN;
+        } else if (inventory instanceof ChiseledBookShelfBlockEntity) {
+            return InventoryType.CHISELED_BOOKSHELF;
         } else if (this instanceof CraftInventoryLoom) {
             return InventoryType.LOOM;
         } else if (this instanceof CraftInventoryCartography) {
@@ -499,6 +508,8 @@ public class CraftInventory implements Inventory {
             return InventoryType.STONECUTTER;
         } else if (inventory instanceof BlockComposter.ContainerEmpty || inventory instanceof BlockComposter.ContainerInput || inventory instanceof BlockComposter.ContainerOutput) {
             return InventoryType.COMPOSTER;
+        } else if (inventory instanceof TileEntityJukeBox) {
+            return InventoryType.JUKEBOX;
         } else {
             return InventoryType.CHEST;
         }

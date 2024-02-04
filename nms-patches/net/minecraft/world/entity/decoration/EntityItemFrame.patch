@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/decoration/EntityItemFrame.java
 +++ b/net/minecraft/world/entity/decoration/EntityItemFrame.java
-@@ -91,16 +91,27 @@
+@@ -96,16 +96,27 @@
      @Override
      protected void recalculateBoundingBox() {
          if (this.direction != null) {
@@ -17,16 +17,15 @@
 -            double d1 = (double) this.pos.getX() + 0.5D - (double) this.direction.getStepX() * 0.46875D;
 -            double d2 = (double) this.pos.getY() + 0.5D - (double) this.direction.getStepY() * 0.46875D;
 -            double d3 = (double) this.pos.getZ() + 0.5D - (double) this.direction.getStepZ() * 0.46875D;
--
++            double d1 = (double) blockPosition.getX() + 0.5D - (double) direction.getStepX() * 0.46875D;
++            double d2 = (double) blockPosition.getY() + 0.5D - (double) direction.getStepY() * 0.46875D;
++            double d3 = (double) blockPosition.getZ() + 0.5D - (double) direction.getStepZ() * 0.46875D;
+ 
 -            this.setPosRaw(d1, d2, d3);
 -            double d4 = (double) this.getWidth();
 -            double d5 = (double) this.getHeight();
 -            double d6 = (double) this.getWidth();
 -            EnumDirection.EnumAxis enumdirection_enumaxis = this.direction.getAxis();
-+            double d1 = (double) blockPosition.getX() + 0.5D - (double) direction.getStepX() * 0.46875D;
-+            double d2 = (double) blockPosition.getY() + 0.5D - (double) direction.getStepY() * 0.46875D;
-+            double d3 = (double) blockPosition.getZ() + 0.5D - (double) direction.getStepZ() * 0.46875D;
-+
 +            if (entity != null) {
 +                entity.setPosRaw(d1, d2, d3);
 +            }
@@ -37,7 +36,7 @@
  
              switch (enumdirection_enumaxis) {
                  case X:
-@@ -116,9 +127,10 @@
+@@ -121,9 +132,10 @@
              d4 /= 32.0D;
              d5 /= 32.0D;
              d6 /= 32.0D;
@@ -51,17 +50,17 @@
      public boolean survives() {
 @@ -168,6 +180,11 @@
              return false;
-         } else if (!damagesource.isExplosion() && !this.getItem().isEmpty()) {
-             if (!this.level.isClientSide) {
+         } else if (!damagesource.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty()) {
+             if (!this.level().isClientSide) {
 +                // CraftBukkit start - fire EntityDamageEvent
 +                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f, false) || this.isRemoved()) {
 +                    return true;
 +                }
 +                // CraftBukkit end
                  this.dropItem(damagesource.getEntity(), false);
+                 this.gameEvent(GameEvent.BLOCK_CHANGE, damagesource.getEntity());
                  this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
-             }
-@@ -277,6 +294,12 @@
+@@ -297,13 +314,19 @@
      }
  
      public void setItem(ItemStack itemstack, boolean flag) {
@@ -72,11 +71,10 @@
 +    public void setItem(ItemStack itemstack, boolean flag, boolean playSound) {
 +        // CraftBukkit end
          if (!itemstack.isEmpty()) {
-             itemstack = itemstack.copy();
-             itemstack.setCount(1);
-@@ -284,7 +307,7 @@
+             itemstack = itemstack.copyWithCount(1);
          }
  
+         this.onItemChanged(itemstack);
          this.getEntityData().set(EntityItemFrame.DATA_ITEM, itemstack);
 -        if (!itemstack.isEmpty()) {
 +        if (!itemstack.isEmpty() && playSound) { // CraftBukkit

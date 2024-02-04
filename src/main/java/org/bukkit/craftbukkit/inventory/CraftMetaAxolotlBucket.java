@@ -39,7 +39,7 @@ public class CraftMetaAxolotlBucket extends CraftMetaItem implements AxolotlBuck
         }
 
         if (tag.contains(ENTITY_TAG.NBT)) {
-            entityTag = tag.getCompound(ENTITY_TAG.NBT);
+            entityTag = tag.getCompound(ENTITY_TAG.NBT).copy();
         }
     }
 
@@ -83,12 +83,7 @@ public class CraftMetaAxolotlBucket extends CraftMetaItem implements AxolotlBuck
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case AXOLOTL_BUCKET:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.AXOLOTL_BUCKET;
     }
 
     @Override

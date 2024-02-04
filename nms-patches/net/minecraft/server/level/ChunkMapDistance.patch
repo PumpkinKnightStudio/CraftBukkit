@@ -1,6 +1,15 @@
 --- a/net/minecraft/server/level/ChunkMapDistance.java
 +++ b/net/minecraft/server/level/ChunkMapDistance.java
-@@ -125,10 +125,25 @@
+@@ -55,7 +55,7 @@
+     final LongSet ticketsToRelease = new LongOpenHashSet();
+     final Executor mainThreadExecutor;
+     private long ticketTickCounter;
+-    private int simulationDistance = 10;
++    public int simulationDistance = 10;
+ 
+     protected ChunkMapDistance(Executor executor, Executor executor1) {
+         Objects.requireNonNull(executor1);
+@@ -122,10 +122,25 @@
          }
  
          if (!this.chunksToUpdateFutures.isEmpty()) {
@@ -29,7 +38,7 @@
              return true;
          } else {
              if (!this.ticketsToRelease.isEmpty()) {
-@@ -164,7 +179,7 @@
+@@ -161,7 +176,7 @@
          }
      }
  
@@ -38,7 +47,7 @@
          ArraySetSorted<Ticket<?>> arraysetsorted = this.getTickets(i);
          int j = getTicketLevelAt(arraysetsorted);
          Ticket<?> ticket1 = (Ticket) arraysetsorted.addOrGet(ticket);
-@@ -174,13 +189,15 @@
+@@ -171,13 +186,15 @@
              this.ticketTracker.update(i, ticket.getTicketLevel(), true);
          }
  
@@ -56,7 +65,7 @@
          }
  
          if (arraysetsorted.isEmpty()) {
-@@ -188,16 +205,29 @@
+@@ -185,6 +202,7 @@
          }
  
          this.ticketTracker.update(i, getTicketLevelAt(arraysetsorted), false);
@@ -64,32 +73,43 @@
      }
  
      public <T> void addTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
--        this.addTicket(chunkcoordintpair.toLong(), new Ticket<>(tickettype, i, t0));
-+        // CraftBukkit start
-+        this.addTicketAtLevel(tickettype, chunkcoordintpair, i, t0);
-+    }
-+
-+    public <T> boolean addTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkcoordintpair, int level, T identifier) {
-+        return this.addTicket(chunkcoordintpair.toLong(), new Ticket<>(ticketType, level, identifier));
-+        // CraftBukkit end
-     }
- 
-     public <T> void removeTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
--        Ticket<T> ticket = new Ticket<>(tickettype, i, t0);
-+        // CraftBukkit start
-+        this.removeTicketAtLevel(tickettype, chunkcoordintpair, i, t0);
-+    }
- 
--        this.removeTicket(chunkcoordintpair.toLong(), ticket);
-+    public <T> boolean removeTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkcoordintpair, int level, T identifier) {
-+        Ticket<T> ticket = new Ticket<>(ticketType, level, identifier);
-+
-+        return this.removeTicket(chunkcoordintpair.toLong(), ticket);
-+        // CraftBukkit end
+@@ -198,19 +216,33 @@
      }
  
      public <T> void addRegionTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
-@@ -252,6 +282,7 @@
++        // CraftBukkit start
++        addRegionTicketAtDistance(tickettype, chunkcoordintpair, i, t0);
++    }
++
++    public <T> boolean addRegionTicketAtDistance(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
++        // CraftBukkit end
+         Ticket<T> ticket = new Ticket<>(tickettype, ChunkLevel.byStatus(FullChunkStatus.FULL) - i, t0);
+         long j = chunkcoordintpair.toLong();
+ 
+-        this.addTicket(j, ticket);
++        boolean added = this.addTicket(j, ticket); // CraftBukkit
+         this.tickingTicketsTracker.addTicket(j, ticket);
++        return added; // CraftBukkit
+     }
+ 
+     public <T> void removeRegionTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
++        // CraftBukkit start
++        removeRegionTicketAtDistance(tickettype, chunkcoordintpair, i, t0);
++    }
++
++    public <T> boolean removeRegionTicketAtDistance(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
++        // CraftBukkit end
+         Ticket<T> ticket = new Ticket<>(tickettype, ChunkLevel.byStatus(FullChunkStatus.FULL) - i, t0);
+         long j = chunkcoordintpair.toLong();
+ 
+-        this.removeTicket(j, ticket);
++        boolean removed = this.removeTicket(j, ticket); // CraftBukkit
+         this.tickingTicketsTracker.removeTicket(j, ticket);
++        return removed; // CraftBukkit
+     }
+ 
+     private ArraySetSorted<Ticket<?>> getTickets(long i) {
+@@ -249,6 +281,7 @@
          ChunkCoordIntPair chunkcoordintpair = sectionposition.chunk();
          long i = chunkcoordintpair.toLong();
          ObjectSet<EntityPlayer> objectset = (ObjectSet) this.playersPerChunk.get(i);
@@ -97,8 +117,8 @@
  
          objectset.remove(entityplayer);
          if (objectset.isEmpty()) {
-@@ -347,6 +378,26 @@
-         return this.tickingTicketsTracker;
+@@ -378,6 +411,26 @@
+         return !this.tickets.isEmpty();
      }
  
 +    // CraftBukkit start
@@ -123,4 +143,4 @@
 +
      private class a extends ChunkMap {
  
-         public a() {
+         private static final int MAX_LEVEL = ChunkLevel.MAX_LEVEL + 1;

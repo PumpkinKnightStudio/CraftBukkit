@@ -3,17 +3,16 @@ package org.bukkit.craftbukkit.util;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -22,8 +21,10 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
-import net.minecraft.advancements.critereon.LootDeserializationContext;
-import net.minecraft.core.IRegistry;
+import net.minecraft.SystemUtils;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
@@ -32,36 +33,41 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.AdvancementDataWorld;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatDeserializer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.datafix.fixes.DataConverterTypes;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.PotionRegistry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.material.FluidType;
 import net.minecraft.world.level.storage.SavedFile;
 import org.bukkit.Bukkit;
-import org.bukkit.Fluid;
+import org.bukkit.FeatureFlag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.UnsafeValues;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.CraftFeatureFlag;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
-import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.potion.PotionType;
 
 @SuppressWarnings("deprecation")
 public final class CraftMagicNumbers implements UnsafeValues {
@@ -96,22 +102,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
     // ========================================================================
     private static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
     private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
-    private static final Map<FluidType, Fluid> FLUID_MATERIAL = new HashMap<>();
     private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
-    private static final Map<Material, FluidType> MATERIAL_FLUID = new HashMap<>();
 
     static {
-        for (Block block : IRegistry.BLOCK) {
-            BLOCK_MATERIAL.put(block, Material.getMaterial(IRegistry.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
+        for (Block block : BuiltInRegistries.BLOCK) {
+            BLOCK_MATERIAL.put(block, Material.getMaterial(BuiltInRegistries.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
         }
 
-        for (Item item : IRegistry.ITEM) {
-            ITEM_MATERIAL.put(item, Material.getMaterial(IRegistry.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
-        }
-
-        for (FluidType fluid : IRegistry.FLUID) {
-            FLUID_MATERIAL.put(fluid, Registry.FLUID.get(CraftNamespacedKey.fromMinecraft(IRegistry.FLUID.getKey(fluid))));
+        for (Item item : BuiltInRegistries.ITEM) {
+            ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
         }
 
         for (Material material : Material.values()) {
@@ -120,14 +120,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
             }
 
             MinecraftKey key = key(material);
-            IRegistry.ITEM.getOptional(key).ifPresent((item) -> {
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> {
                 MATERIAL_ITEM.put(material, item);
             });
-            IRegistry.BLOCK.getOptional(key).ifPresent((block) -> {
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> {
                 MATERIAL_BLOCK.put(material, block);
-            });
-            IRegistry.FLUID.getOptional(key).ifPresent((fluid) -> {
-                MATERIAL_FLUID.put(material, fluid);
             });
         }
     }
@@ -138,10 +135,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     public static Material getMaterial(Item item) {
         return ITEM_MATERIAL.getOrDefault(item, Material.AIR);
-    }
-
-    public static Fluid getFluid(FluidType fluid) {
-        return FLUID_MATERIAL.get(fluid);
     }
 
     public static Item getItem(Material material) {
@@ -158,10 +151,6 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return MATERIAL_BLOCK.get(material);
-    }
-
-    public static FluidType getFluid(Fluid fluid) {
-        return MATERIAL_FLUID.get(fluid);
     }
 
     public static MinecraftKey key(Material mat) {
@@ -234,12 +223,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "20b026e774dbf715e40a0b2afe114792";
+        return "60a2bb6bf2684dc61c56b90d7c41bddc";
     }
 
     @Override
     public int getDataVersion() {
-        return SharedConstants.getCurrentVersion().getWorldVersion();
+        return SharedConstants.getCurrentVersion().getDataVersion().getVersion();
     }
 
     @Override
@@ -263,16 +252,13 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     @Override
     public Advancement loadAdvancement(NamespacedKey key, String advancement) {
-        if (Bukkit.getAdvancement(key) != null) {
-            throw new IllegalArgumentException("Advancement " + key + " already exists.");
-        }
+        Preconditions.checkArgument(Bukkit.getAdvancement(key) == null, "Advancement %s already exists", key);
         MinecraftKey minecraftkey = CraftNamespacedKey.toMinecraft(key);
 
         JsonElement jsonelement = AdvancementDataWorld.GSON.fromJson(advancement, JsonElement.class);
-        JsonObject jsonobject = ChatDeserializer.convertToJsonObject(jsonelement, "advancement");
-        net.minecraft.advancements.Advancement.SerializedAdvancement nms = net.minecraft.advancements.Advancement.SerializedAdvancement.fromJson(jsonobject, new LootDeserializationContext(minecraftkey, MinecraftServer.getServer().getPredicateManager()));
+        net.minecraft.advancements.Advancement nms = SystemUtils.getOrThrow(net.minecraft.advancements.Advancement.CODEC.parse(JsonOps.INSTANCE, jsonelement), JsonParseException::new);
         if (nms != null) {
-            MinecraftServer.getServer().getAdvancements().advancements.add(Maps.newHashMap(Collections.singletonMap(minecraftkey, nms)));
+            MinecraftServer.getServer().getAdvancements().advancements.put(minecraftkey, new AdvancementHolder(minecraftkey, nms));
             Advancement bukkit = Bukkit.getAdvancement(key);
 
             if (bukkit != null) {
@@ -300,7 +286,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return file.delete();
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18");
+    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
 
     @Override
     public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
@@ -348,11 +334,54 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
         Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
         for (Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttributeMap.fromMinecraft(IRegistry.ATTRIBUTE.getKey(mapEntry.getKey()).toString());
+            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
             defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
         }
 
         return defaultAttributes.build();
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory(Material material) {
+        return CreativeCategory.BUILDING_BLOCKS; // TODO: Figure out what to do with this
+    }
+
+    @Override
+    public String getBlockTranslationKey(Material material) {
+        Block block = getBlock(material);
+        return (block != null) ? block.getDescriptionId() : null;
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        Item item = getItem(material);
+        return (item != null) ? item.getDescriptionId() : null;
+    }
+
+    @Override
+    public String getTranslationKey(EntityType entityType) {
+        Preconditions.checkArgument(entityType.getName() != null, "Invalid name of EntityType %s for translation key", entityType);
+        return EntityTypes.byString(entityType.getName()).map(EntityTypes::getDescriptionId).orElseThrow();
+    }
+
+    @Override
+    public String getTranslationKey(ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+        return nmsItemStack.getItem().getDescriptionId(nmsItemStack);
+    }
+
+    @Override
+    public FeatureFlag getFeatureFlag(NamespacedKey namespacedKey) {
+        Preconditions.checkArgument(namespacedKey != null, "NamespaceKey cannot be null");
+        return CraftFeatureFlag.getFromNMS(namespacedKey);
+    }
+
+    @Override
+    public PotionType.InternalPotionData getInternalPotionData(NamespacedKey namespacedKey) {
+        PotionRegistry potionRegistry = CraftRegistry.getMinecraftRegistry(Registries.POTION)
+                .getOptional(CraftNamespacedKey.toMinecraft(namespacedKey)).orElseThrow();
+
+        return new CraftPotionType(namespacedKey, potionRegistry);
     }
 
     /**

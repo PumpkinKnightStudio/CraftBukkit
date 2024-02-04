@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockBed.java
 +++ b/net/minecraft/world/level/block/BlockBed.java
-@@ -87,7 +87,8 @@
+@@ -94,7 +94,8 @@
                  }
              }
  
@@ -10,7 +10,7 @@
                  world.removeBlock(blockposition, false);
                  BlockPosition blockposition1 = blockposition.relative(((EnumDirection) iblockdata.getValue(BlockBed.FACING)).getOpposite());
  
-@@ -104,7 +105,16 @@
+@@ -113,7 +114,16 @@
  
                  return EnumInteractionResult.SUCCESS;
              } else {
@@ -24,10 +24,10 @@
 +                        this.explodeBed(finaliblockdata, world, finalblockposition);
 +                    } else
 +                    // CraftBukkit end
-                     if (entityhuman_enumbedresult != null) {
+                     if (entityhuman_enumbedresult.getMessage() != null) {
                          entityhuman.displayClientMessage(entityhuman_enumbedresult.getMessage(), true);
                      }
-@@ -115,8 +125,27 @@
+@@ -124,8 +134,29 @@
          }
      }
  
@@ -42,7 +42,9 @@
 +                    world.removeBlock(blockposition1, false);
 +                }
 +
-+                world.explode((Entity) null, DamageSource.badRespawnPointExplosion(), (ExplosionDamageCalculator) null, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, 5.0F, true, Explosion.Effect.DESTROY);
++                Vec3D vec3d = blockposition.getCenter();
++
++                world.explode((Entity) null, world.damageSources().badRespawnPointExplosion(vec3d), (ExplosionDamageCalculator) null, vec3d, 5.0F, true, World.a.BLOCK);
 +                return EnumInteractionResult.SUCCESS;
 +            }
 +        }
@@ -56,3 +58,15 @@
      }
  
      private boolean kickVillagerOutOfBed(World world, BlockPosition blockposition) {
+@@ -324,6 +355,11 @@
+             BlockPosition blockposition1 = blockposition.relative((EnumDirection) iblockdata.getValue(BlockBed.FACING));
+ 
+             world.setBlock(blockposition1, (IBlockData) iblockdata.setValue(BlockBed.PART, BlockPropertyBedPart.HEAD), 3);
++            // CraftBukkit start - SPIGOT-7315: Don't updated if we capture block states
++            if (world.captureBlockStates) {
++                return;
++            }
++            // CraftBukkit end
+             world.blockUpdated(blockposition, Blocks.AIR);
+             iblockdata.updateNeighbourShapes(world, blockposition, 3);
+         }

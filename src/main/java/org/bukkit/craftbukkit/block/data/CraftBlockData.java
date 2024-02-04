@@ -10,24 +10,43 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.commands.arguments.blocks.ArgumentBlock;
+import net.minecraft.core.BlockPosition;
 import net.minecraft.core.EnumDirection;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.INamable;
+import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EnumBlockMirror;
+import net.minecraft.world.level.block.EnumBlockRotation;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.block.state.IBlockDataHolder;
 import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
 import net.minecraft.world.level.block.state.properties.BlockStateEnum;
 import net.minecraft.world.level.block.state.properties.BlockStateInteger;
 import net.minecraft.world.level.block.state.properties.IBlockState;
+import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockSupport;
+import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.structure.Mirror;
+import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.craftbukkit.CraftSoundGroup;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
+import org.bukkit.craftbukkit.block.CraftBlockSupport;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
+import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
 
@@ -44,7 +63,7 @@ public class CraftBlockData implements BlockData {
 
     @Override
     public Material getMaterial() {
-        return CraftMagicNumbers.getMaterial(state.getBlock());
+        return CraftBlockType.minecraftToBukkit(state.getBlock());
     }
 
     public IBlockData getState() {
@@ -221,7 +240,7 @@ public class CraftBlockData implements BlockData {
 
     // Mimicked from BlockDataAbstract#toString()
     public String toString(Map<IBlockState<?>, Comparable<?>> states) {
-        StringBuilder stateString = new StringBuilder(IRegistry.BLOCK.getKey(state.getBlock()).toString());
+        StringBuilder stateString = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
 
         if (!states.isEmpty()) {
             stateString.append('[');
@@ -300,7 +319,7 @@ public class CraftBlockData implements BlockData {
     private static IBlockState<?> getState(Class<? extends Block> block, String name, boolean optional) {
         IBlockState<?> state = null;
 
-        for (Block instance : IRegistry.BLOCK) {
+        for (Block instance : BuiltInRegistries.BLOCK) {
             if (instance.getClass() == block) {
                 if (state == null) {
                     state = instance.getStateDefinition().getProperty(name);
@@ -350,6 +369,7 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.BlockBanner.class, org.bukkit.craftbukkit.block.impl.CraftBanner::new);
         register(net.minecraft.world.level.block.BlockBannerWall.class, org.bukkit.craftbukkit.block.impl.CraftBannerWall::new);
         register(net.minecraft.world.level.block.BlockBarrel.class, org.bukkit.craftbukkit.block.impl.CraftBarrel::new);
+        register(net.minecraft.world.level.block.BlockBarrier.class, org.bukkit.craftbukkit.block.impl.CraftBarrier::new);
         register(net.minecraft.world.level.block.BlockBed.class, org.bukkit.craftbukkit.block.impl.CraftBed::new);
         register(net.minecraft.world.level.block.BlockBeehive.class, org.bukkit.craftbukkit.block.impl.CraftBeehive::new);
         register(net.minecraft.world.level.block.BlockBeetroot.class, org.bukkit.craftbukkit.block.impl.CraftBeetroot::new);
@@ -357,6 +377,7 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.BlockBlastFurnace.class, org.bukkit.craftbukkit.block.impl.CraftBlastFurnace::new);
         register(net.minecraft.world.level.block.BlockBrewingStand.class, org.bukkit.craftbukkit.block.impl.CraftBrewingStand::new);
         register(net.minecraft.world.level.block.BlockBubbleColumn.class, org.bukkit.craftbukkit.block.impl.CraftBubbleColumn::new);
+        register(net.minecraft.world.level.block.BlockButtonAbstract.class, org.bukkit.craftbukkit.block.impl.CraftButtonAbstract::new);
         register(net.minecraft.world.level.block.BlockCactus.class, org.bukkit.craftbukkit.block.impl.CraftCactus::new);
         register(net.minecraft.world.level.block.BlockCake.class, org.bukkit.craftbukkit.block.impl.CraftCake::new);
         register(net.minecraft.world.level.block.BlockCampfire.class, org.bukkit.craftbukkit.block.impl.CraftCampfire::new);
@@ -447,7 +468,6 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.BlockStem.class, org.bukkit.craftbukkit.block.impl.CraftStem::new);
         register(net.minecraft.world.level.block.BlockStemAttached.class, org.bukkit.craftbukkit.block.impl.CraftStemAttached::new);
         register(net.minecraft.world.level.block.BlockStepAbstract.class, org.bukkit.craftbukkit.block.impl.CraftStepAbstract::new);
-        register(net.minecraft.world.level.block.BlockStoneButton.class, org.bukkit.craftbukkit.block.impl.CraftStoneButton::new);
         register(net.minecraft.world.level.block.BlockStonecutter.class, org.bukkit.craftbukkit.block.impl.CraftStonecutter::new);
         register(net.minecraft.world.level.block.BlockStructure.class, org.bukkit.craftbukkit.block.impl.CraftStructure::new);
         register(net.minecraft.world.level.block.BlockSweetBerryBush.class, org.bukkit.craftbukkit.block.impl.CraftSweetBerryBush::new);
@@ -466,24 +486,49 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.BlockWeepingVines.class, org.bukkit.craftbukkit.block.impl.CraftWeepingVines::new);
         register(net.minecraft.world.level.block.BlockWitherSkull.class, org.bukkit.craftbukkit.block.impl.CraftWitherSkull::new);
         register(net.minecraft.world.level.block.BlockWitherSkullWall.class, org.bukkit.craftbukkit.block.impl.CraftWitherSkullWall::new);
-        register(net.minecraft.world.level.block.BlockWoodButton.class, org.bukkit.craftbukkit.block.impl.CraftWoodButton::new);
+        register(net.minecraft.world.level.block.BrushableBlock.class, org.bukkit.craftbukkit.block.impl.CraftBrushable::new);
+        register(net.minecraft.world.level.block.CalibratedSculkSensorBlock.class, org.bukkit.craftbukkit.block.impl.CraftCalibratedSculkSensor::new);
         register(net.minecraft.world.level.block.CandleBlock.class, org.bukkit.craftbukkit.block.impl.CraftCandle::new);
         register(net.minecraft.world.level.block.CandleCakeBlock.class, org.bukkit.craftbukkit.block.impl.CraftCandleCake::new);
         register(net.minecraft.world.level.block.CaveVinesBlock.class, org.bukkit.craftbukkit.block.impl.CraftCaveVines::new);
         register(net.minecraft.world.level.block.CaveVinesPlantBlock.class, org.bukkit.craftbukkit.block.impl.CraftCaveVinesPlant::new);
+        register(net.minecraft.world.level.block.CeilingHangingSignBlock.class, org.bukkit.craftbukkit.block.impl.CraftCeilingHangingSign::new);
+        register(net.minecraft.world.level.block.CherryLeavesBlock.class, org.bukkit.craftbukkit.block.impl.CraftCherryLeaves::new);
+        register(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, org.bukkit.craftbukkit.block.impl.CraftChiseledBookShelf::new);
+        register(net.minecraft.world.level.block.CopperBulbBlock.class, org.bukkit.craftbukkit.block.impl.CraftCopperBulb::new);
+        register(net.minecraft.world.level.block.CrafterBlock.class, org.bukkit.craftbukkit.block.impl.CraftCrafter::new);
+        register(net.minecraft.world.level.block.DecoratedPotBlock.class, org.bukkit.craftbukkit.block.impl.CraftDecoratedPot::new);
+        register(net.minecraft.world.level.block.EquipableCarvedPumpkinBlock.class, org.bukkit.craftbukkit.block.impl.CraftEquipableCarvedPumpkin::new);
         register(net.minecraft.world.level.block.GlowLichenBlock.class, org.bukkit.craftbukkit.block.impl.CraftGlowLichen::new);
         register(net.minecraft.world.level.block.HangingRootsBlock.class, org.bukkit.craftbukkit.block.impl.CraftHangingRoots::new);
         register(net.minecraft.world.level.block.InfestedRotatedPillarBlock.class, org.bukkit.craftbukkit.block.impl.CraftInfestedRotatedPillar::new);
         register(net.minecraft.world.level.block.LayeredCauldronBlock.class, org.bukkit.craftbukkit.block.impl.CraftLayeredCauldron::new);
         register(net.minecraft.world.level.block.LightBlock.class, org.bukkit.craftbukkit.block.impl.CraftLight::new);
         register(net.minecraft.world.level.block.LightningRodBlock.class, org.bukkit.craftbukkit.block.impl.CraftLightningRod::new);
+        register(net.minecraft.world.level.block.MangroveLeavesBlock.class, org.bukkit.craftbukkit.block.impl.CraftMangroveLeaves::new);
+        register(net.minecraft.world.level.block.MangrovePropaguleBlock.class, org.bukkit.craftbukkit.block.impl.CraftMangrovePropagule::new);
+        register(net.minecraft.world.level.block.MangroveRootsBlock.class, org.bukkit.craftbukkit.block.impl.CraftMangroveRoots::new);
+        register(net.minecraft.world.level.block.PiglinWallSkullBlock.class, org.bukkit.craftbukkit.block.impl.CraftPiglinWallSkull::new);
+        register(net.minecraft.world.level.block.PinkPetalsBlock.class, org.bukkit.craftbukkit.block.impl.CraftPinkPetals::new);
+        register(net.minecraft.world.level.block.PitcherCropBlock.class, org.bukkit.craftbukkit.block.impl.CraftPitcherCrop::new);
         register(net.minecraft.world.level.block.PointedDripstoneBlock.class, org.bukkit.craftbukkit.block.impl.CraftPointedDripstone::new);
-        register(net.minecraft.world.level.block.PowderSnowCauldronBlock.class, org.bukkit.craftbukkit.block.impl.CraftPowderSnowCauldron::new);
+        register(net.minecraft.world.level.block.SculkCatalystBlock.class, org.bukkit.craftbukkit.block.impl.CraftSculkCatalyst::new);
         register(net.minecraft.world.level.block.SculkSensorBlock.class, org.bukkit.craftbukkit.block.impl.CraftSculkSensor::new);
+        register(net.minecraft.world.level.block.SculkShriekerBlock.class, org.bukkit.craftbukkit.block.impl.CraftSculkShrieker::new);
+        register(net.minecraft.world.level.block.SculkVeinBlock.class, org.bukkit.craftbukkit.block.impl.CraftSculkVein::new);
         register(net.minecraft.world.level.block.SmallDripleafBlock.class, org.bukkit.craftbukkit.block.impl.CraftSmallDripleaf::new);
+        register(net.minecraft.world.level.block.SnifferEggBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnifferEgg::new);
         register(net.minecraft.world.level.block.TallSeagrassBlock.class, org.bukkit.craftbukkit.block.impl.CraftTallSeagrass::new);
+        register(net.minecraft.world.level.block.TorchflowerCropBlock.class, org.bukkit.craftbukkit.block.impl.CraftTorchflowerCrop::new);
+        register(net.minecraft.world.level.block.TrialSpawnerBlock.class, org.bukkit.craftbukkit.block.impl.CraftTrialSpawner::new);
+        register(net.minecraft.world.level.block.WallHangingSignBlock.class, org.bukkit.craftbukkit.block.impl.CraftWallHangingSign::new);
+        register(net.minecraft.world.level.block.WaterloggedTransparentBlock.class, org.bukkit.craftbukkit.block.impl.CraftWaterloggedTransparent::new);
+        register(net.minecraft.world.level.block.WeatheringCopperBulbBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperBulb::new);
+        register(net.minecraft.world.level.block.WeatheringCopperDoorBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperDoor::new);
+        register(net.minecraft.world.level.block.WeatheringCopperGrateBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperGrate::new);
         register(net.minecraft.world.level.block.WeatheringCopperSlabBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperSlab::new);
         register(net.minecraft.world.level.block.WeatheringCopperStairBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperStair::new);
+        register(net.minecraft.world.level.block.WeatheringCopperTrapDoorBlock.class, org.bukkit.craftbukkit.block.impl.CraftWeatheringCopperTrapDoor::new);
         register(net.minecraft.world.level.block.piston.BlockPiston.class, org.bukkit.craftbukkit.block.impl.CraftPiston::new);
         register(net.minecraft.world.level.block.piston.BlockPistonExtension.class, org.bukkit.craftbukkit.block.impl.CraftPistonExtension::new);
         register(net.minecraft.world.level.block.piston.BlockPistonMoving.class, org.bukkit.craftbukkit.block.impl.CraftPistonMoving::new);
@@ -498,7 +543,7 @@ public class CraftBlockData implements BlockData {
         Preconditions.checkArgument(material == null || material.isBlock(), "Cannot get data for not block %s", material);
 
         IBlockData blockData;
-        Block block = CraftMagicNumbers.getBlock(material);
+        Block block = CraftBlockType.bukkitToMinecraft(material);
         Map<IBlockState<?>, Comparable<?>> parsed = null;
 
         // Data provided, use it
@@ -506,15 +551,15 @@ public class CraftBlockData implements BlockData {
             try {
                 // Material provided, force that material in
                 if (block != null) {
-                    data = IRegistry.BLOCK.getKey(block) + data;
+                    data = BuiltInRegistries.BLOCK.getKey(block) + data;
                 }
 
                 StringReader reader = new StringReader(data);
-                ArgumentBlock arg = new ArgumentBlock(reader, false).parse(false);
+                ArgumentBlock.a arg = ArgumentBlock.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false);
                 Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data: " + data);
 
-                blockData = arg.getState();
-                parsed = arg.getProperties();
+                blockData = arg.blockState();
+                parsed = arg.properties();
             } catch (CommandSyntaxException ex) {
                 throw new IllegalArgumentException("Could not parse data: " + data, ex);
             }
@@ -534,5 +579,107 @@ public class CraftBlockData implements BlockData {
     @Override
     public SoundGroup getSoundGroup() {
         return CraftSoundGroup.getSoundGroup(state.getSoundType());
+    }
+
+    @Override
+    public int getLightEmission() {
+        return state.getLightEmission();
+    }
+
+    @Override
+    public boolean isOccluding() {
+        return state.canOcclude();
+    }
+
+    @Override
+    public boolean requiresCorrectToolForDrops() {
+        return state.requiresCorrectToolForDrops();
+    }
+
+    @Override
+    public boolean isPreferredTool(ItemStack tool) {
+        Preconditions.checkArgument(tool != null, "tool must not be null");
+
+        net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(tool);
+        return isPreferredTool(state, nms);
+    }
+
+    public static boolean isPreferredTool(IBlockData iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
+        return !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata);
+    }
+
+    @Override
+    public PistonMoveReaction getPistonMoveReaction() {
+        return PistonMoveReaction.getById(state.getPistonPushReaction().ordinal());
+    }
+
+    @Override
+    public boolean isSupported(org.bukkit.block.Block block) {
+        Preconditions.checkArgument(block != null, "block must not be null");
+
+        CraftBlock craftBlock = (CraftBlock) block;
+        return state.canSurvive(craftBlock.getCraftWorld().getHandle(), craftBlock.getPosition());
+    }
+
+    @Override
+    public boolean isSupported(Location location) {
+        Preconditions.checkArgument(location != null, "location must not be null");
+
+        CraftWorld world = (CraftWorld) location.getWorld();
+        Preconditions.checkArgument(world != null, "location must not have a null world");
+
+        BlockPosition position = CraftLocation.toBlockPosition(location);
+        return state.canSurvive(world.getHandle(), position);
+    }
+
+    @Override
+    public boolean isFaceSturdy(BlockFace face, BlockSupport support) {
+        Preconditions.checkArgument(face != null, "face must not be null");
+        Preconditions.checkArgument(support != null, "support must not be null");
+
+        return state.isFaceSturdy(BlockAccessAir.INSTANCE, BlockPosition.ZERO, CraftBlock.blockFaceToNotch(face), CraftBlockSupport.toNMS(support));
+    }
+
+    @Override
+    public Color getMapColor() {
+        return Color.fromRGB(state.getMapColor(null, null).col);
+    }
+
+    @Override
+    public Material getPlacementMaterial() {
+        return CraftItemType.minecraftToBukkit(state.getBlock().asItem());
+    }
+
+    @Override
+    public void rotate(StructureRotation rotation) {
+        this.state = state.rotate(EnumBlockRotation.valueOf(rotation.name()));
+    }
+
+    @Override
+    public void mirror(Mirror mirror) {
+        this.state = state.mirror(EnumBlockMirror.valueOf(mirror.name()));
+    }
+
+    @Override
+    public void copyTo(BlockData blockData) {
+        CraftBlockData other = (CraftBlockData) blockData;
+        IBlockData nms = other.state;
+        for (IBlockState<?> property : state.getBlock().getStateDefinition().getProperties()) {
+            if (nms.hasProperty(property)) {
+                nms = copyProperty(state, nms, property);
+            }
+        }
+
+        other.state = nms;
+    }
+
+    private <T extends Comparable<T>> IBlockData copyProperty(IBlockData source, IBlockData target, IBlockState<T> property) {
+        return target.setValue(property, source.getValue(property));
+    }
+
+    @NotNull
+    @Override
+    public BlockState createBlockState() {
+        return CraftBlockStates.getBlockState(this.state, null);
     }
 }

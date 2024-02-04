@@ -39,13 +39,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTCompressedStreamTools;
+import net.minecraft.nbt.NBTReadLimiter;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.network.chat.ChatComponentText;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.item.ItemBlock;
-import org.apache.commons.lang.Validate;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -56,8 +57,9 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.Overridden;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
-import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.tags.DeprecatedCustomTagContainer;
@@ -137,6 +139,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         static {
             classMap = ImmutableMap.<Class<? extends CraftMetaItem>, String>builder()
+                    .put(CraftMetaArmor.class, "ARMOR")
                     .put(CraftMetaArmorStand.class, "ARMOR_STAND")
                     .put(CraftMetaBanner.class, "BANNER")
                     .put(CraftMetaBlockState.class, "TILE_ENTITY")
@@ -144,6 +147,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     .put(CraftMetaBookSigned.class, "BOOK_SIGNED")
                     .put(CraftMetaSkull.class, "SKULL")
                     .put(CraftMetaLeatherArmor.class, "LEATHER_ARMOR")
+                    .put(CraftMetaColorableArmor.class, "COLORABLE_ARMOR")
                     .put(CraftMetaMap.class, "MAP")
                     .put(CraftMetaPotion.class, "POTION")
                     .put(CraftMetaSpawnEgg.class, "SPAWN_EGG")
@@ -158,6 +162,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     .put(CraftMetaEntityTag.class, "ENTITY_TAG")
                     .put(CraftMetaCompass.class, "COMPASS")
                     .put(CraftMetaBundle.class, "BUNDLE")
+                    .put(CraftMetaMusicInstrument.class, "MUSIC_INSTRUMENT")
                     .put(CraftMetaItem.class, "UNSPECIFIC")
                     .build();
 
@@ -176,7 +181,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         public static ItemMeta deserialize(Map<String, Object> map) throws Throwable {
-            Validate.notNull(map, "Cannot deserialize null map");
+            Preconditions.checkArgument(map != null, "Cannot deserialize null map");
 
             String type = getString(map, TYPE_FIELD, false);
             Constructor<? extends CraftMetaItem> constructor = constructorMap.get(type);
@@ -300,7 +305,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.customModelData = meta.customModelData;
         this.blockData = meta.blockData;
 
-        if (meta.hasEnchants()) {
+        if (meta.enchantments != null) {
             this.enchantments = new LinkedHashMap<Enchantment, Integer>(meta.enchantments);
         }
 
@@ -349,7 +354,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             customModelData = tag.getInt(CUSTOM_MODEL_DATA.NBT);
         }
         if (tag.contains(BLOCK_DATA.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            blockData = tag.getCompound(BLOCK_DATA.NBT);
+            blockData = tag.getCompound(BLOCK_DATA.NBT).copy();
         }
 
         this.enchantments = buildEnchantments(tag, ENCHANTMENTS);
@@ -372,14 +377,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             NBTTagCompound compound = tag.getCompound(BUKKIT_CUSTOM_TAG.NBT);
             Set<String> keys = compound.getAllKeys();
             for (String key : keys) {
-                persistentDataContainer.put(key, compound.get(key));
+                persistentDataContainer.put(key, compound.get(key).copy());
             }
         }
 
         Set<String> keys = tag.getAllKeys();
         for (String key : keys) {
             if (!getHandledTags().contains(key)) {
-                unhandledTags.put(key, tag.get(key));
+                unhandledTags.put(key, tag.get(key).copy());
             }
         }
     }
@@ -431,7 +436,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 continue;
             }
 
-            Attribute attribute = CraftAttributeMap.fromMinecraft(attributeName);
+            Attribute attribute = CraftAttribute.stringToBukkit(attributeName);
             if (attribute == null) {
                 continue;
             }
@@ -477,7 +482,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             setCustomModelData(customModelData);
         }
 
-        Map blockData = SerializableMeta.getObject(Map.class, map, BLOCK_DATA.BUKKIT, true);
+        Object blockData = SerializableMeta.getObject(Object.class, map, BLOCK_DATA.BUKKIT, true);
         if (blockData != null) {
             this.blockData = (NBTTagCompound) CraftNBTTagConfigSerializer.deserialize(blockData);
         }
@@ -517,7 +522,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (internal != null) {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(internal));
             try {
-                internalTag = NBTCompressedStreamTools.readCompressed(buf);
+                internalTag = NBTCompressedStreamTools.readCompressed(buf, NBTReadLimiter.unlimitedHeap());
                 deserializeInternal(internalTag, map);
                 Set<String> keys = internalTag.getAllKeys();
                 for (String key : keys) {
@@ -530,7 +535,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
         }
 
-        Map nbtMap = SerializableMeta.getObject(Map.class, map, BUKKIT_CUSTOM_TAG.BUKKIT, true);
+        Object nbtMap = SerializableMeta.getObject(Object.class, map, BUKKIT_CUSTOM_TAG.BUKKIT, true); // We read both legacy maps and potential modern snbt strings here
         if (nbtMap != null) {
             this.persistentDataContainer.putAll((NBTTagCompound) CraftNBTTagConfigSerializer.deserialize(nbtMap));
         }
@@ -672,7 +677,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     static void applyEnchantments(Map<Enchantment, Integer> enchantments, NBTTagCompound tag, ItemMetaKey key) {
-        if (enchantments == null || enchantments.size() == 0) {
+        if (enchantments == null) {
             return;
         }
 
@@ -785,13 +790,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean hasEnchant(Enchantment ench) {
-        Validate.notNull(ench, "Enchantment cannot be null");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
         return hasEnchants() && enchantments.containsKey(ench);
     }
 
     @Override
     public int getEnchantLevel(Enchantment ench) {
-        Validate.notNull(ench, "Enchantment cannot be null");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
         Integer level = hasEnchants() ? enchantments.get(ench) : null;
         if (level == null) {
             return 0;
@@ -806,7 +811,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean addEnchant(Enchantment ench, int level, boolean ignoreRestrictions) {
-        Validate.notNull(ench, "Enchantment cannot be null");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
         if (enchantments == null) {
             enchantments = new LinkedHashMap<Enchantment, Integer>(4);
         }
@@ -820,8 +825,20 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean removeEnchant(Enchantment ench) {
-        Validate.notNull(ench, "Enchantment cannot be null");
-        return hasEnchants() && enchantments.remove(ench) != null;
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
+        boolean enchantmentRemoved = hasEnchants() && enchantments.remove(ench) != null;
+        // If we no longer have any enchantments, then clear enchantment tag
+        if (enchantmentRemoved && enchantments.isEmpty()) {
+            enchantments = null;
+        }
+        return enchantmentRemoved;
+    }
+
+    @Override
+    public void removeEnchantments() {
+        if (hasEnchants()) {
+            enchantments.clear();
+        }
     }
 
     @Override
@@ -867,8 +884,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return (this.hideFlag & bitModifier) == bitModifier;
     }
 
-    private byte getBitModifier(ItemFlag hideFlag) {
-        return (byte) (1 << hideFlag.ordinal());
+    private int getBitModifier(ItemFlag hideFlag) {
+        return 1 << hideFlag.ordinal();
     }
 
     @Override
@@ -908,12 +925,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean hasBlockData() {
-       return this.blockData != null;
+        return this.blockData != null;
     }
 
     @Override
     public BlockData getBlockData(Material material) {
-        return CraftBlockData.fromData(ItemBlock.getBlockState(CraftMagicNumbers.getBlock(material).defaultBlockState(), blockData));
+        IBlockData defaultData = CraftBlockType.bukkitToMinecraft(material).defaultBlockState();
+        return CraftBlockData.fromData((hasBlockData()) ? ItemBlock.getBlockState(defaultData, blockData) : defaultData);
     }
 
     @Override
@@ -1055,6 +1073,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
         }
         return removed > 0;
+    }
+
+    @Override
+    public String getAsString() {
+        NBTTagCompound tag = new NBTTagCompound();
+        applyToItem(tag);
+        return tag.toString();
     }
 
     @Override
@@ -1319,10 +1344,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         for (Object object : addFrom) {
             if (!(object instanceof String)) {
                 if (object != null) {
+                    // SPIGOT-7399: Null check via if is important,
+                    // otherwise object.getClass().getName() could throw an error for a valid argument -> when it is null which is valid,
+                    // when using Preconditions
                     throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
                 }
 
-                addTo.add(CraftChatMessage.toJSON(new ChatComponentText("")));
+                addTo.add(CraftChatMessage.toJSON(IChatBaseComponent.empty()));
             } else {
                 String entry = object.toString();
 
@@ -1383,6 +1411,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         ATTRIBUTES_UUID_HIGH.NBT,
                         ATTRIBUTES_UUID_LOW.NBT,
                         ATTRIBUTES_SLOT.NBT,
+                        CraftMetaArmor.TRIM.NBT,
+                        CraftMetaArmor.TRIM_MATERIAL.NBT,
+                        CraftMetaArmor.TRIM_PATTERN.NBT,
                         CraftMetaMap.MAP_SCALING.NBT,
                         CraftMetaMap.MAP_COLOR.NBT,
                         CraftMetaMap.MAP_ID.NBT,
@@ -1411,7 +1442,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         CraftMetaCompass.LODESTONE_DIMENSION.NBT,
                         CraftMetaCompass.LODESTONE_POS.NBT,
                         CraftMetaCompass.LODESTONE_TRACKED.NBT,
-                        CraftMetaBundle.ITEMS.NBT
+                        CraftMetaBundle.ITEMS.NBT,
+                        CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT.NBT
                 ));
             }
             return HANDLED_TAGS;

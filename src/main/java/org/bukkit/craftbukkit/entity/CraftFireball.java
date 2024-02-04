@@ -1,9 +1,8 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.world.entity.projectile.EntityFireball;
-import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
@@ -55,7 +54,7 @@ public class CraftFireball extends AbstractProjectile implements Fireball {
 
     @Override
     public void setDirection(Vector direction) {
-        Validate.notNull(direction, "Direction can not be null");
+        Preconditions.checkArgument(direction != null, "Vector direction cannot be null");
         getHandle().setDirection(direction.getX(), direction.getY(), direction.getZ());
         update(); // SPIGOT-6579
     }
@@ -68,10 +67,5 @@ public class CraftFireball extends AbstractProjectile implements Fireball {
     @Override
     public String toString() {
         return "CraftFireball";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.UNKNOWN;
     }
 }

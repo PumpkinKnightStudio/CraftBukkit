@@ -12,8 +12,8 @@
 +
  public class LayeredCauldronBlock extends AbstractCauldronBlock {
  
-     public static final int MIN_FILL_LEVEL = 1;
-@@ -55,10 +61,14 @@
+     public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
+@@ -61,10 +67,14 @@
      @Override
      public void entityInside(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
          if (!world.isClientSide && entity.isOnFire() && this.isEntityInsideContent(iblockdata, blockposition, entity)) {
@@ -30,7 +30,7 @@
          }
  
      }
-@@ -68,15 +78,38 @@
+@@ -79,20 +89,42 @@
      }
  
      public static void lowerFillLevel(IBlockData iblockdata, World world, BlockPosition blockposition) {
@@ -40,9 +40,11 @@
 +
 +    public static boolean lowerFillLevel(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity, CauldronLevelChangeEvent.ChangeReason reason) {
          int i = (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) - 1;
+         IBlockData iblockdata1 = i == 0 ? Blocks.CAULDRON.defaultBlockState() : (IBlockData) iblockdata.setValue(LayeredCauldronBlock.LEVEL, i);
  
--        world.setBlockAndUpdate(blockposition, i == 0 ? Blocks.CAULDRON.defaultBlockState() : (IBlockData) iblockdata.setValue(LayeredCauldronBlock.LEVEL, i));
-+        return changeLevel(iblockdata, world, blockposition, i == 0 ? Blocks.CAULDRON.defaultBlockState() : iblockdata.setValue(LayeredCauldronBlock.LEVEL, i), entity, reason);
+-        world.setBlockAndUpdate(blockposition, iblockdata1);
+-        world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(iblockdata1));
++        return changeLevel(iblockdata, world, blockposition, iblockdata1, entity, reason);
      }
  
 +    // CraftBukkit start
@@ -59,25 +61,30 @@
 +            return false;
 +        }
 +        newState.update(true);
++        world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(newBlock));
 +        return true;
 +    }
 +    // CraftBukkit end
 +
      @Override
      public void handlePrecipitation(IBlockData iblockdata, World world, BlockPosition blockposition, BiomeBase.Precipitation biomebase_precipitation) {
-         if (BlockCauldron.shouldHandlePrecipitation(world, biomebase_precipitation) && (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) != 3 && this.fillPredicate.test(biomebase_precipitation)) {
--            world.setBlockAndUpdate(blockposition, (IBlockData) iblockdata.cycle(LayeredCauldronBlock.LEVEL));
-+            changeLevel(iblockdata, world, blockposition, (IBlockData) iblockdata.cycle(LayeredCauldronBlock.LEVEL), null, CauldronLevelChangeEvent.ChangeReason.NATURAL_FILL); // CraftBukkit
+         if (BlockCauldron.shouldHandlePrecipitation(world, biomebase_precipitation) && (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) != 3 && biomebase_precipitation == this.precipitationType) {
+             IBlockData iblockdata1 = (IBlockData) iblockdata.cycle(LayeredCauldronBlock.LEVEL);
+ 
+-            world.setBlockAndUpdate(blockposition, iblockdata1);
+-            world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(iblockdata1));
++            changeLevel(iblockdata, world, blockposition, iblockdata1, null, CauldronLevelChangeEvent.ChangeReason.NATURAL_FILL); // CraftBukkit
          }
      }
  
-@@ -93,7 +126,11 @@
-     @Override
-     protected void receiveStalactiteDrip(IBlockData iblockdata, World world, BlockPosition blockposition, FluidType fluidtype) {
+@@ -111,8 +143,11 @@
          if (!this.isFull(iblockdata)) {
--            world.setBlockAndUpdate(blockposition, (IBlockData) iblockdata.setValue(LayeredCauldronBlock.LEVEL, (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) + 1));
+             IBlockData iblockdata1 = (IBlockData) iblockdata.setValue(LayeredCauldronBlock.LEVEL, (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) + 1);
+ 
+-            world.setBlockAndUpdate(blockposition, iblockdata1);
+-            world.gameEvent(GameEvent.BLOCK_CHANGE, blockposition, GameEvent.a.of(iblockdata1));
 +            // CraftBukkit start
-+            if (!changeLevel(iblockdata, world, blockposition, (IBlockData) iblockdata.setValue(LayeredCauldronBlock.LEVEL, (Integer) iblockdata.getValue(LayeredCauldronBlock.LEVEL) + 1), null, CauldronLevelChangeEvent.ChangeReason.NATURAL_FILL)) {
++            if (!changeLevel(iblockdata, world, blockposition, iblockdata1, null, CauldronLevelChangeEvent.ChangeReason.NATURAL_FILL)) {
 +                return;
 +            }
 +            // CraftBukkit end

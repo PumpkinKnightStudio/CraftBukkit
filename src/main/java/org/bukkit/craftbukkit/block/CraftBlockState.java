@@ -16,6 +16,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
@@ -49,6 +50,15 @@ public class CraftBlockState implements BlockState {
         data = blockData;
     }
 
+    // Creates a unplaced copy (world == null copy)
+    protected CraftBlockState(CraftBlockState state) {
+        this.world = null;
+        this.position = state.getPosition().immutable();
+        this.data = state.data;
+        this.flag = state.flag;
+        setWorldHandle(state.getWorldHandle());
+    }
+
     public void setWorldHandle(GeneratorAccess generatorAccess) {
         if (generatorAccess instanceof net.minecraft.world.level.World) {
             this.weakWorld = null;
@@ -79,9 +89,7 @@ public class CraftBlockState implements BlockState {
     }
 
     protected final void ensureNoWorldGeneration() {
-        if (isWorldGeneration()) {
-            throw new IllegalStateException("This operation is not supported during world generation!");
-        }
+        Preconditions.checkState(!isWorldGeneration(), "This operation is not supported during world generation!");
     }
 
     @Override
@@ -141,12 +149,8 @@ public class CraftBlockState implements BlockState {
         if ((mat == null) || (mat.getData() == null)) {
             this.data = CraftMagicNumbers.getBlock(data);
         } else {
-            if ((data.getClass() == mat.getData()) || (data.getClass() == MaterialData.class)) {
-                this.data = CraftMagicNumbers.getBlock(data);
-            } else {
-                throw new IllegalArgumentException("Provided data is not of type "
-                        + mat.getData().getName() + ", found " + data.getClass().getName());
-            }
+            Preconditions.checkArgument((data.getClass() == mat.getData()) || (data.getClass() == MaterialData.class), "Provided data is not of type %s, found %s", mat.getData().getName(), data.getClass().getName());
+            this.data = CraftMagicNumbers.getBlock(data);
         }
     }
 
@@ -161,13 +165,13 @@ public class CraftBlockState implements BlockState {
         Preconditions.checkArgument(type.isBlock(), "Material must be a block!");
 
         if (this.getType() != type) {
-            this.data = CraftMagicNumbers.getBlock(type).defaultBlockState();
+            this.data = CraftBlockType.bukkitToMinecraft(type).defaultBlockState();
         }
     }
 
     @Override
     public Material getType() {
-        return CraftMagicNumbers.getMaterial(data.getBlock());
+        return CraftBlockType.minecraftToBukkit(data.getBlock());
     }
 
     public void setFlag(int flag) {
@@ -239,7 +243,7 @@ public class CraftBlockState implements BlockState {
 
     @Override
     public Location getLocation() {
-        return new Location(world, getX(), getY(), getZ());
+        return CraftLocation.toBukkit(this.position, this.world);
     }
 
     @Override
@@ -321,8 +325,11 @@ public class CraftBlockState implements BlockState {
     }
 
     protected void requirePlaced() {
-        if (!isPlaced()) {
-            throw new IllegalStateException("The blockState must be placed to call this method");
-        }
+        Preconditions.checkState(isPlaced(), "The blockState must be placed to call this method");
+    }
+
+    @Override
+    public CraftBlockState copy() {
+        return new CraftBlockState(this);
     }
 }

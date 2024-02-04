@@ -6,7 +6,6 @@ import java.util.UUID;
 import net.minecraft.world.entity.animal.EntityFox;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Fox.Type;
 
@@ -22,25 +21,20 @@ public class CraftFox extends CraftAnimals implements Fox {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.FOX;
-    }
-
-    @Override
     public String toString() {
         return "CraftFox";
     }
 
     @Override
     public Type getFoxType() {
-        return Type.values()[getHandle().getFoxType().ordinal()];
+        return Type.values()[getHandle().getVariant().ordinal()];
     }
 
     @Override
     public void setFoxType(Type type) {
         Preconditions.checkArgument(type != null, "type");
 
-        getHandle().setFoxType(EntityFox.Type.values()[type.ordinal()]);
+        getHandle().setVariant(EntityFox.Type.values()[type.ordinal()]);
     }
 
     @Override
@@ -85,8 +79,8 @@ public class CraftFox extends CraftAnimals implements Fox {
 
     @Override
     public void setFirstTrustedPlayer(AnimalTamer player) {
-        if (player == null && getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_1).isPresent()) {
-            throw new IllegalStateException("Must remove second trusted player first");
+        if (player == null) {
+            Preconditions.checkState(getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_1).isEmpty(), "Must remove second trusted player first");
         }
 
         getHandle().getEntityData().set(EntityFox.DATA_TRUSTED_ID_0, player == null ? Optional.empty() : Optional.of(player.getUniqueId()));
@@ -109,10 +103,15 @@ public class CraftFox extends CraftAnimals implements Fox {
 
     @Override
     public void setSecondTrustedPlayer(AnimalTamer player) {
-        if (player != null && !getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_0).isPresent()) {
-            throw new IllegalStateException("Must add first trusted player first");
+        if (player != null) {
+            Preconditions.checkState(getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_0).isPresent(), "Must add first trusted player first");
         }
 
         getHandle().getEntityData().set(EntityFox.DATA_TRUSTED_ID_1, player == null ? Optional.empty() : Optional.of(player.getUniqueId()));
+    }
+
+    @Override
+    public boolean isFaceplanted() {
+        return getHandle().isFaceplanted();
     }
 }

@@ -1,12 +1,12 @@
 package org.bukkit.craftbukkit.entity;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.decoration.EntityPainting;
-import net.minecraft.world.entity.decoration.Paintings;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftArt;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Painting;
 
 public class CraftPainting extends CraftHanging implements Painting {
@@ -17,8 +17,7 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     @Override
     public Art getArt() {
-        Paintings art = getHandle().motive;
-        return CraftArt.NotchToBukkit(art);
+        return CraftArt.minecraftHolderToBukkit(getHandle().getVariant());
     }
 
     @Override
@@ -29,12 +28,12 @@ public class CraftPainting extends CraftHanging implements Painting {
     @Override
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
-        Paintings oldArt = painting.motive;
-        painting.motive = CraftArt.BukkitToNotch(art);
+        Holder<PaintingVariant> oldArt = painting.getVariant();
+        painting.setVariant(CraftArt.bukkitToMinecraftHolder(art));
         painting.setDirection(painting.getDirection());
         if (!force && !getHandle().generation && !painting.survives()) {
             // Revert painting since it doesn't fit
-            painting.motive = oldArt;
+            painting.setVariant(oldArt);
             painting.setDirection(painting.getDirection());
             return false;
         }
@@ -60,10 +59,5 @@ public class CraftPainting extends CraftHanging implements Painting {
     @Override
     public String toString() {
         return "CraftPainting{art=" + getArt() + "}";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.PAINTING;
     }
 }

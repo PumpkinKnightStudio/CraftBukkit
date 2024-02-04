@@ -1,34 +1,48 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
-import net.minecraft.resources.MinecraftKey;
-import net.minecraft.world.entity.decoration.Paintings;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import org.bukkit.Art;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftArt {
-    private static final BiMap<Paintings, Art> artwork;
 
-    static {
-        ImmutableBiMap.Builder<Paintings, Art> artworkBuilder = ImmutableBiMap.builder();
-        for (MinecraftKey key : IRegistry.MOTIVE.keySet()) {
-            artworkBuilder.put(IRegistry.MOTIVE.get(key), Art.getByName(key.getPath()));
-        }
+    public static Art minecraftToBukkit(PaintingVariant minecraft) {
+        Preconditions.checkArgument(minecraft != null);
 
-        artwork = artworkBuilder.build();
-    }
+        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+        Art bukkit = Registry.ART.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location()));
 
-    public static Art NotchToBukkit(Paintings art) {
-        Art bukkit = artwork.get(art);
         Preconditions.checkArgument(bukkit != null);
+
         return bukkit;
     }
 
-    public static Paintings BukkitToNotch(Art art) {
-        Paintings nms = artwork.inverse().get(art);
-        Preconditions.checkArgument(nms != null);
-        return nms;
+    public static Art minecraftHolderToBukkit(Holder<PaintingVariant> minecraft) {
+        return minecraftToBukkit(minecraft.value());
+    }
+
+    public static PaintingVariant bukkitToMinecraft(Art bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT)
+                .getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
+    }
+
+    public static Holder<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<PaintingVariant> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own painting variant with out properly registering it.");
     }
 }

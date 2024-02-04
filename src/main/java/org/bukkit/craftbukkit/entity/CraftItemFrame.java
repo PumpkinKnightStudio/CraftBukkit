@@ -2,17 +2,14 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.EnumDirection;
-import net.minecraft.network.syncher.DataWatcher;
 import net.minecraft.world.entity.decoration.EntityHanging;
 import net.minecraft.world.entity.decoration.EntityItemFrame;
 import net.minecraft.world.level.block.Blocks;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Rotation;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 
 public class CraftItemFrame extends CraftHanging implements ItemFrame {
@@ -44,13 +41,12 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
         super.update();
 
         // mark dirty, so that the client gets updated with item and rotation
-        for (DataWatcher.Item<?> dataItem : getHandle().getEntityData().getAll()) {
-            getHandle().getEntityData().markDirty(dataItem.getAccessor());
-        }
+        getHandle().getEntityData().markDirty(EntityItemFrame.DATA_ITEM);
+        getHandle().getEntityData().markDirty(EntityItemFrame.DATA_ROTATION);
 
         // update redstone
         if (!getHandle().generation) {
-            getHandle().getLevel().updateNeighbourForOutputSignal(getHandle().pos, Blocks.AIR);
+            getHandle().level().updateNeighbourForOutputSignal(getHandle().pos, Blocks.AIR);
         }
     }
 
@@ -77,7 +73,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setItemDropChance(float chance) {
-        Preconditions.checkArgument(0.0 <= chance && chance <= 1.0, "Chance outside range [0, 1]");
+        Preconditions.checkArgument(0.0 <= chance && chance <= 1.0, "Chance (%s) outside range [0, 1]", chance);
         getHandle().dropChance = chance;
     }
 
@@ -112,7 +108,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
 
     @Override
     public void setRotation(Rotation rotation) {
-        Validate.notNull(rotation, "Rotation cannot be null");
+        Preconditions.checkArgument(rotation != null, "Rotation cannot be null");
         getHandle().setRotation(toInteger(rotation));
     }
 
@@ -168,10 +164,5 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {
     @Override
     public String toString() {
         return "CraftItemFrame{item=" + getItem() + ", rotation=" + getRotation() + "}";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ITEM_FRAME;
     }
 }

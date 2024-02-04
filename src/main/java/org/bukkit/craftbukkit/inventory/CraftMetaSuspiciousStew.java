@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.ArrayList;
@@ -8,11 +9,9 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.SuspiciousStewMeta;
 import org.bukkit.potion.PotionEffect;
@@ -21,20 +20,19 @@ import org.bukkit.potion.PotionEffectType;
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 public class CraftMetaSuspiciousStew extends CraftMetaItem implements SuspiciousStewMeta {
 
-    static final ItemMetaKey DURATION = new ItemMetaKey("EffectDuration", "duration");
-    static final ItemMetaKey EFFECTS = new ItemMetaKey("Effects", "effects");
-    static final ItemMetaKey ID = new ItemMetaKey("EffectId", "id");
+    static final ItemMetaKey DURATION = new ItemMetaKey("duration", "duration");
+    static final ItemMetaKey EFFECTS = new ItemMetaKey("effects", "effects");
+    static final ItemMetaKey ID = new ItemMetaKey("id", "id");
 
     private List<PotionEffect> customEffects;
 
     CraftMetaSuspiciousStew(CraftMetaItem meta) {
         super(meta);
-        if (!(meta instanceof CraftMetaSuspiciousStew)) {
+        if (!(meta instanceof CraftMetaSuspiciousStew stewMeta)) {
             return;
         }
-        CraftMetaSuspiciousStew stewMeta = ((CraftMetaSuspiciousStew) meta);
         if (stewMeta.hasCustomEffects()) {
-            this.customEffects = new ArrayList<PotionEffect>(stewMeta.customEffects);
+            this.customEffects = new ArrayList<>(stewMeta.customEffects);
         }
     }
 
@@ -43,11 +41,11 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         if (tag.contains(EFFECTS.NBT)) {
             NBTTagList list = tag.getList(EFFECTS.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
             int length = list.size();
-            customEffects = new ArrayList<PotionEffect>(length);
+            customEffects = new ArrayList<>(length);
 
             for (int i = 0; i < length; i++) {
                 NBTTagCompound effect = list.getCompound(i);
-                PotionEffectType type = PotionEffectType.getById(effect.getByte(ID.NBT));
+                PotionEffectType type = PotionEffectType.getByKey(NamespacedKey.fromString(effect.getString(ID.NBT)));
                 if (type == null) {
                     continue;
                 }
@@ -66,9 +64,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         }
 
         for (Object obj : rawEffectList) {
-            if (!(obj instanceof PotionEffect)) {
-                throw new IllegalArgumentException("Object in effect list is not valid. " + obj.getClass());
-            }
+            Preconditions.checkArgument(obj instanceof PotionEffect, "Object (%s) in effect list is not valid", obj.getClass());
             addCustomEffect((PotionEffect) obj, true);
         }
     }
@@ -83,7 +79,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
             for (PotionEffect effect : customEffects) {
                 NBTTagCompound effectData = new NBTTagCompound();
-                effectData.putByte(ID.NBT, ((byte) effect.getType().getId()));
+                effectData.putString(ID.NBT, effect.getType().getKey().toString());
                 effectData.putInt(DURATION.NBT, effect.getDuration());
                 effectList.add(effectData);
             }
@@ -108,7 +104,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
     public CraftMetaSuspiciousStew clone() {
         CraftMetaSuspiciousStew clone = ((CraftMetaSuspiciousStew) super.clone());
         if (this.customEffects != null) {
-            clone.customEffects = new ArrayList<PotionEffect>(this.customEffects);
+            clone.customEffects = new ArrayList<>(this.customEffects);
         }
         return clone;
     }
@@ -128,7 +124,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     @Override
     public boolean addCustomEffect(PotionEffect effect, boolean overwrite) {
-        Validate.notNull(effect, "Potion effect must not be null");
+        Preconditions.checkArgument(effect != null, "Potion effect cannot be null");
 
         int index = indexOfEffect(effect.getType());
         if (index != -1) {
@@ -144,7 +140,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
             }
         } else {
             if (customEffects == null) {
-                customEffects = new ArrayList<PotionEffect>();
+                customEffects = new ArrayList<>();
             }
             customEffects.add(effect);
             return true;
@@ -153,7 +149,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     @Override
     public boolean removeCustomEffect(PotionEffectType type) {
-        Validate.notNull(type, "Potion effect type must not be null");
+        Preconditions.checkArgument(type != null, "Potion effect type cannot be null");
 
         if (!hasCustomEffects()) {
             return false;
@@ -176,7 +172,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     @Override
     public boolean hasCustomEffect(PotionEffectType type) {
-        Validate.notNull(type, "Potion effect type must not be null");
+        Preconditions.checkArgument(type != null, "Potion effect type cannot be null");
         return indexOfEffect(type) != -1;
     }
 
@@ -215,9 +211,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaSuspiciousStew) {
-            CraftMetaSuspiciousStew that = (CraftMetaSuspiciousStew) meta;
-
+        if (meta instanceof CraftMetaSuspiciousStew that) {
             return (this.hasCustomEffects() ? that.hasCustomEffects() && this.customEffects.equals(that.customEffects) : !that.hasCustomEffects());
         }
         return true;

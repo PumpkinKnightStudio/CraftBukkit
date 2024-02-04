@@ -4,8 +4,8 @@ import net.minecraft.core.BlockPosition;
 import net.minecraft.world.entity.boss.enderdragon.EntityEnderCrystal;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.EntityType;
 
 public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
     public CraftEnderCrystal(CraftServer server, EntityEnderCrystal entity) {
@@ -25,7 +25,7 @@ public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
     @Override
     public Location getBeamTarget() {
         BlockPosition pos = getHandle().getBeamTarget();
-        return pos == null ? null : new Location(getWorld(), pos.getX(), pos.getY(), pos.getZ());
+        return pos == null ? null : CraftLocation.toBukkit(pos, getWorld());
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
         } else if (location.getWorld() != getWorld()) {
             throw new IllegalArgumentException("Cannot set beam target location to different world");
         } else {
-            getHandle().setBeamTarget(new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+            getHandle().setBeamTarget(CraftLocation.toBlockPosition(location));
         }
     }
 
@@ -47,10 +47,5 @@ public class CraftEnderCrystal extends CraftEntity implements EnderCrystal {
     @Override
     public String toString() {
         return "CraftEnderCrystal";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ENDER_CRYSTAL;
     }
 }

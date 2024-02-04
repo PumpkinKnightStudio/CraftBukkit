@@ -11,8 +11,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.ItemArrow;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CrossbowMeta;
@@ -99,12 +97,7 @@ public class CraftMetaCrossbow extends CraftMetaItem implements CrossbowMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case CROSSBOW:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.CROSSBOW;
     }
 
     @Override
@@ -143,7 +136,7 @@ public class CraftMetaCrossbow extends CraftMetaItem implements CrossbowMeta {
     @Override
     public void addChargedProjectile(ItemStack item) {
         Preconditions.checkArgument(item != null, "item");
-        Preconditions.checkArgument(item.getType() == Material.FIREWORK_ROCKET || CraftMagicNumbers.getItem(item.getType()) instanceof ItemArrow, "Item %s is not an arrow or firework rocket", item);
+        Preconditions.checkArgument(item.getType() == Material.FIREWORK_ROCKET || CraftItemType.bukkitToMinecraft(item.getType()) instanceof ItemArrow, "Item %s is not an arrow or firework rocket", item);
 
         if (chargedProjectiles == null) {
             chargedProjectiles = new ArrayList<>();

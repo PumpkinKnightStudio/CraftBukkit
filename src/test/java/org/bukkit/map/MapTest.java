@@ -1,11 +1,14 @@
 package org.bukkit.map;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.awt.Color;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.world.level.material.MaterialMapColor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.bukkit.craftbukkit.map.CraftMapColorCache;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class MapTest {
 
@@ -34,7 +37,7 @@ public class MapTest {
                     int mr = (r * modi) / 255;
                     int mg = (g * modi) / 255;
                     int mb = (b * modi) / 255;
-                    logger.log(Level.WARNING, "Missing color (check CraftMapView#render): c({0}, {1}, {2})", new Object[]{mr, mg, mb});
+                    logger.log(Level.WARNING, "Missing color (check CraftMapView#render and update md5 hash in CraftMapColorCache): c({0}, {1}, {2})", new Object[]{mr, mg, mb});
                 }
                 fail = true;
             } else {
@@ -56,6 +59,22 @@ public class MapTest {
                 }
             }
         }
-        Assert.assertFalse(fail);
+        assertFalse(fail);
+    }
+
+    @Disabled("Test takes around 25 seconds, should be run by changes to the map color conversion")
+    @Test
+    public void testMapColorCacheBuilding() throws ExecutionException, InterruptedException {
+        CraftMapColorCache craftMapColorCache = new CraftMapColorCache(logger);
+        craftMapColorCache.initCache().get();
+
+        for (int r = 0; r < 256; r++) {
+            for (int g = 0; g < 256; g++) {
+                for (int b = 0; b < 256; b++) {
+                    Color color = new Color(r, g, b);
+                    assertEquals(MapPalette.matchColor(color), craftMapColorCache.matchColor(color), String.format("Incorrect matched color c(%s, %s, %s)", color.getRed(), color.getGreen(), color.getBlue()));
+                }
+            }
+        }
     }
 }

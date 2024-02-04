@@ -1,12 +1,12 @@
 --- a/net/minecraft/world/item/ItemChorusFruit.java
 +++ b/net/minecraft/world/item/ItemChorusFruit.java
-@@ -34,7 +34,16 @@
-                     entityliving.stopRiding();
-                 }
+@@ -35,7 +35,16 @@
  
--                if (entityliving.randomTeleport(d3, d4, d5, true)) {
+                 Vec3D vec3d = entityliving.position();
+ 
+-                if (entityliving.randomTeleport(d0, d1, d2, true)) {
 +                // CraftBukkit start - handle canceled status of teleport event
-+                java.util.Optional<Boolean> status = entityliving.randomTeleport(d3, d4, d5, true, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.CHORUS_FRUIT);
++                java.util.Optional<Boolean> status = entityliving.randomTeleport(d0, d1, d2, true, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.CHORUS_FRUIT);
 +
 +                if (!status.isPresent()) {
 +                    // teleport event was canceled, no more tries
@@ -15,6 +15,6 @@
 +
 +                if (status.get()) {
 +                    // CraftBukkit end
-                     SoundEffect soundeffect = entityliving instanceof EntityFox ? SoundEffects.FOX_TELEPORT : SoundEffects.CHORUS_FRUIT_TELEPORT;
- 
-                     world.playSound((EntityHuman) null, d0, d1, d2, soundeffect, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                     world.gameEvent(GameEvent.TELEPORT, vec3d, GameEvent.a.of((Entity) entityliving));
+                     SoundEffect soundeffect;
+                     SoundCategory soundcategory;

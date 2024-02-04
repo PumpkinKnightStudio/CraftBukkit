@@ -1,10 +1,10 @@
 package org.bukkit.craftbukkit.util;
 
-import static org.junit.Assert.*;
-import net.minecraft.network.chat.ChatComponentText;
+import static org.junit.jupiter.api.Assertions.*;
 import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.IChatMutableComponent;
-import org.junit.Test;
+import net.minecraft.network.chat.contents.LiteralContents;
+import org.junit.jupiter.api.Test;
 
 public class CraftChatMessageTest {
 
@@ -34,7 +34,7 @@ public class CraftChatMessageTest {
 
         // dont retain line returns multiple components
         IChatBaseComponent[] components = CraftChatMessage.fromString("Hello§0\n§rFoo\n§5Test");
-        assertEquals("Has 3 components", 3, components.length);
+        assertEquals(3, components.length, "Has 3 components");
         assertEquals("Hello§0", CraftChatMessage.fromComponent(components[0]));
         assertEquals(/*§r*/"Foo", CraftChatMessage.fromComponent(components[1]));
         assertEquals("§5Test", CraftChatMessage.fromComponent(components[2]));
@@ -84,19 +84,19 @@ public class CraftChatMessageTest {
     private void testString(String input, String expected, boolean keepNewLines) {
         IChatBaseComponent cmp = CraftChatMessage.fromString(input, keepNewLines)[0];
         String actual = CraftChatMessage.fromComponent(cmp);
-        assertEquals("\nComponent: " + cmp + "\n", expected, actual);
+        assertEquals(expected, actual, "\nComponent: " + cmp + "\n");
     }
 
     private void testPlainString(String expected) {
         IChatBaseComponent component = CraftChatMessage.fromString(expected, false, true)[0];
         String actual = CraftChatMessage.fromComponent(component);
-        assertEquals("fromComponent does not match input: " + component, expected, actual);
-        assertTrue("Non-plain component: " + component, !containsNonPlainComponent(component));
+        assertEquals(expected, actual, "fromComponent does not match input: " + component);
+        assertFalse(containsNonPlainComponent(component), "Non-plain component: " + component);
     }
 
     private boolean containsNonPlainComponent(IChatBaseComponent component) {
         for (IChatBaseComponent c : component) {
-            if (!(c instanceof ChatComponentText)) {
+            if (c.getContents() != LiteralContents.EMPTY && !(c.getContents() instanceof LiteralContents)) {
                 return true;
             }
         }
@@ -105,10 +105,10 @@ public class CraftChatMessageTest {
 
     private void testComponent(String expected, IChatBaseComponent cmp) {
         String actual = CraftChatMessage.fromComponent(cmp);
-        assertEquals("\nComponent: " + cmp + "\n", expected, actual);
+        assertEquals(expected, actual, "\nComponent: " + cmp + "\n");
 
         IChatBaseComponent expectedCmp = CraftChatMessage.fromString(expected, true)[0];
         String actualExpectedCmp = CraftChatMessage.fromComponent(expectedCmp);
-        assertEquals("\nComponent: " + expectedCmp + "\n", expected, actualExpectedCmp);
+        assertEquals(expected, actualExpectedCmp, "\nComponent: " + expectedCmp + "\n");
     }
 }

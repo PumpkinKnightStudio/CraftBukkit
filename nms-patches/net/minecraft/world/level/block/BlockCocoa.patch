@@ -8,8 +8,8 @@
 +
  public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePlantElement {
  
-     public static final int MAX_AGE = 2;
-@@ -55,7 +57,7 @@
+     public static final MapCodec<BlockCocoa> CODEC = simpleCodec(BlockCocoa::new);
+@@ -61,7 +63,7 @@
              int i = (Integer) iblockdata.getValue(BlockCocoa.AGE);
  
              if (i < 2) {
@@ -18,10 +18,10 @@
              }
          }
  
-@@ -125,7 +127,7 @@
+@@ -131,7 +133,7 @@
  
      @Override
-     public void performBonemeal(WorldServer worldserver, Random random, BlockPosition blockposition, IBlockData iblockdata) {
+     public void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata) {
 -        worldserver.setBlock(blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, (Integer) iblockdata.getValue(BlockCocoa.AGE) + 1), 2);
 +        CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, (IBlockData) iblockdata.setValue(BlockCocoa.AGE, (Integer) iblockdata.getValue(BlockCocoa.AGE) + 1), 2); // CraftBukkit
      }

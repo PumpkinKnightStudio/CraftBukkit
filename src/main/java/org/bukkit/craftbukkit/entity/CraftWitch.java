@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityWitch;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Witch;
 
 public class CraftWitch extends CraftRaider implements Witch {
@@ -21,7 +20,7 @@ public class CraftWitch extends CraftRaider implements Witch {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.WITCH;
+    public boolean isDrinkingPotion() {
+        return getHandle().isDrinkingPotion();
     }
 }

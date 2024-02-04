@@ -1,13 +1,13 @@
 package org.bukkit.craftbukkit.inventory;
 
 import static org.bukkit.craftbukkit.inventory.CraftMetaItem.*;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.EnchantmentManager;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -58,7 +58,7 @@ public final class CraftItemStack extends ItemStack {
         if (original.isEmpty()) {
             return new ItemStack(Material.AIR);
         }
-        ItemStack stack = new ItemStack(CraftMagicNumbers.getMaterial(original.getItem()), original.getCount());
+        ItemStack stack = new ItemStack(CraftItemType.minecraftToBukkit(original.getItem()), original.getCount());
         if (hasItemMeta(original)) {
             stack.setItemMeta(getItemMeta(original));
         }
@@ -82,7 +82,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     public static CraftItemStack asNewCraftStack(Item item, int amount) {
-        return new CraftItemStack(CraftMagicNumbers.getMaterial(item), amount, (short) 0, null);
+        return new CraftItemStack(CraftItemType.minecraftToBukkit(item), amount, (short) 0, null);
     }
 
     net.minecraft.world.item.ItemStack handle;
@@ -112,7 +112,7 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public Material getType() {
-        return handle != null ? CraftMagicNumbers.getMaterial(handle.getItem()) : Material.AIR;
+        return handle != null ? CraftItemType.minecraftToBukkit(handle.getItem()) : Material.AIR;
     }
 
     @Override
@@ -121,12 +121,12 @@ public final class CraftItemStack extends ItemStack {
             return;
         } else if (type == Material.AIR) {
             handle = null;
-        } else if (CraftMagicNumbers.getItem(type) == null) { // :(
+        } else if (CraftItemType.bukkitToMinecraft(type) == null) { // :(
             handle = null;
         } else if (handle == null) {
-            handle = new net.minecraft.world.item.ItemStack(CraftMagicNumbers.getItem(type), 1);
+            handle = new net.minecraft.world.item.ItemStack(CraftItemType.bukkitToMinecraft(type), 1);
         } else {
-            handle.setItem(CraftMagicNumbers.getItem(type));
+            handle.setItem(CraftItemType.bukkitToMinecraft(type));
             if (hasItemMeta()) {
                 // This will create the appropriate item meta, which will contain all the data we intend to keep
                 setItemMeta(handle, getItemMeta(handle));
@@ -176,7 +176,7 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public void addUnsafeEnchantment(Enchantment ench, int level) {
-        Validate.notNull(ench, "Cannot add null enchantment");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
 
         if (!makeTag(handle)) {
             return;
@@ -221,16 +221,16 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public int getEnchantmentLevel(Enchantment ench) {
-        Validate.notNull(ench, "Cannot find null enchantment");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
         if (handle == null) {
             return 0;
         }
-        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.getRaw(ench), handle);
+        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraft(ench), handle);
     }
 
     @Override
     public int removeEnchantment(Enchantment ench) {
-        Validate.notNull(ench, "Cannot remove null enchantment");
+        Preconditions.checkArgument(ench != null, "Enchantment cannot be null");
 
         NBTTagList list = getEnchantmentList(handle), listCopy;
         if (list == null) {
@@ -271,6 +271,11 @@ public final class CraftItemStack extends ItemStack {
         handle.getTag().put(ENCHANTMENTS.NBT, listCopy);
 
         return level;
+    }
+
+    @Override
+    public void removeEnchantments() {
+        handle.getTag().remove(ENCHANTMENTS.NBT);
     }
 
     @Override
@@ -331,6 +336,8 @@ public final class CraftItemStack extends ItemStack {
             case CREEPER_WALL_HEAD:
             case DRAGON_HEAD:
             case DRAGON_WALL_HEAD:
+            case PIGLIN_HEAD:
+            case PIGLIN_WALL_HEAD:
             case PLAYER_HEAD:
             case PLAYER_WALL_HEAD:
             case SKELETON_SKULL:
@@ -340,11 +347,34 @@ public final class CraftItemStack extends ItemStack {
             case ZOMBIE_HEAD:
             case ZOMBIE_WALL_HEAD:
                 return new CraftMetaSkull(item.getTag());
+            case CHAINMAIL_HELMET:
+            case CHAINMAIL_CHESTPLATE:
+            case CHAINMAIL_LEGGINGS:
+            case CHAINMAIL_BOOTS:
+            case DIAMOND_HELMET:
+            case DIAMOND_CHESTPLATE:
+            case DIAMOND_LEGGINGS:
+            case DIAMOND_BOOTS:
+            case GOLDEN_HELMET:
+            case GOLDEN_CHESTPLATE:
+            case GOLDEN_LEGGINGS:
+            case GOLDEN_BOOTS:
+            case IRON_HELMET:
+            case IRON_CHESTPLATE:
+            case IRON_LEGGINGS:
+            case IRON_BOOTS:
+            case NETHERITE_HELMET:
+            case NETHERITE_CHESTPLATE:
+            case NETHERITE_LEGGINGS:
+            case NETHERITE_BOOTS:
+            case TURTLE_HELMET:
+                return new CraftMetaArmor(item.getTag());
             case LEATHER_HELMET:
-            case LEATHER_HORSE_ARMOR:
             case LEATHER_CHESTPLATE:
             case LEATHER_LEGGINGS:
             case LEATHER_BOOTS:
+                return new CraftMetaColorableArmor(item.getTag());
+            case LEATHER_HORSE_ARMOR:
                 return new CraftMetaLeatherArmor(item.getTag());
             case POTION:
             case SPLASH_POTION:
@@ -392,11 +422,14 @@ public final class CraftItemStack extends ItemStack {
             case YELLOW_BANNER:
             case YELLOW_WALL_BANNER:
                 return new CraftMetaBanner(item.getTag());
+            case ALLAY_SPAWN_EGG:
             case AXOLOTL_SPAWN_EGG:
             case BAT_SPAWN_EGG:
             case BEE_SPAWN_EGG:
             case BLAZE_SPAWN_EGG:
+            case BREEZE_SPAWN_EGG:
             case CAT_SPAWN_EGG:
+            case CAMEL_SPAWN_EGG:
             case CAVE_SPIDER_SPAWN_EGG:
             case CHICKEN_SPAWN_EGG:
             case COD_SPAWN_EGG:
@@ -406,10 +439,12 @@ public final class CraftItemStack extends ItemStack {
             case DONKEY_SPAWN_EGG:
             case DROWNED_SPAWN_EGG:
             case ELDER_GUARDIAN_SPAWN_EGG:
+            case ENDER_DRAGON_SPAWN_EGG:
             case ENDERMAN_SPAWN_EGG:
             case ENDERMITE_SPAWN_EGG:
             case EVOKER_SPAWN_EGG:
             case FOX_SPAWN_EGG:
+            case FROG_SPAWN_EGG:
             case GHAST_SPAWN_EGG:
             case GLOW_SQUID_SPAWN_EGG:
             case GOAT_SPAWN_EGG:
@@ -417,6 +452,7 @@ public final class CraftItemStack extends ItemStack {
             case HOGLIN_SPAWN_EGG:
             case HORSE_SPAWN_EGG:
             case HUSK_SPAWN_EGG:
+            case IRON_GOLEM_SPAWN_EGG:
             case LLAMA_SPAWN_EGG:
             case MAGMA_CUBE_SPAWN_EGG:
             case MOOSHROOM_SPAWN_EGG:
@@ -440,10 +476,13 @@ public final class CraftItemStack extends ItemStack {
             case SKELETON_HORSE_SPAWN_EGG:
             case SKELETON_SPAWN_EGG:
             case SLIME_SPAWN_EGG:
+            case SNIFFER_SPAWN_EGG:
+            case SNOW_GOLEM_SPAWN_EGG:
             case SPIDER_SPAWN_EGG:
             case SQUID_SPAWN_EGG:
             case STRAY_SPAWN_EGG:
             case STRIDER_SPAWN_EGG:
+            case TADPOLE_SPAWN_EGG:
             case TRADER_LLAMA_SPAWN_EGG:
             case TROPICAL_FISH_SPAWN_EGG:
             case TURTLE_SPAWN_EGG:
@@ -451,8 +490,10 @@ public final class CraftItemStack extends ItemStack {
             case VILLAGER_SPAWN_EGG:
             case VINDICATOR_SPAWN_EGG:
             case WANDERING_TRADER_SPAWN_EGG:
+            case WARDEN_SPAWN_EGG:
             case WITCH_SPAWN_EGG:
             case WITHER_SKELETON_SPAWN_EGG:
+            case WITHER_SPAWN_EGG:
             case WOLF_SPAWN_EGG:
             case ZOGLIN_SPAWN_EGG:
             case ZOMBIE_HORSE_SPAWN_EGG:
@@ -470,21 +511,49 @@ public final class CraftItemStack extends ItemStack {
             case JUKEBOX:
             case DISPENSER:
             case DROPPER:
+            case ACACIA_HANGING_SIGN:
             case ACACIA_SIGN:
+            case ACACIA_WALL_HANGING_SIGN:
             case ACACIA_WALL_SIGN:
+            case BAMBOO_HANGING_SIGN:
+            case BAMBOO_SIGN:
+            case BAMBOO_WALL_HANGING_SIGN:
+            case BAMBOO_WALL_SIGN:
+            case BIRCH_HANGING_SIGN:
             case BIRCH_SIGN:
+            case BIRCH_WALL_HANGING_SIGN:
             case BIRCH_WALL_SIGN:
+            case CHERRY_HANGING_SIGN:
+            case CHERRY_SIGN:
+            case CHERRY_WALL_HANGING_SIGN:
+            case CHERRY_WALL_SIGN:
+            case CRIMSON_HANGING_SIGN:
             case CRIMSON_SIGN:
+            case CRIMSON_WALL_HANGING_SIGN:
             case CRIMSON_WALL_SIGN:
+            case DARK_OAK_HANGING_SIGN:
             case DARK_OAK_SIGN:
+            case DARK_OAK_WALL_HANGING_SIGN:
             case DARK_OAK_WALL_SIGN:
+            case JUNGLE_HANGING_SIGN:
             case JUNGLE_SIGN:
+            case JUNGLE_WALL_HANGING_SIGN:
             case JUNGLE_WALL_SIGN:
+            case MANGROVE_HANGING_SIGN:
+            case MANGROVE_SIGN:
+            case MANGROVE_WALL_HANGING_SIGN:
+            case MANGROVE_WALL_SIGN:
+            case OAK_HANGING_SIGN:
             case OAK_SIGN:
+            case OAK_WALL_HANGING_SIGN:
             case OAK_WALL_SIGN:
+            case SPRUCE_HANGING_SIGN:
             case SPRUCE_SIGN:
+            case SPRUCE_WALL_HANGING_SIGN:
             case SPRUCE_WALL_SIGN:
+            case WARPED_HANGING_SIGN:
             case WARPED_SIGN:
+            case WARPED_WALL_HANGING_SIGN:
             case WARPED_WALL_SIGN:
             case SPAWNER:
             case BREWING_STAND:
@@ -526,8 +595,17 @@ public final class CraftItemStack extends ItemStack {
             case SMOKER:
             case BEEHIVE:
             case BEE_NEST:
+            case SCULK_CATALYST:
+            case SCULK_SHRIEKER:
             case SCULK_SENSOR:
-                return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
+            case CALIBRATED_SCULK_SENSOR:
+            case CHISELED_BOOKSHELF:
+            case DECORATED_POT:
+            case SUSPICIOUS_SAND:
+            case SUSPICIOUS_GRAVEL:
+            case CRAFTER:
+            case TRIAL_SPAWNER:
+                return new CraftMetaBlockState(item.getTag(), CraftItemType.minecraftToBukkit(item.getItem()));
             case TROPICAL_FISH_BUCKET:
                 return new CraftMetaTropicalFishBucket(item.getTag());
             case AXOLOTL_BUCKET:
@@ -547,13 +625,15 @@ public final class CraftItemStack extends ItemStack {
                 return new CraftMetaCompass(item.getTag());
             case BUNDLE:
                 return new CraftMetaBundle(item.getTag());
+            case GOAT_HORN:
+                return new CraftMetaMusicInstrument(item.getTag());
             default:
                 return new CraftMetaItem(item.getTag());
         }
     }
 
     static Material getType(net.minecraft.world.item.ItemStack item) {
-        return item == null ? Material.AIR : CraftMagicNumbers.getMaterial(item.getItem());
+        return item == null ? Material.AIR : CraftItemType.minecraftToBukkit(item.getItem());
     }
 
     @Override
@@ -577,7 +657,7 @@ public final class CraftItemStack extends ItemStack {
         if (itemMeta == null) return true;
 
         Item oldItem = item.getItem();
-        Item newItem = CraftMagicNumbers.getItem(CraftItemFactory.instance().updateMaterial(itemMeta, CraftMagicNumbers.getMaterial(oldItem)));
+        Item newItem = CraftItemType.bukkitToMinecraft(CraftItemFactory.instance().updateMaterial(itemMeta, CraftItemType.minecraftToBukkit(oldItem)));
         if (oldItem != newItem) {
             item.setItem(newItem);
         }

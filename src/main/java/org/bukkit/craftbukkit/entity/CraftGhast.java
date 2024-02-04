@@ -2,10 +2,9 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.monster.EntityGhast;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ghast;
 
-public class CraftGhast extends CraftFlying implements Ghast {
+public class CraftGhast extends CraftFlying implements Ghast, CraftEnemy {
 
     public CraftGhast(CraftServer server, EntityGhast entity) {
         super(server, entity);
@@ -22,7 +21,12 @@ public class CraftGhast extends CraftFlying implements Ghast {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.GHAST;
+    public boolean isCharging() {
+        return getHandle().isCharging();
+    }
+
+    @Override
+    public void setCharging(boolean flag) {
+        getHandle().setCharging(flag);
     }
 }

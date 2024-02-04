@@ -4,12 +4,14 @@ import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.WorldChunkManager;
 import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.WorldInfo;
 
@@ -19,20 +21,18 @@ public class CustomWorldChunkManager extends WorldChunkManager {
     private final BiomeProvider biomeProvider;
     private final IRegistry<BiomeBase> registry;
 
-    private static List<BiomeBase> biomeListToBiomeBaseList(List<Biome> biomes, IRegistry<BiomeBase> registry) {
-        List<BiomeBase> biomeBases = new ArrayList<>();
+    private static List<Holder<BiomeBase>> biomeListToBiomeBaseList(List<Biome> biomes, IRegistry<BiomeBase> registry) {
+        List<Holder<BiomeBase>> biomeBases = new ArrayList<>();
 
         for (Biome biome : biomes) {
             Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot use the biome %s", biome);
-            biomeBases.add(CraftBlock.biomeToBiomeBase(registry, biome));
+            biomeBases.add(CraftBiome.bukkitToMinecraftHolder(biome));
         }
 
         return biomeBases;
     }
 
     public CustomWorldChunkManager(WorldInfo worldInfo, BiomeProvider biomeProvider, IRegistry<BiomeBase> registry) {
-        super(biomeListToBiomeBaseList(biomeProvider.getBiomes(worldInfo), registry));
-
         this.worldInfo = worldInfo;
         this.biomeProvider = biomeProvider;
         this.registry = registry;
@@ -44,16 +44,15 @@ public class CustomWorldChunkManager extends WorldChunkManager {
     }
 
     @Override
-    public WorldChunkManager withSeed(long l) {
-        // TODO check method further
-        throw new UnsupportedOperationException("Cannot copy CustomWorldChunkManager");
+    public Holder<BiomeBase> getNoiseBiome(int x, int y, int z, Climate.Sampler sampler) {
+        Biome biome = biomeProvider.getBiome(worldInfo, x << 2, y << 2, z << 2, CraftBiomeParameterPoint.createBiomeParameterPoint(sampler, sampler.sample(x, y, z)));
+        Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
+
+        return CraftBiome.bukkitToMinecraftHolder(biome);
     }
 
     @Override
-    public BiomeBase getNoiseBiome(int x, int y, int z, Climate.Sampler sampler) {
-        Biome biome = biomeProvider.getBiome(worldInfo, x << 2, y << 2, z << 2);
-        Preconditions.checkArgument(biome != Biome.CUSTOM, "Cannot set the biome to %s", biome);
-
-        return CraftBlock.biomeToBiomeBase(registry, biome);
+    protected Stream<Holder<BiomeBase>> collectPossibleBiomes() {
+        return biomeListToBiomeBaseList(biomeProvider.getBiomes(worldInfo), registry).stream();
     }
 }

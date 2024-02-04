@@ -1,15 +1,15 @@
 --- a/net/minecraft/server/players/ExpirableListEntry.java
 +++ b/net/minecraft/server/players/ExpirableListEntry.java
-@@ -26,7 +26,7 @@
+@@ -27,7 +27,7 @@
      }
  
-     protected ExpirableListEntry(T t0, JsonObject jsonobject) {
+     protected ExpirableListEntry(@Nullable T t0, JsonObject jsonobject) {
 -        super(t0);
 +        super(checkExpiry(t0, jsonobject)); // CraftBukkit
  
          Date date;
  
-@@ -82,4 +82,22 @@
+@@ -83,4 +83,22 @@
          jsonobject.addProperty("expires", this.expires == null ? "forever" : ExpirableListEntry.DATE_FORMAT.format(this.expires));
          jsonobject.addProperty("reason", this.reason);
      }

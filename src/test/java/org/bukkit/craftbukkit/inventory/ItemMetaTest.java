@@ -1,12 +1,13 @@
 package org.bukkit.craftbukkit.inventory;
 
+import static org.bukkit.support.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemBlock;
@@ -19,6 +20,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
+import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -33,12 +35,14 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.AxolotlBucketMeta;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BundleMeta;
+import org.bukkit.inventory.meta.ColorableArmorMeta;
 import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
@@ -48,35 +52,39 @@ import org.bukkit.inventory.meta.KnowledgeBookMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
+import org.bukkit.inventory.meta.trim.ArmorTrim;
+import org.bukkit.inventory.meta.trim.TrimMaterial;
+import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ItemMetaTest extends AbstractTestingBase {
 
     static final int MAX_FIREWORK_POWER = 127; // Please update ItemStackFireworkTest if/when this gets changed.
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPowerLimitExact() {
-        newFireworkMeta().setPower(MAX_FIREWORK_POWER + 1);
+        assertThrows(IllegalArgumentException.class, () -> newFireworkMeta().setPower(MAX_FIREWORK_POWER + 1));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPowerLimitMax() {
-        newFireworkMeta().setPower(Integer.MAX_VALUE);
+        assertThrows(IllegalArgumentException.class, () -> newFireworkMeta().setPower(Integer.MAX_VALUE));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPowerLimitMin() {
-        newFireworkMeta().setPower(Integer.MIN_VALUE);
+        assertThrows(IllegalArgumentException.class, () -> newFireworkMeta().setPower(Integer.MIN_VALUE));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPowerLimitNegative() {
-        newFireworkMeta().setPower(-1);
+        assertThrows(IllegalArgumentException.class, () -> newFireworkMeta().setPower(-1));
     }
 
     @Test
@@ -84,7 +92,7 @@ public class ItemMetaTest extends AbstractTestingBase {
         for (int i = 0; i <= MAX_FIREWORK_POWER; i++) {
             FireworkMeta firework = newFireworkMeta();
             firework.setPower(i);
-            assertThat(String.valueOf(i), firework.getPower(), is(i));
+            assertThat(firework.getPower(), is(i), String.valueOf(i));
         }
     }
 
@@ -144,14 +152,14 @@ public class ItemMetaTest extends AbstractTestingBase {
         craft.setItemMeta(craft.getItemMeta());
         ItemStack bukkit = new ItemStack(craft);
         assertThat(craft, is(bukkit));
-        assertThat(bukkit, is((ItemStack) craft));
+        assertThat(bukkit, is(craft));
     }
 
     @Test
     public void testBlockStateMeta() {
         List<Block> queue = new ArrayList<>();
 
-        for (Item item : IRegistry.ITEM) {
+        for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof ItemBlock) {
                 queue.add(((ItemBlock) item).getBlock());
             }
@@ -171,15 +179,30 @@ public class ItemMetaTest extends AbstractTestingBase {
 
                 ItemMeta meta = stack.getItemMeta();
                 if (block instanceof ITileEntity) {
-                    assertTrue(stack + " has meta of type " + meta + " expected BlockStateMeta", meta instanceof BlockStateMeta);
+                    assertTrue(meta instanceof BlockStateMeta, stack + " has meta of type " + meta + " expected BlockStateMeta");
 
                     BlockStateMeta blockState = (BlockStateMeta) meta;
-                    assertNotNull(stack + " has null block state", blockState.getBlockState());
+                    assertNotNull(blockState.getBlockState(), stack + " has null block state");
 
                     blockState.setBlockState(blockState.getBlockState());
                 } else {
-                    assertTrue(stack + " has unexpected meta of type BlockStateMeta (but is not a tile)", !(meta instanceof BlockStateMeta));
+                    assertFalse(meta instanceof BlockStateMeta, stack + " has unexpected meta of type BlockStateMeta (but is not a tile)");
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testSpawnEggsHasMeta() {
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof net.minecraft.world.item.ItemMonsterEgg) {
+                Material material = CraftItemType.minecraftToBukkit(item);
+                CraftMetaItem baseMeta = (CraftMetaItem) Bukkit.getItemFactory().getItemMeta(material);
+                ItemMeta baseMetaItem = CraftItemStack.getItemMeta(item.getDefaultInstance());
+
+                assertTrue(baseMeta instanceof CraftMetaSpawnEgg, material + " is not handled in CraftItemFactory");
+                assertTrue(baseMeta.applicableTo(material), material + " is not applicable to CraftMetaSpawnEgg");
+                assertTrue(baseMetaItem instanceof SpawnEggMeta, material + " is not handled in CraftItemStack");
             }
         }
     }
@@ -225,10 +248,27 @@ public class ItemMetaTest extends AbstractTestingBase {
                     return cleanStack;
                 }
             },
-            new StackProvider(Material.LEATHER_BOOTS) {
+            new StackProvider(Material.DIAMOND_CHESTPLATE) {
+                @Override ItemStack operate(final ItemStack cleanStack) {
+                    final ArmorMeta meta = (ArmorMeta) cleanStack.getItemMeta();
+                    meta.setTrim(new ArmorTrim(TrimMaterial.AMETHYST, TrimPattern.COAST));
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.LEATHER_HORSE_ARMOR) {
                 @Override ItemStack operate(final ItemStack cleanStack) {
                     final LeatherArmorMeta meta = (LeatherArmorMeta) cleanStack.getItemMeta();
                     meta.setColor(Color.FUCHSIA);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
+            },
+            new StackProvider(Material.LEATHER_CHESTPLATE) {
+                @Override ItemStack operate(final ItemStack cleanStack) {
+                    final ColorableArmorMeta meta = (ColorableArmorMeta) cleanStack.getItemMeta();
+                    meta.setTrim(new ArmorTrim(TrimMaterial.COPPER, TrimPattern.DUNE));
+                    meta.setColor(Color.MAROON);
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
@@ -360,10 +400,18 @@ public class ItemMetaTest extends AbstractTestingBase {
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
+            },
+            new StackProvider(Material.GOAT_HORN) {
+                @Override ItemStack operate(ItemStack cleanStack) {
+                    final CraftMetaMusicInstrument meta = (CraftMetaMusicInstrument) cleanStack.getItemMeta();
+                    meta.setInstrument(MusicInstrument.ADMIRE);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
             }
         );
 
-        assertThat("Forgotten test?", providers, hasSize(ItemStackTest.COMPOUND_MATERIALS.length - 4/* Normal item meta, skulls, eggs and tile entities */));
+        assertThat(providers, hasSize(ItemStackTest.COMPOUND_MATERIALS.length - 4/* Normal item meta, skulls, eggs and tile entities */), "Forgotten test?");
 
         for (final StackProvider provider : providers) {
             downCastTest(new BukkitWrapper(provider));
@@ -404,8 +452,8 @@ public class ItemMetaTest extends AbstractTestingBase {
         final ItemStack craftBlank = CraftItemStack.asCraftCopy(blank);
 
         // Check that equality and similarity works for each meta implementation
-        assertThat(name, provider.stack(), is(provider.stack()));
-        assertThat(name, provider.stack().isSimilar(provider.stack()), is(true));
+        assertThat(provider.stack(), is(provider.stack()), name);
+        assertThat(provider.stack().isSimilar(provider.stack()), is(true), name);
 
         downCastTest(name, provider.stack(), blank);
         blank.setItemMeta(blank.getItemMeta());
@@ -417,11 +465,11 @@ public class ItemMetaTest extends AbstractTestingBase {
     }
 
     private void downCastTest(final String name, final ItemStack stack, final ItemStack blank) {
-        assertThat(name, stack, is(not(blank)));
-        assertThat(name, stack.getItemMeta(), is(not(blank.getItemMeta())));
+        assertThat(stack, is(not(blank)), name);
+        assertThat(stack.getItemMeta(), is(not(blank.getItemMeta())), name);
 
         stack.setType(Material.STONE);
 
-        assertThat(name, stack, is(blank));
+        assertThat(stack, is(blank), name);
     }
 }

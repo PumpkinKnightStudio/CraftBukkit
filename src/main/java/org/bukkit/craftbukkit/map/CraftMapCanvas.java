@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.map;
 
+import com.google.common.base.Preconditions;
+import java.awt.Color;
 import java.awt.Image;
 import java.util.Arrays;
 import org.bukkit.map.MapCanvas;
@@ -33,6 +35,26 @@ public class CraftMapCanvas implements MapCanvas {
     @Override
     public void setCursors(MapCursorCollection cursors) {
         this.cursors = cursors;
+    }
+
+    @Override
+    public void setPixelColor(int x, int y, Color color) {
+        setPixel(x, y, (color == null) ? -1 : MapPalette.matchColor(color));
+    }
+
+    @Override
+    public Color getPixelColor(int x, int y) {
+        byte pixel = getPixel(x, y);
+        if (pixel == -1) {
+            return null;
+        }
+
+        return MapPalette.getColor(pixel);
+    }
+
+    @Override
+    public Color getBasePixelColor(int x, int y) {
+        return MapPalette.getColor(getBasePixel(x, y));
     }
 
     @Override
@@ -81,9 +103,7 @@ public class CraftMapCanvas implements MapCanvas {
     public void drawText(int x, int y, MapFont font, String text) {
         int xStart = x;
         byte color = MapPalette.DARK_GRAY;
-        if (!font.isValid(text)) {
-            throw new IllegalArgumentException("text contains invalid characters");
-        }
+        Preconditions.checkArgument(font.isValid(text), "text (%s) contains invalid characters", text);
 
         for (int i = 0; i < text.length(); ++i) {
             char ch = text.charAt(i);
@@ -93,15 +113,13 @@ public class CraftMapCanvas implements MapCanvas {
                 continue;
             } else if (ch == '\u00A7') {
                 int j = text.indexOf(';', i);
-                if (j >= 0) {
-                    try {
-                        color = Byte.parseByte(text.substring(i + 1, j));
-                        i = j;
-                        continue;
-                    } catch (NumberFormatException ex) {
-                    }
+                Preconditions.checkArgument(j >= 0, "text (%s) unterminated color string", text);
+                try {
+                    color = Byte.parseByte(text.substring(i + 1, j));
+                    i = j;
+                    continue;
+                } catch (NumberFormatException ex) {
                 }
-                throw new IllegalArgumentException("Text contains unterminated color string");
             }
 
             CharacterSprite sprite = font.getChar(text.charAt(i));

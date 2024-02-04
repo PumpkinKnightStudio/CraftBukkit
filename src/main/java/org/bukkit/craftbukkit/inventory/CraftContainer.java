@@ -20,11 +20,11 @@ import net.minecraft.world.inventory.ContainerLoom;
 import net.minecraft.world.inventory.ContainerMerchant;
 import net.minecraft.world.inventory.ContainerProperties;
 import net.minecraft.world.inventory.ContainerShulkerBox;
-import net.minecraft.world.inventory.ContainerSmithing;
 import net.minecraft.world.inventory.ContainerSmoker;
 import net.minecraft.world.inventory.ContainerStonecutter;
 import net.minecraft.world.inventory.ContainerWorkbench;
 import net.minecraft.world.inventory.Containers;
+import net.minecraft.world.inventory.CrafterMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.entity.HumanEntity;
@@ -50,6 +50,10 @@ public class CraftContainer extends Container {
 
     public CraftContainer(final Inventory inventory, final EntityHuman player, int id) {
         this(new InventoryView() {
+
+            private final String originalTitle = (inventory instanceof CraftInventoryCustom) ? ((CraftInventoryCustom.MinecraftInventory) ((CraftInventory) inventory).getInventory()).getTitle() : inventory.getType().getDefaultTitle();
+            private String title = originalTitle;
+
             @Override
             public Inventory getTopInventory() {
                 return inventory;
@@ -72,8 +76,20 @@ public class CraftContainer extends Container {
 
             @Override
             public String getTitle() {
-                return inventory instanceof CraftInventoryCustom ? ((CraftInventoryCustom.MinecraftInventory) ((CraftInventory) inventory).getInventory()).getTitle() : inventory.getType().getDefaultTitle();
+                return title;
             }
+
+            @Override
+            public String getOriginalTitle() {
+                return originalTitle;
+            }
+
+            @Override
+            public void setTitle(String title) {
+                CraftInventoryView.sendInventoryTitleChange(this, title);
+                this.title = title;
+            }
+
         }, player, id);
     }
 
@@ -119,8 +135,6 @@ public class CraftContainer extends Container {
                 return Containers.BEACON;
             case ANVIL:
                 return Containers.ANVIL;
-            case SMITHING:
-                return Containers.SMITHING;
             case HOPPER:
                 return Containers.HOPPER;
             case DROPPER:
@@ -141,10 +155,15 @@ public class CraftContainer extends Container {
                 return Containers.GRINDSTONE;
             case STONECUTTER:
                 return Containers.STONECUTTER;
+            case SMITHING:
+            case SMITHING_NEW:
+                return Containers.SMITHING;
             case CREATIVE:
             case CRAFTING:
             case MERCHANT:
                 throw new IllegalArgumentException("Can't open a " + inventory.getType() + " inventory!");
+            case CRAFTER:
+                return Containers.CRAFTER_3x3;
             default:
                 // TODO: If it reaches the default case, should we throw an error?
                 return Containers.GENERIC_9x3;
@@ -185,9 +204,6 @@ public class CraftContainer extends Container {
             case ANVIL:
                 setupAnvil(top, bottom); // SPIGOT-6783 - manually set up slots so we can use the delegated inventory and not the automatically created one
                 break;
-            case SMITHING:
-                delegate = new ContainerSmithing(windowId, bottom);
-                break;
             case BEACON:
                 delegate = new ContainerBeacon(windowId, bottom);
                 break;
@@ -217,6 +233,13 @@ public class CraftContainer extends Container {
                 break;
             case MERCHANT:
                 delegate = new ContainerMerchant(windowId, bottom);
+                break;
+            case SMITHING:
+            case SMITHING_NEW:
+                setupSmithing(top, bottom); // SPIGOT-6783 - manually set up slots so we can use the delegated inventory and not the automatically created one
+                break;
+            case CRAFTER:
+                delegate = new CrafterMenu(windowId, bottom);
                 break;
         }
 
@@ -283,9 +306,31 @@ public class CraftContainer extends Container {
         // End copy from ContainerAnvilAbstract
     }
 
+    private void setupSmithing(IInventory top, IInventory bottom) {
+        // This code copied from ContainerSmithing
+        this.addSlot(new Slot(top, 0, 8, 48));
+        this.addSlot(new Slot(top, 1, 26, 48));
+        this.addSlot(new Slot(top, 2, 44, 48));
+        this.addSlot(new Slot(top, 3, 98, 48));
+
+        int row;
+        int col;
+
+        for (row = 0; row < 3; ++row) {
+            for (col = 0; col < 9; ++col) {
+                this.addSlot(new Slot(bottom, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+            }
+        }
+
+        for (row = 0; row < 9; ++row) {
+            this.addSlot(new Slot(bottom, row, 8 + row * 18, 142));
+        }
+        // End copy from ContainerSmithing
+    }
+
     @Override
     public ItemStack quickMoveStack(EntityHuman entityhuman, int i) {
-        return (delegate != null) ? delegate.quickMoveStack(entityhuman, i) : super.quickMoveStack(entityhuman, i);
+        return (delegate != null) ? delegate.quickMoveStack(entityhuman, i) : ItemStack.EMPTY;
     }
 
     @Override

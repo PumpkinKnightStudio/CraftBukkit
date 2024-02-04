@@ -4,7 +4,6 @@ import net.minecraft.world.entity.animal.EntityWolf;
 import net.minecraft.world.item.EnumColor;
 import org.bukkit.DyeColor;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Wolf;
 
 public class CraftWolf extends CraftTameableAnimal implements Wolf {
@@ -32,11 +31,6 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.WOLF;
-    }
-
-    @Override
     public DyeColor getCollarColor() {
         return DyeColor.getByWoolData((byte) getHandle().getCollarColor().getId());
     }
@@ -44,5 +38,25 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
     @Override
     public void setCollarColor(DyeColor color) {
         getHandle().setCollarColor(EnumColor.byId(color.getWoolData()));
+    }
+
+    @Override
+    public boolean isWet() {
+        return getHandle().isWet();
+    }
+
+    @Override
+    public float getTailAngle() {
+        return getHandle().getTailAngle();
+    }
+
+    @Override
+    public boolean isInterested() {
+        return getHandle().isInterested();
+    }
+
+    @Override
+    public void setInterested(boolean flag) {
+        getHandle().setIsInterested(flag);
     }
 }

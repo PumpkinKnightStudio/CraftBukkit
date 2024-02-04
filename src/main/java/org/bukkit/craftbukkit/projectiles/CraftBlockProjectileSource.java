@@ -1,11 +1,11 @@
 package org.bukkit.craftbukkit.projectiles;
 
-import java.util.Random;
+import com.google.common.base.Preconditions;
 import net.minecraft.core.EnumDirection;
 import net.minecraft.core.IPosition;
-import net.minecraft.core.SourceBlock;
+import net.minecraft.core.dispenser.SourceBlock;
 import net.minecraft.server.level.WorldServer;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.projectile.EntityArrow;
 import net.minecraft.world.entity.projectile.EntityEgg;
@@ -21,12 +21,11 @@ import net.minecraft.world.entity.projectile.EntityTippedArrow;
 import net.minecraft.world.entity.projectile.IProjectile;
 import net.minecraft.world.level.block.BlockDispenser;
 import net.minecraft.world.level.block.entity.TileEntityDispenser;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Fireball;
@@ -40,7 +39,6 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.Vector;
@@ -64,12 +62,12 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
 
     @Override
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
-        Validate.isTrue(getBlock().getType() == Material.DISPENSER, "Block is no longer dispenser");
+        Preconditions.checkArgument(getBlock().getType() == Material.DISPENSER, "Block is no longer dispenser");
         // Copied from BlockDispenser.dispense()
-        SourceBlock isourceblock = new SourceBlock((WorldServer) dispenserBlock.getLevel(), dispenserBlock.getBlockPos());
+        SourceBlock sourceblock = new SourceBlock((WorldServer) dispenserBlock.getLevel(), dispenserBlock.getBlockPos(), dispenserBlock.getBlockState(), dispenserBlock);
         // Copied from DispenseBehaviorProjectile
-        IPosition iposition = BlockDispenser.getDispensePosition(isourceblock);
-        EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockState().getValue(BlockDispenser.FACING);
+        IPosition iposition = BlockDispenser.getDispensePosition(sourceblock);
+        EnumDirection enumdirection = (EnumDirection) sourceblock.state().getValue(BlockDispenser.FACING);
         net.minecraft.world.level.World world = dispenserBlock.getLevel();
         net.minecraft.world.entity.Entity launch = null;
 
@@ -92,12 +90,12 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             }
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
-                launch = new EntityTippedArrow(world, iposition.x(), iposition.y(), iposition.z());
-                ((EntityTippedArrow) launch).setPotionType(CraftPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
+                launch = new EntityTippedArrow(world, iposition.x(), iposition.y(), iposition.z(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW));
+                ((Arrow) launch.getBukkitEntity()).setBasePotionType(PotionType.WATER);
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
-                launch = new EntitySpectralArrow(world, iposition.x(), iposition.y(), iposition.z());
+                launch = new EntitySpectralArrow(world, iposition.x(), iposition.y(), iposition.z(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SPECTRAL_ARROW));
             } else {
-                launch = new EntityTippedArrow(world, iposition.x(), iposition.y(), iposition.z());
+                launch = new EntityTippedArrow(world, iposition.x(), iposition.y(), iposition.z(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW));
             }
             ((EntityArrow) launch).pickup = EntityArrow.PickupStatus.ALLOWED;
             ((EntityArrow) launch).projectileSource = this;
@@ -105,7 +103,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             double d0 = iposition.x() + (double) ((float) enumdirection.getStepX() * 0.3F);
             double d1 = iposition.y() + (double) ((float) enumdirection.getStepY() * 0.3F);
             double d2 = iposition.z() + (double) ((float) enumdirection.getStepZ() * 0.3F);
-            Random random = world.random;
+            RandomSource random = world.random;
             double d3 = random.nextGaussian() * 0.05D + (double) enumdirection.getStepX();
             double d4 = random.nextGaussian() * 0.05D + (double) enumdirection.getStepY();
             double d5 = random.nextGaussian() * 0.05D + (double) enumdirection.getStepZ();
@@ -133,7 +131,7 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             ((EntityFireball) launch).projectileSource = this;
         }
 
-        Validate.notNull(launch, "Projectile not supported");
+        Preconditions.checkArgument(launch != null, "Projectile not supported");
 
         if (launch instanceof IProjectile) {
             if (launch instanceof EntityProjectile) {

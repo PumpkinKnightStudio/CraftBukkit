@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.DynamicOpsNBT;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -333,7 +333,7 @@ public final class CraftLegacy {
                     }
 
                     String name = blockTag.get("Name").asString("");
-                    Block block = IRegistry.BLOCK.get(new MinecraftKey(name));
+                    Block block = BuiltInRegistries.BLOCK.get(new MinecraftKey(name));
                     if (block == null) {
                         continue;
                     }
@@ -347,17 +347,13 @@ public final class CraftLegacy {
                             IBlockState state = states.getProperty(dataKey);
 
                             if (state == null) {
-                                if (whitelistedStates.contains(dataKey)) {
-                                    continue;
-                                }
-                                throw new IllegalStateException("No state for " + dataKey);
+                                Preconditions.checkArgument(whitelistedStates.contains(dataKey), "No state for %s", dataKey);
+                                continue;
                             }
 
                             Preconditions.checkState(!properties.getString(dataKey).isEmpty(), "Empty data string");
                             Optional opt = state.getValue(properties.getString(dataKey));
-                            if (!opt.isPresent()) {
-                                throw new IllegalStateException("No state value " + properties.getString(dataKey) + " for " + dataKey);
-                            }
+                            Preconditions.checkArgument(opt.isPresent(), "No state value %s for %s", properties.getString(dataKey), dataKey);
 
                             blockData = blockData.setValue(state, (Comparable) opt.get());
                         }
@@ -411,7 +407,7 @@ public final class CraftLegacy {
                 }
 
                 // Preconditions.checkState(newId.contains("minecraft:"), "Unknown new material for " + matData);
-                Item newMaterial = IRegistry.ITEM.get(new MinecraftKey(newId));
+                Item newMaterial = BuiltInRegistries.ITEM.get(new MinecraftKey(newId));
 
                 if (newMaterial == Items.AIR) {
                     continue;

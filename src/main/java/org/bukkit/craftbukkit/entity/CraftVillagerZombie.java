@@ -1,18 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import java.util.Locale;
-import java.util.UUID;
-import net.minecraft.core.IRegistry;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.EntityZombieVillager;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 
@@ -33,30 +26,25 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.ZOMBIE_VILLAGER;
-    }
-
-    @Override
     public Villager.Profession getVillagerProfession() {
-        return Villager.Profession.valueOf(IRegistry.VILLAGER_PROFESSION.getKey(getHandle().getVillagerData().getProfession()).getPath().toUpperCase(Locale.ROOT));
+        return CraftVillager.CraftProfession.minecraftToBukkit(getHandle().getVillagerData().getProfession());
     }
 
     @Override
     public void setVillagerProfession(Villager.Profession profession) {
-        Validate.notNull(profession);
-        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(IRegistry.VILLAGER_PROFESSION.get(new MinecraftKey(profession.name().toLowerCase(Locale.ROOT)))));
+        Preconditions.checkArgument(profession != null, "Villager.Profession cannot be null");
+        getHandle().setVillagerData(getHandle().getVillagerData().setProfession(CraftVillager.CraftProfession.bukkitToMinecraft(profession)));
     }
 
     @Override
     public Villager.Type getVillagerType() {
-        return Villager.Type.valueOf(IRegistry.VILLAGER_TYPE.getKey(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return CraftVillager.CraftType.minecraftToBukkit(getHandle().getVillagerData().getType());
     }
 
     @Override
     public void setVillagerType(Villager.Type type) {
-        Validate.notNull(type);
-        getHandle().setVillagerData(getHandle().getVillagerData().setType(IRegistry.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        Preconditions.checkArgument(type != null, "Villager.Type cannot be null");
+        getHandle().setVillagerData(getHandle().getVillagerData().setType(CraftVillager.CraftType.bukkitToMinecraft(type)));
     }
 
     @Override
@@ -76,11 +64,10 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
         if (time < 0) {
             getHandle().villagerConversionTime = -1;
             getHandle().getEntityData().set(EntityZombieVillager.DATA_CONVERTING_ID, false);
-            getHandle().setPersistenceRequired(false); // CraftBukkit - SPIGOT-4684 update persistence
             getHandle().conversionStarter = null;
             getHandle().removeEffect(MobEffects.DAMAGE_BOOST, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.CONVERSION);
         } else {
-            getHandle().startConverting((UUID) null, time);
+            getHandle().startConverting(null, time);
         }
     }
 

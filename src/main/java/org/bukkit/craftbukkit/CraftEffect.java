@@ -1,14 +1,15 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Axis;
 import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.potion.Potion;
 
 public class CraftEffect {
@@ -25,8 +26,8 @@ public class CraftEffect {
             datavalue = ((Color) data).asRGB();
             break;
         case RECORD_PLAY:
-            Validate.isTrue(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type!");
-            datavalue = Item.getId(CraftMagicNumbers.getItem((Material) data));
+            Preconditions.checkArgument(data == Material.AIR || ((Material) data).isRecord(), "Invalid record type for Material %s!", data);
+            datavalue = Item.getId(CraftItemType.bukkitToMinecraft((Material) data));
             break;
         case SMOKE:
             switch ((BlockFace) data) {
@@ -59,8 +60,8 @@ public class CraftEffect {
             }
             break;
         case STEP_SOUND:
-            Validate.isTrue(((Material) data).isBlock(), "Material is not a block!");
-            datavalue = Block.getId(CraftMagicNumbers.getBlock((Material) data).defaultBlockState());
+            Preconditions.checkArgument(((Material) data).isBlock(), "Material %s is not a block!", data);
+            datavalue = Block.getId(CraftBlockType.bukkitToMinecraft((Material) data).defaultBlockState());
             break;
         case COMPOSTER_FILL_ATTEMPT:
             datavalue = ((Boolean) data) ? 1 : 0;

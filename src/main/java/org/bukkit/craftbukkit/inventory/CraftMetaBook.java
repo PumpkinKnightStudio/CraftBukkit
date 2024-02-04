@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -12,15 +13,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.chat.IChatBaseComponent;
-import org.apache.commons.lang.Validate;
+import net.minecraft.world.item.ItemWrittenBook;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BookMeta.Generation;
 
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaBook extends CraftMetaItem implements BookMeta {
@@ -29,9 +28,9 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
     static final ItemMetaKey BOOK_PAGES = new ItemMetaKey("pages");
     static final ItemMetaKey RESOLVED = new ItemMetaKey("resolved");
     static final ItemMetaKey GENERATION = new ItemMetaKey("generation");
-    static final int MAX_PAGES = 100;
-    static final int MAX_PAGE_LENGTH = 320; // 256 limit + 64 characters to allow for psuedo colour codes
-    static final int MAX_TITLE_LENGTH = 32;
+    static final int MAX_PAGES = ItemWrittenBook.MAX_PAGES; // SPIGOT-6911: Use Minecraft limits
+    static final int MAX_PAGE_LENGTH = ItemWrittenBook.PAGE_EDIT_LENGTH; // SPIGOT-6911: Use Minecraft limits
+    static final int MAX_TITLE_LENGTH = ItemWrittenBook.TITLE_MAX_LENGTH; // SPIGOT-6911: Use Minecraft limits
 
     protected String title;
     protected String author;
@@ -195,13 +194,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-        case WRITTEN_BOOK:
-        case WRITABLE_BOOK:
-            return true;
-        default:
-            return false;
-        }
+        return type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK;
     }
 
     @Override
@@ -264,16 +257,14 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
 
     @Override
     public String getPage(final int page) {
-        Validate.isTrue(isValidPage(page), "Invalid page number");
+        Preconditions.checkArgument(isValidPage(page), "Invalid page number (%s)", page);
         // assert: pages != null
         return convertDataToPlainPage(pages.get(page - 1));
     }
 
     @Override
     public void setPage(final int page, final String text) {
-        if (!isValidPage(page)) {
-            throw new IllegalArgumentException("Invalid page number " + page + "/" + getPageCount());
-        }
+        Preconditions.checkArgument(isValidPage(page), "Invalid page number (%s/%s)", page, getPageCount());
         // assert: pages != null
 
         String newText = validatePage(text);
@@ -387,8 +378,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaBook) {
-            CraftMetaBook that = (CraftMetaBook) meta;
+        if (meta instanceof CraftMetaBook that) {
 
             return (hasTitle() ? that.hasTitle() && this.title.equals(that.title) : !that.hasTitle())
                     && (hasAuthor() ? that.hasAuthor() && this.author.equals(that.author) : !that.hasAuthor())

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/SpawnerCreature.java
 +++ b/net/minecraft/world/level/SpawnerCreature.java
-@@ -47,6 +47,13 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -49,6 +49,13 @@
+ import net.minecraft.world.phys.Vec3D;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.world.level.storage.WorldData;
@@ -13,18 +13,8 @@
 +
  public final class SpawnerCreature {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -73,7 +80,8 @@
-             if (entity instanceof EntityInsentient) {
-                 EntityInsentient entityinsentient = (EntityInsentient) entity;
- 
--                if (entityinsentient.isPersistenceRequired() || entityinsentient.requiresCustomPersistence()) {
-+                // CraftBukkit - Split out persistent check, don't apply it to special persistent mobs
-+                if (entityinsentient.removeWhenFarAway(0) && entityinsentient.isPersistenceRequired()) {
-                     continue;
-                 }
-             }
-@@ -111,10 +119,25 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+@@ -113,10 +120,25 @@
          EnumCreatureType[] aenumcreaturetype = SpawnerCreature.SPAWNING_CATEGORIES;
          int i = aenumcreaturetype.length;
  
@@ -51,7 +41,7 @@
                  Objects.requireNonNull(spawnercreature_d);
                  SpawnerCreature.c spawnercreature_c = spawnercreature_d::canSpawn;
  
-@@ -199,10 +222,14 @@
+@@ -201,10 +223,15 @@
                                          entityinsentient.moveTo(d0, (double) i, d1, worldserver.random.nextFloat() * 360.0F, 0.0F);
                                          if (isValidPositionForMob(worldserver, entityinsentient, d2)) {
                                              groupdataentity = entityinsentient.finalizeSpawn(worldserver, worldserver.getCurrentDifficultyAt(entityinsentient.blockPosition()), EnumMobSpawn.NATURAL, groupdataentity, (NBTTagCompound) null);
@@ -60,7 +50,8 @@
 -                                            worldserver.addFreshEntityWithPassengers(entityinsentient);
 -                                            spawnercreature_a.run(entityinsentient, ichunkaccess);
 +                                            // CraftBukkit start
-+                                            worldserver.addFreshEntityWithPassengers(entityinsentient, SpawnReason.NATURAL);
++                                            // SPIGOT-7045: Give ocelot babies back their special spawn reason. Note: This is the only modification required as ocelots count as monsters which means they only spawn during normal chunk ticking and do not spawn during chunk generation as starter mobs.
++                                            worldserver.addFreshEntityWithPassengers(entityinsentient, (entityinsentient instanceof net.minecraft.world.entity.animal.EntityOcelot && !((org.bukkit.entity.Ageable) entityinsentient.getBukkitEntity()).isAdult()) ? SpawnReason.OCELOT_BABY : SpawnReason.NATURAL);
 +                                            if (!entityinsentient.isRemoved()) {
 +                                                ++j;
 +                                                ++k1;
@@ -70,7 +61,7 @@
                                              if (j >= entityinsentient.getMaxSpawnClusterSize()) {
                                                  return;
                                              }
-@@ -377,7 +404,7 @@
+@@ -390,7 +417,7 @@
  
                                      if (entityinsentient.checkSpawnRules(worldaccess, EnumMobSpawn.CHUNK_GENERATION) && entityinsentient.checkSpawnObstruction(worldaccess)) {
                                          groupdataentity = entityinsentient.finalizeSpawn(worldaccess, worldaccess.getCurrentDifficultyAt(entityinsentient.blockPosition()), EnumMobSpawn.CHUNK_GENERATION, groupdataentity, (NBTTagCompound) null);
@@ -79,7 +70,7 @@
                                          flag = true;
                                      }
                                  }
-@@ -498,8 +525,10 @@
+@@ -511,8 +538,10 @@
              return this.unmodifiableMobCategoryCounts;
          }
  

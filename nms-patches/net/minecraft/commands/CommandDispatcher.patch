@@ -1,8 +1,8 @@
 --- a/net/minecraft/commands/CommandDispatcher.java
 +++ b/net/minecraft/commands/CommandDispatcher.java
-@@ -106,6 +106,14 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -134,6 +134,14 @@
+ import net.minecraft.world.level.GameRules;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import com.google.common.base.Joiner;
@@ -14,34 +14,33 @@
 +
  public class CommandDispatcher {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -117,6 +125,7 @@
+     private static final ThreadLocal<ExecutionContext<CommandListenerWrapper>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
+@@ -146,6 +154,7 @@
      private final com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> dispatcher = new com.mojang.brigadier.CommandDispatcher();
  
-     public CommandDispatcher(CommandDispatcher.ServerType commanddispatcher_servertype) {
+     public CommandDispatcher(CommandDispatcher.ServerType commanddispatcher_servertype, CommandBuildContext commandbuildcontext) {
 +        this(); // CraftBukkit
          CommandAdvancement.register(this.dispatcher);
-         CommandAttribute.register(this.dispatcher);
-         CommandExecute.register(this.dispatcher);
-@@ -202,17 +211,63 @@
+         CommandAttribute.register(this.dispatcher, commandbuildcontext);
+         CommandExecute.register(this.dispatcher, commandbuildcontext);
+@@ -246,6 +255,11 @@
+             CommandPublish.register(this.dispatcher);
          }
  
-         this.dispatcher.findAmbiguities((commandnode, commandnode1, commandnode2, collection) -> {
--            CommandDispatcher.LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", this.dispatcher.getPath(commandnode1), this.dispatcher.getPath(commandnode2), collection);
-+            // CommandDispatcher.LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", this.dispatcher.getPath(commandnode1), this.dispatcher.getPath(commandnode2), collection); // CraftBukkit
-         });
 +        // CraftBukkit start
 +    }
 +
 +    public CommandDispatcher() {
 +        // CraftBukkkit end
-         this.dispatcher.setConsumer((commandcontext, flag, i) -> {
-             ((CommandListenerWrapper) commandcontext.getSource()).onCommandComplete(commandcontext, flag, i);
-         });
+         this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
+     }
+ 
+@@ -256,18 +270,65 @@
+         return new ParseResults(commandcontextbuilder1, parseresults.getReader(), parseresults.getExceptions());
      }
  
 +    // CraftBukkit start
-+    public int dispatchServerCommand(CommandListenerWrapper sender, String command) {
++    public void dispatchServerCommand(CommandListenerWrapper sender, String command) {
 +        Joiner joiner = Joiner.on(" ");
 +        if (command.startsWith("/")) {
 +            command = command.substring(1);
@@ -50,7 +49,7 @@
 +        ServerCommandEvent event = new ServerCommandEvent(sender.getBukkitSender(), command);
 +        org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +        if (event.isCancelled()) {
-+            return 0;
++            return;
 +        }
 +        command = event.getCommand();
 +
@@ -64,7 +63,7 @@
 +        if (cmd.equalsIgnoreCase("stop") || cmd.equalsIgnoreCase("kick") || cmd.equalsIgnoreCase("op")
 +                || cmd.equalsIgnoreCase("deop") || cmd.equalsIgnoreCase("ban") || cmd.equalsIgnoreCase("ban-ip")
 +                || cmd.equalsIgnoreCase("pardon") || cmd.equalsIgnoreCase("pardon-ip") || cmd.equalsIgnoreCase("reload")) {
-+            return 0;
++            return;
 +        }
 +
 +        // Handle vanilla commands;
@@ -73,32 +72,65 @@
 +        }
 +
 +        String newCommand = joiner.join(args);
-+        return this.performCommand(sender, newCommand, newCommand, false);
++        this.performPrefixedCommand(sender, newCommand, newCommand);
++    }
++    // CraftBukkit end
++
+     public void performPrefixedCommand(CommandListenerWrapper commandlistenerwrapper, String s) {
++        // CraftBukkit start
++        this.performPrefixedCommand(commandlistenerwrapper, s, s);
 +    }
 +
-     public int performCommand(CommandListenerWrapper commandlistenerwrapper, String s) {
-+        return this.performCommand(commandlistenerwrapper, s, s, true);
++    public void performPrefixedCommand(CommandListenerWrapper commandlistenerwrapper, String s, String label) {
+         s = s.startsWith("/") ? s.substring(1) : s;
+-        this.performCommand(this.dispatcher.parse(s, commandlistenerwrapper), s);
++        this.performCommand(this.dispatcher.parse(s, commandlistenerwrapper), s, label);
++        // CraftBukkit end
+     }
+ 
+     public void performCommand(ParseResults<CommandListenerWrapper> parseresults, String s) {
++        this.performCommand(parseresults, s, s);
 +    }
 +
-+    public int performCommand(CommandListenerWrapper commandlistenerwrapper, String s, String label, boolean stripSlash) {
-         StringReader stringreader = new StringReader(s);
++    public void performCommand(ParseResults<CommandListenerWrapper> parseresults, String s, String label) { // CraftBukkit
+         CommandListenerWrapper commandlistenerwrapper = (CommandListenerWrapper) parseresults.getContext().getSource();
  
--        if (stringreader.canRead() && stringreader.peek() == '/') {
-+        if (stripSlash && stringreader.canRead() && stringreader.peek() == '/') {
-+            // CraftBukkit end
-             stringreader.skip();
-         }
+         commandlistenerwrapper.getServer().getProfiler().push(() -> {
+             return "/" + s;
+         });
+-        ContextChain contextchain = finishParsing(parseresults, s, commandlistenerwrapper);
++        ContextChain contextchain = finishParsing(parseresults, s, commandlistenerwrapper, label); // CraftBukkit
  
-@@ -236,7 +291,7 @@
-                 if (commandsyntaxexception.getInput() != null && commandsyntaxexception.getCursor() >= 0) {
-                     int j = Math.min(commandsyntaxexception.getInput().length(), commandsyntaxexception.getCursor());
-                     IChatMutableComponent ichatmutablecomponent = (new ChatComponentText("")).withStyle(EnumChatFormat.GRAY).withStyle((chatmodifier) -> {
--                        return chatmodifier.withClickEvent(new ChatClickable(ChatClickable.EnumClickAction.SUGGEST_COMMAND, s));
-+                        return chatmodifier.withClickEvent(new ChatClickable(ChatClickable.EnumClickAction.SUGGEST_COMMAND, label)); // CraftBukkit
-                     });
+         try {
+             if (contextchain != null) {
+@@ -301,7 +362,7 @@
+     }
  
-                     if (j > 10) {
-@@ -286,11 +341,36 @@
+     @Nullable
+-    private static ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper) {
++    private static ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper, String label) { // CraftBukkit
+         try {
+             validateParseResults(parseresults);
+             return (ContextChain) ContextChain.tryFlatten(parseresults.getContext().build(s)).orElseThrow(() -> {
+@@ -312,7 +373,7 @@
+             if (commandsyntaxexception.getInput() != null && commandsyntaxexception.getCursor() >= 0) {
+                 int i = Math.min(commandsyntaxexception.getInput().length(), commandsyntaxexception.getCursor());
+                 IChatMutableComponent ichatmutablecomponent = IChatBaseComponent.empty().withStyle(EnumChatFormat.GRAY).withStyle((chatmodifier) -> {
+-                    return chatmodifier.withClickEvent(new ChatClickable(ChatClickable.EnumClickAction.SUGGEST_COMMAND, "/" + s));
++                    return chatmodifier.withClickEvent(new ChatClickable(ChatClickable.EnumClickAction.SUGGEST_COMMAND, label)); // CraftBukkit
+                 });
+ 
+                 if (i > 10) {
+@@ -362,7 +423,7 @@
+ 
+                 executioncontext1.close();
+             } finally {
+-                CommandDispatcher.CURRENT_EXECUTION_CONTEXT.set((Object) null);
++                CommandDispatcher.CURRENT_EXECUTION_CONTEXT.set(null); // CraftBukkit - decompile error
+             }
+         } else {
+             consumer.accept(executioncontext);
+@@ -371,11 +432,36 @@
      }
  
      public void sendCommands(EntityPlayer entityplayer) {
@@ -136,7 +168,7 @@
          entityplayer.connection.send(new PacketPlayOutCommands(rootcommandnode));
      }
  
-@@ -301,7 +381,7 @@
+@@ -386,7 +472,7 @@
              CommandNode<CommandListenerWrapper> commandnode2 = (CommandNode) iterator.next();
  
              if (commandnode2.canUse(commandlistenerwrapper)) {
@@ -145,7 +177,7 @@
  
                  argumentbuilder.requires((icompletionprovider) -> {
                      return true;
-@@ -324,7 +404,7 @@
+@@ -409,7 +495,7 @@
                      argumentbuilder.redirect((CommandNode) map.get(argumentbuilder.getRedirect()));
                  }
  

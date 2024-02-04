@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.persistence;
 
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,12 +9,12 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftPersistentDataContainer implements PersistentDataContainer {
 
@@ -33,46 +34,53 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
 
 
     @Override
-    public <T, Z> void set(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
-        Validate.notNull(key, "The provided key for the custom value was null");
-        Validate.notNull(type, "The provided type for the custom value was null");
-        Validate.notNull(value, "The provided value for the custom value was null");
+    public <T, Z> void set(@NotNull NamespacedKey key, @NotNull PersistentDataType<T, Z> type, @NotNull Z value) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
+        Preconditions.checkArgument(type != null, "The provided type cannot be null");
+        Preconditions.checkArgument(value != null, "The provided value cannot be null");
 
-        this.customDataTags.put(key.toString(), registry.wrap(type.getPrimitiveType(), type.toPrimitive(value, adapterContext)));
+        this.customDataTags.put(key.toString(), this.registry.wrap(type, type.toPrimitive(value, adapterContext)));
     }
 
     @Override
-    public <T, Z> boolean has(NamespacedKey key, PersistentDataType<T, Z> type) {
-        Validate.notNull(key, "The provided key for the custom value was null");
-        Validate.notNull(type, "The provided type for the custom value was null");
+    public <T, Z> boolean has(@NotNull NamespacedKey key, @NotNull PersistentDataType<T, Z> type) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
+        Preconditions.checkArgument(type != null, "The provided type cannot be null");
 
         NBTBase value = this.customDataTags.get(key.toString());
         if (value == null) {
             return false;
         }
 
-        return registry.isInstanceOf(type.getPrimitiveType(), value);
+        return this.registry.isInstanceOf(type, value);
     }
 
     @Override
-    public <T, Z> Z get(NamespacedKey key, PersistentDataType<T, Z> type) {
-        Validate.notNull(key, "The provided key for the custom value was null");
-        Validate.notNull(type, "The provided type for the custom value was null");
+    public boolean has(NamespacedKey key) {
+        return this.customDataTags.get(key.toString()) != null;
+    }
+
+    @Override
+    public <T, Z> Z get(@NotNull NamespacedKey key, @NotNull PersistentDataType<T, Z> type) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
+        Preconditions.checkArgument(type != null, "The provided type cannot be null");
 
         NBTBase value = this.customDataTags.get(key.toString());
         if (value == null) {
             return null;
         }
 
-        return type.fromPrimitive(registry.extract(type.getPrimitiveType(), value), adapterContext);
+        return type.fromPrimitive(this.registry.extract(type, value), adapterContext);
     }
 
+    @NotNull
     @Override
-    public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
-        Z z = get(key, type);
+    public <T, Z> Z getOrDefault(@NotNull NamespacedKey key, @NotNull PersistentDataType<T, Z> type, @NotNull Z defaultValue) {
+        Z z = this.get(key, type);
         return z != null ? z : defaultValue;
     }
 
+    @NotNull
     @Override
     public Set<NamespacedKey> getKeys() {
         Set<NamespacedKey> keys = new HashSet<>();
@@ -88,8 +96,8 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
     }
 
     @Override
-    public void remove(NamespacedKey key) {
-        Validate.notNull(key, "The provided key for the custom value was null");
+    public void remove(@NotNull NamespacedKey key) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
 
         this.customDataTags.remove(key.toString());
     }
@@ -97,6 +105,19 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
     @Override
     public boolean isEmpty() {
         return this.customDataTags.isEmpty();
+    }
+
+    @NotNull
+    @Override
+    public void copyTo(PersistentDataContainer other, boolean replace) {
+        Preconditions.checkArgument(other != null, "The target container cannot be null");
+
+        CraftPersistentDataContainer target = (CraftPersistentDataContainer) other;
+        if (replace) {
+            target.customDataTags.putAll(customDataTags);
+        } else {
+            customDataTags.forEach(target.customDataTags::putIfAbsent);
+        }
     }
 
     @Override
@@ -110,7 +131,7 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
             return false;
         }
 
-        Map<String, NBTBase> myRawMap = getRaw();
+        Map<String, NBTBase> myRawMap = this.getRaw();
         Map<String, NBTBase> theirRawMap = ((CraftPersistentDataContainer) obj).getRaw();
 
         return Objects.equals(myRawMap, theirRawMap);
@@ -143,7 +164,7 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
     }
 
     public CraftPersistentDataTypeRegistry getDataTagTypeRegistry() {
-        return registry;
+        return this.registry;
     }
 
     @Override
@@ -153,7 +174,7 @@ public class CraftPersistentDataContainer implements PersistentDataContainer {
         return hashCode;
     }
 
-    public Map<String, Object> serialize() {
-        return (Map<String, Object>) CraftNBTTagConfigSerializer.serialize(toTagCompound());
+    public String serialize() {
+        return CraftNBTTagConfigSerializer.serialize(toTagCompound());
     }
 }

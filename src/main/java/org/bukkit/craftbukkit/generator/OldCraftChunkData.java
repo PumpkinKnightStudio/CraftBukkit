@@ -9,9 +9,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.chunk.ChunkSection;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -83,7 +83,7 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
 
     @Override
     public Material getType(int x, int y, int z) {
-        return CraftMagicNumbers.getMaterial(getTypeId(x, y, z).getBlock());
+        return CraftBlockType.minecraftToBukkit(getTypeId(x, y, z).getBlock());
     }
 
     @Override
@@ -177,7 +177,7 @@ public final class OldCraftChunkData implements ChunkGenerator.ChunkData {
         int offset = (y - minHeight) >> 4;
         ChunkSection section = sections[offset];
         if (create && section == null) {
-            sections[offset] = section = new ChunkSection(offset + (minHeight >> 4), biomes);
+            sections[offset] = section = new ChunkSection(biomes);
         }
         return section;
     }

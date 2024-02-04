@@ -2,9 +2,12 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.SystemUtils;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.TileEntitySkull;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.World;
@@ -15,7 +18,9 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.profile.PlayerProfile;
+import org.jetbrains.annotations.Nullable;
 
 public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implements Skull {
 
@@ -24,6 +29,10 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     public CraftSkull(World world, TileEntitySkull tileEntity) {
         super(world, tileEntity);
+    }
+
+    protected CraftSkull(CraftSkull state) {
+        super(state);
     }
 
     @Override
@@ -79,11 +88,11 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     @Override
     public OfflinePlayer getOwningPlayer() {
         if (profile != null) {
-            if (profile.getId() != null) {
+            if (!profile.getId().equals(SystemUtils.NIL_UUID)) {
                 return Bukkit.getOfflinePlayer(profile.getId());
             }
 
-            if (profile.getName() != null) {
+            if (!profile.getName().isEmpty()) {
                 return Bukkit.getOfflinePlayer(profile.getName());
             }
         }
@@ -121,6 +130,21 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     }
 
     @Override
+    public NamespacedKey getNoteBlockSound() {
+        MinecraftKey key = getSnapshot().getNoteBlockSound();
+        return (key != null) ? CraftNamespacedKey.fromMinecraft(key) : null;
+    }
+
+    @Override
+    public void setNoteBlockSound(@Nullable NamespacedKey namespacedKey) {
+        if (namespacedKey == null) {
+            this.getSnapshot().noteBlockSound = null;
+            return;
+        }
+        this.getSnapshot().noteBlockSound = CraftNamespacedKey.toMinecraft(namespacedKey);
+    }
+
+    @Override
     public BlockFace getRotation() {
         BlockData blockData = getBlockData();
         return (blockData instanceof Rotatable) ? ((Rotatable) blockData).getRotation() : ((Directional) blockData).getFacing();
@@ -149,6 +173,9 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             case ZOMBIE_HEAD:
             case ZOMBIE_WALL_HEAD:
                 return SkullType.ZOMBIE;
+            case PIGLIN_HEAD:
+            case PIGLIN_WALL_HEAD:
+                return SkullType.PIGLIN;
             case PLAYER_HEAD:
             case PLAYER_WALL_HEAD:
                 return SkullType.PLAYER;
@@ -175,5 +202,10 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
         if (getSkullType() == SkullType.PLAYER) {
             skull.setOwner(profile);
         }
+    }
+
+    @Override
+    public CraftSkull copy() {
+        return new CraftSkull(this);
     }
 }

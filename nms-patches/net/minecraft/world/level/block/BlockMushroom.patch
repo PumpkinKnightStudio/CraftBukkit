@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockMushroom.java
 +++ b/net/minecraft/world/level/block/BlockMushroom.java
-@@ -16,6 +16,10 @@
+@@ -20,6 +20,10 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
@@ -10,8 +10,8 @@
 +
  public class BlockMushroom extends BlockPlant implements IBlockFragilePlantElement {
  
-     protected static final float AABB_OFFSET = 3.0F;
-@@ -61,7 +65,7 @@
+     public static final MapCodec<BlockMushroom> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
+@@ -75,7 +79,7 @@
              }
  
              if (worldserver.isEmptyBlock(blockposition2) && iblockdata.canSurvive(worldserver, blockposition2)) {
@@ -20,11 +20,11 @@
              }
          }
  
-@@ -82,6 +86,7 @@
- 
-     public boolean growMushroom(WorldServer worldserver, BlockPosition blockposition, IBlockData iblockdata, Random random) {
-         worldserver.removeBlock(blockposition, false);
-+        BlockSapling.treeType = (this == Blocks.BROWN_MUSHROOM) ? TreeType.BROWN_MUSHROOM : TreeType.BROWN_MUSHROOM; // CraftBukkit
-         if (((WorldGenFeatureConfigured) this.featureSupplier.get()).place(worldserver, worldserver.getChunkSource().getGenerator(), random, blockposition)) {
-             return true;
+@@ -101,6 +105,7 @@
+             return false;
          } else {
+             worldserver.removeBlock(blockposition, false);
++            BlockSapling.treeType = (this == Blocks.BROWN_MUSHROOM) ? TreeType.BROWN_MUSHROOM : TreeType.BROWN_MUSHROOM; // CraftBukkit
+             if (((WorldGenFeatureConfigured) ((Holder) optional.get()).value()).place(worldserver, worldserver.getChunkSource().getGenerator(), randomsource, blockposition)) {
+                 return true;
+             } else {

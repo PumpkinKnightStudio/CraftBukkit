@@ -9,14 +9,8 @@
  public class MerchantRecipe {
  
      public ItemStack baseCostA;
-@@ -13,10 +15,26 @@
-     public int uses;
-     public int maxUses;
-     public boolean rewardExp;
--    private int specialPriceDiff;
--    private int demand;
-+    public int specialPriceDiff; // PAIL private -> public
-+    public int demand; // PAIL private -> public
+@@ -17,6 +19,22 @@
+     public int demand;
      public float priceMultiplier;
      public int xp;
 +    // CraftBukkit start
@@ -38,15 +32,15 @@
  
      public MerchantRecipe(NBTTagCompound nbttagcompound) {
          this.rewardExp = true;
-@@ -78,6 +96,7 @@
+@@ -96,6 +114,7 @@
+             return ItemStack.EMPTY;
+         } else {
+             int i = this.baseCostA.getCount();
++            if (i <= 0) return ItemStack.EMPTY; // CraftBukkit - SPIGOT-5476
+             int j = Math.max(0, MathHelper.floor((float) (i * this.demand) * this.priceMultiplier));
  
-     public ItemStack getCostA() {
-         int i = this.baseCostA.getCount();
-+        if (i <= 0) return ItemStack.EMPTY; // CraftBukkit - SPIGOT-5476
-         ItemStack itemstack = this.baseCostA.copy();
-         int j = Math.max(0, MathHelper.floor((float) (i * this.demand) * this.priceMultiplier));
- 
-@@ -199,7 +218,11 @@
+             return this.baseCostA.copyWithCount(MathHelper.clamp(i + j + this.specialPriceDiff, 1, this.baseCostA.getItem().getMaxStackSize()));
+@@ -216,7 +235,11 @@
          if (!this.satisfiedBy(itemstack, itemstack1)) {
              return false;
          } else {

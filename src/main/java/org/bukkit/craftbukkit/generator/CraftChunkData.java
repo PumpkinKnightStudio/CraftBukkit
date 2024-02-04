@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.generator;
 
+import com.google.common.base.Preconditions;
 import java.lang.ref.WeakReference;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.world.level.block.Blocks;
@@ -11,7 +12,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBiome;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
@@ -38,9 +40,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     public IChunkAccess getHandle() {
         IChunkAccess access = weakChunk.get();
 
-        if (access == null) {
-            throw new IllegalStateException("IChunkAccess no longer present, are you using it in a different tick?");
-        }
+        Preconditions.checkState(access != null, "IChunkAccess no longer present, are you using it in a different tick?");
 
         return access;
     }
@@ -61,7 +61,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
 
     @Override
     public Biome getBiome(int x, int y, int z) {
-        return CraftBlock.biomeBaseToBiome(getHandle().biomeRegistry, getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
+        return CraftBiome.minecraftHolderToBukkit(getHandle().getNoiseBiome(x >> 2, y >> 2, z >> 2));
     }
 
     @Override
@@ -96,7 +96,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
 
     @Override
     public Material getType(int x, int y, int z) {
-        return CraftMagicNumbers.getMaterial(getTypeId(x, y, z).getBlock());
+        return CraftBlockType.minecraftToBukkit(getTypeId(x, y, z).getBlock());
     }
 
     @Override

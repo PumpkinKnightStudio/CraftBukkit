@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.scheduler;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
 import java.util.logging.Level;
-import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -121,7 +121,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     @Override
-    public void runTask(Plugin plugin, Consumer<BukkitTask> task) throws IllegalArgumentException {
+    public void runTask(Plugin plugin, Consumer<? super BukkitTask> task) throws IllegalArgumentException {
         runTaskLater(plugin, task, 0L);
     }
 
@@ -137,7 +137,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskAsynchronously(Plugin plugin, Consumer<BukkitTask> task) throws IllegalArgumentException {
+    public void runTaskAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task) throws IllegalArgumentException {
         runTaskLaterAsynchronously(plugin, task, 0L);
     }
 
@@ -152,7 +152,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskLater(Plugin plugin, Consumer<BukkitTask> task, long delay) throws IllegalArgumentException {
+    public void runTaskLater(Plugin plugin, Consumer<? super BukkitTask> task, long delay) throws IllegalArgumentException {
         runTaskTimer(plugin, task, delay, CraftTask.NO_REPEATING);
     }
 
@@ -168,12 +168,12 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskLaterAsynchronously(Plugin plugin, Consumer<BukkitTask> task, long delay) throws IllegalArgumentException {
+    public void runTaskLaterAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task, long delay) throws IllegalArgumentException {
         runTaskTimerAsynchronously(plugin, task, delay, CraftTask.NO_REPEATING);
     }
 
     @Override
-    public void runTaskTimerAsynchronously(Plugin plugin, Consumer<BukkitTask> task, long delay, long period) throws IllegalArgumentException {
+    public void runTaskTimerAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task, long delay, long period) throws IllegalArgumentException {
         runTaskTimerAsynchronously(plugin, (Object) task, delay, CraftTask.NO_REPEATING);
     }
 
@@ -188,7 +188,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskTimer(Plugin plugin, Consumer<BukkitTask> task, long delay, long period) throws IllegalArgumentException {
+    public void runTaskTimer(Plugin plugin, Consumer<? super BukkitTask> task, long delay, long period) throws IllegalArgumentException {
         runTaskTimer(plugin, (Object) task, delay, period);
     }
 
@@ -283,7 +283,7 @@ public class CraftScheduler implements BukkitScheduler {
 
     @Override
     public void cancelTasks(final Plugin plugin) {
-        Validate.notNull(plugin, "Cannot cancel tasks of null plugin");
+        Preconditions.checkArgument(plugin != null, "Cannot cancel tasks of null plugin");
         final CraftTask task = new CraftTask(
                 new Runnable() {
                     @Override
@@ -459,16 +459,15 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     private static void validate(final Plugin plugin, final Object task) {
-        Validate.notNull(plugin, "Plugin cannot be null");
-        Validate.notNull(task, "Task cannot be null");
-        Validate.isTrue(task instanceof Runnable || task instanceof Consumer || task instanceof Callable, "Task must be Runnable, Consumer, or Callable");
+        Preconditions.checkArgument(plugin != null, "Plugin cannot be null");
+        Preconditions.checkArgument(task instanceof Runnable || task instanceof Consumer || task instanceof Callable, "Task must be Runnable, Consumer, or Callable");
         if (!plugin.isEnabled()) {
             throw new IllegalPluginAccessException("Plugin attempted to register task while disabled");
         }
     }
 
     private int nextId() {
-        Validate.isTrue(runners.size() < Integer.MAX_VALUE, "There are already " + Integer.MAX_VALUE + " tasks scheduled! Cannot schedule more.");
+        Preconditions.checkArgument(runners.size() < Integer.MAX_VALUE, "There are already %s tasks scheduled! Cannot schedule more", Integer.MAX_VALUE);
         int id;
         do {
             id = ids.updateAndGet(INCREMENT_IDS);

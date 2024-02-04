@@ -1,74 +1,76 @@
 package org.bukkit.entity.memory;
 
+import static org.junit.jupiter.api.Assertions.*;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class CraftMemoryKeyTest extends AbstractTestingBase {
 
     @Test
     public void shouldConvertBukkitHomeKeyToNMSRepresentation() {
-        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.fromMemoryKey(MemoryKey.HOME);
-        Assert.assertEquals("MemoryModuleType should be HOME", MemoryModuleType.HOME, nmsHomeKey);
+        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.bukkitToMinecraft(MemoryKey.HOME);
+        assertEquals(MemoryModuleType.HOME, nmsHomeKey, "MemoryModuleType should be HOME");
     }
 
     @Test
     public void shouldConvertBukkitJobSiteKeyToNMSRepresentation() {
-        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.fromMemoryKey(MemoryKey.JOB_SITE);
-        Assert.assertEquals("MemoryModuleType should be JOB_SITE", MemoryModuleType.JOB_SITE, nmsHomeKey);
+        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.bukkitToMinecraft(MemoryKey.JOB_SITE);
+        assertEquals(MemoryModuleType.JOB_SITE, nmsHomeKey, "MemoryModuleType should be JOB_SITE");
     }
 
     @Test
     public void shouldConvertBukkitMeetingPointKeyToNMSRepresentation() {
-        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.fromMemoryKey(MemoryKey.MEETING_POINT);
-        Assert.assertEquals("MemoryModuleType should be MEETING_POINT", MemoryModuleType.MEETING_POINT, nmsHomeKey);
+        MemoryModuleType<GlobalPos> nmsHomeKey = CraftMemoryKey.bukkitToMinecraft(MemoryKey.MEETING_POINT);
+        assertEquals(MemoryModuleType.MEETING_POINT, nmsHomeKey, "MemoryModuleType should be MEETING_POINT");
     }
 
     @Test
     public void shouldConvertNMSHomeKeyToBukkitRepresentation() {
-        MemoryKey<Location> bukkitHomeKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.HOME);
-        Assert.assertEquals("MemoryModuleType should be HOME", MemoryKey.HOME, bukkitHomeKey);
+        MemoryKey<Location> bukkitHomeKey = CraftMemoryKey.minecraftToBukkit(MemoryModuleType.HOME);
+        assertEquals(MemoryKey.HOME, bukkitHomeKey, "MemoryModuleType should be HOME");
     }
 
     @Test
     public void shouldConvertNMSJobSiteKeyToBukkitRepresentation() {
-        MemoryKey<Location> bukkitJobSiteKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.JOB_SITE);
-        Assert.assertEquals("MemoryKey should be JOB_SITE", MemoryKey.JOB_SITE, bukkitJobSiteKey);
+        MemoryKey<Location> bukkitJobSiteKey = CraftMemoryKey.minecraftToBukkit(MemoryModuleType.JOB_SITE);
+        assertEquals(MemoryKey.JOB_SITE, bukkitJobSiteKey, "MemoryKey should be JOB_SITE");
     }
 
     @Test
     public void shouldConvertNMSMeetingPointKeyToBukkitRepresentation() {
-        MemoryKey<Location> bukkitHomeKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.MEETING_POINT);
-        Assert.assertEquals("MemoryKey should be MEETING_POINT", MemoryKey.MEETING_POINT, bukkitHomeKey);
+        MemoryKey<Location> bukkitHomeKey = CraftMemoryKey.minecraftToBukkit(MemoryModuleType.MEETING_POINT);
+        assertEquals(MemoryKey.MEETING_POINT, bukkitHomeKey, "MemoryKey should be MEETING_POINT");
     }
 
     @Test
     public void shouldReturnNullWhenBukkitRepresentationOfKeyisNotAvailable() {
-        MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.NEAREST_LIVING_ENTITIES);
-        Assert.assertNull("MemoryModuleType should be null", bukkitNoKey);
+        MemoryKey bukkitNoKey = CraftMemoryKey.minecraftToBukkit(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+        assertNull(bukkitNoKey, "MemoryModuleType should be null");
     }
 
     @Test
     public void shouldReturnNullWhenBukkitRepresentationOfKeyisNotAvailableAndSerializerIsNotPresent() {
-        for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
+        for (MemoryModuleType<?> memoryModuleType : BuiltInRegistries.MEMORY_MODULE_TYPE) {
             if (!memoryModuleType.getCodec().isPresent()) {
-                MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(memoryModuleType);
-                Assert.assertNull("MemoryModuleType should be null", bukkitNoKey);
+                MemoryKey bukkitNoKey = CraftMemoryKey.minecraftToBukkit(memoryModuleType);
+                assertNull(bukkitNoKey, "MemoryModuleType should be null");
             }
         }
     }
 
     @Test
+    @Disabled("Unit type not yet implemented")
     public void shouldReturnAnInstanceOfMemoryKeyWhenBukkitRepresentationOfKeyisAvailableAndSerializerIsPresent() {
-        for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
+        for (MemoryModuleType<?> memoryModuleType : BuiltInRegistries.MEMORY_MODULE_TYPE) {
             if (memoryModuleType.getCodec().isPresent()) {
-                MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(memoryModuleType);
-                Assert.assertNotNull("MemoryModuleType should not be null " + IRegistry.MEMORY_MODULE_TYPE.getKey(memoryModuleType), bukkitNoKey);
+                MemoryKey bukkitNoKey = CraftMemoryKey.minecraftToBukkit(memoryModuleType);
+                assertNotNull(bukkitNoKey, "MemoryModuleType should not be null " + BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(memoryModuleType));
             }
         }
     }

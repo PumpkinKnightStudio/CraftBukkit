@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.command;
 
-import net.minecraft.SystemUtils;
-import net.minecraft.network.chat.ChatComponentText;
+import java.net.SocketAddress;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.server.rcon.RemoteControlCommandListener;
 import org.bukkit.command.RemoteConsoleCommandSender;
 
@@ -13,9 +13,18 @@ public class CraftRemoteConsoleCommandSender extends ServerCommandSender impleme
         this.listener = listener;
     }
 
+    public RemoteControlCommandListener getListener() {
+        return listener;
+    }
+
+    @Override
+    public SocketAddress getAddress() {
+       return listener.socketAddress;
+    }
+
     @Override
     public void sendMessage(String message) {
-        listener.sendMessage(new ChatComponentText(message + "\n"), SystemUtils.NIL_UUID); // Send a newline after each message, to preserve formatting.
+        listener.sendSystemMessage(IChatBaseComponent.literal(message + "\n")); // Send a newline after each message, to preserve formatting.
     }
 
     @Override

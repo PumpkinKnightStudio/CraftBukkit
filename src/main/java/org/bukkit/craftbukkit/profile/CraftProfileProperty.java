@@ -7,18 +7,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
+import com.mojang.authlib.yggdrasil.ServicesKeySet;
+import com.mojang.authlib.yggdrasil.ServicesKeyType;
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.io.IOUtils;
 import org.bukkit.craftbukkit.configuration.ConfigSerializationUtil;
 
 final class CraftProfileProperty {
@@ -44,19 +43,18 @@ final class CraftProfileProperty {
         public String format(JsonElement jsonElement);
     }
 
-    private static final PublicKey PUBLIC_KEY;
+    private static final ServicesKeySet PUBLIC_KEYS;
 
     static {
         try {
-            X509EncodedKeySpec spec = new X509EncodedKeySpec(IOUtils.toByteArray(YggdrasilMinecraftSessionService.class.getResourceAsStream("/yggdrasil_session_pubkey.der")));
-            PUBLIC_KEY = KeyFactory.getInstance("RSA").generatePublic(spec);
+            PUBLIC_KEYS = new YggdrasilAuthenticationService(Proxy.NO_PROXY).getServicesKeySet();
         } catch (Exception e) {
-            throw new Error("Could not find yggdrasil_session_pubkey.der! This indicates a bug.");
+            throw new Error("Could not load yggdrasil_session_pubkey.der! This indicates a bug.");
         }
     }
 
     public static boolean hasValidSignature(@Nonnull Property property) {
-        return property.hasSignature() && property.isSignatureValid(PUBLIC_KEY);
+        return property.hasSignature() && PUBLIC_KEYS.keys(ServicesKeyType.PROFILE_PROPERTY).stream().anyMatch((key) -> key.validateProperty(property));
     }
 
     @Nullable
@@ -92,37 +90,37 @@ final class CraftProfileProperty {
         StringBuilder builder = new StringBuilder();
         builder.append("{");
         builder.append("name=");
-        builder.append(property.getName());
+        builder.append(property.name());
         builder.append(", value=");
-        builder.append(property.getValue());
+        builder.append(property.value());
         builder.append(", signature=");
-        builder.append(property.getSignature());
+        builder.append(property.signature());
         builder.append("}");
         return builder.toString();
     }
 
     public static int hashCode(@Nonnull Property property) {
         int result = 1;
-        result = 31 * result + Objects.hashCode(property.getName());
-        result = 31 * result + Objects.hashCode(property.getValue());
-        result = 31 * result + Objects.hashCode(property.getSignature());
+        result = 31 * result + Objects.hashCode(property.name());
+        result = 31 * result + Objects.hashCode(property.value());
+        result = 31 * result + Objects.hashCode(property.signature());
         return result;
     }
 
     public static boolean equals(@Nullable Property property, @Nullable Property other) {
         if (property == null || other == null) return (property == other);
-        if (!Objects.equals(property.getValue(), other.getValue())) return false;
-        if (!Objects.equals(property.getName(), other.getName())) return false;
-        if (!Objects.equals(property.getSignature(), other.getSignature())) return false;
+        if (!Objects.equals(property.value(), other.value())) return false;
+        if (!Objects.equals(property.name(), other.name())) return false;
+        if (!Objects.equals(property.signature(), other.signature())) return false;
         return true;
     }
 
     public static Map<String, Object> serialize(@Nonnull Property property) {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("name", property.getName());
-        map.put("value", property.getValue());
+        map.put("name", property.name());
+        map.put("value", property.value());
         if (property.hasSignature()) {
-            map.put("signature", property.getSignature());
+            map.put("signature", property.signature());
         }
         return map;
     }

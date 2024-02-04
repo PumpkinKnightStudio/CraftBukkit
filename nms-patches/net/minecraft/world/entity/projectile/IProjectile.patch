@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/projectile/IProjectile.java
 +++ b/net/minecraft/world/entity/projectile/IProjectile.java
-@@ -22,6 +22,10 @@
+@@ -25,6 +25,10 @@
  import net.minecraft.world.phys.MovingObjectPositionEntity;
  import net.minecraft.world.phys.Vec3D;
  
@@ -8,10 +8,10 @@
 +import org.bukkit.projectiles.ProjectileSource;
 +// CraftBukkit end
 +
- public abstract class IProjectile extends Entity {
+ public abstract class IProjectile extends Entity implements TraceableEntity {
  
      @Nullable
-@@ -31,6 +35,10 @@
+@@ -34,6 +38,10 @@
      private boolean leftOwner;
      private boolean hasBeenShot;
  
@@ -22,7 +22,7 @@
      IProjectile(EntityTypes<? extends IProjectile> entitytypes, World world) {
          super(entitytypes, world);
      }
-@@ -40,6 +48,7 @@
+@@ -43,6 +51,7 @@
              this.ownerUUID = entity.getUUID();
              this.cachedOwner = entity;
          }
@@ -30,8 +30,8 @@
  
      }
  
-@@ -143,6 +152,16 @@
-         this.setDeltaMovement(this.getDeltaMovement().add(vec3d.x, entity.isOnGround() ? 0.0D : vec3d.y, vec3d.z));
+@@ -167,6 +176,16 @@
+         this.setDeltaMovement(this.getDeltaMovement().add(vec3d.x, entity.onGround() ? 0.0D : vec3d.y, vec3d.z));
      }
  
 +    // CraftBukkit start - call projectile hit event
@@ -47,7 +47,7 @@
      protected void onHit(MovingObjectPosition movingobjectposition) {
          MovingObjectPosition.EnumMovingObjectType movingobjectposition_enummovingobjecttype = movingobjectposition.getType();
  
-@@ -161,6 +180,11 @@
+@@ -187,6 +206,11 @@
      protected void onHitEntity(MovingObjectPositionEntity movingobjectpositionentity) {}
  
      protected void onHitBlock(MovingObjectPositionBlock movingobjectpositionblock) {
@@ -56,6 +56,6 @@
 +            return;
 +        }
 +        // CraftBukkit end
-         IBlockData iblockdata = this.level.getBlockState(movingobjectpositionblock.getBlockPos());
+         IBlockData iblockdata = this.level().getBlockState(movingobjectpositionblock.getBlockPos());
  
-         iblockdata.onProjectileHit(this.level, iblockdata, movingobjectpositionblock, this);
+         iblockdata.onProjectileHit(this.level(), iblockdata, movingobjectpositionblock, this);

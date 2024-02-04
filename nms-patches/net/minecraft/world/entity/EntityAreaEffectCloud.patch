@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityAreaEffectCloud.java
 +++ b/net/minecraft/world/entity/EntityAreaEffectCloud.java
-@@ -32,6 +32,12 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -31,6 +31,12 @@
+ import net.minecraft.world.level.material.EnumPistonReaction;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import net.minecraft.resources.MinecraftKey;
@@ -10,33 +10,10 @@
 +import org.bukkit.entity.LivingEntity;
 +// CraftBukkit end
 +
- public class EntityAreaEffectCloud extends Entity {
+ public class EntityAreaEffectCloud extends Entity implements TraceableEntity {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -127,6 +133,22 @@
- 
-     }
- 
-+    // CraftBukkit start accessor methods
-+    public void refreshEffects() {
-+        if (!this.fixedColor) {
-+            this.getEntityData().set(EntityAreaEffectCloud.DATA_COLOR, PotionUtil.getColor((Collection) PotionUtil.getAllEffects(this.potion, this.effects)));
-+        }
-+    }
-+
-+    public String getPotionType() {
-+        return ((MinecraftKey) IRegistry.POTION.getKey(this.potion)).toString();
-+    }
-+
-+    public void setPotionType(String string) {
-+        setPotion(IRegistry.POTION.get(new MinecraftKey(string)));
-+    }
-+    // CraftBukkit end
-+
-     public int getColor() {
-         return (Integer) this.getEntityData().get(EntityAreaEffectCloud.DATA_COLOR);
-     }
-@@ -259,6 +281,7 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+@@ -264,6 +270,7 @@
                      if (!list1.isEmpty()) {
                          Iterator iterator1 = list1.iterator();
  
@@ -44,7 +21,7 @@
                          while (iterator1.hasNext()) {
                              EntityLiving entityliving = (EntityLiving) iterator1.next();
  
-@@ -268,6 +291,17 @@
+@@ -273,6 +280,17 @@
                                  double d8 = d6 * d6 + d7 * d7;
  
                                  if (d8 <= (double) (f * f)) {
@@ -62,7 +39,7 @@
                                      this.victims.put(entityliving, this.tickCount + this.reapplicationDelay);
                                      Iterator iterator2 = list.iterator();
  
-@@ -277,7 +311,7 @@
+@@ -282,7 +300,7 @@
                                          if (mobeffect1.getEffect().isInstantenous()) {
                                              mobeffect1.getEffect().applyInstantenousEffect(this, this.getOwner(), entityliving, mobeffect1.getAmplifier(), 0.5D);
                                          } else {

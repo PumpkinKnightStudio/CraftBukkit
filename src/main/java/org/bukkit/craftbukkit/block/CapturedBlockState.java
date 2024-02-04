@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.block;
 
-import java.util.Random;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.EntityBee;
 import net.minecraft.world.level.GeneratorAccessSeed;
@@ -10,6 +10,8 @@ import net.minecraft.world.level.block.entity.TileEntity;
 import net.minecraft.world.level.block.entity.TileEntityBeehive;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.util.CraftLocation;
 
 public final class CapturedBlockState extends CraftBlockState {
 
@@ -21,15 +23,37 @@ public final class CapturedBlockState extends CraftBlockState {
         this.treeBlock = treeBlock;
     }
 
+    protected CapturedBlockState(CapturedBlockState state) {
+        super(state);
+
+        this.treeBlock = state.treeBlock;
+    }
+
     @Override
     public boolean update(boolean force, boolean applyPhysics) {
         boolean result = super.update(force, applyPhysics);
 
+        // Probably no longer needed with the extra #updatedTree method,
+        // but leave if here for now in case a plugin for whatever reason relies on this.
+        addBees();
+
+        return result;
+    }
+
+    private void updatedTree() {
+        // SPIGOT-7248 - Manual update to avoid physics where appropriate
+        // SPIGOT-7572 - Move SPIGOT-7248 fix from nms ItemStack to here, to allow bee generation in nests
+        world.getHandle().setBlock(CraftLocation.toBlockPosition(getLocation()), getHandle(), getFlag());
+
+        addBees();
+    }
+
+    private void addBees() {
         // SPIGOT-5537: Horrible hack to manually add bees given World.captureTreeGeneration does not support tiles
         if (this.treeBlock && getType() == Material.BEE_NEST) {
             GeneratorAccessSeed generatoraccessseed = this.world.getHandle();
             BlockPosition blockposition1 = this.getPosition();
-            Random random = generatoraccessseed.getRandom();
+            RandomSource random = generatoraccessseed.getRandom();
 
             // Begin copied block from WorldGenFeatureTreeBeehive
             TileEntity tileentity = generatoraccessseed.getBlockEntity(blockposition1);
@@ -46,8 +70,11 @@ public final class CapturedBlockState extends CraftBlockState {
             }
             // End copied block
         }
+    }
 
-        return result;
+    @Override
+    public CapturedBlockState copy() {
+        return new CapturedBlockState(this);
     }
 
     public static CapturedBlockState getBlockState(World world, BlockPosition pos, int flag) {
@@ -56,5 +83,13 @@ public final class CapturedBlockState extends CraftBlockState {
 
     public static CapturedBlockState getTreeBlockState(World world, BlockPosition pos, int flag) {
         return new CapturedBlockState(world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, true);
+    }
+
+    public static void setBlockState(BlockState blockState) {
+        if (blockState instanceof CapturedBlockState capturedBlockState) {
+            capturedBlockState.updatedTree();
+        } else {
+            blockState.update(true);
+        }
     }
 }

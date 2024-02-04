@@ -1,19 +1,8 @@
 --- a/net/minecraft/world/item/ItemCrossbow.java
 +++ b/net/minecraft/world/item/ItemCrossbow.java
-@@ -114,6 +114,10 @@
-             if (itemstack1.isEmpty() && flag) {
-                 itemstack1 = new ItemStack(Items.ARROW);
-                 itemstack2 = itemstack1.copy();
-+                // CraftBukkit start - SPIGOT-4870, MC-150847
-+            } else if (itemstack1.isEmpty()) {
-+                return false;
-+                // CraftBukkit end
-             }
+@@ -236,11 +236,27 @@
  
-             if (!loadProjectile(entityliving, itemstack, itemstack1, k > 0, flag)) {
-@@ -238,11 +242,27 @@
-                 vector3fa.transform(quaternion);
-                 ((IProjectile) object).shoot((double) vector3fa.x(), (double) vector3fa.y(), (double) vector3fa.z(), f1, f2);
+                 ((IProjectile) object).shoot((double) vector3f.x(), (double) vector3f.y(), (double) vector3f.z(), f1, f2);
              }
 +            // CraftBukkit start
 +            org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityliving, itemstack, itemstack1, (Entity) object, entityliving.getUsedItemHand(), f, true);

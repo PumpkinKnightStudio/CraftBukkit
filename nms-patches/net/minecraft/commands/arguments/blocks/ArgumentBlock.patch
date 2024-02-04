@@ -1,15 +1,15 @@
 --- a/net/minecraft/commands/arguments/blocks/ArgumentBlock.java
 +++ b/net/minecraft/commands/arguments/blocks/ArgumentBlock.java
-@@ -61,7 +61,7 @@
-     };
+@@ -68,7 +68,7 @@
      private final StringReader reader;
      private final boolean forTesting;
+     private final boolean allowNbt;
 -    private final Map<IBlockState<?>, Comparable<?>> properties = Maps.newHashMap();
 +    private final Map<IBlockState<?>, Comparable<?>> properties = Maps.newLinkedHashMap(); // CraftBukkit - stable
      private final Map<String, String> vagueProperties = Maps.newHashMap();
      private MinecraftKey id = new MinecraftKey("");
-     private BlockStateList<Block, IBlockData> definition;
-@@ -237,7 +237,7 @@
+     @Nullable
+@@ -276,7 +276,7 @@
          Iterator iterator = iblockstate.getPossibleValues().iterator();
  
          while (iterator.hasNext()) {
@@ -17,8 +17,8 @@
 +            T t0 = (T) iterator.next(); // CraftBukkit - decompile error
  
              if (t0 instanceof Integer) {
-                 suggestionsbuilder.suggest((Integer) t0);
-@@ -506,7 +506,7 @@
+                 Integer integer = (Integer) t0;
+@@ -548,7 +548,7 @@
          Optional<T> optional = iblockstate.getValue(s);
  
          if (optional.isPresent()) {
@@ -27,7 +27,7 @@
              this.properties.put(iblockstate, (Comparable) optional.get());
          } else {
              this.reader.setCursor(i);
-@@ -540,7 +540,7 @@
+@@ -584,7 +584,7 @@
      private static <T extends Comparable<T>> void appendProperty(StringBuilder stringbuilder, IBlockState<T> iblockstate, Comparable<?> comparable) {
          stringbuilder.append(iblockstate.getName());
          stringbuilder.append('=');
@@ -35,4 +35,4 @@
 +        stringbuilder.append(iblockstate.getName((T) comparable)); // CraftBukkit - decompile error
      }
  
-     public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder suggestionsbuilder, Tags<Block> tags) {
+     public static record a(IBlockData blockState, Map<IBlockState<?>, Comparable<?>> properties, @Nullable NBTTagCompound nbt) {

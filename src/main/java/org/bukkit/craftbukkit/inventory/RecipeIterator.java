@@ -1,17 +1,18 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.item.crafting.IRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.Recipes;
 import org.bukkit.inventory.Recipe;
 
 public class RecipeIterator implements Iterator<Recipe> {
-    private final Iterator<Map.Entry<Recipes<?>, Object2ObjectLinkedOpenHashMap<MinecraftKey, IRecipe<?>>>> recipes;
-    private Iterator<IRecipe<?>> current;
+    private final Iterator<Map.Entry<Recipes<?>, Object2ObjectLinkedOpenHashMap<MinecraftKey, RecipeHolder<?>>>> recipes;
+    private Iterator<RecipeHolder<?>> current;
 
     public RecipeIterator() {
         this.recipes = MinecraftServer.getServer().getRecipeManager().recipes.entrySet().iterator();
@@ -43,10 +44,7 @@ public class RecipeIterator implements Iterator<Recipe> {
 
     @Override
     public void remove() {
-        if (current == null) {
-            throw new IllegalStateException("next() not yet called");
-        }
-
+        Preconditions.checkState(current != null, "next() not yet called");
         current.remove();
     }
 }

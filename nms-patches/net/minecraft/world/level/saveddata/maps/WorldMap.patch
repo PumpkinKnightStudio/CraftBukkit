@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/saveddata/maps/WorldMap.java
 +++ b/net/minecraft/world/level/saveddata/maps/WorldMap.java
-@@ -31,6 +31,16 @@
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+@@ -32,6 +32,16 @@
+ import net.minecraft.world.level.saveddata.PersistentBase;
+ import org.slf4j.Logger;
  
 +// CraftBukkit start
 +import java.util.UUID;
@@ -16,22 +16,22 @@
 +
  public class WorldMap extends PersistentBase {
  
-     private static final Logger LOGGER = LogManager.getLogger();
-@@ -53,6 +63,13 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+@@ -54,6 +64,13 @@
      private final Map<String, WorldMapFrame> frameMarkers = Maps.newHashMap();
      private int trackedDecorationCount;
  
 +    // CraftBukkit start
 +    public final CraftMapView mapView;
 +    private CraftServer server;
-+    private UUID uniqueId = null;
++    public UUID uniqueId = null;
 +    public String id;
 +    // CraftBukkit end
 +
-     private WorldMap(int i, int j, byte b0, boolean flag, boolean flag1, boolean flag2, ResourceKey<World> resourcekey) {
-         this.scale = b0;
-         this.x = i;
-@@ -62,6 +79,10 @@
+     public static PersistentBase.a<WorldMap> factory() {
+         return new PersistentBase.a<>(() -> {
+             throw new IllegalStateException("Should never create an empty map saved data");
+@@ -69,6 +86,10 @@
          this.unlimitedTracking = flag1;
          this.locked = flag2;
          this.setDirty();
@@ -42,14 +42,19 @@
      }
  
      public static WorldMap createFresh(double d0, double d1, byte b0, boolean flag, boolean flag1, ResourceKey<World> resourcekey) {
-@@ -83,8 +104,26 @@
+@@ -86,12 +107,30 @@
+     }
+ 
+     public static WorldMap load(NBTTagCompound nbttagcompound) {
+-        DataResult dataresult = DimensionManager.parseLegacy(new Dynamic(DynamicOpsNBT.INSTANCE, nbttagcompound.get("dimension")));
++        DataResult<ResourceKey<World>> dataresult = DimensionManager.parseLegacy(new Dynamic(DynamicOpsNBT.INSTANCE, nbttagcompound.get("dimension"))); // CraftBukkit - decompile error
          Logger logger = WorldMap.LOGGER;
  
          Objects.requireNonNull(logger);
 -        ResourceKey<World> resourcekey = (ResourceKey) dataresult.resultOrPartial(logger::error).orElseThrow(() -> {
 -            return new IllegalArgumentException("Invalid map dimension: " + nbttagcompound.get("dimension"));
 +        // CraftBukkit start
-+        ResourceKey<World> resourcekey = (ResourceKey) dataresult.resultOrPartial(logger::error).orElseGet(() -> {
++        ResourceKey<World> resourcekey = dataresult.resultOrPartial(logger::error).orElseGet(() -> {
 +            long least = nbttagcompound.getLong("UUIDLeast");
 +            long most = nbttagcompound.getLong("UUIDMost");
 +
@@ -71,7 +76,7 @@
          });
          int i = nbttagcompound.getInt("xCenter");
          int j = nbttagcompound.getInt("zCenter");
-@@ -122,13 +161,32 @@
+@@ -129,13 +168,32 @@
  
      @Override
      public NBTTagCompound save(NBTTagCompound nbttagcompound) {
@@ -102,10 +107,10 @@
 +            }
 +        }
 +        // CraftBukkit end
-         nbttagcompound.putInt("xCenter", this.x);
-         nbttagcompound.putInt("zCenter", this.z);
+         nbttagcompound.putInt("xCenter", this.centerX);
+         nbttagcompound.putInt("zCenter", this.centerZ);
          nbttagcompound.putByte("scale", this.scale);
-@@ -503,7 +561,7 @@
+@@ -510,7 +568,7 @@
              this.player = entityhuman;
          }
  
@@ -114,7 +119,7 @@
              int i = this.minDirtyX;
              int j = this.minDirtyY;
              int k = this.maxDirtyX + 1 - this.minDirtyX;
-@@ -512,7 +570,7 @@
+@@ -519,7 +577,7 @@
  
              for (int i1 = 0; i1 < k; ++i1) {
                  for (int j1 = 0; j1 < l; ++j1) {
@@ -123,7 +128,7 @@
                  }
              }
  
-@@ -522,19 +580,29 @@
+@@ -529,19 +587,29 @@
          @Nullable
          Packet<?> nextUpdatePacket(int i) {
              WorldMap.b worldmap_b;

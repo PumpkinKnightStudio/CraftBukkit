@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/network/HandshakeListener.java
 +++ b/net/minecraft/server/network/HandshakeListener.java
 @@ -11,8 +11,17 @@
- import net.minecraft.network.protocol.login.PacketLoginOutDisconnect;
+ import net.minecraft.network.protocol.status.ServerPing;
  import net.minecraft.server.MinecraftServer;
  
 +// CraftBukkit start
@@ -15,13 +15,17 @@
 +    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
 +    private static int throttleCounter = 0;
 +    // CraftBukkit end
-     private static final IChatBaseComponent IGNORE_STATUS_REASON = new ChatComponentText("Ignoring status request");
+     private static final IChatBaseComponent IGNORE_STATUS_REASON = IChatBaseComponent.translatable("disconnect.ignoring_status_request");
      private final MinecraftServer server;
      private final NetworkManager connection;
-@@ -27,6 +36,40 @@
-         switch (packethandshakinginsetprotocol.getIntention()) {
+@@ -24,9 +33,44 @@
+ 
+     @Override
+     public void handleIntention(PacketHandshakingInSetProtocol packethandshakinginsetprotocol) {
++        this.connection.hostname = packethandshakinginsetprotocol.hostName() + ":" + packethandshakinginsetprotocol.port(); // CraftBukkit  - set hostname
+         switch (packethandshakinginsetprotocol.intention()) {
              case LOGIN:
-                 this.connection.setProtocol(EnumProtocol.LOGIN);
+                 this.connection.setClientboundProtocolAfterHandshake(ClientIntent.LOGIN);
 +                // CraftBukkit start - Connection throttle
 +                try {
 +                    long currentTime = System.currentTimeMillis();
@@ -31,7 +35,7 @@
 +                    synchronized (throttleTracker) {
 +                        if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
 +                            throttleTracker.put(address, currentTime);
-+                            ChatMessage chatmessage = new ChatMessage("Connection throttled! Please wait before reconnecting.");
++                            IChatMutableComponent chatmessage = IChatBaseComponent.literal("Connection throttled! Please wait before reconnecting.");
 +                            this.connection.send(new PacketLoginOutDisconnect(chatmessage));
 +                            this.connection.disconnect(chatmessage);
 +                            return;
@@ -56,14 +60,6 @@
 +                    org.apache.logging.log4j.LogManager.getLogger().debug("Failed to check connection throttle", t);
 +                }
 +                // CraftBukkit end
-                 if (packethandshakinginsetprotocol.getProtocolVersion() != SharedConstants.getCurrentVersion().getProtocolVersion()) {
-                     ChatMessage chatmessage;
+                 if (packethandshakinginsetprotocol.protocolVersion() != SharedConstants.getCurrentVersion().getProtocolVersion()) {
+                     IChatMutableComponent ichatmutablecomponent;
  
-@@ -40,6 +83,7 @@
-                     this.connection.disconnect(chatmessage);
-                 } else {
-                     this.connection.setListener(new LoginListener(this.server, this.connection));
-+                    ((LoginListener) this.connection.getPacketListener()).hostname = packethandshakinginsetprotocol.hostName + ":" + packethandshakinginsetprotocol.port; // CraftBukkit - set hostname
-                 }
-                 break;
-             case STATUS:

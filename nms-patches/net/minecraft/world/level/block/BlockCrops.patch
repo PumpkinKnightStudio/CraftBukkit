@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockCrops.java
 +++ b/net/minecraft/world/level/block/BlockCrops.java
-@@ -21,6 +21,8 @@
+@@ -22,6 +22,8 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
@@ -8,17 +8,17 @@
 +
  public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement {
  
-     public static final int MAX_AGE = 7;
-@@ -76,7 +78,7 @@
+     public static final MapCodec<BlockCrops> CODEC = simpleCodec(BlockCrops::new);
+@@ -83,7 +85,7 @@
                  float f = getGrowthSpeed(this, worldserver, blockposition);
  
-                 if (random.nextInt((int) (25.0F / f) + 1) == 0) {
+                 if (randomsource.nextInt((int) (25.0F / f) + 1) == 0) {
 -                    worldserver.setBlock(blockposition, this.getStateForAge(i + 1), 2);
 +                    CraftEventFactory.handleBlockGrowEvent(worldserver, blockposition, this.getStateForAge(i + 1), 2); // CraftBukkit
                  }
              }
          }
-@@ -91,7 +93,7 @@
+@@ -98,7 +100,7 @@
              i = j;
          }
  
@@ -27,12 +27,12 @@
      }
  
      protected int getBonemealAgeIncrease(World world) {
-@@ -149,7 +151,7 @@
+@@ -160,7 +162,7 @@
  
      @Override
      public void entityInside(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
 -        if (entity instanceof EntityRavager && world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-+        if (entity instanceof EntityRavager && !CraftEventFactory.callEntityChangeBlockEvent(entity, blockposition, Blocks.AIR.defaultBlockState(), !world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)).isCancelled()) { // CraftBukkit
++        if (entity instanceof EntityRavager && CraftEventFactory.callEntityChangeBlockEvent(entity, blockposition, Blocks.AIR.defaultBlockState(), !world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) { // CraftBukkit
              world.destroyBlock(blockposition, true, entity);
          }
  

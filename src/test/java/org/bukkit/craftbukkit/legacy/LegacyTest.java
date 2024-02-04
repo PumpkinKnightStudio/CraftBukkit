@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.legacy;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,8 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.material.MaterialData;
 import org.bukkit.support.AbstractTestingBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LegacyTest extends AbstractTestingBase {
 
@@ -85,6 +85,41 @@ public class LegacyTest extends AbstractTestingBase {
             Material.WEATHERED_CUT_COPPER_STAIRS, Material.WHITE_CANDLE, Material.WHITE_CANDLE_CAKE, Material.YELLOW_CANDLE, Material.YELLOW_CANDLE_CAKE, Material.POTTED_AZALEA_BUSH, Material.POTTED_FLOWERING_AZALEA_BUSH,
             // 1.18
             Material.MUSIC_DISC_OTHERSIDE,
+            // 1.19
+            Material.ACACIA_CHEST_BOAT, Material.ALLAY_SPAWN_EGG, Material.BIRCH_CHEST_BOAT, Material.DARK_OAK_CHEST_BOAT, Material.DISC_FRAGMENT_5, Material.ECHO_SHARD, Material.FROGSPAWN, Material.FROG_SPAWN_EGG, Material.GOAT_HORN,
+            Material.JUNGLE_CHEST_BOAT, Material.MANGROVE_BOAT, Material.MANGROVE_BUTTON, Material.MANGROVE_CHEST_BOAT, Material.MANGROVE_DOOR, Material.MANGROVE_FENCE, Material.MANGROVE_FENCE_GATE, Material.MANGROVE_LEAVES, Material.MANGROVE_LOG,
+            Material.MANGROVE_PLANKS, Material.MANGROVE_PRESSURE_PLATE, Material.MANGROVE_PROPAGULE, Material.MANGROVE_ROOTS, Material.MANGROVE_SIGN, Material.MANGROVE_SLAB, Material.MANGROVE_STAIRS, Material.MANGROVE_TRAPDOOR, Material.MANGROVE_WALL_SIGN,
+            Material.MANGROVE_WOOD, Material.MUD, Material.MUDDY_MANGROVE_ROOTS, Material.MUD_BRICKS, Material.MUD_BRICK_SLAB, Material.MUD_BRICK_STAIRS, Material.MUD_BRICK_WALL, Material.MUSIC_DISC_5, Material.OAK_CHEST_BOAT, Material.OCHRE_FROGLIGHT,
+            Material.PACKED_MUD, Material.PEARLESCENT_FROGLIGHT, Material.POTTED_MANGROVE_PROPAGULE, Material.RECOVERY_COMPASS, Material.REINFORCED_DEEPSLATE, Material.SCULK, Material.SCULK_CATALYST, Material.SCULK_SHRIEKER, Material.SCULK_VEIN,
+            Material.SPRUCE_CHEST_BOAT, Material.STRIPPED_MANGROVE_LOG, Material.STRIPPED_MANGROVE_WOOD, Material.TADPOLE_BUCKET, Material.TADPOLE_SPAWN_EGG, Material.VERDANT_FROGLIGHT, Material.WARDEN_SPAWN_EGG,
+            // 1.19.3
+            Material.ACACIA_HANGING_SIGN, Material.ACACIA_WALL_HANGING_SIGN, Material.BAMBOO_BLOCK, Material.BAMBOO_BUTTON, Material.BAMBOO_CHEST_RAFT, Material.BAMBOO_DOOR, Material.BAMBOO_FENCE, Material.BAMBOO_FENCE_GATE, Material.BAMBOO_HANGING_SIGN,
+            Material.BAMBOO_MOSAIC, Material.BAMBOO_MOSAIC_SLAB, Material.BAMBOO_MOSAIC_STAIRS, Material.BAMBOO_PLANKS, Material.BAMBOO_PRESSURE_PLATE, Material.BAMBOO_RAFT, Material.BAMBOO_SIGN, Material.BAMBOO_SLAB, Material.BAMBOO_STAIRS, Material.BAMBOO_TRAPDOOR,
+            Material.BAMBOO_WALL_HANGING_SIGN, Material.BAMBOO_WALL_SIGN, Material.BIRCH_HANGING_SIGN, Material.BIRCH_WALL_HANGING_SIGN, Material.CAMEL_SPAWN_EGG, Material.CHISELED_BOOKSHELF, Material.CRIMSON_HANGING_SIGN, Material.CRIMSON_WALL_HANGING_SIGN,
+            Material.DARK_OAK_HANGING_SIGN, Material.DARK_OAK_WALL_HANGING_SIGN, Material.ENDER_DRAGON_SPAWN_EGG, Material.IRON_GOLEM_SPAWN_EGG, Material.JUNGLE_HANGING_SIGN, Material.JUNGLE_WALL_HANGING_SIGN, Material.MANGROVE_HANGING_SIGN,
+            Material.MANGROVE_WALL_HANGING_SIGN, Material.OAK_HANGING_SIGN, Material.OAK_WALL_HANGING_SIGN, Material.PIGLIN_HEAD, Material.PIGLIN_WALL_HEAD, Material.SNOW_GOLEM_SPAWN_EGG, Material.SPRUCE_HANGING_SIGN, Material.SPRUCE_WALL_HANGING_SIGN,
+            Material.STRIPPED_BAMBOO_BLOCK, Material.WARPED_HANGING_SIGN, Material.WARPED_WALL_HANGING_SIGN, Material.WITHER_SPAWN_EGG,
+            // 1.19.4
+            Material.BRUSH, Material.CHERRY_BOAT, Material.CHERRY_BUTTON, Material.CHERRY_CHEST_BOAT, Material.CHERRY_DOOR, Material.CHERRY_FENCE, Material.CHERRY_FENCE_GATE, Material.CHERRY_HANGING_SIGN, Material.CHERRY_LEAVES, Material.CHERRY_LOG,
+            Material.CHERRY_PLANKS, Material.CHERRY_PRESSURE_PLATE, Material.CHERRY_SAPLING, Material.CHERRY_SIGN, Material.CHERRY_SLAB, Material.CHERRY_STAIRS, Material.CHERRY_TRAPDOOR, Material.CHERRY_WALL_HANGING_SIGN, Material.CHERRY_WALL_SIGN,
+            Material.CHERRY_WOOD, Material.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, Material.DECORATED_POT, Material.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, Material.EYE_ARMOR_TRIM_SMITHING_TEMPLATE, Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE, Material.PINK_PETALS,
+            Material.POTTED_CHERRY_SAPLING, Material.POTTED_TORCHFLOWER, Material.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Material.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, Material.SNIFFER_SPAWN_EGG, Material.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, Material.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, Material.STRIPPED_CHERRY_LOG, Material.STRIPPED_CHERRY_WOOD, Material.SUSPICIOUS_SAND,
+            Material.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, Material.TORCHFLOWER, Material.TORCHFLOWER_CROP, Material.TORCHFLOWER_SEEDS, Material.VEX_ARMOR_TRIM_SMITHING_TEMPLATE, Material.WARD_ARMOR_TRIM_SMITHING_TEMPLATE, Material.WILD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            // 1.20
+            Material.SUSPICIOUS_GRAVEL, Material.PITCHER_PLANT, Material.SNIFFER_EGG, Material.CALIBRATED_SCULK_SENSOR, Material.PITCHER_POD, Material.MUSIC_DISC_RELIC, Material.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, Material.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Material.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, Material.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Material.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Material.ANGLER_POTTERY_SHERD, Material.ARCHER_POTTERY_SHERD, Material.ARMS_UP_POTTERY_SHERD, Material.BLADE_POTTERY_SHERD,
+            Material.BREWER_POTTERY_SHERD, Material.BURN_POTTERY_SHERD, Material.DANGER_POTTERY_SHERD, Material.EXPLORER_POTTERY_SHERD, Material.FRIEND_POTTERY_SHERD, Material.HEART_POTTERY_SHERD, Material.HEARTBREAK_POTTERY_SHERD, Material.HOWL_POTTERY_SHERD,
+            Material.MINER_POTTERY_SHERD, Material.MOURNER_POTTERY_SHERD, Material.PLENTY_POTTERY_SHERD, Material.PRIZE_POTTERY_SHERD, Material.SHEAF_POTTERY_SHERD, Material.SHELTER_POTTERY_SHERD, Material.SKULL_POTTERY_SHERD, Material.SNORT_POTTERY_SHERD, Material.PITCHER_CROP,
+            // 1.20.3
+            Material.CRAFTER, Material.TUFF_SLAB, Material.TUFF_STAIRS, Material.TUFF_WALL, Material.CHISELED_TUFF, Material.POLISHED_TUFF, Material.POLISHED_TUFF_SLAB, Material.POLISHED_TUFF_STAIRS, Material.POLISHED_TUFF_WALL, Material.TUFF_BRICKS,
+            Material.TUFF_BRICK_SLAB, Material.TUFF_BRICK_STAIRS, Material.TUFF_BRICK_WALL, Material.CHISELED_TUFF_BRICKS, Material.CHISELED_COPPER, Material.EXPOSED_CHISELED_COPPER, Material.WEATHERED_CHISELED_COPPER, Material.OXIDIZED_CHISELED_COPPER,
+            Material.WAXED_CHISELED_COPPER, Material.WAXED_EXPOSED_CHISELED_COPPER, Material.WAXED_WEATHERED_CHISELED_COPPER, Material.WAXED_OXIDIZED_CHISELED_COPPER, Material.COPPER_DOOR, Material.EXPOSED_COPPER_DOOR, Material.WEATHERED_COPPER_DOOR,
+            Material.OXIDIZED_COPPER_DOOR, Material.WAXED_COPPER_DOOR, Material.WAXED_EXPOSED_COPPER_DOOR, Material.WAXED_WEATHERED_COPPER_DOOR, Material.WAXED_OXIDIZED_COPPER_DOOR, Material.COPPER_TRAPDOOR, Material.EXPOSED_COPPER_TRAPDOOR,
+            Material.WEATHERED_COPPER_TRAPDOOR, Material.OXIDIZED_COPPER_TRAPDOOR, Material.WAXED_COPPER_TRAPDOOR, Material.WAXED_EXPOSED_COPPER_TRAPDOOR, Material.WAXED_WEATHERED_COPPER_TRAPDOOR, Material.WAXED_OXIDIZED_COPPER_TRAPDOOR, Material.COPPER_GRATE,
+            Material.EXPOSED_COPPER_GRATE, Material.WEATHERED_COPPER_GRATE, Material.OXIDIZED_COPPER_GRATE, Material.WAXED_COPPER_GRATE, Material.WAXED_EXPOSED_COPPER_GRATE, Material.WAXED_WEATHERED_COPPER_GRATE, Material.WAXED_OXIDIZED_COPPER_GRATE,
+            Material.COPPER_BULB, Material.EXPOSED_COPPER_BULB, Material.WEATHERED_COPPER_BULB, Material.OXIDIZED_COPPER_BULB, Material.WAXED_COPPER_BULB, Material.WAXED_EXPOSED_COPPER_BULB, Material.WAXED_WEATHERED_COPPER_BULB, Material.WAXED_OXIDIZED_COPPER_BULB,
+            Material.BREEZE_SPAWN_EGG, Material.TRIAL_KEY, Material.TRIAL_SPAWNER,
             //
             Material.LEGACY_AIR, Material.LEGACY_DEAD_BUSH, Material.LEGACY_BURNING_FURNACE, Material.LEGACY_WALL_SIGN, Material.LEGACY_REDSTONE_TORCH_OFF, Material.LEGACY_SKULL, Material.LEGACY_REDSTONE_COMPARATOR_ON, Material.LEGACY_WALL_BANNER, Material.LEGACY_MONSTER_EGG));
 
@@ -99,18 +134,18 @@ public class LegacyTest extends AbstractTestingBase {
             if (!INVALIDATED_MATERIALS.contains(material) && !material.isLegacy()) {
                 MaterialData converted = CraftLegacy.toLegacyData(material);
 
-                Assert.assertNotEquals("Could not toLegacy " + material, Material.LEGACY_AIR, converted.getItemType());
+                assertNotEquals(Material.LEGACY_AIR, converted.getItemType(), "Could not toLegacy " + material);
 
                 if (!INVALIDATED_MATERIALS.contains(converted.getItemType())) {
-                    Assert.assertNotEquals("Could not fromLegacy(toLegacy) " + converted + "(" + material + ")", Material.AIR, CraftLegacy.fromLegacy(converted));
+                    assertNotEquals(Material.AIR, CraftLegacy.fromLegacy(converted), "Could not fromLegacy(toLegacy) " + converted + "(" + material + ")");
                 }
                 if (!INVERSION_FAILS.contains(material)) {
-                    Assert.assertEquals("Could not fromLegacy(toLegacy) " + converted + "(" + material + ")", material, CraftLegacy.fromLegacy(converted));
+                    assertEquals(material, CraftLegacy.fromLegacy(converted), "Could not fromLegacy(toLegacy) " + converted + "(" + material + ")");
                 }
             }
         }
 
-        Assert.assertEquals("Could not toLegacy Air", Material.LEGACY_AIR, CraftLegacy.toLegacy(Material.AIR));
+        assertEquals(Material.LEGACY_AIR, CraftLegacy.toLegacy(Material.AIR), "Could not toLegacy Air");
     }
 
     @Test
@@ -118,32 +153,32 @@ public class LegacyTest extends AbstractTestingBase {
         for (Material material : Material.values()) {
             if (!INVALIDATED_MATERIALS.contains(material) && material.isLegacy()) {
                 Material converted = CraftLegacy.fromLegacy(material);
-                Assert.assertNotEquals("Could not fromLegacy " + material, Material.AIR, converted);
+                assertNotEquals(Material.AIR, converted, "Could not fromLegacy " + material);
 
-                Assert.assertNotEquals("Could not toLegacy(fromLegacy) " + converted + "(" + material + ")", Material.AIR, CraftLegacy.toLegacy(converted));
+                assertNotEquals(Material.AIR, CraftLegacy.toLegacy(converted), "Could not toLegacy(fromLegacy) " + converted + "(" + material + ")");
                 if (!INVERSION_FAILS.contains(material)) {
-                    Assert.assertEquals("Could not toLegacy(fromLegacy) " + converted + "(" + material + ")", material, CraftLegacy.toLegacy(converted));
+                    assertEquals(material, CraftLegacy.toLegacy(converted), "Could not toLegacy(fromLegacy) " + converted + "(" + material + ")");
                 }
             }
         }
 
-        Assert.assertEquals("Could not fromLegacy Air", Material.AIR, CraftLegacy.fromLegacy(Material.LEGACY_AIR));
+        assertEquals(Material.AIR, CraftLegacy.fromLegacy(Material.LEGACY_AIR), "Could not fromLegacy Air");
     }
 
     @Test
     public void testRestricted() {
         for (Material material : CraftLegacy.values()) {
-            Assert.assertTrue("Must iterate only legacy materials", material.isLegacy());
+            assertTrue(material.isLegacy(), "Must iterate only legacy materials");
         }
 
         for (Material material : org.bukkit.craftbukkit.util.CraftLegacy.modern_values()) {
-            Assert.assertFalse("Must iterate only modern materials", material.isLegacy());
+            assertFalse(material.isLegacy(), "Must iterate only modern materials");
         }
     }
 
     @Test
     public void testManual() {
-        Assert.assertEquals(Material.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getMaterial("dandelion_yellow", 1631));
-        Assert.assertEquals(Material.OAK_WALL_SIGN, CraftMagicNumbers.INSTANCE.getMaterial("wall_sign", 1631));
+        assertEquals(Material.YELLOW_DYE, CraftMagicNumbers.INSTANCE.getMaterial("dandelion_yellow", 1631));
+        assertEquals(Material.OAK_WALL_SIGN, CraftMagicNumbers.INSTANCE.getMaterial("wall_sign", 1631));
     }
 }

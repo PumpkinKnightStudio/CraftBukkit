@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/commands/CommandTime.java
 +++ b/net/minecraft/server/commands/CommandTime.java
 @@ -9,6 +9,11 @@
- import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
  import net.minecraft.server.level.WorldServer;
  
 +// CraftBukkit start
@@ -12,7 +12,7 @@
  public class CommandTime {
  
      public CommandTime() {}
-@@ -47,12 +52,18 @@
+@@ -49,12 +54,18 @@
      }
  
      public static int setTime(CommandListenerWrapper commandlistenerwrapper, int i) {
@@ -32,8 +32,8 @@
 +            // CraftBukkit end
          }
  
-         commandlistenerwrapper.sendSuccess(new ChatMessage("commands.time.set", new Object[]{i}), true);
-@@ -60,12 +71,18 @@
+         commandlistenerwrapper.sendSuccess(() -> {
+@@ -64,12 +75,18 @@
      }
  
      public static int addTime(CommandListenerWrapper commandlistenerwrapper, int i) {

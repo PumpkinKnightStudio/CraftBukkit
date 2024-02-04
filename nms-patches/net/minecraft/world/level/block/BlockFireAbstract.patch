@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockFireAbstract.java
 +++ b/net/minecraft/world/level/block/BlockFireAbstract.java
-@@ -124,7 +124,14 @@
+@@ -127,7 +127,14 @@
          if (!entity.fireImmune()) {
              entity.setRemainingFireTicks(entity.getRemainingFireTicks() + 1);
              if (entity.getRemainingFireTicks() == 0) {
@@ -14,9 +14,9 @@
 +                }
 +                // CraftBukkit end
              }
+         }
  
-             entity.hurt(DamageSource.IN_FIRE, this.fireDamage);
-@@ -146,14 +153,14 @@
+@@ -148,14 +155,14 @@
              }
  
              if (!iblockdata.canSurvive(world, blockposition)) {
@@ -33,7 +33,7 @@
      }
  
      @Override
-@@ -201,4 +208,12 @@
+@@ -203,4 +210,12 @@
              }
          }
      }

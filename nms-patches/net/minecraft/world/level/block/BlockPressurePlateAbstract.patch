@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockPressurePlateAbstract.java
 +++ b/net/minecraft/world/level/block/BlockPressurePlateAbstract.java
-@@ -18,6 +18,8 @@
+@@ -22,6 +22,8 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  
@@ -9,7 +9,7 @@
  public abstract class BlockPressurePlateAbstract extends Block {
  
      protected static final VoxelShape PRESSED_AABB = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 0.5D, 15.0D);
-@@ -81,6 +83,19 @@
+@@ -90,6 +92,19 @@
          boolean flag = i > 0;
          boolean flag1 = j > 0;
  
@@ -29,3 +29,20 @@
          if (i != j) {
              IBlockData iblockdata1 = this.setSignalForState(iblockdata, j);
  
+@@ -144,9 +159,15 @@
+     }
+ 
+     protected static int getEntityCount(World world, AxisAlignedBB axisalignedbb, Class<? extends Entity> oclass) {
++        // CraftBukkit start
++        return getEntities(world, axisalignedbb, oclass).size();
++    }
++
++    protected static <T extends Entity> java.util.List<T> getEntities(World world, AxisAlignedBB axisalignedbb, Class<T> oclass) {
++        // CraftBukkit end
+         return world.getEntitiesOfClass(oclass, axisalignedbb, IEntitySelector.NO_SPECTATORS.and((entity) -> {
+             return !entity.isIgnoringBlockTriggers();
+-        })).size();
++        })); // CraftBukkit
+     }
+ 
+     protected abstract int getSignalStrength(World world, BlockPosition blockposition);

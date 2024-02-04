@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/projectile/EntityEgg.java
 +++ b/net/minecraft/world/entity/projectile/EntityEgg.java
-@@ -12,6 +12,15 @@
+@@ -11,6 +11,15 @@
  import net.minecraft.world.phys.MovingObjectPosition;
  import net.minecraft.world.phys.MovingObjectPositionEntity;
  
@@ -16,50 +16,56 @@
  public class EntityEgg extends EntityProjectileThrowable {
  
      public EntityEgg(EntityTypes<? extends EntityEgg> entitytypes, World world) {
-@@ -48,20 +57,40 @@
+@@ -47,20 +56,47 @@
      protected void onHit(MovingObjectPosition movingobjectposition) {
          super.onHit(movingobjectposition);
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
 -            if (this.random.nextInt(8) == 0) {
-+            boolean hatching = this.random.nextInt(8) == 0; // CraftBukkit
++            // CraftBukkit start
++            boolean hatching = this.random.nextInt(8) == 0;
 +            if (true) {
++            // CraftBukkit end
                  byte b0 = 1;
  
                  if (this.random.nextInt(32) == 0) {
                      b0 = 4;
                  }
  
--                for (int i = 0; i < b0; ++i) {
--                    EntityChicken entitychicken = (EntityChicken) EntityTypes.CHICKEN.create(this.level);
 +                // CraftBukkit start
-+                if (!hatching) {
-+                    b0 = 0;
-+                }
 +                EntityType hatchingType = EntityType.CHICKEN;
 +
 +                Entity shooter = this.getOwner();
++                if (!hatching) {
++                    b0 = 0;
++                }
 +                if (shooter instanceof EntityPlayer) {
 +                    PlayerEggThrowEvent event = new PlayerEggThrowEvent((Player) shooter.getBukkitEntity(), (org.bukkit.entity.Egg) this.getBukkitEntity(), hatching, b0, hatchingType);
-+                    this.level.getCraftServer().getPluginManager().callEvent(event);
++                    this.level().getCraftServer().getPluginManager().callEvent(event);
 +
 +                    b0 = event.getNumHatches();
 +                    hatching = event.isHatching();
 +                    hatchingType = event.getHatchingType();
-+                }
- 
--                    entitychicken.setAge(-24000);
--                    entitychicken.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
--                    this.level.addFreshEntity(entitychicken);
-+                if (hatching) {
-+                    for (int i = 0; i < b0; ++i) {
-+                        Entity entity = level.getWorld().createEntity(new org.bukkit.Location(level.getWorld(), this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F), hatchingType.getEntityClass());
-+                        if (entity.getBukkitEntity() instanceof Ageable) {
-+                            ((Ageable) entity.getBukkitEntity()).setBaby();
-+                        }
-+                        level.getWorld().addEntity(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.EGG);
++                    // If hatching is set to false, ensure child count is 0
++                    if (!hatching) {
++                        b0 = 0;
 +                    }
-                 }
++                }
 +                // CraftBukkit end
-             }
++
+                 for (int i = 0; i < b0; ++i) {
+-                    EntityChicken entitychicken = (EntityChicken) EntityTypes.CHICKEN.create(this.level());
++                    Entity entitychicken = this.level().getWorld().makeEntity(new org.bukkit.Location(this.level().getWorld(), this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F), hatchingType.getEntityClass()); // CraftBukkit
  
-             this.level.broadcastEntityEvent(this, (byte) 3);
+                     if (entitychicken != null) {
+-                        entitychicken.setAge(-24000);
+-                        entitychicken.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+-                        this.level().addFreshEntity(entitychicken);
++                        // CraftBukkit start
++                        if (entitychicken.getBukkitEntity() instanceof Ageable) {
++                            ((Ageable) entitychicken.getBukkitEntity()).setBaby();
++                        }
++                        this.level().addFreshEntity(entitychicken, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.EGG);
++                        // CraftBukkit end
+                     }
+                 }
+             }

@@ -3,7 +3,7 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftLantern extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Lantern, org.bukkit.block.data.Waterlogged {
+public final class CraftLantern extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Lantern, org.bukkit.block.data.Hangable, org.bukkit.block.data.Waterlogged {
 
     public CraftLantern() {
         super();
@@ -13,7 +13,7 @@ public final class CraftLantern extends org.bukkit.craftbukkit.block.data.CraftB
         super(state);
     }
 
-    // org.bukkit.craftbukkit.block.data.type.CraftLantern
+    // org.bukkit.craftbukkit.block.data.CraftHangable
 
     private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean HANGING = getBoolean(net.minecraft.world.level.block.BlockLantern.class, "hanging");
 

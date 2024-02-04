@@ -1,6 +1,14 @@
 --- a/net/minecraft/network/NetworkManager.java
 +++ b/net/minecraft/network/NetworkManager.java
-@@ -156,7 +156,7 @@
+@@ -105,6 +105,7 @@
+     private volatile IChatBaseComponent delayedDisconnect;
+     @Nullable
+     BandwidthDebugMonitor bandwidthDebugMonitor;
++    public String hostname = ""; // CraftBukkit - add field
+ 
+     public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
+         this.receiving = enumprotocoldirection;
+@@ -194,7 +195,7 @@
      }
  
      private static <T extends PacketListener> void genericsFtw(Packet<T> packet, PacketListener packetlistener) {
@@ -8,11 +16,11 @@
 +        packet.handle((T) packetlistener); // CraftBukkit - decompile error
      }
  
-     public void setListener(PacketListener packetlistener) {
-@@ -268,7 +268,7 @@
+     public void suspendInboundAfterProtocolChange() {
+@@ -421,7 +422,7 @@
+         }
  
-     public void disconnect(IChatBaseComponent ichatbasecomponent) {
-         if (this.channel.isOpen()) {
+         if (this.isConnected()) {
 -            this.channel.close().awaitUninterruptibly();
 +            this.channel.close(); // We can't wait as this may be called from an event loop.
              this.disconnectedReason = ichatbasecomponent;

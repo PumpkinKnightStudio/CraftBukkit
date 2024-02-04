@@ -8,8 +8,8 @@
 +
  public class BlockRedstoneWire extends Block {
  
-     public static final BlockStateEnum<BlockPropertyRedstoneSide> NORTH = BlockProperties.NORTH_REDSTONE;
-@@ -257,7 +259,16 @@
+     public static final MapCodec<BlockRedstoneWire> CODEC = simpleCodec(BlockRedstoneWire::new);
+@@ -261,7 +263,16 @@
      private void updatePowerStrength(World world, BlockPosition blockposition, IBlockData iblockdata) {
          int i = this.calculateTargetStrength(world, blockposition);
  

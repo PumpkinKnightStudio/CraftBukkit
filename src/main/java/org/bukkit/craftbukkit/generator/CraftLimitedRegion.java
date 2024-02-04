@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.ChunkCoordIntPair;
@@ -15,6 +17,7 @@ import net.minecraft.world.level.biome.BiomeBase;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
+import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.TreeType;
@@ -27,7 +30,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.generator.LimitedRegion;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Consumer;
 
 public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRegion {
 
@@ -66,9 +68,7 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     public GeneratorAccessSeed getHandle() {
         GeneratorAccessSeed handle = weakAccess.get();
 
-        if (handle == null) {
-            throw new IllegalStateException("GeneratorAccessSeed no longer present, are you using it in a different tick?");
-        }
+        Preconditions.checkState(handle != null, "GeneratorAccessSeed no longer present, are you using it in a different tick?");
 
         return handle;
     }
@@ -116,12 +116,12 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
             if (entity.isAlive()) {
                 // check if entity is still in region or if it got teleported outside it
                 Preconditions.checkState(region.contains(entity.getX(), entity.getY(), entity.getZ()), "Entity %s is not in the region", entity);
-                access.addFreshEntity(entity);
+                access.addFreshEntityWithPassengers(entity);
             }
         }
 
         for (net.minecraft.world.entity.Entity entity : outsideEntities) {
-            access.addFreshEntity(entity);
+            access.addFreshEntityWithPassengers(entity);
         }
     }
 
@@ -167,7 +167,7 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
-    public void setBiome(int x, int y, int z, BiomeBase biomeBase) {
+    public void setBiome(int x, int y, int z, Holder<BiomeBase> biomeBase) {
         Preconditions.checkArgument(isInRegion(x, y, z), "Coordinates %s, %s, %s are not in the region", x, y, z);
         IChunkAccess chunk = getHandle().getChunk(x >> 4, z >> 4, ChunkStatus.EMPTY);
         chunk.setBiome(x >> 2, y >> 2, z >> 2, biomeBase);
@@ -198,13 +198,37 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
+    public int getHighestBlockYAt(int x, int z) {
+        Preconditions.checkArgument(isInRegion(x, region.getCenter().getBlockY(), z), "Coordinates %s, %s are not in the region", x, z);
+        return super.getHighestBlockYAt(x, z);
+    }
+
+    @Override
+    public int getHighestBlockYAt(Location location) {
+        Preconditions.checkArgument(isInRegion(location), "Coordinates %s, %s, %s are not in the region", location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        return super.getHighestBlockYAt(location);
+    }
+
+    @Override
+    public int getHighestBlockYAt(int x, int z, HeightMap heightMap) {
+        Preconditions.checkArgument(isInRegion(x, region.getCenter().getBlockY(), z), "Coordinates %s, %s are not in the region", x, z);
+        return super.getHighestBlockYAt(x, z, heightMap);
+    }
+
+    @Override
+    public int getHighestBlockYAt(Location location, HeightMap heightMap) {
+        Preconditions.checkArgument(isInRegion(location), "Coordinates %s, %s, %s are not in the region", location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        return super.getHighestBlockYAt(location, heightMap);
+    }
+
+    @Override
     public boolean generateTree(Location location, Random random, TreeType treeType) {
         Preconditions.checkArgument(isInRegion(location), "Coordinates %s, %s, %s are not in the region", location.getBlockX(), location.getBlockY(), location.getBlockZ());
         return super.generateTree(location, random, treeType);
     }
 
     @Override
-    public boolean generateTree(Location location, Random random, TreeType treeType, Consumer<BlockState> consumer) {
+    public boolean generateTree(Location location, Random random, TreeType treeType, Consumer<? super BlockState> consumer) {
         Preconditions.checkArgument(isInRegion(location), "Coordinates %s, %s, %s are not in the region", location.getBlockX(), location.getBlockY(), location.getBlockZ());
         return super.generateTree(location, random, treeType, consumer);
     }
@@ -217,13 +241,18 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<? super T> function, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
         Preconditions.checkArgument(isInRegion(location), "Coordinates %s, %s, %s are not in the region", location.getBlockX(), location.getBlockY(), location.getBlockZ());
         return super.spawn(location, clazz, function, reason);
     }
 
     @Override
     public void addEntityToWorld(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason) {
+        entities.add(entity);
+    }
+
+    @Override
+    public void addEntityWithPassengers(net.minecraft.world.entity.Entity entity, CreatureSpawnEvent.SpawnReason reason) {
         entities.add(entity);
     }
 }

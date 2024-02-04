@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.animal.EntityTurtle;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Turtle;
 
 public class CraftTurtle extends CraftAnimals implements Turtle {
@@ -22,7 +21,12 @@ public class CraftTurtle extends CraftAnimals implements Turtle {
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.TURTLE;
+    public boolean hasEgg() {
+        return getHandle().hasEgg();
+    }
+
+    @Override
+    public boolean isLayingEgg() {
+        return getHandle().isLayingEgg();
     }
 }

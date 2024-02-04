@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.command;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
@@ -8,10 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.commands.CommandDispatcher;
 import net.minecraft.commands.CommandListenerWrapper;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.world.entity.vehicle.EntityMinecartCommandBlock;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
@@ -20,9 +18,9 @@ import org.bukkit.command.ProxiedCommandSender;
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftMinecartCommand;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.minecart.CommandMinecart;
 
 public final class VanillaCommandWrapper extends BukkitCommand {
@@ -42,15 +40,15 @@ public final class VanillaCommandWrapper extends BukkitCommand {
         if (!testPermission(sender)) return true;
 
         CommandListenerWrapper icommandlistener = getListener(sender);
-        dispatcher.performCommand(icommandlistener, toDispatcher(args, getName()), toDispatcher(args, commandLabel), true);
+        dispatcher.performPrefixedCommand(icommandlistener, toDispatcher(args, getName()), toDispatcher(args, commandLabel));
         return true;
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
-        Validate.notNull(sender, "Sender cannot be null");
-        Validate.notNull(args, "Arguments cannot be null");
-        Validate.notNull(alias, "Alias cannot be null");
+        Preconditions.checkArgument(sender != null, "Sender cannot be null");
+        Preconditions.checkArgument(args != null, "Arguments cannot be null");
+        Preconditions.checkArgument(alias != null, "Alias cannot be null");
 
         CommandListenerWrapper icommandlistener = getListener(sender);
         ParseResults<CommandListenerWrapper> parsed = dispatcher.getDispatcher().parse(toDispatcher(args, getName()), icommandlistener);
@@ -64,17 +62,18 @@ public final class VanillaCommandWrapper extends BukkitCommand {
     }
 
     public static CommandListenerWrapper getListener(CommandSender sender) {
-        if (sender instanceof Player) {
-            return ((CraftPlayer) sender).getHandle().createCommandSourceStack();
+        if (sender instanceof Entity) {
+            if (sender instanceof CommandMinecart) {
+                return ((EntityMinecartCommandBlock) ((CraftMinecartCommand) sender).getHandle()).getCommandBlock().createCommandSourceStack();
+            }
+
+            return ((CraftEntity) sender).getHandle().createCommandSourceStack();
         }
         if (sender instanceof BlockCommandSender) {
             return ((CraftBlockCommandSender) sender).getWrapper();
         }
-        if (sender instanceof CommandMinecart) {
-            return ((EntityMinecartCommandBlock) ((CraftMinecartCommand) sender).getHandle()).getCommandBlock().createCommandSourceStack();
-        }
         if (sender instanceof RemoteConsoleCommandSender) {
-            return ((DedicatedServer) MinecraftServer.getServer()).rconConsoleSource.createCommandSourceStack();
+            return ((CraftRemoteConsoleCommandSender) sender).getListener().createCommandSourceStack();
         }
         if (sender instanceof ConsoleCommandSender) {
             return ((CraftServer) sender.getServer()).getServer().createCommandSourceStack();

@@ -13,6 +13,7 @@ import net.minecraft.world.level.World;
 import org.bukkit.Location;
 import org.bukkit.Raid;
 import org.bukkit.Raid.RaidStatus;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Raider;
 
 public final class CraftRaid implements Raid {
@@ -49,7 +50,7 @@ public final class CraftRaid implements Raid {
     public Location getLocation() {
         BlockPosition pos = handle.getCenter();
         World world = handle.getLevel();
-        return new Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+        return CraftLocation.toBukkit(pos, world.getWorld());
     }
 
     @Override
@@ -98,5 +99,9 @@ public final class CraftRaid implements Raid {
                 return (Raider) entityRaider.getBukkitEntity();
             }
         }).collect(ImmutableList.toImmutableList());
+    }
+
+    public net.minecraft.world.entity.raid.Raid getHandle() {
+        return handle;
     }
 }
