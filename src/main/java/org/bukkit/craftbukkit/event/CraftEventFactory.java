@@ -5,7 +5,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -59,6 +58,7 @@ import net.minecraft.world.entity.raid.EntityRaider;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.ContainerMerchant;
+import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.ItemActionContext;
@@ -78,9 +78,6 @@ import net.minecraft.world.phys.MovingObjectPositionEntity;
 import net.minecraft.world.phys.Vec3D;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Server;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
@@ -111,7 +108,6 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.CraftMetaBook;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftVector;
 import org.bukkit.entity.AbstractHorse;
@@ -239,6 +235,7 @@ import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRecipeBookClickEvent;
+import org.bukkit.event.player.PlayerRecipeBookSettingsChangeEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerSignOpenEvent;
@@ -793,19 +790,45 @@ public class CraftEventFactory {
     /**
      * PotionSplashEvent
      */
-    public static PotionSplashEvent callPotionSplashEvent(EntityPotion potion, Map<LivingEntity, Double> affectedEntities) {
+    public static PotionSplashEvent callPotionSplashEvent(EntityPotion potion, MovingObjectPosition position, Map<LivingEntity, Double> affectedEntities) {
         ThrownPotion thrownPotion = (ThrownPotion) potion.getBukkitEntity();
 
-        PotionSplashEvent event = new PotionSplashEvent(thrownPotion, affectedEntities);
+        Block hitBlock = null;
+        BlockFace hitFace = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
+            MovingObjectPositionBlock positionBlock = (MovingObjectPositionBlock) position;
+            hitBlock = CraftBlock.at(potion.level(), positionBlock.getBlockPos());
+            hitFace = CraftBlock.notchToBlockFace(positionBlock.getDirection());
+        }
+
+        org.bukkit.entity.Entity hitEntity = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
+            hitEntity = ((MovingObjectPositionEntity) position).getEntity().getBukkitEntity();
+        }
+
+        PotionSplashEvent event = new PotionSplashEvent(thrownPotion, hitEntity, hitBlock, hitFace, affectedEntities);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
 
-    public static LingeringPotionSplashEvent callLingeringPotionSplashEvent(EntityPotion potion, EntityAreaEffectCloud cloud) {
+    public static LingeringPotionSplashEvent callLingeringPotionSplashEvent(EntityPotion potion, MovingObjectPosition position, EntityAreaEffectCloud cloud) {
         ThrownPotion thrownPotion = (ThrownPotion) potion.getBukkitEntity();
         AreaEffectCloud effectCloud = (AreaEffectCloud) cloud.getBukkitEntity();
 
-        LingeringPotionSplashEvent event = new LingeringPotionSplashEvent(thrownPotion, effectCloud);
+        Block hitBlock = null;
+        BlockFace hitFace = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
+            MovingObjectPositionBlock positionBlock = (MovingObjectPositionBlock) position;
+            hitBlock = CraftBlock.at(potion.level(), positionBlock.getBlockPos());
+            hitFace = CraftBlock.notchToBlockFace(positionBlock.getDirection());
+        }
+
+        org.bukkit.entity.Entity hitEntity = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
+            hitEntity = ((MovingObjectPositionEntity) position).getEntity().getBukkitEntity();
+        }
+
+        LingeringPotionSplashEvent event = new LingeringPotionSplashEvent(thrownPotion, hitEntity, hitBlock, hitFace, effectCloud);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -1350,9 +1373,23 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static ExpBottleEvent callExpBottleEvent(Entity entity, int exp) {
+    public static ExpBottleEvent callExpBottleEvent(Entity entity, MovingObjectPosition position, int exp) {
         ThrownExpBottle bottle = (ThrownExpBottle) entity.getBukkitEntity();
-        ExpBottleEvent event = new ExpBottleEvent(bottle, exp);
+
+        Block hitBlock = null;
+        BlockFace hitFace = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
+            MovingObjectPositionBlock positionBlock = (MovingObjectPositionBlock) position;
+            hitBlock = CraftBlock.at(entity.level(), positionBlock.getBlockPos());
+            hitFace = CraftBlock.notchToBlockFace(positionBlock.getDirection());
+        }
+
+        org.bukkit.entity.Entity hitEntity = null;
+        if (position.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
+            hitEntity = ((MovingObjectPositionEntity) position).getEntity().getBukkitEntity();
+        }
+
+        ExpBottleEvent event = new ExpBottleEvent(bottle, hitEntity, hitBlock, hitFace, exp);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -1422,11 +1459,10 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static BlockIgniteEvent callBlockIgniteEvent(World world, int x, int y, int z, Explosion explosion) {
-        org.bukkit.World bukkitWorld = world.getWorld();
+    public static BlockIgniteEvent callBlockIgniteEvent(World world, BlockPosition blockposition, Explosion explosion) {
         org.bukkit.entity.Entity igniter = explosion.source == null ? null : explosion.source.getBukkitEntity();
 
-        BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(x, y, z), IgniteCause.EXPLOSION, igniter);
+        BlockIgniteEvent event = new BlockIgniteEvent(CraftBlock.at(world, blockposition), IgniteCause.EXPLOSION, igniter);
         world.getCraftServer().getPluginManager().callEvent(event);
         return event;
     }
@@ -1461,6 +1497,11 @@ public class CraftEventFactory {
         }
 
         return itemInHand;
+    }
+
+    public static void callRecipeBookSettingsEvent(EntityPlayer player, RecipeBookType type, boolean open, boolean filter) {
+        PlayerRecipeBookSettingsChangeEvent.RecipeBookType bukkitType = PlayerRecipeBookSettingsChangeEvent.RecipeBookType.values()[type.ordinal()];
+        Bukkit.getPluginManager().callEvent(new PlayerRecipeBookSettingsChangeEvent(player.getBukkitEntity(), bukkitType, open, filter));
     }
 
     public static PlayerUnleashEntityEvent callPlayerUnleashEntityEvent(EntityInsentient entity, EntityHuman player, EnumHand enumhand) {

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ColorableArmorMeta;

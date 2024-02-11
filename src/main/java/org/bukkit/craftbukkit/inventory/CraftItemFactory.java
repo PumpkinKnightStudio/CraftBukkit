@@ -6,16 +6,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemMonsterEgg;
+import net.minecraft.world.item.enchantment.EnchantmentManager;
 import org.bukkit.Color;
 import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
-import org.bukkit.craftbukkit.util.CraftLegacy;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
@@ -25,6 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public final class CraftItemFactory implements ItemFactory {
     static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
     private static final CraftItemFactory instance;
+    private static final RandomSource randomSource = RandomSource.create();
 
     static {
         instance = new CraftItemFactory();
@@ -152,7 +157,7 @@ public final class CraftItemFactory implements ItemFactory {
                 || itemType == ItemType.WITHER_SPAWN_EGG || itemType == ItemType.WOLF_SPAWN_EGG
                 || itemType == ItemType.ZOGLIN_SPAWN_EGG || itemType == ItemType.ZOMBIE_HORSE_SPAWN_EGG
                 || itemType == ItemType.ZOMBIE_SPAWN_EGG || itemType == ItemType.ZOMBIE_VILLAGER_SPAWN_EGG
-                || itemType == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || itemType == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG || itemType == ItemType.BREEZE_SPAWN_EGG) {
             return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
         }
         if (itemType == ItemType.ARMOR_STAND) {
@@ -180,7 +185,8 @@ public final class CraftItemFactory implements ItemFactory {
                 || itemType == ItemType.SCULK_SHRIEKER || itemType == ItemType.SCULK_SENSOR
                 || itemType == ItemType.CALIBRATED_SCULK_SENSOR || itemType == ItemType.CHISELED_BOOKSHELF
                 || itemType == ItemType.DECORATED_POT || itemType == ItemType.SUSPICIOUS_SAND
-                || itemType == ItemType.SUSPICIOUS_GRAVEL) {
+                || itemType == ItemType.SUSPICIOUS_GRAVEL || itemType == ItemType.CRAFTER
+                || itemType == ItemType.TRIAL_SPAWNER) {
             return new CraftMetaBlockState(meta, itemType);
         }
         if (itemType == ItemType.TROPICAL_FISH_BUCKET) {
@@ -305,5 +311,37 @@ public final class CraftItemFactory implements ItemFactory {
         }
 
         return CraftItemType.minecraftToBukkit(nmsItem);
+    }
+
+    @Override
+    public ItemStack enchantItem(Entity entity, ItemStack itemStack, int level, boolean allowTreasures) {
+        Preconditions.checkArgument(entity != null, "The entity must not be null");
+
+        return enchantItem(((CraftEntity) entity).getHandle().random, itemStack, level, allowTreasures);
+    }
+
+    @Override
+    public ItemStack enchantItem(final World world, final ItemStack itemStack, final int level, final boolean allowTreasures) {
+        Preconditions.checkArgument(world != null, "The world must not be null");
+
+        return enchantItem(((CraftWorld) world).getHandle().random, itemStack, level, allowTreasures);
+    }
+
+    @Override
+    public ItemStack enchantItem(final ItemStack itemStack, final int level, final boolean allowTreasures) {
+        return enchantItem(randomSource, itemStack, level, allowTreasures);
+    }
+
+    private static ItemStack enchantItem(RandomSource source, ItemStack itemStack, int level, boolean allowTreasures) {
+        Preconditions.checkArgument(itemStack != null, "ItemStack must not be null");
+        Preconditions.checkArgument(itemStack.getType() != ItemType.AIR, "ItemStack must not be air");
+
+        if (!(itemStack instanceof CraftItemStack)) {
+            itemStack = CraftItemStack.asCraftCopy(itemStack);
+        }
+
+        CraftItemStack craft = (CraftItemStack) itemStack;
+        EnchantmentManager.enchantItem(source, craft.handle, level, allowTreasures);
+        return craft;
     }
 }

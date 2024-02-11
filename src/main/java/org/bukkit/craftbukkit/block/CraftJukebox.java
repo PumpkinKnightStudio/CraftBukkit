@@ -11,7 +11,7 @@ import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventoryJukebox;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.JukeboxInventory;
 
@@ -83,7 +83,7 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
 
     @Override
     public org.bukkit.inventory.ItemStack getRecord() {
-        ItemStack record = this.getSnapshot().getFirstItem();
+        ItemStack record = this.getSnapshot().getTheItem();
         return CraftItemStack.asBukkitCopy(record);
     }
 
@@ -116,14 +116,14 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
             return false;
         }
 
-        ItemStack record = jukebox.getFirstItem();
+        ItemStack record = jukebox.getTheItem();
         if (record.isEmpty() || isPlaying()) {
             return false;
         }
 
         jukebox.isPlaying = true;
         jukebox.recordStartedTick = jukebox.tickCount;
-        getWorld().playEffect(getLocation(), Effect.RECORD_PLAY, CraftMagicNumbers.getMaterial(record.getItem()));
+        getWorld().playEffect(getLocation(), Effect.RECORD_PLAY, CraftItemType.minecraftToBukkit(record.getItem()));
         return true;
     }
 
@@ -148,7 +148,7 @@ public class CraftJukebox extends CraftBlockEntityState<TileEntityJukeBox> imple
         if (!(tileEntity instanceof TileEntityJukeBox)) return false;
 
         TileEntityJukeBox jukebox = (TileEntityJukeBox) tileEntity;
-        boolean result = !jukebox.getFirstItem().isEmpty();
+        boolean result = !jukebox.getTheItem().isEmpty();
         jukebox.popOutRecord();
         return result;
     }

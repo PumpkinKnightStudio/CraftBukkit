@@ -98,7 +98,7 @@ public class EnumEvil {
         REGISTRIES.put(Villager.Type.class, new LegacyRegistryData(Registry.VILLAGER_TYPE, Villager.Type::valueOf));
         REGISTRIES.put(Villager.Profession.class, new LegacyRegistryData(Registry.VILLAGER_PROFESSION, Villager.Profession::valueOf));
         REGISTRIES.put(Frog.Variant.class, new LegacyRegistryData(Registry.FROG_VARIANT, Frog.Variant::valueOf));
-        REGISTRIES.put(Cat.Type.class, new LegacyRegistryData(Registry.CAT_TYPE, Cat.Type::valueOf));
+        REGISTRIES.put(Cat.Type.class, new LegacyRegistryData(Registry.CAT_VARIANT, Cat.Type::valueOf));
         REGISTRIES.put(PatternType.class, new LegacyRegistryData(Registry.BANNER_PATTERN, EnumEvil::valueOf));
         REGISTRIES.put(Particle.class, new LegacyRegistryData(Registry.PARTICLE_TYPE, Particle::valueOf));
         REGISTRIES.put(PotionType.class, new LegacyRegistryData(Registry.POTION, PotionType::valueOf));

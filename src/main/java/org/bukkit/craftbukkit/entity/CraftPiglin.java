@@ -33,7 +33,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     public boolean addBarterItem(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
-        Item item = ((CraftItemType) itemType).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(itemType);
         return getHandle().allowedBarterItems.add(item);
     }
 
@@ -41,7 +41,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     public boolean removeBarterItem(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
-        Item item = ((CraftItemType) itemType).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(itemType);
         return getHandle().allowedBarterItems.remove(item);
     }
 
@@ -49,7 +49,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     public boolean addItemOfInterest(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
-        Item item = ((CraftItemType) itemType).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(itemType);
         return getHandle().interestItems.add(item);
     }
 
@@ -57,7 +57,7 @@ public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
     public boolean removeItemOfInterest(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "itemType cannot be null");
 
-        Item item = ((CraftItemType) itemType).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(itemType);
         return getHandle().interestItems.remove(item);
     }
 

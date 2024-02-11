@@ -321,6 +321,7 @@ public final class CraftLegacy {
             if (!material.isLegacy()) {
                 continue;
             }
+
             // Handle blocks
             if (material.isBlock()) {
                 for (byte data = 0; data < 16; data++) {
@@ -333,7 +334,7 @@ public final class CraftLegacy {
                     }
 
                     String name = blockTag.get("Name").asString("");
-                    Block block = CraftRegistry.getMinecraftRegistry().registryOrThrow(Registries.BLOCK).get(new MinecraftKey(name));
+                    Block block = CraftRegistry.getMinecraftRegistry(Registries.BLOCK).get(new MinecraftKey(name));
                     if (block == null) {
                         continue;
                     }

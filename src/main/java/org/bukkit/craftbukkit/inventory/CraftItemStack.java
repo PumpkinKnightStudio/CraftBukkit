@@ -32,7 +32,7 @@ public final class CraftItemStack extends ItemStack {
             return net.minecraft.world.item.ItemStack.EMPTY;
         }
 
-        Item item = ((CraftItemType) original.getType()).getHandle();
+        Item item = CraftItemType.bukkitToMinecraft(original.getType());
 
         if (item == null) {
             return net.minecraft.world.item.ItemStack.EMPTY;
@@ -121,12 +121,12 @@ public final class CraftItemStack extends ItemStack {
             return;
         } else if (type == ItemType.AIR) {
             handle = null;
-        } else if (((CraftItemType) type).getHandle() == null) { // :(  --Smile again, with the new system this should never happen
+        } else if (CraftItemType.bukkitToMinecraft(type) == null) { // :(  --Smile again, with the new system this should never happen
             handle = null;
         } else if (handle == null) {
-            handle = new net.minecraft.world.item.ItemStack(((CraftItemType) type).getHandle(), 1);
+            handle = new net.minecraft.world.item.ItemStack(CraftItemType.bukkitToMinecraft(type), 1);
         } else {
-            handle.setItem(((CraftItemType) type).getHandle());
+            handle.setItem(CraftItemType.bukkitToMinecraft(type));
             if (hasItemMeta()) {
                 // This will create the appropriate item meta, which will contain all the data we intend to keep
                 setItemMeta(handle, getItemMeta(handle));
@@ -225,7 +225,7 @@ public final class CraftItemStack extends ItemStack {
         if (handle == null) {
             return 0;
         }
-        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.getRaw(ench), handle);
+        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraft(ench), handle);
     }
 
     @Override
@@ -413,7 +413,7 @@ public final class CraftItemStack extends ItemStack {
                 || type == ItemType.WITHER_SPAWN_EGG || type == ItemType.WOLF_SPAWN_EGG
                 || type == ItemType.ZOGLIN_SPAWN_EGG || type == ItemType.ZOMBIE_HORSE_SPAWN_EGG
                 || type == ItemType.ZOMBIE_SPAWN_EGG || type == ItemType.ZOMBIE_VILLAGER_SPAWN_EGG
-                || type == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG) {
+                || type == ItemType.ZOMBIFIED_PIGLIN_SPAWN_EGG || type == ItemType.BREEZE_SPAWN_EGG) {
             return new CraftMetaSpawnEgg(item.getTag());
         }
         if (type == ItemType.ARMOR_STAND) {
@@ -441,7 +441,8 @@ public final class CraftItemStack extends ItemStack {
                 || type == ItemType.SCULK_SHRIEKER || type == ItemType.SCULK_SENSOR
                 || type == ItemType.CALIBRATED_SCULK_SENSOR || type == ItemType.CHISELED_BOOKSHELF
                 || type == ItemType.DECORATED_POT || type == ItemType.SUSPICIOUS_SAND
-                || type == ItemType.SUSPICIOUS_GRAVEL) {
+                || type == ItemType.SUSPICIOUS_GRAVEL || type == ItemType.CRAFTER
+                || type == ItemType.TRIAL_SPAWNER) {
             return new CraftMetaBlockState(item.getTag(), CraftItemType.minecraftToBukkit(item.getItem()));
         }
         if (type == ItemType.TROPICAL_FISH_BUCKET) {
@@ -499,7 +500,7 @@ public final class CraftItemStack extends ItemStack {
         if (itemMeta == null) return true;
 
         Item oldItem = item.getItem();
-        Item newItem = ((CraftItemType) CraftItemFactory.instance().updateItemType(itemMeta, CraftItemType.minecraftToBukkit(oldItem))).getHandle();
+        Item newItem = CraftItemType.bukkitToMinecraft(CraftItemFactory.instance().updateItemType(itemMeta, CraftItemType.minecraftToBukkit(oldItem)));
         if (oldItem != newItem) {
             item.setItem(newItem);
         }

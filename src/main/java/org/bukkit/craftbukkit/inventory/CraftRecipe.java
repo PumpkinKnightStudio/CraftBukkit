@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.crafting.RecipeItemStack;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.recipe.CookingBookCategory;
@@ -55,12 +55,12 @@ public interface CraftRecipe extends Recipe {
             return new RecipeChoice.ExactChoice(choices);
         } else {
 
-            List<org.bukkit.Material> choices = new ArrayList<>(list.itemStacks.length);
+            List<ItemType> choices = new ArrayList<>(list.itemStacks.length);
             for (net.minecraft.world.item.ItemStack i : list.itemStacks) {
-                choices.add(CraftMagicNumbers.getMaterial(i.getItem()));
+                choices.add(CraftItemType.minecraftToBukkit(i.getItem()));
             }
 
-            return new RecipeChoice.MaterialChoice(choices);
+            return new RecipeChoice.ItemTypeChoice(choices);
         }
     }
 

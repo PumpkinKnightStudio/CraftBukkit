@@ -17,7 +17,7 @@ public class CraftBlockTag extends CraftTag<Block, BlockType<?>> {
 
     @Override
     public boolean isTagged(BlockType<?> item) {
-        return ((CraftBlockType<?>) item).getHandle().builtInRegistryHolder().is(tag);
+        return CraftBlockType.bukkitToMinecraft(item).builtInRegistryHolder().is(tag);
     }
 
     @Override

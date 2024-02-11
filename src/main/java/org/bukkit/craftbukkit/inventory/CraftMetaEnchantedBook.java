@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.enchantments.Enchantment;

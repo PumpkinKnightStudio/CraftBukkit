@@ -165,7 +165,7 @@ public class CraftBlockState implements BlockState {
         Preconditions.checkArgument(type != null, "BlockType cannot be null");
 
         if (this.getType() != type) {
-            this.data = ((CraftBlockType<?>) type).getHandle().defaultBlockState();
+            this.data = CraftBlockType.bukkitToMinecraft(type).defaultBlockState();
         }
     }
 

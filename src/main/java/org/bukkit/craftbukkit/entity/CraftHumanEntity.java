@@ -23,7 +23,6 @@ import net.minecraft.world.inventory.Container;
 import net.minecraft.world.inventory.Containers;
 import net.minecraft.world.item.ItemCooldown;
 import net.minecraft.world.item.crafting.CraftingManager;
-import net.minecraft.world.item.crafting.IRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.trading.IMerchant;
 import net.minecraft.world.level.block.BlockBed;
@@ -51,7 +50,6 @@ import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
@@ -491,14 +489,14 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public boolean hasCooldown(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
 
-        return getHandle().getCooldowns().isOnCooldown(((CraftItemType) itemType).getHandle());
+        return getHandle().getCooldowns().isOnCooldown(CraftItemType.bukkitToMinecraft(itemType));
     }
 
     @Override
     public int getCooldown(ItemType itemType) {
         Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
 
-        ItemCooldown.Info cooldown = getHandle().getCooldowns().cooldowns.get(((CraftItemType) itemType).getHandle());
+        ItemCooldown.Info cooldown = getHandle().getCooldowns().cooldowns.get(CraftItemType.bukkitToMinecraft(itemType));
         return (cooldown == null) ? 0 : Math.max(0, cooldown.endTime - getHandle().getCooldowns().tickCount);
     }
 
@@ -507,7 +505,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         Preconditions.checkArgument(itemType != null, "ItemType cannot be null");
         Preconditions.checkArgument(ticks >= 0, "Cannot have negative cooldown");
 
-        getHandle().getCooldowns().addCooldown(((CraftItemType) itemType).getHandle(), ticks);
+        getHandle().getCooldowns().addCooldown(CraftItemType.bukkitToMinecraft(itemType), ticks);
     }
 
     @Override
@@ -682,5 +680,15 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         EntityFireworks fireworks = new EntityFireworks(getHandle().level(), CraftItemStack.asNMSCopy(fireworkItemStack), getHandle());
         boolean success = getHandle().level().addFreshEntity(fireworks, SpawnReason.CUSTOM);
         return success ? (Firework) fireworks.getBukkitEntity() : null;
+    }
+
+    @Override
+    public org.bukkit.entity.Entity copy() {
+        throw new UnsupportedOperationException("Cannot copy human entities");
+    }
+
+    @Override
+    public org.bukkit.entity.Entity copy(Location location) {
+        throw new UnsupportedOperationException("Cannot copy human entities");
     }
 }

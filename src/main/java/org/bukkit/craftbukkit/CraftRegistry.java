@@ -11,7 +11,6 @@ import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import org.bukkit.Art;
-import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
 import org.bukkit.GameEvent;
 import org.bukkit.Keyed;
@@ -74,11 +73,17 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     }
 
     public static <B extends Keyed> Registry<?> createRegistry(Class<? super B> bukkitClass, IRegistryCustom registryHolder) {
+        if (bukkitClass == Enchantment.class) {
+            return new CraftRegistry<>(Enchantment.class, registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
+        }
         if (bukkitClass == GameEvent.class) {
             return new CraftRegistry<>(GameEvent.class, registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new);
         }
         if (bukkitClass == MusicInstrument.class) {
             return new CraftRegistry<>(MusicInstrument.class, registryHolder.registryOrThrow(Registries.INSTRUMENT), CraftMusicInstrument::new);
+        }
+        if (bukkitClass == PotionEffectType.class) {
+            return new CraftRegistry<>(PotionEffectType.class, registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
         }
         if (bukkitClass == Structure.class) {
             return new CraftRegistry<>(Structure.class, registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new);
@@ -106,12 +111,6 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == Villager.Profession.class) {
             return new CraftRegistry<>(Villager.Profession.class, registryHolder.registryOrThrow(Registries.VILLAGER_PROFESSION), CraftVillager.CraftProfession::new);
-        }
-        if (bukkitClass == PotionEffectType.class) {
-            return new CraftRegistry<>(PotionEffectType.class, registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
-        }
-        if (bukkitClass == Enchantment.class) {
-            return new CraftRegistry<>(Enchantment.class, registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
         }
         if (bukkitClass == Sound.class) {
             return new CraftRegistry<>(Sound.class, registryHolder.registryOrThrow(Registries.SOUND_EVENT), CraftSound::new);

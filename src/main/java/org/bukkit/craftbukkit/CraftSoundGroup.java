@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit;
 
 import java.util.HashMap;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.SoundEffectType;
 import org.bukkit.Sound;
 import org.bukkit.SoundGroup;

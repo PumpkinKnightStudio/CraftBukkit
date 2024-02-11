@@ -9,7 +9,9 @@ import net.minecraft.world.entity.EntityTypes;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderSignal;
@@ -98,6 +100,12 @@ public class CraftEntityType<E extends Entity> extends EntityType<E> {
     @Override
     public Class<E> getEntityClass() {
         return clazz;
+    }
+
+    @Override
+    public boolean isEnabledByFeature(@NotNull World world) {
+        Preconditions.checkArgument(world != null, "World cannot be null");
+        return getHandle().isEnabled(((CraftWorld) world).getHandle().enabledFeatures());
     }
 
     @Override
