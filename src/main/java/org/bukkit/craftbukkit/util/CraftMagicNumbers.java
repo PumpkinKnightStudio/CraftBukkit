@@ -40,6 +40,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionRegistry;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BlockComposter;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.storage.SavedFile;
 import org.bukkit.Bukkit;
@@ -398,6 +399,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public DamageSource.Builder createDamageSourceBuilder(DamageType damageType) {
         return new CraftDamageSourceBuilder(damageType);
+    }
+
+    @Override
+    public boolean isCompostable(Material material) {
+        return BlockComposter.COMPOSTABLES.containsKey(getItem(material));
+    }
+
+    @Override
+    public float getCompostChance(Material material) {
+        return BlockComposter.COMPOSTABLES.getOrDefault(getItem(material), 0.0f);
     }
 
     /**
