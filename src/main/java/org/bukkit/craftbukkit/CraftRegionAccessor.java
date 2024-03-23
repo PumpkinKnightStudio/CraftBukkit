@@ -1,14 +1,12 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -467,8 +465,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         Preconditions.checkArgument(clazz != null, "Entity class cannot be null");
 
         // Convert classes which have no direct entity type, but where spawn able by the if cases
-        Consumer<net.minecraft.world.entity.Entity> runOld = other -> {
-        };
+        Consumer<net.minecraft.world.entity.Entity> runOld = other -> { };
         if (clazz == AbstractArrow.class) {
             clazz = Arrow.class;
         } else if (clazz == AbstractHorse.class) {
