@@ -144,7 +144,11 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.PotionType;
-import org.bukkit.util.*;
+import org.bukkit.util.BiomeSearchResult;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.StructureSearchResult;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -456,25 +460,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         }
 
         return ret.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> entry.getValue().build()));
-    }
-
-    @NotNull
-    @Override
-    public Collection<Chunk> getIntersectingChunks(@NotNull BoundingBox boundingBox) {
-        List<Chunk> chunks = new ArrayList<>();
-
-        int minX = NumberConversions.floor(boundingBox.getMinX()) >> 4;
-        int maxX = NumberConversions.floor(boundingBox.getMaxX()) >> 4;
-        int minZ = NumberConversions.floor(boundingBox.getMinZ()) >> 4;
-        int maxZ = NumberConversions.floor(boundingBox.getMaxZ()) >> 4;
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                chunks.add(getChunkAt(x, z));
-            }
-        }
-
-        return chunks;
     }
 
     @Override
