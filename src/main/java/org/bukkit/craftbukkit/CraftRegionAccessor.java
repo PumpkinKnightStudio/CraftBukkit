@@ -1,12 +1,14 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -29,6 +31,7 @@ import org.bukkit.Material;
 import org.bukkit.RegionAccessor;
 import org.bukkit.TreeType;
 import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBiome;
@@ -60,6 +63,8 @@ import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
+import org.bukkit.voxel.VoxelShapeStrategy;
+import org.joml.Vector3ic;
 
 public abstract class CraftRegionAccessor implements RegionAccessor {
 
@@ -462,7 +467,8 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         Preconditions.checkArgument(clazz != null, "Entity class cannot be null");
 
         // Convert classes which have no direct entity type, but where spawn able by the if cases
-        Consumer<net.minecraft.world.entity.Entity> runOld = other -> { };
+        Consumer<net.minecraft.world.entity.Entity> runOld = other -> {
+        };
         if (clazz == AbstractArrow.class) {
             clazz = Arrow.class;
         } else if (clazz == AbstractHorse.class) {
@@ -507,5 +513,17 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         }
 
         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
+    }
+
+    @Override
+    public Collection<Block> getBlocksBetween(Vector3ic min, Vector3ic max, VoxelShapeStrategy shape) {
+        Collection<Vector3ic> shapePoints = shape.calculatePoints(min, max);
+        List<Block> blocks = new ArrayList<>(shapePoints.size());
+        for (Vector3ic point : shapePoints) {
+            BlockPosition position = new BlockPosition(point.x(), point.y(), point.z());
+            CraftBlock block = CraftBlock.at(getHandle(), position);
+            blocks.add(block);
+        }
+        return blocks;
     }
 }
