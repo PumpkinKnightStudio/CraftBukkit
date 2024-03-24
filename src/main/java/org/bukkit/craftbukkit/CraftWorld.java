@@ -149,8 +149,10 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
+import org.bukkit.voxel.VoxelShapeStrategy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3ic;
 
 public class CraftWorld extends CraftRegionAccessor implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
@@ -1999,6 +2001,17 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         MinecraftKey key = registry.getKey(CraftStructure.bukkitToMinecraft(structure));
 
         return getStructures(x, z, struct -> registry.getKey(struct).equals(key));
+    }
+
+    @Override
+    public Collection<Block> getBlocksBetween(Vector3ic min, Vector3ic max, VoxelShapeStrategy shape) {
+        Collection<Vector3ic> shapePoints = shape.calculatePoints(min, max);
+        List<Block> blocks = new ArrayList<>(shapePoints.size());
+        for (Vector3ic point : shapePoints) {
+            Block block = getBlockAt(point.x(), point.y(), point.z());
+            blocks.add(block);
+        }
+        return blocks;
     }
 
     private List<GeneratedStructure> getStructures(int x, int z, Predicate<net.minecraft.world.level.levelgen.structure.Structure> predicate) {

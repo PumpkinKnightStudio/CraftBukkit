@@ -29,7 +29,6 @@ import org.bukkit.Material;
 import org.bukkit.RegionAccessor;
 import org.bukkit.TreeType;
 import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBiome;
@@ -61,8 +60,6 @@ import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
-import org.bukkit.voxel.VoxelShapeStrategy;
-import org.joml.Vector3ic;
 
 public abstract class CraftRegionAccessor implements RegionAccessor {
 
@@ -512,15 +509,4 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
     }
 
-    @Override
-    public Collection<Block> getBlocksBetween(Vector3ic min, Vector3ic max, VoxelShapeStrategy shape) {
-        Collection<Vector3ic> shapePoints = shape.calculatePoints(min, max);
-        List<Block> blocks = new ArrayList<>(shapePoints.size());
-        for (Vector3ic point : shapePoints) {
-            BlockPosition position = new BlockPosition(point.x(), point.y(), point.z());
-            CraftBlock block = CraftBlock.at(getHandle(), position);
-            blocks.add(block);
-        }
-        return blocks;
-    }
 }
