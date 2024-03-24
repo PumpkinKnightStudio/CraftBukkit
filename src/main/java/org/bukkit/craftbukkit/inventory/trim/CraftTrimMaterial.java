@@ -2,9 +2,12 @@ package org.bukkit.craftbukkit.inventory.trim;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.item.Item;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.jetbrains.annotations.NotNull;
@@ -42,5 +45,11 @@ public class CraftTrimMaterial implements TrimMaterial, Handleable<net.minecraft
     @Override
     public String getTranslationKey() {
         return ((TranslatableContents) handle.description().getContents()).getKey();
+    }
+
+    @Override
+    public Material getMaterial() {
+        Item item = this.handle.ingredient().value();
+        return CraftMagicNumbers.getMaterial(item);
     }
 }
