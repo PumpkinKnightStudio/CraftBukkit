@@ -508,5 +508,4 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
     }
-
 }
