@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
@@ -48,8 +49,8 @@ public class CraftTrimMaterial implements TrimMaterial, Handleable<net.minecraft
     }
 
     @Override
-    public Material getMaterial() {
+    public Material getItemType() {
         Item item = this.handle.ingredient().value();
-        return CraftMagicNumbers.getMaterial(item);
+        return CraftItemType.minecraftToBukkit(item);
     }
 }
