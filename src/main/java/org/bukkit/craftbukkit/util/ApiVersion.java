@@ -8,6 +8,7 @@ public final class ApiVersion implements Comparable<ApiVersion> {
 
     public static final ApiVersion CURRENT;
     public static final ApiVersion FLATTENING;
+    public static final ApiVersion AUTO_EXPAND_MAX_ABSORPTION_PATCH;
     public static final ApiVersion NONE;
 
     private static final Map<String, ApiVersion> versions;
@@ -16,6 +17,7 @@ public final class ApiVersion implements Comparable<ApiVersion> {
         versions = new HashMap<>();
         CURRENT = getOrCreateVersion("1.20.4");
         FLATTENING = getOrCreateVersion("1.13");
+        AUTO_EXPAND_MAX_ABSORPTION_PATCH = getOrCreateVersion("1.20.5"); // TODO 2024-03-25: Set cut of day, to when this patch should no longer affect plugins
         NONE = getOrCreateVersion("none");
     }
 

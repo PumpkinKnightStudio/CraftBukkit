@@ -279,6 +279,7 @@ public final class CraftServer implements Server {
     protected final DedicatedPlayerList playerList;
     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
     private final Map<Class<?>, Registry<?>> registries = new HashMap<>();
+    public boolean autoExpandMaxAbsorption;
     private YamlConfiguration configuration;
     private YamlConfiguration commandsConfiguration;
     private final Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
@@ -376,6 +377,10 @@ public final class CraftServer implements Server {
         warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
         TicketType.PLUGIN.timeout = configuration.getInt("chunk-gc.period-in-ticks");
         minimumAPI = ApiVersion.getOrCreateVersion(configuration.getString("settings.minimum-api"));
+        autoExpandMaxAbsorption = configuration.getBoolean("settings.patch.auto-expand-max-absorption");
+        if (autoExpandMaxAbsorption) {
+            logger.info("Using `auto-expand-max-absorption` patch, this will affect performance and other plugins behavior.");
+        }
         loadIcon();
 
         // Set map color cache
@@ -895,6 +900,10 @@ public final class CraftServer implements Server {
         minimumAPI = ApiVersion.getOrCreateVersion(configuration.getString("settings.minimum-api"));
         printSaveWarning = false;
         console.autosavePeriod = configuration.getInt("ticks-per.autosave");
+        autoExpandMaxAbsorption = configuration.getBoolean("settings.patch.auto-expand-max-absorption");
+        if (autoExpandMaxAbsorption) {
+            logger.info("Using `auto-expand-max-absorption` patch, this will affect performance and other plugins behavior.");
+        }
         loadIcon();
 
         try {

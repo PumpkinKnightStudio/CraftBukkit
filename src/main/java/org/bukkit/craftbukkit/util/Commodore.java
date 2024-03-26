@@ -20,6 +20,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.legacy.AutoExpandMaxAbsorptionPatch;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteArgument;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteBuilder;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteMethodData;
@@ -55,6 +56,8 @@ public class Commodore {
             "org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent",
             "org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent"
     );
+
+    private static final Map<String, RerouteMethodData> AUTO_EXPAND_MAX_ABSORPTION_PATCH_METHOD_REROUTE = RerouteBuilder.buildFromClass(AutoExpandMaxAbsorptionPatch.class);
 
     public static void main(String[] args) {
         OptionParser parser = new OptionParser();
@@ -310,6 +313,10 @@ public class Commodore {
                     }
 
                     private void handleMethod(MethodPrinter visitor, int opcode, String owner, String name, String desc, boolean itf, Type samMethodType, Type instantiatedMethodType) {
+                        if (pluginVersion.isOlderThan(ApiVersion.AUTO_EXPAND_MAX_ABSORPTION_PATCH) && checkReroute(visitor, AUTO_EXPAND_MAX_ABSORPTION_PATCH_METHOD_REROUTE, opcode, owner, name, desc, samMethodType, instantiatedMethodType)) {
+                            return;
+                        }
+
                         // SPIGOT-4496
                         if (owner.equals("org/bukkit/map/MapView") && name.equals("getId") && desc.equals("()S")) {
                             // Should be same size on stack so just call other method
