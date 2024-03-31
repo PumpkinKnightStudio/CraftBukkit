@@ -230,14 +230,8 @@ public class Main {
     public static void checkForUpdates() throws InterruptedException {
         int behind = 0;
         String version = Main.class.getPackage().getImplementationVersion();
-        System.out.println(version);
         if (version == null) version = "Custom";
-        String[] parts;
-        if (version.contains(" ")) {
-            parts = version.substring(0, version.indexOf(' ')).split("-");
-        } else {
-            parts = version.split("-");
-        }
+        String[] parts = version.split("-");
 
         if (parts.length == 4) {
             int cbVersions = getDistance("craftbukkit", parts[3]);
