@@ -230,7 +230,6 @@ public class Main {
     public static void checkForUpdates() throws InterruptedException {
         int behind = 0;
         String version = Main.class.getPackage().getImplementationVersion();
-        System.out.println(version);
         if (version == null) version = "Custom";
         String[] parts;
         if (version.contains(" ")) {
