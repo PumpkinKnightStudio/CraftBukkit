@@ -238,7 +238,7 @@ public class Main {
         } else {
             parts = version.split("-");
         }
-        // Spigot version format.
+
         if (parts.length == 4) {
             int cbVersions = getDistance("craftbukkit", parts[3]);
             int spigotVersions = getDistance("spigot", parts[2]);
@@ -250,10 +250,7 @@ public class Main {
             if (cbVersions != 0 || spigotVersions != 0) {
                 behind = cbVersions + spigotVersions;
             }
-        }
-
-        // Bukkit / CraftBukkit version format.
-        if (parts.length == 3) {
+        } else if (parts.length == 3) {
             int cbVersions = getDistance("craftbukkit", parts[2]);
             if (cbVersions == -1) {
                 System.out.println("Error obtaining version information");
