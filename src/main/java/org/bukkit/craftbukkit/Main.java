@@ -1,11 +1,18 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -14,8 +21,12 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.util.PathConverter;
 import org.fusesource.jansi.AnsiConsole;
+import org.jetbrains.annotations.NotNull;
 
 public class Main {
+
+    private static final int UPDATE_THRESHOLD = 5;
+
     public static boolean useJline = true;
     public static boolean useConsole = true;
 
@@ -201,16 +212,7 @@ public class Main {
                 }
 
                 if (Main.class.getPackage().getImplementationVendor() != null && System.getProperty("IReallyKnowWhatIAmDoingISwear") == null) {
-                    Date buildDate = new Date(Integer.parseInt(Main.class.getPackage().getImplementationVendor()) * 1000L);
-
-                    Calendar deadline = Calendar.getInstance();
-                    deadline.add(Calendar.DAY_OF_YEAR, -28);
-                    if (buildDate.before(deadline.getTime())) {
-                        System.err.println("*** Error, this build is outdated ***");
-                        System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");
-                        System.err.println("*** Server will start in 20 seconds ***");
-                        Thread.sleep(TimeUnit.SECONDS.toMillis(20));
-                    }
+                    checkForUpdates();
                 }
 
                 System.out.println("Loading libraries, please wait...");
@@ -223,5 +225,77 @@ public class Main {
 
     private static List<String> asList(String... params) {
         return Arrays.asList(params);
+    }
+
+    public static void checkForUpdates() throws InterruptedException {
+        int behind = 0;
+        String version = Main.class.getPackage().getImplementationVersion();
+        if (version == null) version = "Custom";
+        String[] parts;
+        if (version.contains(" ")) {
+            parts = version.substring(0, version.indexOf(' ')).split("-");
+        } else {
+            parts = version.split("-");
+        }
+        // Spigot version format.
+        if (parts.length == 4) {
+            int cbVersions = getDistance("craftbukkit", parts[3]);
+            int spigotVersions = getDistance("spigot", parts[2]);
+            if (cbVersions == -1 || spigotVersions == -1) {
+                System.out.println("Error obtaining version information");
+                return;
+            }
+
+            if (cbVersions != 0 || spigotVersions != 0) {
+                behind = cbVersions + spigotVersions;
+            }
+        }
+
+        // Bukkit / CraftBukkit version format.
+        if (parts.length == 3) {
+            int cbVersions = getDistance("craftbukkit", parts[2]);
+            if (cbVersions == -1) {
+                System.out.println("Error obtaining version information");
+                return;
+            }
+
+            behind = cbVersions;
+        } else {
+            System.out.println("Unknown version, custom build?");
+        }
+
+        if (behind > 0) {
+            System.err.println("*** Error, this build is outdated! You are " + behind + " version(s) behind ***");
+            System.err.println("*** Please download a new build as per instructions from https://www.spigotmc.org/go/outdated-spigot ***");
+
+            if (behind > UPDATE_THRESHOLD) {
+                System.err.println("*** Server will start in 20 seconds ***");
+                Thread.sleep(TimeUnit.SECONDS.toMillis(20));
+            } else if (behind > 0) {
+                System.err.println("*** Server will start in 10 seconds ***");
+                Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+            }
+        }
+    }
+
+    public static int getDistance(@NotNull String repo, @NotNull String hash) {
+        try {
+            BufferedReader reader = Resources.asCharSource(
+                new URL("https://hub.spigotmc.org/stash/rest/api/1.0/projects/SPIGOT/repos/" + repo + "/commits?since=" + URLEncoder.encode(hash, StandardCharsets.UTF_8) + "&withCounts=true"),
+                Charsets.UTF_8
+            ).openBufferedStream();
+            try {
+                JsonObject obj = new Gson().fromJson(reader, JsonObject.class);
+                return obj.get("totalCount").getAsInt();
+            } catch (JsonSyntaxException ex) {
+                ex.printStackTrace();
+                return -1;
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 }
