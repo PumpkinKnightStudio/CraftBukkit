@@ -51,6 +51,7 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.damage.CraftDamageSource;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
@@ -117,7 +118,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         // during world generation, we don't want to run logic for dropping items and xp
         if (getHandle().generation && health == 0) {
-            getHandle().discard();
+            getHandle().discard(null); // Add Bukkit remove cause
             return;
         }
 
@@ -258,6 +259,22 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public ItemStack getItemInUse() {
+        net.minecraft.world.item.ItemStack item = getHandle().getUseItem();
+        return item.isEmpty() ? null : CraftItemStack.asCraftMirror(item);
+    }
+
+    @Override
+    public int getItemInUseTicks() {
+        return getHandle().getUseItemRemainingTicks();
+    }
+
+    @Override
+    public void setItemInUseTicks(int ticks) {
+        getHandle().useItemRemaining = ticks;
+    }
+
+    @Override
     public int getArrowCooldown() {
         return getHandle().removeArrowTime;
     }
@@ -280,13 +297,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     @Override
     public void damage(double amount) {
-        damage(amount, null);
+        damage(amount, getHandle().damageSources().generic());
     }
 
     @Override
     public void damage(double amount, org.bukkit.entity.Entity source) {
-        Preconditions.checkState(!getHandle().generation, "Cannot damage entity during world generation");
-
         DamageSource reason = getHandle().damageSources().generic();
 
         if (source instanceof HumanEntity) {
@@ -295,7 +310,21 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             reason = getHandle().damageSources().mobAttack(((CraftLivingEntity) source).getHandle());
         }
 
-        entity.hurt(reason, (float) amount);
+        damage(amount, reason);
+    }
+
+    @Override
+    public void damage(double amount, org.bukkit.damage.DamageSource damageSource) {
+        Preconditions.checkArgument(damageSource != null, "damageSource cannot be null");
+
+        damage(amount, ((CraftDamageSource) damageSource).getHandle());
+    }
+
+    private void damage(double amount, DamageSource damageSource) {
+        Preconditions.checkArgument(damageSource != null, "damageSource cannot be null");
+        Preconditions.checkState(!getHandle().generation, "Cannot damage entity during world generation");
+
+        entity.hurt(damageSource, (float) amount);
     }
 
     @Override

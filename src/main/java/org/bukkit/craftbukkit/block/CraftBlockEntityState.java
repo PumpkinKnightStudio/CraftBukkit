@@ -28,11 +28,11 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         this.load(snapshot);
     }
 
-    protected CraftBlockEntityState(CraftBlockEntityState<T> state) {
-        super(state);
+    protected CraftBlockEntityState(CraftBlockEntityState<T> state, Location location) {
+        super(state, location);
         this.tileEntity = createSnapshot(state.snapshot);
         this.snapshot = tileEntity;
-        load(snapshot);
+        loadData(state.getSnapshotNBT());
     }
 
     public void refreshSnapshot() {
@@ -134,6 +134,11 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
 
     @Override
     public CraftBlockEntityState<T> copy() {
-        return new CraftBlockEntityState<>(this);
+        return new CraftBlockEntityState<>(this, null);
+    }
+
+    @Override
+    public CraftBlockEntityState<T> copy(Location location) {
+        return new CraftBlockEntityState<>(this, location);
     }
 }

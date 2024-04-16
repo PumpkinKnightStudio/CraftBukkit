@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerConfig;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerData;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.TrialSpawner;
@@ -44,8 +45,8 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
         this.config = new TrialSpawnerConfigWrapper(tileEntity.getTrialSpawner().getConfig());
     }
 
-    protected CraftTrialSpawner(CraftTrialSpawner state) {
-        super(state);
+    protected CraftTrialSpawner(CraftTrialSpawner state, Location location) {
+        super(state, location);
         this.config = state.config;
     }
 
@@ -403,7 +404,12 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
 
     @Override
     public CraftTrialSpawner copy() {
-        return new CraftTrialSpawner(this);
+        return new CraftTrialSpawner(this, null);
+    }
+
+    @Override
+    public CraftTrialSpawner copy(Location location) {
+        return new CraftTrialSpawner(this, location);
     }
 
     static class TrialSpawnerConfigWrapper {

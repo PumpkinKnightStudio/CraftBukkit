@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.IRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
@@ -62,6 +64,7 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.IChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunkExtension;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.storage.SavedFile;
 import net.minecraft.world.phys.AxisAlignedBB;
 import net.minecraft.world.phys.MovingObjectPosition;
@@ -100,6 +103,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftDragonBattle;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
@@ -130,6 +134,7 @@ import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.ItemStack;
@@ -141,6 +146,7 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BiomeSearchResult;
 import org.bukkit.util.BoundingBox;
+import org.bukkit.util.NumberConversions;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
@@ -455,6 +461,25 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         }
 
         return ret.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> entry.getValue().build()));
+    }
+
+    @NotNull
+    @Override
+    public Collection<Chunk> getIntersectingChunks(@NotNull BoundingBox boundingBox) {
+        List<Chunk> chunks = new ArrayList<>();
+
+        int minX = NumberConversions.floor(boundingBox.getMinX()) >> 4;
+        int maxX = NumberConversions.floor(boundingBox.getMaxX()) >> 4;
+        int minZ = NumberConversions.floor(boundingBox.getMinZ()) >> 4;
+        int maxZ = NumberConversions.floor(boundingBox.getMaxZ()) >> 4;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                chunks.add(getChunkAt(x, z, false));
+            }
+        }
+
+        return chunks;
     }
 
     @Override
@@ -1708,7 +1733,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         GameRules.GameRuleValue<?> handle = getHandle().getGameRules().getRule(getGameRulesNMS().get(rule));
         handle.deserialize(value);
-        handle.onChanged(getHandle().getServer());
+        handle.onChanged(getHandle());
         return true;
     }
 
@@ -1745,7 +1770,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         GameRules.GameRuleValue<?> handle = getHandle().getGameRules().getRule(getGameRulesNMS().get(rule.getName()));
         handle.deserialize(newValue.toString());
-        handle.onChanged(getHandle().getServer());
+        handle.onChanged(getHandle());
         return true;
     }
 
@@ -1979,6 +2004,30 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public DragonBattle getEnderDragonBattle() {
         return (getHandle().getDragonFight() == null) ? null : new CraftDragonBattle(getHandle().getDragonFight());
+    }
+
+    @Override
+    public Collection<GeneratedStructure> getStructures(int x, int z) {
+        return getStructures(x, z, struct -> true);
+    }
+
+    @Override
+    public Collection<GeneratedStructure> getStructures(int x, int z, Structure structure) {
+        Preconditions.checkArgument(structure != null, "Structure cannot be null");
+
+        IRegistry<net.minecraft.world.level.levelgen.structure.Structure> registry = CraftRegistry.getMinecraftRegistry(Registries.STRUCTURE);
+        MinecraftKey key = registry.getKey(CraftStructure.bukkitToMinecraft(structure));
+
+        return getStructures(x, z, struct -> registry.getKey(struct).equals(key));
+    }
+
+    private List<GeneratedStructure> getStructures(int x, int z, Predicate<net.minecraft.world.level.levelgen.structure.Structure> predicate) {
+        List<GeneratedStructure> structures = new ArrayList<>();
+        for (StructureStart start : getHandle().structureManager().startsForStructure(new ChunkCoordIntPair(x, z), predicate)) {
+            structures.add(new CraftGeneratedStructure(start));
+        }
+
+        return structures;
     }
 
     @Override
