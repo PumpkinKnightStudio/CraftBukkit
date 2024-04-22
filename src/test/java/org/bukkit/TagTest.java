@@ -16,6 +16,7 @@ import org.bukkit.tag.InstrumentTags;
 import org.bukkit.tag.ItemTags;
 import org.bukkit.tag.StructureTags;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public final class TagTest extends AbstractTestingBase {
@@ -46,6 +47,18 @@ public final class TagTest extends AbstractTestingBase {
     }
 
     @Test
+    @Disabled // TODO: REMOVE ANNOTATION
+    public void testDamageTypeTags() {
+        // TODO (1.20.5): this.testAllTagsArePresent("DAMAGE_TYPE", Registry.DAMAGE_TYPE, DamageTypeTags.class);
+    }
+
+    @Test
+    @Disabled // TODO: REMOVE ANNOTATION
+    public void testEnchantmentTags() {
+        // TODO (1.20.5): this.testAllTagsArePresent("ENCHANTMENT", Registry.ENCHANTMENT, EnchantmentTags.class);
+    }
+
+    @Test
     public void testEntityTypeTags() {
         this.testAllTagsArePresent("ENTITY_TYPE", Registry.ENTITY_TYPE, EntityTypeTags.class);
     }
@@ -61,13 +74,13 @@ public final class TagTest extends AbstractTestingBase {
     }
 
     @Test
-    public void testItemTags() {
-        this.testAllTagsArePresent("ITEM", Registry.ITEM, ItemTags.class);
+    public void testMusicInstrumentTags() {
+        this.testAllTagsArePresent("INSTRUMENT", Registry.INSTRUMENT, InstrumentTags.class);
     }
 
     @Test
-    public void testMusicInstrumentTags() {
-        this.testAllTagsArePresent("INSTRUMENT", Registry.INSTRUMENT, InstrumentTags.class);
+    public void testItemTags() {
+        this.testAllTagsArePresent("ITEM", Registry.ITEM, ItemTags.class);
     }
 
     @Test
