@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.Registries;
@@ -22,7 +20,6 @@ import org.bukkit.Keyed;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
-import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
 import org.bukkit.Tag;
@@ -46,7 +43,7 @@ import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
-import org.bukkit.craftbukkit.tag.CraftSimpleTag;
+import org.bukkit.craftbukkit.tag.TagMapper;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Cat;
@@ -84,45 +81,31 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
             return new CraftRegistry<>(Enchantment.class, registryHolder.registryOrThrow(Registries.ENCHANTMENT), CraftEnchantment::new);
         }
         if (bukkitClass == GameEvent.class) {
-            return new CraftRegistry<>(GameEvent.class, registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new,
-                simpleTagMapper(Registries.GAME_EVENT, () -> Registry.GAME_EVENT)
-            );
+            return new CraftRegistry<>(GameEvent.class, registryHolder.registryOrThrow(Registries.GAME_EVENT), CraftGameEvent::new, true);
         }
         if (bukkitClass == MusicInstrument.class) {
-            return new CraftRegistry<>(MusicInstrument.class, registryHolder.registryOrThrow(Registries.INSTRUMENT), CraftMusicInstrument::new,
-                simpleTagMapper(Registries.INSTRUMENT, () -> Registry.INSTRUMENT)
-            );
+            return new CraftRegistry<>(MusicInstrument.class, registryHolder.registryOrThrow(Registries.INSTRUMENT), CraftMusicInstrument::new, true);
         }
         if (bukkitClass == PotionEffectType.class) {
             return new CraftRegistry<>(PotionEffectType.class, registryHolder.registryOrThrow(Registries.MOB_EFFECT), CraftPotionEffectType::new);
         }
         if (bukkitClass == Structure.class) {
-            return new CraftRegistry<>(Structure.class, registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new,
-                simpleTagMapper(Registries.STRUCTURE, () -> Registry.STRUCTURE)
-            );
+            return new CraftRegistry<>(Structure.class, registryHolder.registryOrThrow(Registries.STRUCTURE), CraftStructure::new, true);
         }
         if (bukkitClass == StructureType.class) {
             return new CraftRegistry<>(StructureType.class, registryHolder.registryOrThrow(Registries.STRUCTURE_TYPE), CraftStructureType::new);
         }
         if (bukkitClass == Biome.class) {
-            return new CraftRegistry<>(Biome.class, registryHolder.registryOrThrow(Registries.BIOME), CraftBiome::new,
-                simpleTagMapper(Registries.BIOME, () -> Registry.BIOME)
-            );
+            return new CraftRegistry<>(Biome.class, registryHolder.registryOrThrow(Registries.BIOME), CraftBiome::new, true);
         }
         if (bukkitClass == Art.class) {
-            return new CraftRegistry<>(Art.class, registryHolder.registryOrThrow(Registries.PAINTING_VARIANT), CraftArt::new,
-                simpleTagMapper(Registries.PAINTING_VARIANT, () -> Registry.ART)
-            );
+            return new CraftRegistry<>(Art.class, registryHolder.registryOrThrow(Registries.PAINTING_VARIANT), CraftArt::new, true);
         }
         if (bukkitClass == Fluid.class) {
-            return new CraftRegistry<>(Fluid.class, registryHolder.registryOrThrow(Registries.FLUID), CraftFluid::new,
-                simpleTagMapper(Registries.FLUID, () -> Registry.FLUID)
-            );
+            return new CraftRegistry<>(Fluid.class, registryHolder.registryOrThrow(Registries.FLUID), CraftFluid::new, true);
         }
         if (bukkitClass == EntityType.class) {
-            return new CraftEntityType.CraftEntityTypeRegistry(registryHolder.registryOrThrow(Registries.ENTITY_TYPE),
-                simpleTagMapper(Registries.ENTITY_TYPE, () -> Registry.ENTITY_TYPE)
-            );
+            return new CraftEntityType.CraftEntityTypeRegistry(registryHolder.registryOrThrow(Registries.ENTITY_TYPE));
         }
         if (bukkitClass == Attribute.class) {
             return new CraftRegistry<>(Attribute.class, registryHolder.registryOrThrow(Registries.ATTRIBUTE), CraftAttribute::new);
@@ -146,27 +129,19 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
             return new CraftRegistry<>(TrimPattern.class, registryHolder.registryOrThrow(Registries.TRIM_PATTERN), CraftTrimPattern::new);
         }
         if (bukkitClass == BlockType.class) {
-            return new CraftRegistry<>(BlockType.class, registryHolder.registryOrThrow(Registries.BLOCK), CraftBlockType::new,
-                simpleTagMapper(Registries.BLOCK, () -> Registry.BLOCK)
-            );
+            return new CraftRegistry<>(BlockType.class, registryHolder.registryOrThrow(Registries.BLOCK), CraftBlockType::new, true);
         }
         if (bukkitClass == ItemType.class) {
-            return new CraftRegistry<>(ItemType.class, registryHolder.registryOrThrow(Registries.ITEM), CraftItemType::new,
-                simpleTagMapper(Registries.ITEM, () -> Registry.ITEM)
-            );
+            return new CraftRegistry<>(ItemType.class, registryHolder.registryOrThrow(Registries.ITEM), CraftItemType::new, true);
         }
         if (bukkitClass == Frog.Variant.class) {
             return new CraftRegistry<>(Frog.Variant.class, registryHolder.registryOrThrow(Registries.FROG_VARIANT), CraftFrog.CraftVariant::new);
         }
         if (bukkitClass == Cat.Type.class) {
-            return new CraftRegistry<>(Cat.Type.class, registryHolder.registryOrThrow(Registries.CAT_VARIANT), CraftCat.CraftType::new,
-                simpleTagMapper(Registries.CAT_VARIANT, () -> Registry.CAT_VARIANT)
-            );
+            return new CraftRegistry<>(Cat.Type.class, registryHolder.registryOrThrow(Registries.CAT_VARIANT), CraftCat.CraftType::new, true);
         }
         if (bukkitClass == PatternType.class) {
-            return new CraftRegistry<>(PatternType.class, registryHolder.registryOrThrow(Registries.BANNER_PATTERN), CraftPatternType::new,
-                simpleTagMapper(Registries.BANNER_PATTERN, () -> Registry.BANNER_PATTERN)
-            );
+            return new CraftRegistry<>(PatternType.class, registryHolder.registryOrThrow(Registries.BANNER_PATTERN), CraftPatternType::new, true);
         }
         if (bukkitClass == Particle.class) {
             return new CraftParticle.CraftParticleRegistry(registryHolder.registryOrThrow(Registries.PARTICLE_TYPE));
@@ -178,39 +153,24 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
         throw new UnsupportedOperationException("Unsupported internal registry for class " + bukkitClass.getName());
     }
 
-    private static <M, B extends Keyed> B toBukkit(IRegistry<M> registry, Registry<B> bukkitRegistry, M nms) {
-        return bukkitRegistry.get(CraftNamespacedKey.fromMinecraft(registry.getKey(nms)));
-    }
-
-    private static <M, B extends Keyed> Holder<M> toMinecraftHolder(IRegistry<M> registry, ResourceKey<IRegistry<M>> registryKey, B bukkit) {
-        return registry.getHolderOrThrow(ResourceKey.create(registryKey, CraftNamespacedKey.toMinecraft(bukkit.getKey())));
-    }
-
-    private static <M, B extends Keyed> BiFunction<IRegistry<M>, TagKey<M>, Tag<B>> simpleTagMapper(ResourceKey<IRegistry<M>> registryKey, Supplier<Registry<B>> bukkitRegistrySupplier) {
-        return (registry, tagKey) -> new CraftSimpleTag<>(registry, tagKey,
-            bukkit -> toMinecraftHolder(registry, registryKey, bukkit),
-            nms -> toBukkit(registry, bukkitRegistrySupplier.get(), nms)
-        );
-    }
-
     private Map<NamespacedKey, Tag<B>> tags; // Initialized lazily. Should call #getTagMap() instead of direct access
 
     private final Class<? super B> bukkitClass;
     private final Map<NamespacedKey, B> cache = new HashMap<>();
     private final IRegistry<M> minecraftRegistry;
     private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
-    private final BiFunction<IRegistry<M>, TagKey<M>, Tag<B>> tagMapper;
+    private final TagMapper<B, M> tagMapper;
     private boolean init;
 
-    public CraftRegistry(Class<? super B> bukkitClass, IRegistry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit, BiFunction<IRegistry<M>, TagKey<M>, Tag<B>> tagMapper) {
+    public CraftRegistry(Class<? super B> bukkitClass, IRegistry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit, boolean supportsTags) {
         this.bukkitClass = bukkitClass;
         this.minecraftRegistry = minecraftRegistry;
         this.minecraftToBukkit = minecraftToBukkit;
-        this.tagMapper = tagMapper;
+        this.tagMapper = (supportsTags ? TagMapper.standard(this) : TagMapper.none());
     }
 
     public CraftRegistry(Class<? super B> bukkitClass, IRegistry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
-        this(bukkitClass, minecraftRegistry, minecraftToBukkit, (ignore, ignore2) -> null);
+        this(bukkitClass, minecraftRegistry, minecraftToBukkit, false);
     }
 
     @Override
@@ -253,17 +213,14 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
 
     @Override
     public boolean hasTag(NamespacedKey key) {
-        return minecraftRegistry.getTag(TagKey.create(minecraftRegistry.key(), CraftNamespacedKey.toMinecraft(key))).isPresent();
+        Preconditions.checkArgument(key != null, "key must not be null");
+        return getTagMap().containsKey(key);
     }
 
     @Override
     public Tag<B> getTag(NamespacedKey key) {
         Preconditions.checkArgument(key != null, "key must not be null");
-
-        Tag<B> tag = getTagMap().get(key);
-        Preconditions.checkArgument(tag != null, "Unknown tag with key '%s'", key);
-
-        return tag;
+        return getTagMap().get(key);
     }
 
     @Override
@@ -304,9 +261,12 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
 
         this.minecraftRegistry.getTags().forEach(tagPair -> {
             TagKey<M> tagKey = tagPair.getFirst();
-            Tag<B> bukkitTag = tagMapper.apply(minecraftRegistry, tagKey);
-            NamespacedKey bukkitKey = CraftNamespacedKey.fromMinecraft(tagKey.location());
+            Tag<B> bukkitTag = tagMapper.map(minecraftRegistry, tagKey);
+            if (bukkitTag == null) { // Never add null to the Map
+                return;
+            }
 
+            NamespacedKey bukkitKey = CraftNamespacedKey.fromMinecraft(tagKey.location());
             tagsBuilder.put(bukkitKey, bukkitTag);
         });
 

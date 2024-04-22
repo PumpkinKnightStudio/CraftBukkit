@@ -3,15 +3,12 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityTypes;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -213,8 +210,8 @@ public class CraftEntityType<E extends Entity> extends EntityType<E> {
             add("unknown");
         }
 
-        public CraftEntityTypeRegistry(IRegistry<EntityTypes<?>> minecraftRegistry, BiFunction<IRegistry<EntityTypes<?>>, TagKey<EntityTypes<?>>, Tag<EntityType<?>>> tagMapper) {
-            super(EntityType.class, minecraftRegistry, null, tagMapper);
+        public CraftEntityTypeRegistry(IRegistry<EntityTypes<?>> minecraftRegistry) {
+            super(EntityType.class, minecraftRegistry, null, true);
         }
 
         @Override
