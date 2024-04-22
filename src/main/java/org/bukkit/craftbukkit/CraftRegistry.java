@@ -220,7 +220,11 @@ public class CraftRegistry<B extends Keyed, M> implements CraftRegistryInternal<
     @Override
     public Tag<B> getTag(NamespacedKey key) {
         Preconditions.checkArgument(key != null, "key must not be null");
-        return getTagMap().get(key);
+
+        Tag<B> tag = getTagMap().get(key);
+        Preconditions.checkArgument(tag != null, "Unknown tag with key '%s'", key);
+
+        return tag;
     }
 
     @Override
