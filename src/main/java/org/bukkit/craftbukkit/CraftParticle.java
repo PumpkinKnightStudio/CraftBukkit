@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import net.minecraft.core.IRegistry;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.ParticleParam;
 import net.minecraft.core.particles.ParticleParamBlock;
@@ -75,15 +76,6 @@ public abstract class CraftParticle<D> implements Keyed {
         }
 
         return object;
-    }
-
-    public static Particle convertLegacy(Particle particle) {
-        return switch (particle) {
-            case LEGACY_BLOCK_DUST -> Particle.BLOCK_DUST;
-            case LEGACY_FALLING_DUST -> Particle.FALLING_DUST;
-            case LEGACY_BLOCK_CRACK -> Particle.BLOCK_CRACK;
-            default -> particle;
-        };
     }
 
     private final NamespacedKey key;
@@ -182,6 +174,13 @@ public abstract class CraftParticle<D> implements Keyed {
                 }
             };
 
+            BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> colorFunction = (name, particle) -> new CraftParticle<>(name, particle, Color.class) {
+                @Override
+                public ParticleParam createParticleParam(Color color) {
+                    return ColorParticleOption.create((net.minecraft.core.particles.Particle<ColorParticleOption>) particle, color.asARGB());
+                }
+            };
+
             add("dust", dustOptionsFunction);
             add("item", itemStackFunction);
             add("block", blockDataFunction);
@@ -191,6 +190,8 @@ public abstract class CraftParticle<D> implements Keyed {
             add("sculk_charge", floatFunction);
             add("shriek", integerFunction);
             add("block_marker", blockDataFunction);
+            add("entity_effect", colorFunction);
+            add("dust_pillar", blockDataFunction);
         }
 
         private static void add(String name, BiFunction<NamespacedKey, net.minecraft.core.particles.Particle<?>, CraftParticle<?>> function) {

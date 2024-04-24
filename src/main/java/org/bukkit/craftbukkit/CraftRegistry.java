@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IRegistry;
 import net.minecraft.core.IRegistryCustom;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,6 +19,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.damage.CraftDamageType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+import org.bukkit.craftbukkit.entity.CraftWolf;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
@@ -27,6 +29,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Wolf;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
@@ -85,6 +88,19 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         return ((Handleable<M>) bukkit).getHandle();
     }
 
+    public static <B extends Keyed, M> Holder<M> bukkitToMinecraftHolder(B bukkit, ResourceKey<IRegistry<M>> registryKey) {
+        Preconditions.checkArgument(bukkit != null);
+
+        IRegistry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
+
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<M> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own registry entry with out properly registering it.");
+    }
+
     /**
      * Note: Newly added registries should also be added to RegistriesArgumentProvider in the test package
      *
@@ -119,6 +135,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         if (bukkitClass == DamageType.class) {
             return new CraftRegistry<>(DamageType.class, registryHolder.registryOrThrow(Registries.DAMAGE_TYPE), CraftDamageType::new);
+        }
+        if (bukkitClass == Wolf.Variant.class) {
+            return new CraftRegistry<>(Wolf.Variant.class, registryHolder.registryOrThrow(Registries.WOLF_VARIANT), CraftWolf.CraftVariant::new);
         }
 
         return null;

@@ -50,6 +50,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Allay;
 import org.bukkit.entity.AreaEffectCloud;
+import org.bukkit.entity.Armadillo;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Axolotl;
@@ -58,7 +59,9 @@ import org.bukkit.entity.Bee;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.Bogged;
 import org.bukkit.entity.Breeze;
+import org.bukkit.entity.BreezeWindCharge;
 import org.bukkit.entity.Camel;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.CaveSpider;
@@ -115,6 +118,7 @@ import org.bukkit.entity.Marker;
 import org.bukkit.entity.Mule;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Ocelot;
+import org.bukkit.entity.OminousItemSpawner;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Parrot;
@@ -223,7 +227,7 @@ public final class CraftEntityTypes {
     private static final BiConsumer<SpawnData, net.minecraft.world.entity.Entity> MOVE_EMPTY_ROT = (spawnData, entity) -> entity.moveTo(spawnData.x(), spawnData.y(), spawnData.z(), 0, 0);
     private static final BiConsumer<SpawnData, EntityFireball> DIRECTION = (spawnData, entity) -> {
         Vector direction = spawnData.location().getDirection().multiply(10);
-        entity.setDirection(direction.getX(), direction.getY(), direction.getZ());
+        entity.assignPower(direction.getX(), direction.getY(), direction.getZ());
     };
     private static final Map<Class<?>, EntityTypeData<?, ?>> CLASS_TYPE_DATA = new HashMap<>();
     private static final Map<EntityType, EntityTypeData<?, ?>> ENTITY_TYPE_DATA = new HashMap<>();
@@ -233,6 +237,7 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.ELDER_GUARDIAN, ElderGuardian.class, CraftElderGuardian::new, createLiving(EntityTypes.ELDER_GUARDIAN)));
         register(new EntityTypeData<>(EntityType.WITHER_SKELETON, WitherSkeleton.class, CraftWitherSkeleton::new, createLiving(EntityTypes.WITHER_SKELETON)));
         register(new EntityTypeData<>(EntityType.STRAY, Stray.class, CraftStray::new, createLiving(EntityTypes.STRAY)));
+        register(new EntityTypeData<>(EntityType.BOGGED, Bogged.class, CraftBogged::new, createLiving(EntityTypes.BOGGED)));
         register(new EntityTypeData<>(EntityType.HUSK, Husk.class, CraftHusk::new, createLiving(EntityTypes.HUSK)));
         register(new EntityTypeData<>(EntityType.ZOMBIE_VILLAGER, ZombieVillager.class, CraftVillagerZombie::new, createLiving(EntityTypes.ZOMBIE_VILLAGER)));
         register(new EntityTypeData<>(EntityType.SKELETON_HORSE, SkeletonHorse.class, CraftSkeletonHorse::new, createLiving(EntityTypes.SKELETON_HORSE)));
@@ -269,8 +274,8 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.CHICKEN, Chicken.class, CraftChicken::new, createLiving(EntityTypes.CHICKEN)));
         register(new EntityTypeData<>(EntityType.SQUID, Squid.class, CraftSquid::new, createLiving(EntityTypes.SQUID)));
         register(new EntityTypeData<>(EntityType.WOLF, Wolf.class, CraftWolf::new, createLiving(EntityTypes.WOLF)));
-        register(new EntityTypeData<>(EntityType.MUSHROOM_COW, MushroomCow.class, CraftMushroomCow::new, createLiving(EntityTypes.MOOSHROOM)));
-        register(new EntityTypeData<>(EntityType.SNOWMAN, Snowman.class, CraftSnowman::new, createLiving(EntityTypes.SNOW_GOLEM)));
+        register(new EntityTypeData<>(EntityType.MOOSHROOM, MushroomCow.class, CraftMushroomCow::new, createLiving(EntityTypes.MOOSHROOM)));
+        register(new EntityTypeData<>(EntityType.SNOW_GOLEM, Snowman.class, CraftSnowman::new, createLiving(EntityTypes.SNOW_GOLEM)));
         register(new EntityTypeData<>(EntityType.OCELOT, Ocelot.class, CraftOcelot::new, createLiving(EntityTypes.OCELOT)));
         register(new EntityTypeData<>(EntityType.IRON_GOLEM, IronGolem.class, CraftIronGolem::new, createLiving(EntityTypes.IRON_GOLEM)));
         register(new EntityTypeData<>(EntityType.HORSE, Horse.class, CraftHorse::new, createLiving(EntityTypes.HORSE)));
@@ -310,6 +315,7 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.CAMEL, Camel.class, CraftCamel::new, createLiving(EntityTypes.CAMEL)));
         register(new EntityTypeData<>(EntityType.SNIFFER, Sniffer.class, CraftSniffer::new, createLiving(EntityTypes.SNIFFER)));
         register(new EntityTypeData<>(EntityType.BREEZE, Breeze.class, CraftBreeze::new, createLiving(EntityTypes.BREEZE)));
+        register(new EntityTypeData<>(EntityType.ARMADILLO, Armadillo.class, CraftArmadillo::new, createLiving(EntityTypes.ARMADILLO)));
 
         Function<SpawnData, EntityEnderDragon> dragonFunction = createLiving(EntityTypes.ENDER_DRAGON);
         register(new EntityTypeData<>(EntityType.ENDER_DRAGON, EnderDragon.class, CraftEnderDragon::new, spawnData -> {
@@ -323,6 +329,7 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.WITHER_SKULL, WitherSkull.class, CraftWitherSkull::new, createFireball(EntityTypes.WITHER_SKULL)));
         register(new EntityTypeData<>(EntityType.DRAGON_FIREBALL, DragonFireball.class, CraftDragonFireball::new, createFireball(EntityTypes.DRAGON_FIREBALL)));
         register(new EntityTypeData<>(EntityType.WIND_CHARGE, WindCharge.class, CraftWindCharge::new, createFireball(EntityTypes.WIND_CHARGE)));
+        register(new EntityTypeData<>(EntityType.BREEZE_WIND_CHARGE, BreezeWindCharge.class, CraftBreezeWindCharge::new, createFireball(EntityTypes.BREEZE_WIND_CHARGE)));
 
         // Hanging
         register(new EntityTypeData<>(EntityType.PAINTING, Painting.class, CraftPainting::new, createHanging(Painting.class, (spawnData, hangingData) -> {
@@ -340,19 +347,20 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.GLOW_ITEM_FRAME, GlowItemFrame.class, CraftGlowItemFrame::new, createHanging(GlowItemFrame.class, (spawnData, hangingData) -> new net.minecraft.world.entity.decoration.GlowItemFrame(spawnData.minecraftWorld(), hangingData.position(), hangingData.direction()))));
 
         // Move no rotation
-        register(new EntityTypeData<>(EntityType.ARROW, Arrow.class, CraftTippedArrow::new, createAndMoveEmptyRot(EntityTypes.ARROW)));
+        register(new EntityTypeData<>(EntityType.ARROW, Arrow.class, CraftArrow::new, createAndMoveEmptyRot(EntityTypes.ARROW)));
         register(new EntityTypeData<>(EntityType.ENDER_PEARL, EnderPearl.class, CraftEnderPearl::new, createAndMoveEmptyRot(EntityTypes.ENDER_PEARL)));
-        register(new EntityTypeData<>(EntityType.THROWN_EXP_BOTTLE, ThrownExpBottle.class, CraftThrownExpBottle::new, createAndMoveEmptyRot(EntityTypes.EXPERIENCE_BOTTLE)));
+        register(new EntityTypeData<>(EntityType.EXPERIENCE_BOTTLE, ThrownExpBottle.class, CraftThrownExpBottle::new, createAndMoveEmptyRot(EntityTypes.EXPERIENCE_BOTTLE)));
         register(new EntityTypeData<>(EntityType.SPECTRAL_ARROW, SpectralArrow.class, CraftSpectralArrow::new, createAndMoveEmptyRot(EntityTypes.SPECTRAL_ARROW)));
-        register(new EntityTypeData<>(EntityType.ENDER_CRYSTAL, EnderCrystal.class, CraftEnderCrystal::new, createAndMoveEmptyRot(EntityTypes.END_CRYSTAL)));
+        register(new EntityTypeData<>(EntityType.END_CRYSTAL, EnderCrystal.class, CraftEnderCrystal::new, createAndMoveEmptyRot(EntityTypes.END_CRYSTAL)));
         register(new EntityTypeData<>(EntityType.TRIDENT, Trident.class, CraftTrident::new, createAndMoveEmptyRot(EntityTypes.TRIDENT)));
-        register(new EntityTypeData<>(EntityType.LIGHTNING, LightningStrike.class, CraftLightningStrike::new, createAndMoveEmptyRot(EntityTypes.LIGHTNING_BOLT)));
+        register(new EntityTypeData<>(EntityType.LIGHTNING_BOLT, LightningStrike.class, CraftLightningStrike::new, createAndMoveEmptyRot(EntityTypes.LIGHTNING_BOLT)));
 
         // Move
         register(new EntityTypeData<>(EntityType.SHULKER_BULLET, ShulkerBullet.class, CraftShulkerBullet::new, createAndMove(EntityTypes.SHULKER_BULLET)));
         register(new EntityTypeData<>(EntityType.BOAT, Boat.class, CraftBoat::new, createAndMove(EntityTypes.BOAT)));
         register(new EntityTypeData<>(EntityType.LLAMA_SPIT, LlamaSpit.class, CraftLlamaSpit::new, createAndMove(EntityTypes.LLAMA_SPIT)));
         register(new EntityTypeData<>(EntityType.CHEST_BOAT, ChestBoat.class, CraftChestBoat::new, createAndMove(EntityTypes.CHEST_BOAT)));
+        register(new EntityTypeData<>(EntityType.OMINOUS_ITEM_SPAWNER, OminousItemSpawner.class, CraftOminousItemSpawner::new, createAndMove(EntityTypes.OMINOUS_ITEM_SPAWNER)));
 
         // Set pos
         register(new EntityTypeData<>(EntityType.MARKER, Marker.class, CraftMarker::new, createAndSetPos(EntityTypes.MARKER)));
@@ -362,7 +370,7 @@ public final class CraftEntityTypes {
         register(new EntityTypeData<>(EntityType.TEXT_DISPLAY, TextDisplay.class, CraftTextDisplay::new, createAndSetPos(EntityTypes.TEXT_DISPLAY)));
 
         // MISC
-        register(new EntityTypeData<>(EntityType.DROPPED_ITEM, Item.class, CraftItem::new, spawnData -> {
+        register(new EntityTypeData<>(EntityType.ITEM, Item.class, CraftItem::new, spawnData -> {
             // We use stone instead of empty, to give the plugin developer a visual clue, that the spawn method is working,
             // and that the item stack should probably be changed.
             net.minecraft.world.item.ItemStack itemStack = new net.minecraft.world.item.ItemStack(Items.STONE);
@@ -376,31 +384,31 @@ public final class CraftEntityTypes {
         ));
         register(new EntityTypeData<>(EntityType.AREA_EFFECT_CLOUD, AreaEffectCloud.class, CraftAreaEffectCloud::new, spawnData -> new EntityAreaEffectCloud(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
         register(new EntityTypeData<>(EntityType.EGG, Egg.class, CraftEgg::new, spawnData -> new EntityEgg(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.LEASH_HITCH, LeashHitch.class, CraftLeash::new, spawnData -> new EntityLeash(spawnData.minecraftWorld(), BlockPosition.containing(spawnData.x(), spawnData.y(), spawnData.z())))); // SPIGOT-5732: LeashHitch has no direction and is always centered at a block
+        register(new EntityTypeData<>(EntityType.LEASH_KNOT, LeashHitch.class, CraftLeash::new, spawnData -> new EntityLeash(spawnData.minecraftWorld(), BlockPosition.containing(spawnData.x(), spawnData.y(), spawnData.z())))); // SPIGOT-5732: LeashHitch has no direction and is always centered at a block
         register(new EntityTypeData<>(EntityType.SNOWBALL, Snowball.class, CraftSnowball::new, spawnData -> new EntitySnowball(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.ENDER_SIGNAL, EnderSignal.class, CraftEnderSignal::new, spawnData -> new EntityEnderSignal(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.SPLASH_POTION, ThrownPotion.class, CraftThrownPotion::new, spawnData -> {
+        register(new EntityTypeData<>(EntityType.EYE_OF_ENDER, EnderSignal.class, CraftEnderSignal::new, spawnData -> new EntityEnderSignal(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.POTION, ThrownPotion.class, CraftThrownPotion::new, spawnData -> {
             EntityPotion entity = new EntityPotion(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z());
             entity.setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.SPLASH_POTION, 1)));
             return entity;
         }));
-        register(new EntityTypeData<>(EntityType.PRIMED_TNT, TNTPrimed.class, CraftTNTPrimed::new, spawnData -> new EntityTNTPrimed(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), null)));
+        register(new EntityTypeData<>(EntityType.TNT, TNTPrimed.class, CraftTNTPrimed::new, spawnData -> new EntityTNTPrimed(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), null)));
         register(new EntityTypeData<>(EntityType.FALLING_BLOCK, FallingBlock.class, CraftFallingBlock::new, spawnData -> {
             BlockPosition pos = BlockPosition.containing(spawnData.x(), spawnData.y(), spawnData.z());
             return EntityFallingBlock.fall(spawnData.minecraftWorld(), pos, spawnData.world().getBlockState(pos));
         }));
-        register(new EntityTypeData<>(EntityType.FIREWORK, Firework.class, CraftFirework::new, spawnData -> new EntityFireworks(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), net.minecraft.world.item.ItemStack.EMPTY)));
+        register(new EntityTypeData<>(EntityType.FIREWORK_ROCKET, Firework.class, CraftFirework::new, spawnData -> new EntityFireworks(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), net.minecraft.world.item.ItemStack.EMPTY)));
         register(new EntityTypeData<>(EntityType.EVOKER_FANGS, EvokerFangs.class, CraftEvokerFangs::new, spawnData -> new EntityEvokerFangs(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z(), (float) Math.toRadians(spawnData.yaw()), 0, null)));
-        register(new EntityTypeData<>(EntityType.MINECART_COMMAND, CommandMinecart.class, CraftMinecartCommand::new, spawnData -> new EntityMinecartCommandBlock(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.COMMAND_BLOCK_MINECART, CommandMinecart.class, CraftMinecartCommand::new, spawnData -> new EntityMinecartCommandBlock(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
         register(new EntityTypeData<>(EntityType.MINECART, RideableMinecart.class, CraftMinecartRideable::new, spawnData -> new EntityMinecartRideable(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.MINECART_CHEST, StorageMinecart.class, CraftMinecartChest::new, spawnData -> new EntityMinecartChest(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.MINECART_FURNACE, PoweredMinecart.class, CraftMinecartFurnace::new, spawnData -> new EntityMinecartFurnace(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.MINECART_TNT, ExplosiveMinecart.class, CraftMinecartTNT::new, spawnData -> new EntityMinecartTNT(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.MINECART_HOPPER, HopperMinecart.class, CraftMinecartHopper::new, spawnData -> new EntityMinecartHopper(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
-        register(new EntityTypeData<>(EntityType.MINECART_MOB_SPAWNER, SpawnerMinecart.class, CraftMinecartMobSpawner::new, spawnData -> new EntityMinecartMobSpawner(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.CHEST_MINECART, StorageMinecart.class, CraftMinecartChest::new, spawnData -> new EntityMinecartChest(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.FURNACE_MINECART, PoweredMinecart.class, CraftMinecartFurnace::new, spawnData -> new EntityMinecartFurnace(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.TNT_MINECART, ExplosiveMinecart.class, CraftMinecartTNT::new, spawnData -> new EntityMinecartTNT(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.HOPPER_MINECART, HopperMinecart.class, CraftMinecartHopper::new, spawnData -> new EntityMinecartHopper(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
+        register(new EntityTypeData<>(EntityType.SPAWNER_MINECART, SpawnerMinecart.class, CraftMinecartMobSpawner::new, spawnData -> new EntityMinecartMobSpawner(spawnData.minecraftWorld(), spawnData.x(), spawnData.y(), spawnData.z())));
 
         // None spawn able
-        register(new EntityTypeData<>(EntityType.FISHING_HOOK, FishHook.class, CraftFishHook::new, null)); // Cannot spawn a fish hook
+        register(new EntityTypeData<>(EntityType.FISHING_BOBBER, FishHook.class, CraftFishHook::new, null)); // Cannot spawn a fish hook
         register(new EntityTypeData<>(EntityType.PLAYER, Player.class, CraftPlayer::new, null)); // Cannot spawn a player
     }
 

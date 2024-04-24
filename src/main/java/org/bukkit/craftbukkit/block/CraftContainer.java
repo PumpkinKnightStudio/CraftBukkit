@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import net.minecraft.world.ChestLock;
 import net.minecraft.world.level.block.entity.TileEntityContainer;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Container;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -12,18 +13,18 @@ public abstract class CraftContainer<T extends TileEntityContainer> extends Craf
         super(world, tileEntity);
     }
 
-    protected CraftContainer(CraftContainer<T> state) {
-        super(state);
+    protected CraftContainer(CraftContainer<T> state, Location location) {
+        super(state, location);
     }
 
     @Override
     public boolean isLocked() {
-        return !this.getSnapshot().lockKey.key.isEmpty();
+        return !this.getSnapshot().lockKey.key().isEmpty();
     }
 
     @Override
     public String getLock() {
-        return this.getSnapshot().lockKey.key;
+        return this.getSnapshot().lockKey.key();
     }
 
     @Override
@@ -39,7 +40,7 @@ public abstract class CraftContainer<T extends TileEntityContainer> extends Craf
 
     @Override
     public void setCustomName(String name) {
-        this.getSnapshot().setCustomName(CraftChatMessage.fromStringOrNull(name));
+        this.getSnapshot().name = CraftChatMessage.fromStringOrNull(name);
     }
 
     @Override
@@ -47,10 +48,13 @@ public abstract class CraftContainer<T extends TileEntityContainer> extends Craf
         super.applyTo(container);
 
         if (this.getSnapshot().name == null) {
-            container.setCustomName(null);
+            container.name = null;
         }
     }
 
     @Override
     public abstract CraftContainer<T> copy();
+
+    @Override
+    public abstract CraftContainer<T> copy(Location location);
 }

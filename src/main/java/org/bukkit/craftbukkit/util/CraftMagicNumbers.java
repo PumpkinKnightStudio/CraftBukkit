@@ -7,28 +7,25 @@ import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
-import net.minecraft.SystemUtils;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.commands.CommandDispatcher;
+import net.minecraft.commands.arguments.item.ArgumentParserItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.DynamicOpsNBT;
-import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.AdvancementDataWorld;
@@ -36,9 +33,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.datafix.DataConverterRegistry;
 import net.minecraft.util.datafix.fixes.DataConverterTypes;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.ai.attributes.AttributeBase;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionRegistry;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.level.storage.SavedFile;
@@ -228,7 +225,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
      * @return string
      */
     public String getMappingsVersion() {
-        return "60a2bb6bf2684dc61c56b90d7c41bddc";
+        return "ad1a88fd7eaf2277f2507bf34d7b994c";
     }
 
     @Override
@@ -241,7 +238,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
 
         try {
-            nmsStack.setTag((NBTTagCompound) MojangsonParser.parseTag(arguments));
+            nmsStack.applyComponents(new ArgumentParserItemStack(CommandDispatcher.createValidationContext(MinecraftServer.getDefaultRegistryAccess())).parse(new StringReader(arguments)).components());
         } catch (CommandSyntaxException ex) {
             Logger.getLogger(CraftMagicNumbers.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -261,7 +258,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
         MinecraftKey minecraftkey = CraftNamespacedKey.toMinecraft(key);
 
         JsonElement jsonelement = AdvancementDataWorld.GSON.fromJson(advancement, JsonElement.class);
-        net.minecraft.advancements.Advancement nms = SystemUtils.getOrThrow(net.minecraft.advancements.Advancement.CODEC.parse(JsonOps.INSTANCE, jsonelement), JsonParseException::new);
+        net.minecraft.advancements.Advancement nms = net.minecraft.advancements.Advancement.CODEC.parse(JsonOps.INSTANCE, jsonelement).getOrThrow(JsonParseException::new);
         if (nms != null) {
             MinecraftServer.getServer().getAdvancements().advancements.put(minecraftkey, new AdvancementHolder(minecraftkey, nms));
             Advancement bukkit = Bukkit.getAdvancement(key);
@@ -291,30 +288,27 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return file.delete();
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
-
     @Override
     public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
-        String minimumVersion = MinecraftServer.getServer().server.minimumAPI;
-        int minimumIndex = SUPPORTED_API.indexOf(minimumVersion);
+        ApiVersion toCheck = ApiVersion.getOrCreateVersion(pdf.getAPIVersion());
+        ApiVersion minimumVersion = MinecraftServer.getServer().server.minimumAPI;
 
-        if (pdf.getAPIVersion() != null) {
-            int pluginIndex = SUPPORTED_API.indexOf(pdf.getAPIVersion());
+        if (toCheck.isNewerThan(ApiVersion.CURRENT)) {
+            // Newer than supported
+            throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
+        }
 
-            if (pluginIndex == -1) {
-                throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
-            }
+        if (toCheck.isOlderThan(minimumVersion)) {
+            // Older than supported
+            throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+        }
 
-            if (pluginIndex < minimumIndex) {
-                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
-            }
-        } else {
-            if (minimumIndex == -1) {
-                CraftLegacy.init();
-                Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
-            } else {
-                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
-            }
+        if (toCheck.isOlderThan(ApiVersion.FLATTENING)) {
+            CraftLegacy.init();
+        }
+
+        if (toCheck == ApiVersion.NONE) {
+            Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
         }
     }
 
@@ -325,7 +319,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
     @Override
     public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
         try {
-            clazz = Commodore.convert(clazz, !isLegacy(pdf));
+            clazz = Commodore.convert(clazz, pdf.getName(), ApiVersion.getOrCreateVersion(pdf.getAPIVersion()));
         } catch (Exception ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
         }
@@ -337,11 +331,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
 
-        Multimap<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers(CraftEquipmentSlot.getNMS(slot));
-        for (Entry<AttributeBase, net.minecraft.world.entity.ai.attributes.AttributeModifier> mapEntry : nmsDefaultAttributes.entries()) {
-            Attribute attribute = CraftAttribute.minecraftToBukkit(mapEntry.getKey());
-            defaultAttributes.put(attribute, CraftAttributeInstance.convert(mapEntry.getValue(), slot));
-        }
+        ItemAttributeModifiers nmsDefaultAttributes = getItem(material).getDefaultAttributeModifiers();
+        nmsDefaultAttributes.forEach(CraftEquipmentSlot.getNMS(slot), (key, value) -> {
+            Attribute attribute = CraftAttribute.minecraftToBukkit(key.value());
+            defaultAttributes.put(attribute, CraftAttributeInstance.convert(value, slot));
+        });
 
         return defaultAttributes.build();
     }

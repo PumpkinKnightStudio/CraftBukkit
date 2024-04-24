@@ -103,7 +103,6 @@ import org.bukkit.craftbukkit.entity.CraftSpellcaster;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
-import org.bukkit.craftbukkit.inventory.CraftMetaBook;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.CraftVector;
@@ -940,7 +939,7 @@ public class CraftEventFactory {
 
     private static EntityDamageEvent handleEntityDamageEvent(Entity entity, DamageSource source, Map<DamageModifier, Double> modifiers, Map<DamageModifier, Function<? super Double, Double>> modifierFunctions, boolean cancelled) {
         CraftDamageSource bukkitDamageSource = new CraftDamageSource(source);
-        Entity damager = source.getCausingEntity();
+        Entity damager = (bukkitDamageSource.isIndirect() && source.getDirectEntity() != null) ? source.getDirectEntity() : source.getCausingEntity();
         if (source.is(DamageTypeTags.IS_EXPLOSION)) {
             if (damager == null) {
                 return callEntityDamageEvent(source.getDirectBlock(), entity, DamageCause.BLOCK_EXPLOSION, bukkitDamageSource, modifiers, modifierFunctions, cancelled);
@@ -949,10 +948,6 @@ public class CraftEventFactory {
             return callEntityDamageEvent(damager, entity, damageCause, bukkitDamageSource, modifiers, modifierFunctions, cancelled);
         } else if (damager != null || source.getDirectEntity() != null) {
             DamageCause cause = (source.isSweep()) ? DamageCause.ENTITY_SWEEP_ATTACK : DamageCause.ENTITY_ATTACK;
-
-            if (bukkitDamageSource.isIndirect() && source.getDirectEntity() != null) {
-                damager = source.getDirectEntity();
-            }
 
             if (damager instanceof IProjectile) {
                 if (damager.getBukkitEntity() instanceof ThrownPotion) {
@@ -1367,10 +1362,10 @@ public class CraftEventFactory {
         org.bukkit.entity.Entity bukkitIgniter = igniter.getBukkitEntity();
         IgniteCause cause;
         switch (bukkitIgniter.getType()) {
-            case ENDER_CRYSTAL:
+            case END_CRYSTAL:
                 cause = IgniteCause.ENDER_CRYSTAL;
                 break;
-            case LIGHTNING:
+            case LIGHTNING_BOLT:
                 cause = IgniteCause.LIGHTNING;
                 break;
             case SMALL_FIREBALL:
@@ -1426,7 +1421,7 @@ public class CraftEventFactory {
                 if (editBookEvent.isSigning()) {
                     itemInHand.setItem(Items.WRITTEN_BOOK);
                 }
-                CraftMetaBook meta = (CraftMetaBook) editBookEvent.getNewBookMeta();
+                BookMeta meta = editBookEvent.getNewBookMeta();
                 CraftItemStack.setItemMeta(itemInHand, meta);
             } else {
                 player.getBukkitEntity().updateInventory(); // SPIGOT-7484
