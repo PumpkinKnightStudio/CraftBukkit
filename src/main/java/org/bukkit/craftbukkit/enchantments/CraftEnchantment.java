@@ -172,12 +172,12 @@ public class CraftEnchantment extends Enchantment implements Handleable<net.mine
     private final class CraftComponents implements Enchantment.Components {
 
         @Override
-        public TranslatableComponent getDisplayName() {
-            return new TranslatableComponent(getHandle().getDescriptionId());
+        public BaseComponent getName() {
+            return new TranslatableComponent(getHandle().getDescriptionId()); // TODO: 1.21 - Replace with handle's display name component
         }
 
         @Override
-        public BaseComponent getDisplayName(int level) {
+        public BaseComponent getName(int level) {
             return CraftChatMessage.toBungee(getHandle().getFullname(level));
         }
     }
