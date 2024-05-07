@@ -20,6 +20,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.legacy.ComponentReroute;
 import org.bukkit.craftbukkit.legacy.FieldRename;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteArgument;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteBuilder;
@@ -60,8 +61,19 @@ public class Commodore {
     private static final Map<String, String> RENAMES = Map.of(
             "org/bukkit/entity/TextDisplay$TextAligment", "org/bukkit/entity/TextDisplay$TextAlignment", // SPIGOT-7335
             "org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent",
-            "org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent"
+            "org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent",
+            "org/bukkit/command/CommandSender$Spigot", "org/bukkit/command/CommandSender$Components",
+            "org/bukkit/entity/Entity$Spigot", "org/bukkit/entity/Entity$Components",
+            "org/bukkit/entity/Player$Spigot", "org/bukkit/entity/Player$Components",
+            "org/bukkit/entity/LightningStrike$Spigot", "org/bukkit/entity/Entity$Components"
     );
+
+    private static final Set<String> CLASS_TO_INTERFACE = new HashSet<>(Arrays.asList(
+            "org/bukkit/command/CommandSender$Components",
+            "org/bukkit/entity/Entity$Components",
+            "org/bukkit/entity/Player$Components",
+            "org/bukkit/entity/LightningStrike$Components"
+    ));
 
     private static Map<String, RerouteMethodData> createReroutes(Class<?> clazz) {
         Map<String, RerouteMethodData> reroutes = RerouteBuilder.buildFromClass(clazz);
@@ -72,6 +84,7 @@ public class Commodore {
     @VisibleForTesting
     public static final List<Map<String, RerouteMethodData>> REROUTES = new ArrayList<>(); // Only used for testing
     private static final Map<String, RerouteMethodData> FIELD_RENAME_METHOD_REROUTE = createReroutes(FieldRename.class);
+    private static final Map<String, RerouteMethodData> COMPONENT_API_METHOD_REROUTE = createReroutes(ComponentReroute.class);
 
     public static void main(String[] args) {
         OptionParser parser = new OptionParser();
@@ -275,7 +288,28 @@ public class Commodore {
                     }
 
                     private void handleMethod(MethodPrinter visitor, int opcode, String owner, String name, String desc, boolean itf, Type samMethodType, Type instantiatedMethodType) {
+                        if (CLASS_TO_INTERFACE.contains(owner)) {
+                            itf = true;
+
+                            if (opcode == Opcodes.INVOKEVIRTUAL) {
+                                opcode = Opcodes.INVOKEINTERFACE;
+                            }
+
+                            if (opcode == Opcodes.H_INVOKEVIRTUAL) {
+                                opcode = Opcodes.H_INVOKEINTERFACE;
+                            }
+                        }
+
                         if (checkReroute(visitor, FIELD_RENAME_METHOD_REROUTE, opcode, owner, name, desc, samMethodType, instantiatedMethodType)) {
+                            return;
+                        }
+
+                        if (owner.startsWith("org/bukkit") && checkReroute(visitor, COMPONENT_API_METHOD_REROUTE, opcode, owner, name, desc, samMethodType, instantiatedMethodType)) {
+                            return;
+                        }
+
+                        if (owner.startsWith("org/bukkit") && name.equals("spigot") && !desc.endsWith("$Spigot;")) {
+                            visitor.visit(opcode, owner, "components", desc, itf, samMethodType, instantiatedMethodType);
                             return;
                         }
 

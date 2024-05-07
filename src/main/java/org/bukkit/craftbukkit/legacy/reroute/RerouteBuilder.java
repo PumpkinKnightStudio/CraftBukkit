@@ -110,7 +110,7 @@ public class RerouteBuilder {
 
         Type targetType = Type.getType(method);
 
-        boolean inBukkit = !method.isAnnotationPresent(NotInBukkit.class);
+        boolean inBukkit = !method.isAnnotationPresent(NotInBukkit.class) && !method.getDeclaringClass().isAnnotationPresent(NotInBukkit.class);
 
         return new RerouteMethodData(methodKey, sourceDesc, sourceOwner, methodName, rerouteStatic != null, targetType, Type.getInternalName(method.getDeclaringClass()), method.getName(), arguments, rerouteReturn, inBukkit);
     }
