@@ -47,7 +47,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
 
     @Override
     public void setPrefix(String prefix) {
-        this.components.setDisplayName((prefix != null) ? TextComponent.fromLegacy(prefix) : null);
+        this.components.setPrefix((prefix != null) ? TextComponent.fromLegacy(prefix) : null);
     }
 
     @Override
@@ -57,7 +57,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
 
     @Override
     public void setSuffix(String suffix) {
-        this.components.setDisplayName((suffix != null) ? TextComponent.fromLegacy(suffix) : null);
+        this.components.setSuffix((suffix != null) ? TextComponent.fromLegacy(suffix) : null);
     }
 
     @Override
@@ -301,7 +301,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
             Preconditions.checkArgument(prefix != null, "prefix cannot be null");
 
             checkState();
-            team.setDisplayName(CraftChatMessage.fromBungee(prefix));
+            team.setPlayerPrefix(CraftChatMessage.fromBungee(prefix));
         }
 
         @Override
@@ -315,7 +315,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
             Preconditions.checkArgument(suffix != null, "suffix cannot be null");
 
             checkState();
-            team.setDisplayName(CraftChatMessage.fromBungee(suffix));
+            team.setPlayerSuffix(CraftChatMessage.fromBungee(suffix));
         }
     }
 
